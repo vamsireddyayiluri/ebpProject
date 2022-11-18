@@ -1,0 +1,15 @@
+.git/
+.vscode/
+
+# node_modules
+node_modules/
+functions/node_modules/
+
+# dist
+functions/dist/
+
+npm-debug.log
+yarn-error.log
+
+# logs
+*.log

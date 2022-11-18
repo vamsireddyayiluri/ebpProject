@@ -1,0 +1,32 @@
+version: '3.0'
+
+services:
+  app:
+    container_name: qualle-development
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - '.:/app'
+      - '/app/node_modules'
+    ports:
+      - 5173:5173
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    env_file:
+      - .env
+  # db:
+  #   image: firestore
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.firestore
+  #   ports:
+  #     - 4000:4000
+  #     - 5001:5001
+  #     - 5002:5002
+  #     - 9000:9000
+  #     - 8080:8080
+  #     - 8085:8085
+  #   volumes:
+  #     - .cache/firebase/emulators/:/app/.cache/firebase/emulators/
+  #   tty: true
