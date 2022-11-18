@@ -3,7 +3,7 @@
         <h1>
         Hello Qualle</h1>
         
-  <router-link to="/home" class="navbar-brand">HelloWorld</router-link>
+  <router-link to="/" class="navbar-brand">HelloWorld</router-link>
     </div>
 </template>
 

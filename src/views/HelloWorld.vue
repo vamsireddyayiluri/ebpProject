@@ -40,7 +40,7 @@ export default {
     </h3>
   </div>
   
-  <router-link to="/" class="navbar-brand">Home</router-link>
+  <router-link to="/home" class="navbar-brand">Home</router-link>
 </template>
 
 <style scoped>
