@@ -1,0 +1,75 @@
+name: Build and Deploy
+on:
+  pull_request:
+    branches:
+      - development
+
+jobs:
+  build-hosting:
+    name: Build Hosting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+      - run: |
+          npm config set //npm.pkg.github.com/:_authToken ${{ secrets.NPM_TOKEN }}
+      - name: Checkout Repo
+        uses: actions/checkout@master
+      - name: Install Dependencies
+        run: yarn
+      - name: Build
+        run: yarn build
+        env:
+          NODE_ENV: development
+          VUE_APP_DOMAIN: https://platform-boilerplate.web.app
+          VUE_APP_PROJECT_ID: platform-boilerplate
+          VUE_APP_APP_ID:
+      - name: Archive Development Artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: dist-hosting
+          path: dist
+  e2e-test:
+    name: e2e Test
+    needs: [build-hosting]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+      - run: |
+          npm config set //npm.pkg.github.com/:_authToken ${{ secrets.NPM_TOKEN }}
+      - name: Checkout Repo
+        uses: actions/checkout@master
+      - name: Install Dependencies
+        working-directory: ./functions
+        run: yarn
+  #      - name: Test
+  #        uses: cypress-io/github-action@v2
+  #        with:
+  #          browser: chrome
+  #          headless: true
+  #          start: yarn test:e2e
+  #          wait-on: 'http://localhost:3000'
+  #          wait-on-timeout: 60
+  deploy-hosting:
+    name: Deploy Hosting
+    needs: [e2e-test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@master
+      - name: Download Artifact
+        uses: actions/download-artifact@master
+        with:
+          name: dist-hosting
+          path: dist
+      - name: Deploy to Firebase
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --project development --only hosting
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

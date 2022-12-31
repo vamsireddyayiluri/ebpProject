@@ -1,20 +1,59 @@
 {
-  "name": "qualle",
+  "name": "platform-boilerplate",
   "version": "0.0.0",
+  "private": true,
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:unit": "vitest --environment jsdom --root src/",
+    "test:e2e": "start-server-and-test preview :4173 'cypress run --e2e'",
+    "test:e2e:dev": "start-server-and-test 'vite dev --port 4173' :4173 'cypress open --e2e'",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
   },
   "dependencies": {
-    "@firebase/app": "^0.6.9",
-    "firebase": "^8.2.4",
-    "vue": "^3.2.41",
-    "vue-router": "^4.1.6",
-    "vuex": "^4.0.2"
+    "@qualle-admin/qui": "^1.3.0",
+    "@qualle-admin/qutil": "^1.25.0",
+    "@vueuse/core": "^9.9.0",
+    "axios": "^1.2.2",
+    "firebase": "^9.15.0",
+    "pinia": "^2.0.28",
+    "vue": "^3.2.45",
+    "vue-router": "^4.1.6"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^3.1.2",
-    "vite": "^3.1.8"
+    "@rushstack/eslint-patch": "^1.1.4",
+    "@semantic-release/changelog": "^6.0.2",
+    "@vitejs/plugin-vue": "^4.0.0",
+    "@vitejs/plugin-vue-jsx": "^3.0.0",
+    "@vue/eslint-config-prettier": "^7.0.0",
+    "@vue/test-utils": "^2.2.6",
+    "cypress": "^12.0.2",
+    "eslint": "^8.22.0",
+    "eslint-plugin-cypress": "^2.12.1",
+    "eslint-plugin-vue": "^9.3.0",
+    "husky": "^8.0.2",
+    "jsdom": "^20.0.3",
+    "lint-staged": "^13.1.0",
+    "prettier": "^2.7.1",
+    "semantic-release": "^19.0.5",
+    "start-server-and-test": "^1.15.2",
+    "vite": "^4.0.0",
+    "vitest": "^0.25.6"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "src/**/*.{vue,js,json,css,scss,md}": "prettier --write"
+  },
+  "release": {
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/changelog"
+    ]
   }
 }

@@ -1,10 +1,12 @@
-version: '3.0'
+version: '3.8'
 
 services:
   app:
-    container_name: qualle-development
+    container_name: platform-boilerplate
     build:
       context: .
+      args:
+        - NPM_TOKEN=${NPM_TOKEN}      
       dockerfile: Dockerfile
     volumes:
       - '.:/app'
@@ -15,18 +17,4 @@ services:
       - CHOKIDAR_USEPOLLING=true
     env_file:
       - .env
-  # db:
-  #   image: firestore
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.firestore
-  #   ports:
-  #     - 4000:4000
-  #     - 5001:5001
-  #     - 5002:5002
-  #     - 9000:9000
-  #     - 8080:8080
-  #     - 8085:8085
-  #   volumes:
-  #     - .cache/firebase/emulators/:/app/.cache/firebase/emulators/
-  #   tty: true
+      - .env.development      

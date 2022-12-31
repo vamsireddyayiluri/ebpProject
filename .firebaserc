@@ -1,9 +1,6 @@
 {
   "projects": {
-    "default": "qualle-development",
-    "staging": "qualle-staging",
-    "development": "qualle-development",
-    "production": "qualle-web"
+    "default": "platform-boilerplate",
   },
   "targets": {}
 }

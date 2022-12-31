@@ -3,10 +3,6 @@
     "public": "dist",
     "rewrites": [
       {
-        "source": "/api/v1/**",
-        "function": "webApp"
-      },
-      {
         "source": "**",
         "destination": "/index.html"
       }
@@ -18,47 +14,15 @@
           {
             "key": "Access-Control-Allow-Origin",
             "value": "*"
-          },
-          {
-            "key": "Content-Security-Policy",
-            "value": "frame-ancestors 'self' https://app.hellosign.com"
           }
         ]
       }
     ]
   },
   "emulators": {
-    "functions": {
-      "host": "0.0.0.0",
-      "port": 5002
-    },
-    "firestore": {
-      "host": "0.0.0.0",
-      "port": 8080
-    },
-    "database": {
-      "host": "0.0.0.0",
-      "port": 9000
-    },
     "hosting": {
       "host": "0.0.0.0",
-      "port": 5001
-    },
-    "pubsub": {
-      "host": "0.0.0.0",
-      "port": 8085
-    },
-    "auth": {
-      "host": "0.0.0.0",
-      "port": 9099
-    },
-    "ui": {
-      "enabled": true,
-      "host": "0.0.0.0",
-      "port": 4000
-    }
-  },
-  "firestore": {
-    "rules": "firestore.rules"
+      "port": 5002
+    }  
   }
 }

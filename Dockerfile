@@ -1,15 +1,16 @@
 FROM node:14
 
-# Install global dependencies for project
-RUN yarn global add firebase-tools
-RUN yarn global add firebase-functions
-RUN yarn global add @vue/cli
+ARG NPM_TOKEN
+ENV NPM_TOKEN $NPM_TOKEN
 
 WORKDIR /app
 COPY package*.json ./
+COPY yarn.lock ./
+COPY .npmrc ./
 
+RUN npm config set //npm.pkg.github.com/:_authToken $NPM_TOKEN
 RUN yarn
 
 COPY . .
 
-CMD ["yarn", "run", "dev", "--host", "0.0.0.0"]
+CMD ["yarn", "dev"]
