@@ -1,0 +1,11 @@
+@use "sass:map";
+
+a {
+  color: rgb(var(--v-theme-primary));
+  text-decoration: none;
+}
+
+// Vuetify 3 don't provide margin bottom style like vuetify 2
+p {
+  margin-block-end: 1rem;
+}

@@ -6,7 +6,7 @@ services:
     build:
       context: .
       args:
-        - NPM_TOKEN=${NPM_TOKEN}      
+        - NPM_TOKEN=${NPM_TOKEN}
       dockerfile: Dockerfile
     volumes:
       - '.:/app'
@@ -17,4 +17,4 @@ services:
       - CHOKIDAR_USEPOLLING=true
     env_file:
       - .env
-      - .env.development      
+      - .env.development
