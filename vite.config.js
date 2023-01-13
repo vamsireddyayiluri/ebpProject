@@ -14,7 +14,6 @@ export default defineConfig({
   plugins: [
     vue(),
     vueJsx(),
-
     // https://github.com/vuetifyjs/vuetify-loader/tree/next/packages/vite-plugin
     vuetify({
       styles: {
@@ -24,15 +23,16 @@ export default defineConfig({
     Pages({}),
     Layouts(),
     Components({
-      dirs: ['src/@core/components'],
-      dts: true,
+      dts: 'src/components.d.ts',
+      dirs: ['src/@core/components', 'src/components'],
     }),
     AutoImport({
+      imports: ['vue', 'vue-router', '@vueuse/core', 'vue-i18n'],
+      dts: 'src/auto-imports.d.ts',
       eslintrc: {
         enabled: true,
         filepath: './.eslintrc-auto-import.json',
       },
-      imports: ['vue', 'vue-router', '@vueuse/core', 'vue-i18n'],
       vueTemplate: true,
     }),
     DefineOptions(),
