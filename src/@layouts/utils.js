@@ -2,7 +2,7 @@
  * Return nav link props to use
  * @param {Object, String} item navigation routeName or route Object provided in navigation data
  */
-export const getComputedNavLinkToProp = computed(() => link => {
+export const getComputedNavLinkToProp = computed(() => (link) => {
   const props = {
     target: link.target,
     rel: link.rel,
@@ -16,23 +16,3 @@ export const getComputedNavLinkToProp = computed(() => link => {
 
   return props
 })
-
-/**
- * Convert Hex color to rgb
- * @param hex
- */
-export const hexToRgb = hex => {
-  // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
-  const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i
-  hex = hex.replace(shorthandRegex, (m, r, g, b) => {
-    return r + r + g + g + b + b
-  })
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-
-  return result
-    ? `${parseInt(result[1], 16)},${parseInt(result[2], 16)},${parseInt(
-      result[3],
-      16,
-    )}`
-    : null
-}
