@@ -1,7 +1,155 @@
 // ❗ Path must be relative
-@forward '../../@core/scss/libs/vuetify/variables';
+// @forward '../../@core/scss/libs/vuetify/variables';
 
 // ℹ️ Remove above import and uncomment below to override core variables.
 // @forward "../../@core/scss/libs/vuetify/variables" with (
 //   $<variable-name>: <variable-value>
 // )
+
+@use 'sass:map';
+
+// global variables
+$body-font-family: 'Open Sans';
+$border-radius-root: 4px;
+$heading-font-family: $body-font-family;
+
+// border-radius
+$rounded: (
+  'sm': $border-radius-root,
+  'lg': calc($border-radius-root * 2),
+);
+
+// gradients
+$event-1: linear-gradient(90deg, rgba(255, 138, 128, 1) 0.76%, rgba(213, 0, 0, 1) 100%);
+$event-2: linear-gradient(90deg, rgba(255, 128, 171, 1) 0.76%, rgba(197, 17, 98, 1) 100%);
+$event-3: linear-gradient(90deg, rgba(234, 128, 252, 1) 0.76%, rgba(170, 0, 255, 1) 100%);
+$event-4: linear-gradient(90deg, rgba(130, 177, 255, 1) 0.76%, rgba(41, 98, 255, 1) 100%);
+$event-5: linear-gradient(90deg, rgba(128, 216, 255, 1) 0.76%, rgba(0, 145, 234, 1) 100%);
+$event-6: linear-gradient(90deg, rgba(185, 246, 202, 1) 0.76%, rgba(0, 200, 83, 1) 100%);
+$event-7: linear-gradient(90deg, rgba(255, 255, 141, 1) 0.76%, rgba(255, 214, 0, 1) 100%);
+$event-8: linear-gradient(90deg, rgba(255, 209, 128, 1) 0.76%, rgba(255, 109, 0, 1) 100%);
+$event-9: linear-gradient(90deg, rgba(207, 216, 220, 1) 0.76%, rgba(38, 50, 56, 1) 100%);
+
+// typography
+$typography: (
+  'h1': (
+    'size': 2rem,
+    'weight': 600,
+    'line-height': 2.4rem,
+    'letter-spacing': -0.015625em,
+    'font-family': $heading-font-family,
+    'text-transform': none,
+  ),
+  'h2': (
+    'size': 1.75rem,
+    'weight': 600,
+    'line-height': 2.1rem,
+    'letter-spacing': -0.0083333333em,
+    'font-family': $heading-font-family,
+    'text-transform': none,
+  ),
+  'h3': (
+    'size': 1.5rem,
+    'weight': 600,
+    'line-height': 1.8rem,
+    'letter-spacing': normal,
+    'font-family': $heading-font-family,
+    'text-transform': none,
+  ),
+  'h4': (
+    'size': 1.25rem,
+    'weight': 600,
+    'line-height': 1.75rem,
+    'letter-spacing': 0.0073529412em,
+    'font-family': $heading-font-family,
+    'text-transform': none,
+  ),
+  'body-m-semibold': (
+    'size': 1rem,
+    'weight': 600,
+    'line-height': 1.4rem,
+    'letter-spacing': normal,
+    'font-family': $body-font-family,
+    'text-transform': none,
+  ),
+  'body-m-regular': (
+    'size': 1rem,
+    'weight': 400,
+    'line-height': 1.225rem,
+    'letter-spacing': 0.0125em,
+    'font-family': $body-font-family,
+    'text-transform': none,
+  ),
+  'body-s-semibold': (
+    'size': 0.875rem,
+    'weight': 600,
+    'line-height': 1.225rem,
+    'letter-spacing': 0.009375em,
+    'font-family': $body-font-family,
+    'text-transform': none,
+  ),
+  'body-s-regular': (
+    'size': 0.875rem,
+    'weight': 400,
+    'line-height': 1.225rem,
+    'letter-spacing': 0.0071428571em,
+    'font-family': $body-font-family,
+    'text-transform': none,
+  ),
+  'body-xs-semibold': (
+    'size': 0.75rem,
+    'weight': 600,
+    'line-height': 1.225rem,
+    'letter-spacing': 0.03125em,
+    'font-family': $body-font-family,
+    'text-transform': none,
+  ),
+  'body-xs-regular': (
+    'size': 0.75rem,
+    'weight': 400,
+    'line-height': 1.225rem,
+    'letter-spacing': 0.0178571429em,
+    'font-family': $body-font-family,
+    'text-transform': none,
+  ),
+  'body-caption-semibold': (
+    'size': 0.875rem,
+    'weight': 600,
+    'line-height': 1.225rem,
+    'letter-spacing': 0.0178571429em,
+    'font-family': $body-font-family,
+    'text-transform': none,
+  ),
+  'body-caption-regular': (
+    'size': 0.625rem,
+    'weight': 400,
+    'line-height': 0.875rem,
+    'letter-spacing': 0.0333333333em,
+    'font-family': $body-font-family,
+    'text-transform': none,
+  ),
+  'button-s': (
+    'size': 0.875rem,
+    'weight': 500,
+    'line-height': 1.225rem,
+    'letter-spacing': 0.0892857143em,
+    'font-family': $body-font-family,
+    'text-transform': uppercase,
+  ),
+  'button-xs ': (
+    'size': 0.75rem,
+    'weight': 500,
+    'line-height': 1.275rem,
+    'letter-spacing': 0.0892857143em,
+    'font-family': $body-font-family,
+    'text-transform': uppercase,
+  ),
+  'overline': (
+    'size': 0.75rem,
+    'weight': 500,
+    'line-height': 2rem,
+    'letter-spacing': 0.1666666667em,
+    'font-family': $body-font-family,
+    'text-transform': uppercase,
+  ),
+);

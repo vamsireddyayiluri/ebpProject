@@ -13,6 +13,7 @@ import {
   Tooltip,
   Typography,
   VirtualTable,
+  ThemeSwitcher,
 } from '@qualle-admin/qui'
 
 import { getAllLines } from '@qualle-admin/qutil/dist/ssl'
@@ -96,6 +97,46 @@ const useActions = () => [
   },
 ]
 
+const charts = [
+  {
+    label: 'Horizontal Column chart',
+    settings: { horizontal: true, type: 'bar', showLabels: false },
+    data: {
+      categories: [
+        'LA/LGB',
+        'NJ/NEWARK',
+        'TX/HOUSTON',
+        'GA/SAVANNAH',
+        'SF/OAKLAND',
+        'NW/SEATTLE',
+        'LA/LGB',
+      ],
+      series: [{ data: [140, 90, 95, 130, 170, 105, 120] }],
+    },
+  },
+  {
+    label: 'Spline Area chart',
+    settings: { type: 'area', showLabels: false },
+    data: {
+      categories: [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ],
+      series: [{ data: [20, 50, 40, 70, 50, 90, 40, 100, 80, 120, 70, 140] }],
+    },
+  },
+]
+
 const loading = ref(false)
 const showActions = ref(true)
 const showSelect = ref(true)
@@ -116,7 +157,8 @@ const onSelectRow = (e) => console.log(e)
 </script>
 
 <template>
-  <VContainer fluid>
+  <ThemeSwitcher />
+  <VContainer class="px-8" fluid>
     <VRow>
       <VCol>
         <AverageCard
@@ -127,6 +169,7 @@ const onSelectRow = (e) => console.log(e)
             increase: false,
             value: 7,
           }"
+          :style="{ height: '142.398px' }"
         />
       </VCol>
       <VCol>
@@ -138,6 +181,7 @@ const onSelectRow = (e) => console.log(e)
             increase: false,
             value: 7,
           }"
+          :style="{ height: '142.398px' }"
         />
       </VCol>
       <VCol>
@@ -154,8 +198,76 @@ const onSelectRow = (e) => console.log(e)
       </VCol>
     </VRow>
     <VRow>
-      <VCol></VCol>
-      <VCol></VCol>
+      <VCol v-for="({ settings, data }, n) in charts" :key="n">
+        <Chart
+          :options="
+            ({ colors, dark }) => ({
+              chart: {
+                type: settings.type,
+                height: 280,
+                background: colors.uiBackground,
+                animations: {
+                  enabled: false,
+                },
+                toolbar: { show: false },
+              },
+              colors: [colors.uiChart],
+              plotOptions: {
+                bar: {
+                  horizontal: settings.horizontal,
+                  ...(settings.horizontal && { barHeight: '20%' }),
+                  borderRadius: 4,
+                  startingShape: 'rounded',
+                  endingShape: 'rounded',
+                  distributed: false,
+                  colors: {
+                    backgroundBarColors: ['transparent'],
+                    backgroundBarOpacity: 0,
+                    backgroundBarRadius: 4,
+                  },
+                },
+              },
+              legend: { show: false },
+              dataLabels: {
+                enabled: settings.showLabels,
+                formatter: (n) => `${n}%`,
+              },
+              grid: {
+                show: true,
+                borderColor: colors.uiLine,
+              },
+              xaxis: {
+                show: true,
+                categories: data.categories,
+                labels: {
+                  show: true,
+                  style: {
+                    colors: colors.textSecondary,
+                  },
+                },
+                axisBorder: { show: true, color: colors.uiLine },
+                axisTicks: { show: true },
+              },
+              yaxis: {
+                show: true,
+                labels: {
+                  show: true,
+                  style: {
+                    colors: colors.textSecondary,
+                  },
+                },
+                axisBorder: { show: true, color: colors.uiLine },
+              },
+              tooltip: {
+                enabled: true,
+                intersect: false,
+                theme: dark,
+              },
+            })
+          "
+          :data="data"
+        />
+      </VCol>
     </VRow>
     <VRow>
       <VCol>

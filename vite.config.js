@@ -16,7 +16,7 @@ export default defineConfig({
     vueJsx(),
     vuetify({
       styles: {
-        configFile: 'src/styles/variables/_vuetify.scss',
+        configFile: 'src/styles/variables/index.scss',
       },
     }),
     Pages({}),
