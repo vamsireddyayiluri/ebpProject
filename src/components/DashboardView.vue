@@ -106,7 +106,7 @@ const useActions = () => [
 
 const charts = [
   {
-    label: 'Horizontal Column chart',
+    label: 'Turns by market',
     settings: { horizontal: true, type: 'bar', showLabels: false },
     data: {
       categories: [
@@ -122,7 +122,7 @@ const charts = [
     },
   },
   {
-    label: 'Spline Area chart',
+    label: 'Ranking by street turns',
     settings: { type: 'area', showLabels: false },
     data: {
       categories: [
@@ -149,7 +149,7 @@ let { markers } = markRaw({
 })
 
 const mapOptions = markRaw({ zoom: 12, zoomControls: true })
-const mapHeight = `${window.innerHeight - 160}px`
+const mapHeight = `${window.innerHeight - 130}px`
 const onMapLoaded = async ({ api, map }) => console.log({ api, map })
 const onMarkerClick = (e) => console.log(JSON.stringify(e))
 const renderInfoWindow = (marker) => JSON.stringify(marker)
@@ -182,12 +182,13 @@ const onSelectRow = (e) => console.log(e)
 </script>
 
 <template>
-  <ThemeSwitcher :style="{ position: 'fixed', top: '0', right: '8em' }" />
+  <ThemeSwitcher :style="{ position: 'fixed', top: '-4px', right: '9em' }" />
   <VContainer class="bg-background ma-0 pa-0" fluid>
     <Panes :panes="panes" @onSplitPaneClosed="onSplitPaneClosed">
       <template #content>
         <VContainer
-          class="bg-background py-0 px-8"
+          class="bg-background pl-8 pr-0 pb-4 pt-4"
+          fluid
           :style="{ minWidth: '800px' }"
         >
           <VRow>
@@ -229,8 +230,13 @@ const onSelectRow = (e) => console.log(e)
             </VCol>
           </VRow>
           <VRow>
-            <VCol v-for="({ settings, data }, n) in charts" :key="n">
+            <VCol
+              v-for="({ label, settings, data }, n) in charts"
+              :key="n"
+              cols="6"
+            >
               <Card bg-color="uiSecondary-01" elevation="0">
+                <CardTitle>{{ label }}</CardTitle>
                 <Chart
                   :options="
                     ({ colors, dark }) => ({
@@ -304,13 +310,14 @@ const onSelectRow = (e) => console.log(e)
           </VRow>
           <VRow>
             <VCol>
+              <Typography type="text-h1" class="mb-4">Turns</Typography>
               <VirtualTable
                 :headers="headers"
                 :options="{
                   rowHeight: 64,
                   showActions,
                   showSelect,
-                  tableHeight: 575,
+                  tableHeight: 448,
                   tableMinWidth: 960,
                 }"
                 :entities="entities"

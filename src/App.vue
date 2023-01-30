@@ -16,6 +16,18 @@ const items = ref([
     name: 'dashboard',
     icon: 'mdi-home',
   },
+  {
+    name: 'activity',
+    icon: 'mdi-calendar-blank-outline',
+  },
+  {
+    name: 'marketplace',
+    icon: 'mdi-cube-scan',
+  },
+  {
+    name: 'settings',
+    icon: 'mdi-cog',
+  },
 ])
 </script>
 
@@ -30,12 +42,11 @@ const items = ref([
               <Button
                 v-bind="props"
                 append-icon="mdi-chevron-down"
-                variant="text"
+                variant="plain"
               >
                 All Regions
               </Button>
             </template>
-
             <List>
               <ListItem>
                 <ListItemTitle> foo </ListItemTitle>
@@ -47,8 +58,9 @@ const items = ref([
             <template #activator="{ props }">
               <Button
                 v-bind="props"
+                color="textPrimary"
                 append-icon="mdi-chevron-down"
-                variant="text"
+                variant="plain"
               >
                 By years
               </Button>
@@ -63,7 +75,7 @@ const items = ref([
           <Divider class="ma-2" vertical />
           <div class="d-flex align-center">
             <IconButton icon="mdi-chevron-left" />
-            <IconButton icon="mdi-chevron-right" />
+            <IconButton class="mr-2" icon="mdi-chevron-right" />
             <span>2022</span>
           </div>
         </div>
@@ -72,7 +84,7 @@ const items = ref([
         </div>
       </VContainer>
     </VToolbar>
-    <Divider class="mb-8" />
+    <Divider />
     <RouterView />
   </ThemeProvider>
 </template>
