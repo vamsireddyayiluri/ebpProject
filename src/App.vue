@@ -33,7 +33,7 @@ const items = ref([
 
 <template>
   <ThemeProvider>
-    <Header :items="items" />
+    <Header :items="items" sticky />
     <VToolbar :color="'uiBackground'">
       <VContainer class="d-flex justify-space-between px-8" fluid>
         <div class="d-flex ml-n4">
