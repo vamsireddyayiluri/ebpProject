@@ -9,3 +9,90 @@ a {
 p {
   margin-block-end: 1rem;
 }
+
+// global overrides
+.v-btn {
+  text-transform: capitalize !important;
+  transition: none !important;
+}
+
+.v-ripple__container {
+  display: none !important;
+}
+
+.v-card-text,
+.v-card-title {
+  white-space: normal !important;
+}
+
+.v-field__outline__notch {
+  border: none !important;
+}
+
+.v-field--variant-outlined .v-field__outline__start {
+  border-top-left-radius: 4px !important;
+  border-bottom-left-radius: 4px !important;
+}
+
+.v-field--variant-outlined .v-field__outline__end {
+  border-top-right-radius: 4px !important;
+  border-bottom-right-radius: 4px !important;
+}
+
+.v-text-field input {
+  color: rgba(var(--v-theme-textSecondary), 1) !important;
+}
+
+.v-field__input {
+  color: rgba(var(--v-theme-textSecondary), 1) !important;
+}
+
+.v-list-item__prepend > .v-icon {
+  margin-inline-end: 16.5px !important;
+}
+
+.v-field--focused {
+  .v-field__input {
+    color: rgba(var(--v-theme-textPrimary), 1) !important;
+  }
+}
+
+.v-selection-control__input::before {
+  content: none !important;
+}
+
+.v-checkbox .v-selection-control {
+  height: auto !important;
+}
+
+// global styles
+.loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.virtual-table-wrapper {
+  overflow: overlay;
+}
+
+/* Scroll bar stylings */
+/* ::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+  border-radius: 30px;
+}
+
+::-webkit-scrollbar-track {
+  border-radius: 30px;
+  padding: 0 2px 0;
+
+  &:hover {
+    background: rgba(var(--v-theme-uiSecondary-02), 1);
+  }
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(var(--v-theme-iconButton-2), 1);
+  border-radius: 30px;
+}
+ */

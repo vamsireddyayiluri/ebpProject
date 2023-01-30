@@ -3,13 +3,17 @@ import {
   Avatar,
   AverageCard,
   Badge,
+  Card,
   Chip,
   Classification,
   IconButton,
   List,
   ListItem,
   ListItemTitle,
+  Map,
   Menu,
+  Pane,
+  Panes,
   Tooltip,
   Typography,
   VirtualTable,
@@ -20,6 +24,9 @@ import { getAllLines } from '@qualle-admin/qutil/dist/ssl'
 import { uid } from 'uid'
 import { delay } from 'lodash'
 import moment from 'moment-timezone'
+
+import markersFixture from '@/fixtures/markers'
+import imgUrl from '@/assets/icons/default-map-marker.svg'
 
 const lines = getAllLines()
 const statuses = ['approved', 'declined', 'canceled']
@@ -137,6 +144,24 @@ const charts = [
   },
 ]
 
+let { markers } = markRaw({
+  markers: markersFixture,
+})
+
+const mapOptions = markRaw({ zoom: 12, zoomControls: true })
+const mapHeight = `${window.innerHeight - 160}px`
+const onMapLoaded = async ({ api, map }) => console.log({ api, map })
+const onMarkerClick = (e) => console.log(JSON.stringify(e))
+const renderInfoWindow = (marker) => JSON.stringify(marker)
+const renderMarkerIcon = () => imgUrl
+
+const panes = ref([
+  { name: 'content', size: 50 },
+  { name: 'map', size: 50 },
+])
+
+const onSplitPaneClosed = (e) => console.log(e)
+
 const loading = ref(false)
 const showActions = ref(true)
 const showSelect = ref(true)
@@ -157,214 +182,262 @@ const onSelectRow = (e) => console.log(e)
 </script>
 
 <template>
-  <ThemeSwitcher />
-  <VContainer class="px-8" fluid>
-    <VRow>
-      <VCol>
-        <AverageCard
-          v-bind="{
-            message: 'this year',
-            sum: 123,
-            title: 'Amount of street turns per year',
-            increase: false,
-            value: 7,
-          }"
-          :style="{ height: '142.398px' }"
-        />
-      </VCol>
-      <VCol>
-        <AverageCard
-          v-bind="{
-            message: 'this year',
-            sum: 123,
-            title: 'Amount of street turns per year',
-            increase: false,
-            value: 7,
-          }"
-          :style="{ height: '142.398px' }"
-        />
-      </VCol>
-      <VCol>
-        <AverageCard
-          v-bind="{
-            message: 'this year',
-            sum: 123,
-            title:
-              'Average dwell time (days) before empty containers are taken from the marketplace',
-            increase: true,
-            value: 7,
-          }"
-        />
-      </VCol>
-    </VRow>
-    <VRow>
-      <VCol v-for="({ settings, data }, n) in charts" :key="n">
-        <Chart
-          :options="
-            ({ colors, dark }) => ({
-              chart: {
-                type: settings.type,
-                height: 280,
-                background: colors.uiBackground,
-                animations: {
-                  enabled: false,
-                },
-                toolbar: { show: false },
-              },
-              colors: [colors.uiChart],
-              plotOptions: {
-                bar: {
-                  horizontal: settings.horizontal,
-                  ...(settings.horizontal && { barHeight: '20%' }),
-                  borderRadius: 4,
-                  startingShape: 'rounded',
-                  endingShape: 'rounded',
-                  distributed: false,
-                  colors: {
-                    backgroundBarColors: ['transparent'],
-                    backgroundBarOpacity: 0,
-                    backgroundBarRadius: 4,
-                  },
-                },
-              },
-              legend: { show: false },
-              dataLabels: {
-                enabled: settings.showLabels,
-                formatter: (n) => `${n}%`,
-              },
-              grid: {
-                show: true,
-                borderColor: colors.uiLine,
-              },
-              xaxis: {
-                show: true,
-                categories: data.categories,
-                labels: {
-                  show: true,
-                  style: {
-                    colors: colors.textSecondary,
-                  },
-                },
-                axisBorder: { show: true, color: colors.uiLine },
-                axisTicks: { show: true },
-              },
-              yaxis: {
-                show: true,
-                labels: {
-                  show: true,
-                  style: {
-                    colors: colors.textSecondary,
-                  },
-                },
-                axisBorder: { show: true, color: colors.uiLine },
-              },
-              tooltip: {
-                enabled: true,
-                intersect: false,
-                theme: dark,
-              },
-            })
-          "
-          :data="data"
-        />
-      </VCol>
-    </VRow>
-    <VRow>
-      <VCol>
-        <VirtualTable
-          :headers="headers"
-          :options="{
-            rowHeight: 64,
-            showActions,
-            showSelect,
-            tableHeight: 575,
-            tableMinWidth: 960,
-          }"
-          :entities="entities"
-          :loading="loading"
-          @onSelectRow="onSelectRow"
-          @onUpdated="() => {}"
+  <ThemeSwitcher :style="{ position: 'fixed', top: '0', right: '8em' }" />
+  <VContainer class="bg-background ma-0 pa-0" fluid>
+    <Panes :panes="panes" @onSplitPaneClosed="onSplitPaneClosed">
+      <template #content>
+        <VContainer
+          class="bg-background py-0 px-8"
+          :style="{ minWidth: '800px' }"
         >
-          <template #ref="{ item }">
-            <Typography type="text-body-m-regular">{{ item.ref }}</Typography>
-          </template>
-          <template #label="{ item }">
-            <Typography type="text-body-m-regular">{{ item.label }}</Typography>
-          </template>
-          <template #ssl="{ item }">
-            <Typography
-              type="text-body-m-regular text-truncate"
-              :style="{ width: '5rem' }"
-            >
-              {{ item.ssl }}
-              <Tooltip>
-                {{ item.ssl }}
-              </Tooltip>
-            </Typography>
-          </template>
-          <template #expiry="{ item }">
-            <Typography type="text-body-m-regular">{{
-              item.expiry
-            }}</Typography>
-          </template>
-          <template #status="{ item }">
-            <Classification
-              type="status"
-              density="compact"
-              :value="item.status"
-            />
-          </template>
-          <template #truckers="{ item }">
-            <Chip
-              class="mr-1"
-              v-for="trucker in item.truckers"
-              :key="trucker"
-              avatar
-              size="small"
-            >
-              <Avatar start />
-              {{ trucker }}
-            </Chip>
-            <Typography type="text-body-xs-semibold text-truncate"
-              >+3 truckers</Typography
-            >
-          </template>
-          <template #actions="{ item, selected }">
-            <Menu location="bottom end" offset="3">
-              <template #activator="{ props, isActive }">
-                <IconButton
-                  v-bind="props"
-                  icon="mdi-dots-horizontal"
-                  variant="plain"
-                  :focused="isActive"
+          <VRow>
+            <VCol>
+              <AverageCard
+                v-bind="{
+                  message: 'this year',
+                  sum: 123,
+                  title: 'Amount of street turns per year',
+                  increase: false,
+                  value: 7,
+                }"
+                :style="{ height: '142.398px' }"
+              />
+            </VCol>
+            <VCol>
+              <AverageCard
+                v-bind="{
+                  message: 'this year',
+                  sum: 123,
+                  title: 'Amount of street turns per year',
+                  increase: false,
+                  value: 7,
+                }"
+                :style="{ height: '142.398px' }"
+              />
+            </VCol>
+            <VCol>
+              <AverageCard
+                v-bind="{
+                  message: 'this year',
+                  sum: 123,
+                  title: 'Average marketplace dwell time (days)',
+                  increase: true,
+                  value: 7,
+                }"
+                :style="{ height: '142.398px' }"
+              />
+            </VCol>
+          </VRow>
+          <VRow>
+            <VCol v-for="({ settings, data }, n) in charts" :key="n">
+              <Card bg-color="uiSecondary-01" elevation="0">
+                <Chart
+                  :options="
+                    ({ colors, dark }) => ({
+                      chart: {
+                        type: settings.type,
+                        height: 280,
+                        // background: colors.uiBackground,
+                        animations: {
+                          enabled: false,
+                        },
+                        toolbar: { show: false },
+                      },
+                      colors: [colors.uiChart],
+                      plotOptions: {
+                        bar: {
+                          horizontal: settings.horizontal,
+                          ...(settings.horizontal && { barHeight: '20%' }),
+                          borderRadius: 4,
+                          startingShape: 'rounded',
+                          endingShape: 'rounded',
+                          distributed: false,
+                          colors: {
+                            backgroundBarColors: ['transparent'],
+                            backgroundBarOpacity: 0,
+                            backgroundBarRadius: 4,
+                          },
+                        },
+                      },
+                      legend: { show: false },
+                      dataLabels: {
+                        enabled: settings.showLabels,
+                        formatter: (n) => `${n}%`,
+                      },
+                      grid: {
+                        show: true,
+                        borderColor: colors.uiLine,
+                      },
+                      xaxis: {
+                        show: true,
+                        categories: data.categories,
+                        labels: {
+                          show: true,
+                          style: {
+                            colors: colors.textSecondary,
+                          },
+                        },
+                        axisBorder: { show: true, color: colors.uiLine },
+                        axisTicks: { show: true },
+                      },
+                      yaxis: {
+                        show: true,
+                        labels: {
+                          show: true,
+                          style: {
+                            colors: colors.textSecondary,
+                          },
+                        },
+                        axisBorder: { show: true, color: colors.uiLine },
+                      },
+                      tooltip: {
+                        enabled: true,
+                        intersect: false,
+                        theme: dark,
+                      },
+                    })
+                  "
+                  :data="data"
                 />
-              </template>
+              </Card>
+            </VCol>
+          </VRow>
+          <VRow>
+            <VCol>
+              <VirtualTable
+                :headers="headers"
+                :options="{
+                  rowHeight: 64,
+                  showActions,
+                  showSelect,
+                  tableHeight: 575,
+                  tableMinWidth: 960,
+                }"
+                :entities="entities"
+                :loading="loading"
+                @onSelectRow="onSelectRow"
+                @onUpdated="() => {}"
+              >
+                <template #ref="{ item }">
+                  <Typography type="text-body-m-regular">{{
+                    item.ref
+                  }}</Typography>
+                </template>
+                <template #label="{ item }">
+                  <Typography type="text-body-m-regular">{{
+                    item.label
+                  }}</Typography>
+                </template>
+                <template #ssl="{ item }">
+                  <Typography
+                    type="text-body-m-regular text-truncate"
+                    :style="{ width: '5rem' }"
+                  >
+                    {{ item.ssl }}
+                    <Tooltip>
+                      {{ item.ssl }}
+                    </Tooltip>
+                  </Typography>
+                </template>
+                <template #expiry="{ item }">
+                  <Typography type="text-body-m-regular">{{
+                    item.expiry
+                  }}</Typography>
+                </template>
+                <template #status="{ item }">
+                  <Classification
+                    type="status"
+                    density="compact"
+                    :value="item.status"
+                  />
+                </template>
+                <template #truckers="{ item }">
+                  <Chip
+                    class="mr-1"
+                    v-for="trucker in item.truckers"
+                    :key="trucker"
+                    avatar
+                    size="small"
+                  >
+                    <Avatar start />
+                    {{ trucker }}
+                  </Chip>
+                  <Typography type="text-body-xs-semibold text-truncate"
+                    >+3 truckers</Typography
+                  >
+                </template>
+                <template #actions="{ item, selected }">
+                  <Menu location="bottom end" offset="3">
+                    <template #activator="{ props, isActive }">
+                      <IconButton
+                        v-bind="props"
+                        icon="mdi-dots-horizontal"
+                        variant="plain"
+                        :focused="isActive"
+                      />
+                    </template>
 
-              <List>
-                <ListItem
-                  v-for="({ action, color, icon, label }, n) in actions"
-                  :color="color"
-                  :icon="icon"
-                  :key="n"
-                  @click="onAction(selected.length ? selected : [item], action)"
-                >
-                  <ListItemTitle :color="color">
-                    {{ label }}
-                    <Badge
-                      v-if="selected.length"
-                      color="uiInteractive"
-                      :content="selected.length"
-                      inline
-                    />
-                  </ListItemTitle>
-                </ListItem>
-              </List>
-            </Menu>
-          </template>
-        </VirtualTable>
-      </VCol>
-    </VRow>
+                    <List>
+                      <ListItem
+                        v-for="({ action, color, icon, label }, n) in actions"
+                        :color="color"
+                        :icon="icon"
+                        :key="n"
+                        @click="
+                          onAction(selected.length ? selected : [item], action)
+                        "
+                      >
+                        <ListItemTitle :color="color">
+                          {{ label }}
+                          <Badge
+                            v-if="selected.length"
+                            color="uiInteractive"
+                            :content="selected.length"
+                            inline
+                          />
+                        </ListItemTitle>
+                      </ListItem>
+                    </List>
+                  </Menu>
+                </template>
+              </VirtualTable>
+            </VCol>
+          </VRow>
+        </VContainer>
+      </template>
+      <template #map>
+        <Map
+          :style="{ height: '1200px' }"
+          :map-options="mapOptions"
+          :markers="markers"
+          :type="type"
+          :render-info-window="renderInfoWindow"
+          :render-marker-icon="renderMarkerIcon"
+          :theme="'dark'"
+          @onMapLoaded="onMapLoaded"
+          @onMarkerClick="onMarkerClick"
+        />
+      </template>
+    </Panes>
   </VContainer>
 </template>
 
-<style scoped></style>
+<style lang="scss">
+.splitpanes {
+  background: transparent !important;
+}
+.splitpanes__pane {
+  height: v-bind(mapHeight) !important;
+  overflow-y: auto;
+}
+
+.google-map-wrapper {
+  height: v-bind(mapHeight) !important;
+}
+
+.styledVCard {
+  justify-content: space-between;
+  display: flex;
+  flex-direction: column;
+}
+</style>
