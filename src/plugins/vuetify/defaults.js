@@ -1,53 +1,89 @@
 export default {
-  /*   VAlert: {
+  global: {
+    ripple: false,
+    rounded: 'sm',
+    transition: 'no-transition',
+  },
+  VAlert: {
     density: 'comfortable',
   },
   VAvatar: {
-    // ℹ️ Remove after next release
+    type: 'info',
     variant: 'flat',
   },
-  VBadge: {
-    // set v-badge default color to primary
-    color: 'primary',
-  },
+  VBadge: {},
   VBtn: {
-    // set v-btn default color to primary
-    color: 'primary',
+    elevation: 0,
+    minWidth: 112,
+  },
+  VBtnGroup: {
+    density: 'default',
+  },
+  VCard: {
+    //
   },
   VChip: {
     elevation: 0,
   },
-  VMenu: {
-    VList: {
-      density: 'compact',
+  VExpansionPanels: {
+    elevation: 0,
+  },
+  VIcon: {
+    // size: 'medium',
+  },
+  VList: {
+    VListItem: {
+      height: 56,
+      rounded: 0,
     },
   },
+  VMenu: {
+    VList: {},
+  },
   VPagination: {
-    activeColor: 'primary',
     density: 'comfortable',
   },
-  VTabs: {
-    // set v-tabs default color to primary
-    color: 'primary',
+  VProgressCircular: {},
+  VRating: {
+    color: 'warning',
+  },
+  VTabs: {},
+  VToolbar: {
+    rounded: 0,
   },
   VTooltip: {
-    // set v-tooltip default location to top
     location: 'top',
   },
 
-  // VList: {
-  //   VListItem: {
-  //     activeColor: 'primary',
-  //   },
-  // },
-  VCheckbox: {
-    // set v-checkbox default color to primary
-    color: 'primary',
+  // form inputs
+  VAutocomplete: {
+    variant: 'outlined',
     density: 'comfortable',
     hideDetails: 'auto',
   },
+  VCombobox: {
+    variant: 'outlined',
+    density: 'comfortable',
+    hideDetails: 'auto',
+  },
+  VFileInput: {
+    variant: 'outlined',
+    density: 'comfortable',
+    hideDetails: 'auto',
+  },
+  VCheckbox: {
+    density: 'comfortable',
+    hideDetails: 'auto',
+  },
+  VCheckboxBtn: {
+    density: 'comfortable',
+  },
+  VRangeSlider: {
+    density: 'comfortable',
+    thumbLabel: true,
+    hideDetails: 'auto',
+  },
   VRadioGroup: {
-    color: 'primary',
     density: 'comfortable',
     hideDetails: 'auto',
   },
@@ -58,62 +94,21 @@ export default {
   VSelect: {
     variant: 'outlined',
     density: 'comfortable',
-    color: 'primary',
+
     hideDetails: 'auto',
   },
-  VRangeSlider: {
-    // set v-range-slider default color to primary
-    color: 'primary',
+  VSwitch: {
+    hideDetails: 'auto',
+    inset: true,
+  },
+  VTextarea: {
+    variant: 'outlined',
     density: 'comfortable',
-    thumbLabel: true,
-    hideDetails: 'auto',
-  },
-  VRating: {
-    // set v-rating default color to primary
-    color: 'warning',
-  },
-  VProgressCircular: {
-    // set v-progress-circular default color to primary
-    color: 'primary',
-  },
-  VSlider: {
-    // set v-slider default color to primary
-    color: 'primary',
     hideDetails: 'auto',
   },
   VTextField: {
     variant: 'outlined',
     density: 'comfortable',
-    color: 'primary',
     hideDetails: 'auto',
   },
-  VAutocomplete: {
-    variant: 'outlined',
-    density: 'comfortable',
-    color: 'primary',
-    hideDetails: 'auto',
-  },
-  VCombobox: {
-    variant: 'outlined',
-    density: 'comfortable',
-    color: 'primary',
-    hideDetails: 'auto',
-  },
-  VFileInput: {
-    variant: 'outlined',
-    density: 'comfortable',
-    color: 'primary',
-    hideDetails: 'auto',
-  },
-  VTextarea: {
-    variant: 'outlined',
-    density: 'comfortable',
-    color: 'primary',
-    hideDetails: 'auto',
-  },
-  VSwitch: {
-    // set v-switch default color to primary
-    color: 'primary',
-    hideDetails: 'auto',
-  }, */
 }
