@@ -9,6 +9,7 @@ import * as components from '@qualle-admin/qui'
 import '@core/scss/libs/vuetify/index.scss'
 import 'vuetify/styles'
 import '@qualle-admin/qui/dist/style.css'
+
 export default createVuetify({
   components,
   defaults,

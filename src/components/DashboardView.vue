@@ -1,25 +1,4 @@
 <script setup>
-import {
-  Avatar,
-  AverageCard,
-  Badge,
-  Card,
-  Chip,
-  Classification,
-  IconButton,
-  List,
-  ListItem,
-  ListItemTitle,
-  Map,
-  Menu,
-  Pane,
-  Panes,
-  Tooltip,
-  Typography,
-  VirtualTable,
-  ThemeSwitcher,
-} from '@qualle-admin/qui'
-
 import { getAllLines } from '@qualle-admin/qutil/dist/ssl'
 import { uid } from 'uid'
 import { delay } from 'lodash'
@@ -27,6 +6,11 @@ import moment from 'moment-timezone'
 
 import markersFixture from '@/fixtures/markers'
 import imgUrl from '@/assets/icons/default-map-marker.svg'
+
+import { useTheme } from 'vuetify'
+
+const theme = useTheme()
+const computedTheme = computed(() => theme.global.name.value)
 
 const lines = getAllLines()
 const statuses = ['approved', 'declined', 'canceled']
@@ -148,7 +132,7 @@ let { markers } = markRaw({
   markers: markersFixture,
 })
 
-const mapOptions = markRaw({ zoom: 12, zoomControls: true })
+const mapOptions = markRaw({ zoom: 3, zoomControls: true })
 const mapHeight = `${window.innerHeight - 130}px`
 const onMapLoaded = async ({ api, map }) => console.log({ api, map })
 const onMarkerClick = (e) => console.log(JSON.stringify(e))
@@ -189,7 +173,7 @@ const onSelectRow = (e) => console.log(e)
         <VContainer
           class="bg-background pl-8 pr-0 pb-4 pt-4"
           fluid
-          :style="{ minWidth: '800px' }"
+          :style="{ minWidth: '960px' }"
         >
           <VRow>
             <VCol>
@@ -235,7 +219,7 @@ const onSelectRow = (e) => console.log(e)
               :key="n"
               cols="6"
             >
-              <Card bg-color="uiSecondary-01" elevation="0">
+              <Card elevation="0">
                 <CardTitle>{{ label }}</CardTitle>
                 <Chart
                   :options="
@@ -310,7 +294,7 @@ const onSelectRow = (e) => console.log(e)
           </VRow>
           <VRow>
             <VCol>
-              <Typography type="text-h1" class="mb-4">Turns</Typography>
+              <Typography type="text-h2" class="mb-4">Turns</Typography>
               <VirtualTable
                 :headers="headers"
                 :options="{
@@ -420,7 +404,7 @@ const onSelectRow = (e) => console.log(e)
           :type="type"
           :render-info-window="renderInfoWindow"
           :render-marker-icon="renderMarkerIcon"
-          :theme="'dark'"
+          :theme="computedTheme"
           @onMapLoaded="onMapLoaded"
           @onMarkerClick="onMarkerClick"
         />
@@ -435,7 +419,11 @@ const onSelectRow = (e) => console.log(e)
 }
 .splitpanes__pane {
   height: v-bind(mapHeight) !important;
-  overflow-y: auto;
+
+  &:hover {
+    overflow: overlay;
+    overflow-y: auto;
+  }
 }
 
 .google-map-wrapper {
