@@ -1,16 +1,4 @@
 <script setup>
-import {
-  Button,
-  Divider,
-  Header,
-  IconButton,
-  List,
-  ListItem,
-  ListItemTitle,
-  Select,
-  ThemeProvider,
-} from '@qualle-admin/qui'
-
 const items = ref([
   {
     name: 'dashboard',
@@ -35,8 +23,8 @@ const items = ref([
   <ThemeProvider>
     <Header :items="items" sticky />
     <VToolbar :color="'uiBackground'">
-      <VContainer class="d-flex justify-space-between px-8" fluid>
-        <div class="d-flex ml-n4">
+      <VContainer class="d-flex justify-space-between mx-4 pa-0" fluid>
+        <div class="d-flex">
           <Menu label="All regions">
             <template #activator="{ props }">
               <Button
@@ -80,7 +68,7 @@ const items = ref([
           </div>
         </div>
         <div>
-          <Button class="mr-n6" prepend-icon="mdi-map-marker">Map</Button>
+          <Button prepend-icon="mdi-map-marker" variant="plain">Map</Button>
         </div>
       </VContainer>
     </VToolbar>
