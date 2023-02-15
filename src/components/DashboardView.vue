@@ -385,7 +385,7 @@ const onAction = (e, action) => {
                           {{ label }}
                           <Badge
                             v-if="selected.length"
-                            :color="getColor('uiInteractive')"
+                            color="uiInteractive"
                             :content="selected.length"
                             inline
                           />
