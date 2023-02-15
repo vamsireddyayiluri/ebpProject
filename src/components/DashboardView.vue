@@ -18,15 +18,15 @@ const statuses = ['approved', 'declined', 'canceled']
 const random = (arr) => arr[Math.floor(Math.random() * arr.length)]
 
 const useData = () =>
-  Array.from(Array(1000).keys()).map((item) => ({
+  useArrayMap(Array.from(Array(1000).keys()), (item) => ({
     id: uid(),
     ref: item,
     label: 42268,
     ssl: random(lines).label,
     expiry: moment().add(item, 'days').format('MM/DD/YYYY'),
     status: random(statuses),
-    truckers: ['default chip', 'default chip'],
-  }))
+    carriers: ['default chip', 'default chip'],
+  })).value
 
 const useHeaders = () => [
   {
@@ -44,6 +44,7 @@ const useHeaders = () => [
     value: 'ssl',
     align: 'start',
     sortable: true,
+    width: 1,
   },
   {
     text: 'Expiry',
@@ -57,8 +58,8 @@ const useHeaders = () => [
     align: 'start',
   },
   {
-    text: 'Truckers',
-    value: 'truckers',
+    text: 'Carriers',
+    value: 'carriers',
     align: 'start',
     width: 4,
   },
@@ -144,7 +145,7 @@ const panes = ref([
   { name: 'map', size: 50 },
 ])
 
-const onSplitPaneClosed = (e) => console.log(e)
+const onSplitPaneClosed = (e) => console.log(JSON.stringify(e))
 
 const loading = ref(false)
 const showActions = ref(true)
@@ -161,8 +162,6 @@ const onAction = (e, action) => {
 
   delay(() => (loading.value = false), 1500)
 }
-
-const onSelectRow = (e) => console.log(e)
 </script>
 
 <template>
@@ -296,32 +295,35 @@ const onSelectRow = (e) => console.log(e)
             <VCol>
               <Typography type="text-h2" class="mb-4">Turns</Typography>
               <VirtualTable
+                :entities="entities"
                 :headers="headers"
+                :loading="loading"
                 :options="{
                   rowHeight: 64,
                   showActions,
                   showSelect,
-                  tableHeight: 448,
+                  tableHeight: 575,
                   tableMinWidth: 960,
                 }"
-                :entities="entities"
-                :loading="loading"
-                @onSelectRow="onSelectRow"
+                @onScroll="() => {}"
+                @onSelectRow="() => {}"
+                @onSort="() => {}"
                 @onUpdated="() => {}"
               >
                 <template #ref="{ item }">
-                  <Typography type="text-body-m-regular">{{
-                    item.ref
-                  }}</Typography>
+                  <Typography type="text-body-m-regular">
+                    {{ item.ref }}
+                  </Typography>
                 </template>
                 <template #label="{ item }">
-                  <Typography type="text-body-m-regular">{{
-                    item.label
-                  }}</Typography>
+                  <Typography type="text-body-m-regular">
+                    {{ item.label }}
+                  </Typography>
                 </template>
                 <template #ssl="{ item }">
                   <Typography
-                    type="text-body-m-regular text-truncate"
+                    class="text-truncate"
+                    type="text-body-m-regular"
                     :style="{ width: '5rem' }"
                   >
                     {{ item.ssl }}
@@ -331,31 +333,30 @@ const onSelectRow = (e) => console.log(e)
                   </Typography>
                 </template>
                 <template #expiry="{ item }">
-                  <Typography type="text-body-m-regular">{{
-                    item.expiry
-                  }}</Typography>
+                  <Typography type="text-body-m-regular">
+                    {{ item.expiry }}
+                  </Typography>
                 </template>
                 <template #status="{ item }">
-                  <Classification
-                    type="status"
-                    density="compact"
-                    :value="item.status"
-                  />
+                  <Classification type="status" :value="item.status" />
                 </template>
-                <template #truckers="{ item }">
+                <template #carriers="{ item }">
                   <Chip
-                    class="mr-1"
-                    v-for="trucker in item.truckers"
+                    v-for="trucker in item.carriers"
                     :key="trucker"
+                    class="mr-1"
                     avatar
                     size="small"
                   >
-                    <Avatar start />
+                    <Avatar size="small" start />
                     {{ trucker }}
                   </Chip>
-                  <Typography type="text-body-xs-semibold text-truncate"
-                    >+3 truckers</Typography
+                  <Typography
+                    class="text-truncate"
+                    type="text-body-xs-semibold"
                   >
+                    +3 carriers
+                  </Typography>
                 </template>
                 <template #actions="{ item, selected }">
                   <Menu location="bottom end" offset="3">
@@ -371,18 +372,20 @@ const onSelectRow = (e) => console.log(e)
                     <List>
                       <ListItem
                         v-for="({ action, color, icon, label }, n) in actions"
-                        :color="color"
-                        :icon="icon"
                         :key="n"
+                        :color="color"
                         @click="
                           onAction(selected.length ? selected : [item], action)
                         "
                       >
+                        <template #prepend>
+                          <Icon :color="color" :icon="icon" />
+                        </template>
                         <ListItemTitle :color="color">
                           {{ label }}
                           <Badge
                             v-if="selected.length"
-                            color="uiInteractive"
+                            :color="getColor('uiInteractive')"
                             :content="selected.length"
                             inline
                           />
@@ -401,7 +404,6 @@ const onSelectRow = (e) => console.log(e)
           :style="{ height: '1200px' }"
           :map-options="mapOptions"
           :markers="markers"
-          :type="type"
           :render-info-window="renderInfoWindow"
           :render-marker-icon="renderMarkerIcon"
           :theme="computedTheme"
