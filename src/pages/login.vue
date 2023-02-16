@@ -13,7 +13,7 @@ const isPasswordVisible = ref(false)
 </script>
 
 <template>
-  <div class="d-flex align-center justify-center pa-4" />
+  <div class="d-flex align-center justify-center pa-4">Login</div>
 </template>
 
 <style lang="scss">
