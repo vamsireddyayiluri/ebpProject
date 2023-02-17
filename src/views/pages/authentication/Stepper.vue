@@ -12,7 +12,14 @@ const emit = defineEmits(['goTo'])
 <template>
   <div class="px-10 mx-auto">
     <div class="d-flex justify-space-between mx-auto position-relative">
-      <div v-for="(s, id, number) in steps" :key="s.step">
+      <div
+        v-for="(s, id, number) in steps"
+        :key="s.step"
+        @click="emit('goTo', id)"
+        @keydown.enter="emit('goTo', id)"
+        tabindex="0"
+        :style="{ cursor: 'pointer' }"
+      >
         <div class="position-relative">
           <Icon
             v-if="activeStep.value > number"
@@ -52,7 +59,6 @@ const emit = defineEmits(['goTo'])
                   : getColor('textSecondary'),
             }"
             class="title"
-            @click="emit('goTo', id)"
           >
             {{ s.title }}
           </Typography>
@@ -87,6 +93,7 @@ const emit = defineEmits(['goTo'])
   position: absolute;
   width: max-content;
   transform: translateX(calc(-50% + 16px));
+  z-index: 2000;
   @media screen and (max-width: 600px) {
     width: 100px;
   }

@@ -6,7 +6,7 @@ export const useAuthStore = defineStore('auth', () => {
   const login = () => {
     setTimeout(() => {
       isLogin.value = true
-      router.push({ name: 'login' })
+      router.push({ name: 'dashboard' })
     }, 500)
   }
 

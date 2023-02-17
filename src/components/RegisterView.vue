@@ -98,10 +98,10 @@ const removeLocation = (locationId) => {
 const onSubmit = () => {
   if (stepper.current.value.isValid()) {
     stepper.goToNext()
-    authStore.login()
     return
   }
   if (stepper.isLast.value) {
+    authStore.login()
     console.log('send', {
       ...form,
       members: members.value,
@@ -126,32 +126,35 @@ const onSubmit = () => {
     <div>
       <VContainer class="pa-0" :style="{ maxWidth: '730px' }">
         <template v-if="stepper.isCurrent('account-information')">
-          <VRow no-gutters class="mt-10 mb-4">
-            <VCol class="mr-4">
+          <VRow no-gutters class="mt-10">
+            <VCol cols="12" sm="6">
               <Textfield
                 type="text"
                 v-model="form.companyName"
                 label="Company name"
                 required
+                class="mx-2 mb-4"
               />
             </VCol>
-            <VCol>
+            <VCol cols="12" sm="6">
               <Textfield
                 type="email"
                 v-model="form.email"
                 label="Email"
                 required
+                class="mx-2 mb-4"
               />
             </VCol>
           </VRow>
           <VResponsive width="100%" />
           <VRow no-gutters>
-            <VCol class="mr-4">
+            <VCol cols="12" sm="6">
               <Textfield
                 v-model="form.password"
                 label="Password"
                 minlength="8"
                 required
+                class="mx-2 mb-3"
                 :type="isPasswordVisible ? 'text' : 'password'"
                 :append-inner-icon="
                   isPasswordVisible ? 'mdi-eye-off-outline' : 'mdi-eye-outline'
@@ -160,21 +163,22 @@ const onSubmit = () => {
               />
               <password-meter :password="form.password" />
             </VCol>
-            <VCol>
+            <VCol cols="12" sm="6">
               <Textfield
                 type="password"
                 v-model="form.confirmPassword"
                 label="Confirm password"
                 minlength="8"
                 required
+                class="mx-2"
               />
             </VCol>
           </VRow>
         </template>
 
         <template v-if="stepper.isCurrent('invite-team-members')">
-          <div class="mt-10 d-flex">
-            <div class="w-100 text-left mr-4">
+          <VRow no-gutters class="mt-10 d-flex">
+            <VCol class="w-100 text-left mr-4" cols="12" sm="">
               <TextFieldWithSelector
                 type="email"
                 label="Email"
@@ -185,16 +189,17 @@ const onSubmit = () => {
                 v-model="newMember.email"
                 @onSelect="onSelectMemberType"
               />
-            </div>
+            </VCol>
             <Button
               variant="outlined"
               type="submit"
               @click.prevent="addMember"
               :disabled="!newMember.email.match(patterns.emailRegex)"
+              class="mt-4 mt-sm-0 mx-auto"
             >
               Add member
             </Button>
-          </div>
+          </VRow>
 
           <MemberItems
             :members="members"
@@ -214,7 +219,7 @@ const onSubmit = () => {
             Add the locations that manage or is partnered with
           </Typography>
           <VRow no-gutters class="mt-10">
-            <VCol cols="5">
+            <VCol cols="12" sm="5">
               <Autocomplete
                 v-model="newLocation.address"
                 :items="selectItems"
@@ -228,14 +233,14 @@ const onSubmit = () => {
                 class="text-left"
               />
             </VCol>
-            <VCol>
+            <VCol cols="12" sm="">
               <Textfield
                 type="text"
                 v-model="newLocation.label"
                 label="Location label"
                 hint="For e.g. Farm label"
                 persistent-hint
-                class="mx-4 text-left"
+                class="mx-0 mx-sm-4 mt-4 mt-sm-0 text-left"
               />
             </VCol>
             <Button
@@ -243,6 +248,7 @@ const onSubmit = () => {
               type="submit"
               @click.prevent="addContainer"
               :disabled="!newLocation.address || !newLocation.label"
+              class="mt-4 mt-sm-0 mx-auto"
             >
               Add
             </Button>
