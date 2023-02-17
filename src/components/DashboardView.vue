@@ -9,6 +9,24 @@ import imgUrl from '@/assets/icons/default-map-marker.svg'
 
 import { useTheme } from 'vuetify'
 
+const items = ref([
+  {
+    name: 'dashboard',
+    icon: 'mdi-home',
+  },
+  {
+    name: 'login',
+    icon: 'mdi-calendar-blank-outline',
+  },
+  {
+    name: 'marketplace',
+    icon: 'mdi-cube-scan',
+  },
+  {
+    name: 'settings',
+    icon: 'mdi-cog',
+  },
+])
 const theme = useTheme()
 const computedTheme = computed(() => theme.global.name.value)
 
@@ -165,6 +183,7 @@ const onAction = (e, action) => {
 </script>
 
 <template>
+  <Header :items="items" sticky />
   <ThemeSwitcher :style="{ position: 'fixed', top: '-4px', right: '9em' }" />
   <VContainer class="bg-background ma-0 pa-0" fluid>
     <Panes :panes="panes" @onSplitPaneClosed="onSplitPaneClosed">

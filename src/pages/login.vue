@@ -1,6 +1,5 @@
 <script setup>
 import { useTheme } from 'vuetify'
-import logo from '@/assets/logo.svg?raw'
 
 const form = ref({
   email: '',
@@ -22,5 +21,5 @@ const isPasswordVisible = ref(false)
 
 <route lang="yaml">
 meta:
-  layout: blank
+  layout: auth
 </route>

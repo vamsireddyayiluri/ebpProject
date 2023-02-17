@@ -9,6 +9,7 @@ declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     DashboardView: typeof import('./components/DashboardView.vue')['default']
     ErrorHeader: typeof import('./@core/components/ErrorHeader.vue')['default']
+    RegisterView: typeof import('./components/RegisterView.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }
