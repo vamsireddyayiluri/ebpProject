@@ -1,6 +1,6 @@
 <script setup>
-import { getColor } from '@/helpers/colors.js'
-import { useAuthStore } from '@/stores/auth.store'
+import { getColor } from '~/helpers/colors'
+import { useAuthStore } from '~/stores/auth.store'
 
 const authStore = useAuthStore()
 const form = ref({
@@ -16,25 +16,40 @@ const onSubmit = () => {
 </script>
 
 <template>
-  <Typography type="text-h1" :style="{ marginTop: '140px' }">
+  <Typography
+    type="text-h1"
+    :style="{ marginTop: '140px' }"
+  >
     Welcome back!
   </Typography>
   <form
     class="mt-10 mx-auto"
-    @submit.prevent="onSubmit"
     :style="{ maxWidth: '360px' }"
+    @submit.prevent="onSubmit"
   >
-    <Textfield type="email" v-model="form.email" label="Email" required />
     <Textfield
-      type="password"
+      v-model="form.email"
+      type="email"
+      label="Email"
+      required
+    />
+    <Textfield
       v-model="form.password"
+      type="password"
       label="Password"
       minlength="8"
       required
       class="mt-4 mb-6"
     />
-    <VRow no-gutters align="center" justify="space-between">
-      <Checkbox label="Remember me" v-model="form.remember" />
+    <VRow
+      no-gutters
+      align="center"
+      justify="space-between"
+    >
+      <Checkbox
+        v-model="form.remember"
+        label="Remember me"
+      />
       <RouterLink :to="{ name: '' }">
         <Typography
           type="text-body-s-semibold"
@@ -54,7 +69,10 @@ const onSubmit = () => {
     </Button>
   </form>
 
-  <VRow no-gutters class="d-flex justify-center align-center mt-4">
+  <VRow
+    no-gutters
+    class="d-flex justify-center align-center mt-4"
+  >
     <Typography
       type="text-body-s-regular"
       :style="{ color: getColor('textSecondary') }"

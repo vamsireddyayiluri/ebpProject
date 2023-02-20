@@ -1,3 +1,3 @@
-import { useThemeColors } from '@/helpers/useThemeColors'
+import { useThemeColors } from '~/helpers/useThemeColors'
 
-export const getColor = (value) => useThemeColors()[value]
+export const getColor = value => useThemeColors()[value]

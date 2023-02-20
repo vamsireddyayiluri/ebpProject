@@ -3,19 +3,14 @@ module.exports = {
     browser: true,
     es2021: true,
   },
-  extends: [
-    '.eslintrc-auto-import.json',
-    'plugin:vue/vue3-recommended',
-    'plugin:import/recommended',
-    'plugin:promise/recommended',
-  ],
+  extends: ['plugin:vue/vue3-recommended', 'plugin:import/recommended'],
   parser: 'vue-eslint-parser',
   parserOptions: {
     ecmaVersion: 13,
     sourceType: 'module',
   },
   plugins: ['vue'],
-  ignorePatterns: ['src/@iconify/*.js', 'node_modules', 'dist', '*.d.ts'],
+  ignorePatterns: ['node_modules', 'dist'],
   rules: {
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
@@ -71,26 +66,7 @@ module.exports = {
         tsx: 'never',
       },
     ],
-
-    // ignore virtual files
-    'import/no-unresolved': [
-      2,
-      {
-        ignore: [
-          '~pages$',
-          'virtual:generated-layouts',
-
-          // Ignore vite's ?raw imports
-          '.*?raw',
-        ],
-      },
-    ],
-
     'no-shadow': 'off',
-
-    // Plugin: eslint-plugin-promise
-    'promise/always-return': 'off',
-    'promise/catch-or-return': 'off',
 
     // ESLint plugin vue
     'vue/block-tag-newline': 'error',
@@ -116,7 +92,7 @@ module.exports = {
 
     // NOTE this rule only supported in SFC,  Users of the unplugin-vue-define-options should disable that rule: https://github.com/vuejs/eslint-plugin-vue/issues/1886
     // 'vue/no-duplicate-attr-inheritance': 'error',
-    'vue/no-empty-component-block': 'error',
+    'vue/no-empty-component-block': 1,
     'vue/no-multiple-objects-in-class': 'error',
     'vue/no-reserved-component-names': 'error',
     'vue/no-template-target-blank': 'error',
@@ -126,6 +102,11 @@ module.exports = {
     'vue/prefer-separate-static-class': 'error',
     'vue/prefer-true-attribute-shorthand': 'error',
     'vue/v-on-function-call': 'error',
+    'vue/no-multiple-template-root': 'off',
+    'vue/no-template-shadow': 'off',
+    'vue/v-on-event-hyphenation': 'off',
+    'vue/require-default-prop': 'off',
+    'vue/no-empty-component-block': 'off',
 
     // -- Extension Rules
     'vue/no-irregular-whitespace': 'error',
@@ -134,16 +115,12 @@ module.exports = {
   settings: {
     'import/resolver': {
       node: {
-        extensions: ['.ts', '.js', '.tsx', '.jsx', '.mjs'],
+        extensions: ['.js', '.mjs'],
       },
       alias: {
-        extensions: ['.ts', '.js', '.tsx', '.jsx', '.mjs'],
+        extensions: ['.js', '.mjs'],
         map: [
-          ['@', './src'],
-          ['@core', './src/@core'],
-          ['@layouts', './src/@layouts'],
-          ['@configured-variables', './src/styles/variables/_template.scss'],
-          ['@axios', './src/plugins/axios'],
+          ['~', './src'],
           ['apexcharts', 'node_modules/apexcharts-clevision'],
         ],
       },

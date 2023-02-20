@@ -2,7 +2,7 @@
  * Return nav link props to use
  * @param {Object, String} item navigation routeName or route Object provided in navigation data
  */
-export const getComputedNavLinkToProp = computed(() => (link) => {
+export const getComputedNavLinkToProp = computed(() => link => {
   const props = {
     target: link.target,
     rel: link.rel,
