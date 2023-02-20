@@ -23,7 +23,7 @@ export default defineConfig({
     Layouts(),
     Components({
       dts: 'src/components.d.ts',
-      dirs: ['src/@core/components', 'src/components'],
+      dirs: ['src/@core/components', 'src/components', 'src/views'],
     }),
     AutoImport({
       imports: ['vue', 'vue-router', '@vueuse/core', 'vue-i18n'],

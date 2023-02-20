@@ -1,7 +1,7 @@
 <script setup>
 import PasswordMeter from 'vue-simple-password-meter'
 import { patterns } from '@qualle-admin/qutil'
-import Stepper from '@/views/pages/authentication/Stepper.vue'
+import Stepper from '@/components/Stepper/Stepper.vue'
 import { getColor } from '@/helpers/colors.js'
 import { useAuthStore } from '@/stores/auth.store'
 
@@ -75,8 +75,12 @@ const removeMember = (memberId) => {
   members.value = members.value.filter((m) => m.id !== memberId)
   memberDialog.value.show(false)
 }
-const onSelectMemberType = (e) => {
-  newMember.type = e
+const onSelectMemberType = (type) => {
+  console.log('1', type)
+  newMember.type = type
+}
+const onChangeMemberType = (e) => {
+  console.log('=>(RegisterView.vue:86) e', e)
 }
 const addContainer = () => {
   locations.value.push({
@@ -206,7 +210,7 @@ const onSubmit = () => {
             is-select
             :selector-data="memberType"
             @onRemove="openRemoveMemberDialog"
-            @onSelect="onSelectMemberType"
+            @onSelect="onChangeMemberType"
           />
         </template>
 
@@ -348,7 +352,7 @@ const onSubmit = () => {
 @use '@core/scss/pages/page-auth.scss';
 
 .button {
-  max-width: 360px;
+  max-width: 360px !important;
   width: 100%;
 }
 .styledTextFieldWithSelector {

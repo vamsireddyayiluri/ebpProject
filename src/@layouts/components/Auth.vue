@@ -8,11 +8,19 @@ import logo from '/src/assets/images/logo.png'
       <img :src="logo" alt="qualle logo" class="logo" />
     </div>
     <div>
+      <slot />
       <RouterView />
     </div>
   </div>
 </template>
 
 <style lang="scss">
-@use '@layouts/styles/_auth.scss';
+.auth-layout {
+  padding: 48px 32px;
+  margin: 0 auto;
+  text-align: center;
+  .logo {
+    height: 36px;
+  }
+}
 </style>

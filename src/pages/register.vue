@@ -1,10 +1,9 @@
-<script setup></script>
+<script setup>
+import { Auth } from '@layouts'
+</script>
 
 <template>
-  <RegisterView />
+  <Auth>
+    <RegisterView />
+  </Auth>
 </template>
-
-<route lang="yaml">
-meta:
-  layout: auth
-</route>
