@@ -11,7 +11,7 @@ declare module '@vue/runtime-core' {
     DashboardView: typeof import('./views/DashboardView.vue')['default']
     ErrorHeader: typeof import('./@core/components/ErrorHeader.vue')['default']
     HomeView: typeof import('./views/HomeView.vue')['default']
-    MemberItems: typeof import('./components/MemberItems/MemberItems.vue')['default']
+    LoginView: typeof import('./views/LoginView.vue')['default']
     RegisterView: typeof import('./views/RegisterView.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
