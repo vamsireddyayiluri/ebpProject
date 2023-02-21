@@ -15,10 +15,6 @@ const items = ref([
     icon: 'mdi-home',
   },
   {
-    name: 'login',
-    icon: 'mdi-calendar-blank-outline',
-  },
-  {
     name: 'marketplace',
     icon: 'mdi-cube-scan',
   },
@@ -183,25 +179,12 @@ const onAction = (e, action) => {
 </script>
 
 <template>
-  <Header
-    :items="items"
-    sticky
-  />
+  <Header :items="items" sticky />
   <ThemeSwitcher :style="{ position: 'fixed', top: '-4px', right: '9em' }" />
-  <VContainer
-    class="bg-background ma-0 pa-0"
-    fluid
-  >
-    <Panes
-      :panes="panes"
-      @onSplitPaneClosed="onSplitPaneClosed"
-    >
+  <VContainer class="bg-background ma-0 pa-0" fluid>
+    <Panes :panes="panes" @onSplitPaneClosed="onSplitPaneClosed">
       <template #content>
-        <VContainer
-          class="bg-background pl-8 pr-0 pb-4 pt-4"
-          fluid
-          :style="{ minWidth: '960px' }"
-        >
+        <VContainer class="bg-background pl-8 pr-0 pb-4 pt-4" fluid :style="{ minWidth: '960px' }">
           <VRow>
             <VCol>
               <AverageCard
@@ -241,11 +224,7 @@ const onAction = (e, action) => {
             </VCol>
           </VRow>
           <VRow>
-            <VCol
-              v-for="({ label, settings, data }, n) in charts"
-              :key="n"
-              cols="6"
-            >
+            <VCol v-for="({ label, settings, data }, n) in charts" :key="n" cols="6">
               <Card elevation="0">
                 <CardTitle>{{ label }}</CardTitle>
                 <Chart
@@ -321,12 +300,7 @@ const onAction = (e, action) => {
           </VRow>
           <VRow>
             <VCol>
-              <Typography
-                type="text-h2"
-                class="mb-4"
-              >
-                Turns
-              </Typography>
+              <Typography type="text-h2" class="mb-4"> Turns </Typography>
               <VirtualTable
                 :entities="entities"
                 :headers="headers"
@@ -371,10 +345,7 @@ const onAction = (e, action) => {
                   </Typography>
                 </template>
                 <template #status="{ item }">
-                  <Classification
-                    type="status"
-                    :value="item.status"
-                  />
+                  <Classification type="status" :value="item.status" />
                 </template>
                 <template #carriers="{ item }">
                   <Chip
@@ -384,24 +355,15 @@ const onAction = (e, action) => {
                     avatar
                     size="small"
                   >
-                    <Avatar
-                      size="small"
-                      start
-                    />
+                    <Avatar size="small" start />
                     {{ trucker }}
                   </Chip>
-                  <Typography
-                    class="text-truncate"
-                    type="text-body-xs-semibold"
-                  >
+                  <Typography class="text-truncate" type="text-body-xs-semibold">
                     +3 carriers
                   </Typography>
                 </template>
                 <template #actions="{ item, selected }">
-                  <Menu
-                    location="bottom end"
-                    offset="3"
-                  >
+                  <Menu location="bottom end" offset="3">
                     <template #activator="{ props, isActive }">
                       <IconButton
                         v-bind="props"
@@ -419,10 +381,7 @@ const onAction = (e, action) => {
                         @click="onAction(selected.length ? selected : [item], action)"
                       >
                         <template #prepend>
-                          <Icon
-                            :color="color"
-                            :icon="icon"
-                          />
+                          <Icon :color="color" :icon="icon" />
                         </template>
                         <ListItemTitle :color="color">
                           {{ label }}
