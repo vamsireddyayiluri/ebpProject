@@ -7,8 +7,10 @@ export {}
 
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
+    AboutView: typeof import('./views/AboutView.vue')['default']
     DashboardView: typeof import('./views/DashboardView.vue')['default']
     ErrorHeader: typeof import('./@core/components/ErrorHeader.vue')['default']
+    HomeView: typeof import('./views/HomeView.vue')['default']
     LoginView: typeof import('./views/LoginView.vue')['default']
     MyAlert: typeof import('./components/MyAlert/MyAlert.vue')['default']
     NewPasswordView: typeof import('./views/NewPasswordView.vue')['default']

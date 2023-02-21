@@ -1,6 +1,6 @@
 <script setup>
-import { getColor } from '@/helpers/colors.js'
-import { useAuthStore } from '@/stores/auth.store'
+import { getColor } from '~/helpers/colors.js'
+import { useAuthStore } from '~/stores/auth.store'
 const form = reactive({
   password: '',
   confirmPassword: '',
@@ -12,10 +12,7 @@ const authStore = useAuthStore()
 const steps = {
   'new-password': {
     title: 'Enter your new password',
-    isValid: () =>
-      form.password &&
-      form.confirmPassword &&
-      form.password === form.confirmPassword,
+    isValid: () => form.password && form.confirmPassword && form.password === form.confirmPassword,
   },
   'reset-successfully': {
     title: 'Password reset successfully',
@@ -38,11 +35,7 @@ const onSubmit = () => {
   <Typography type="text-h1" :style="{ marginTop: '140px' }">
     {{ stepper.current.value.title }}
   </Typography>
-  <form
-    class="mx-auto"
-    @submit.prevent="onSubmit"
-    :style="{ maxWidth: '360px' }"
-  >
+  <form class="mx-auto" @submit.prevent="onSubmit" :style="{ maxWidth: '360px' }">
     <template v-if="stepper.isCurrent('new-password')">
       <Textfield
         v-model="form.password"
@@ -51,9 +44,7 @@ const onSubmit = () => {
         required
         class="mt-10"
         :type="isPasswordVisible ? 'text' : 'password'"
-        :append-inner-icon="
-          isPasswordVisible ? 'mdi-eye-off-outline' : 'mdi-eye-outline'
-        "
+        :append-inner-icon="isPasswordVisible ? 'mdi-eye-off-outline' : 'mdi-eye-outline'"
         @click:append-inner="isPasswordVisible = !isPasswordVisible"
       />
       <Textfield
@@ -64,23 +55,14 @@ const onSubmit = () => {
         required
         class="mt-4 mb-10"
       />
-      <Button
-        type="submit"
-        :disabled="!stepper.current.value.isValid()"
-        class="w-100 mx-auto"
-      >
+      <Button type="submit" :disabled="!stepper.current.value.isValid()" class="w-100 mx-auto">
         Reset password
       </Button>
     </template>
 
     <template v-else>
-      <Typography
-        type="text-body-m-regular"
-        :color="getColor('textSecondary')"
-        class="mt-3 mb-10"
-      >
-        Your password has been successfully reset. Click below to log in into
-        platform.
+      <Typography type="text-body-m-regular" :color="getColor('textSecondary')" class="mt-3 mb-10">
+        Your password has been successfully reset. Click below to log in into platform.
       </Typography>
       <Button type="submit" class="w-100 mx-auto"> Log in </Button>
     </template>

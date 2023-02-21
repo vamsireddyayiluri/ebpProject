@@ -5,13 +5,6 @@ const router = useRouter()
 </script>
 
 <template>
-  <div class="auth-layout">
-    <div>
-      <img
-        :src="logo"
-        alt="qualle logo"
-        class="logo"
-      >
   <div class="authLayout">
     <div class="position-relative">
       <Button
