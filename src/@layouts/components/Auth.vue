@@ -1,10 +1,17 @@
 <script setup>
-import logo from '/src/assets/images/logo.png'
+import logo from '~/assets/images/logo.png'
 
 const router = useRouter()
 </script>
 
 <template>
+  <div class="auth-layout">
+    <div>
+      <img
+        :src="logo"
+        alt="qualle logo"
+        class="logo"
+      >
   <div class="authLayout">
     <div class="position-relative">
       <Button

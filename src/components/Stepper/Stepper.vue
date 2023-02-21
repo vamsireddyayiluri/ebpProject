@@ -1,5 +1,5 @@
 <script setup>
-import { getColor } from '@/helpers/colors.js'
+import { getColor } from '~/helpers/colors'
 
 const props = defineProps({
   steps: Array,
@@ -15,10 +15,10 @@ const emit = defineEmits(['goTo'])
       <div
         v-for="(s, id, number) in steps"
         :key="s.step"
-        @click="emit('goTo', id)"
-        @keydown.enter="emit('goTo', id)"
         tabindex="0"
         :style="{ cursor: 'pointer' }"
+        @click="emit('goTo', id)"
+        @keydown.enter="emit('goTo', id)"
       >
         <div class="position-relative">
           <Icon
@@ -42,9 +42,7 @@ const emit = defineEmits(['goTo'])
                   ? getColor('textInteractive-01')
                   : getColor('textSecondary'),
               borderColor:
-                activeStep.value === number
-                  ? getColor('uiInteractive')
-                  : getColor('uiLine'),
+                activeStep.value === number ? getColor('uiInteractive') : getColor('uiLine'),
             }"
             class="step"
           >
@@ -54,9 +52,7 @@ const emit = defineEmits(['goTo'])
             type="text-body-s-semibold"
             :style="{
               color:
-                activeStep.value === number
-                  ? getColor('textPrimary')
-                  : getColor('textSecondary'),
+                activeStep.value === number ? getColor('textPrimary') : getColor('textSecondary'),
             }"
             class="title"
           >
@@ -64,7 +60,10 @@ const emit = defineEmits(['goTo'])
           </Typography>
         </div>
       </div>
-      <div class="line" :style="{ borderColor: getColor('uiLine') }" />
+      <div
+        class="line"
+        :style="{ borderColor: getColor('uiLine') }"
+      />
     </div>
   </div>
 </template>

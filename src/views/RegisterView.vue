@@ -1,9 +1,9 @@
 <script setup>
 import PasswordMeter from 'vue-simple-password-meter'
 import { patterns } from '@qualle-admin/qutil'
-import Stepper from '@/components/Stepper/Stepper.vue'
-import { getColor } from '@/helpers/colors.js'
-import { useAuthStore } from '@/stores/auth.store'
+import Stepper from '~/components/Stepper/Stepper.vue'
+import { getColor } from '~/helpers/colors'
+import { useAuthStore } from '~/stores/auth.store'
 
 const authStore = useAuthStore()
 const form = reactive({
@@ -58,7 +58,7 @@ const steps = {
 }
 const stepper = useStepper(steps)
 
-const goToStep = (stepId) => {
+const goToStep = stepId => {
   if (stepper.isFirst.value) {
     if (stepper.current.value.isValid()) stepper.goTo(stepId)
   } else stepper.goTo(stepId)
@@ -67,19 +67,19 @@ const addMember = () => {
   members.value.push({ id: newMember.email, value: newMember.email })
   newMember.email = ''
 }
-const openRemoveMemberDialog = (memberId) => {
+const openRemoveMemberDialog = memberId => {
   memberDialog.value.show(true)
-  removedMember.value = members.value.find((m) => m.id === memberId)
+  removedMember.value = useArrayFind(members.value, m => m.id === memberId).value
 }
-const removeMember = (memberId) => {
-  members.value = members.value.filter((m) => m.id !== memberId)
+const removeMember = memberId => {
+  members.value = useArrayFilter(members.value, m => m.id !== memberId).value
   memberDialog.value.show(false)
 }
-const onSelectMemberType = (type) => {
+const onSelectMemberType = type => {
   console.log('1', type)
   newMember.type = type
 }
-const onChangeMemberType = (e) => {
+const onChangeMemberType = e => {
   console.log('=>(RegisterView.vue:86) e', e)
 }
 const addContainer = () => {
@@ -91,17 +91,18 @@ const addContainer = () => {
   newLocation.value.address = null
   newLocation.value.label = ''
 }
-const openRemoveLocationDialog = (locationId) => {
+const openRemoveLocationDialog = locationId => {
   locationDialog.value.show(true)
-  removedLocation.value = locations.value.find((l) => l.id === locationId)
+  removedLocation.value = locations.value.find(l => l.id === locationId)
 }
-const removeLocation = (locationId) => {
-  locations.value = locations.value.filter((l) => l.id !== locationId)
+const removeLocation = locationId => {
+  locations.value = useArrayFilter(locations.value, l => l.id !== locationId).value
   locationDialog.value.show(false)
 }
 const onSubmit = () => {
   if (stepper.current.value.isValid()) {
     stepper.goToNext()
+
     return
   }
   if (stepper.isLast.value) {
@@ -118,32 +119,47 @@ const onSubmit = () => {
 <template>
   <Stepper
     :steps="stepper.steps.value"
-    :activeStep="stepper.index"
-    @goTo="goToStep"
+    :active-step="stepper.index"
     class="mt-10"
     :style="{ maxWidth: '540px' }"
+    @goTo="goToStep"
   />
-  <form class="mt-16" @submit.prevent="onSubmit">
+  <form
+    class="mt-16"
+    @submit.prevent="onSubmit"
+  >
     <Typography type="text-h1">
       {{ stepper.current.value.title }}
     </Typography>
     <div>
-      <VContainer class="pa-0" :style="{ maxWidth: '730px' }">
+      <VContainer
+        class="pa-0"
+        :style="{ maxWidth: '730px' }"
+      >
         <template v-if="stepper.isCurrent('account-information')">
-          <VRow no-gutters class="mt-10">
-            <VCol cols="12" sm="6">
+          <VRow
+            no-gutters
+            class="mt-10"
+          >
+            <VCol
+              cols="12"
+              sm="6"
+            >
               <Textfield
+                v-model.trim="form.companyName"
                 type="text"
-                v-model="form.companyName"
                 label="Company name"
                 required
                 class="mx-2 mb-4"
               />
             </VCol>
-            <VCol cols="12" sm="6">
+            <VCol
+              cols="12"
+              sm="6"
+            >
               <Textfield
+                v-model.trim="form.email"
                 type="email"
-                v-model="form.email"
                 label="Email"
                 required
                 class="mx-2 mb-4"
@@ -152,7 +168,10 @@ const onSubmit = () => {
           </VRow>
           <VResponsive width="100%" />
           <VRow no-gutters>
-            <VCol cols="12" sm="6">
+            <VCol
+              cols="12"
+              sm="6"
+            >
               <Textfield
                 v-model="form.password"
                 label="Password"
@@ -160,17 +179,18 @@ const onSubmit = () => {
                 required
                 class="mx-2 mb-3"
                 :type="isPasswordVisible ? 'text' : 'password'"
-                :append-inner-icon="
-                  isPasswordVisible ? 'mdi-eye-off-outline' : 'mdi-eye-outline'
-                "
+                :append-inner-icon="isPasswordVisible ? 'mdi-eye-off-outline' : 'mdi-eye-outline'"
                 @click:append-inner="isPasswordVisible = !isPasswordVisible"
               />
-              <password-meter :password="form.password" />
+              <PasswordMeter :password="form.password" />
             </VCol>
-            <VCol cols="12" sm="6">
+            <VCol
+              cols="12"
+              sm="6"
+            >
               <Textfield
-                type="password"
                 v-model="form.confirmPassword"
+                type="password"
                 label="Confirm password"
                 minlength="8"
                 required
@@ -181,25 +201,32 @@ const onSubmit = () => {
         </template>
 
         <template v-if="stepper.isCurrent('invite-team-members')">
-          <VRow no-gutters class="mt-10 d-flex">
-            <VCol class="w-100 text-left mr-4" cols="12" sm="">
+          <VRow
+            no-gutters
+            class="mt-10 d-flex"
+          >
+            <VCol
+              class="w-100 text-left mr-4"
+              cols="12"
+              sm=""
+            >
               <TextFieldWithSelector
+                v-model="newMember.email"
                 type="email"
                 label="Email"
                 :items="memberType"
-                itemTitle="label"
-                itemValue="id"
-                returnObject="true"
-                v-model="newMember.email"
+                item-title="label"
+                item-value="id"
+                return-object="true"
                 @onSelect="onSelectMemberType"
               />
             </VCol>
             <Button
               variant="outlined"
               type="submit"
-              @click.prevent="addMember"
               :disabled="!newMember.email.match(patterns.emailRegex)"
               class="mt-4 mt-sm-0 mx-auto"
+              @click.prevent="addMember"
             >
               Add member
             </Button>
@@ -222,25 +249,34 @@ const onSubmit = () => {
           >
             Add the locations that manage or is partnered with
           </Typography>
-          <VRow no-gutters class="mt-10">
-            <VCol cols="12" sm="5">
+          <VRow
+            no-gutters
+            class="mt-10"
+          >
+            <VCol
+              cols="12"
+              sm="5"
+            >
               <Autocomplete
                 v-model="newLocation.address"
                 :items="selectItems"
                 label="Address"
                 hint="For e.g. 2972 Westheimer Santa Ana, Illinois"
                 persistent-hint
-                itemTitle="label"
-                itemValue="id"
-                returnObject
+                item-title="label"
+                item-value="id"
+                return-object
                 prepend-icon="mdi-map"
                 class="text-left"
               />
             </VCol>
-            <VCol cols="12" sm="">
+            <VCol
+              cols="12"
+              sm=""
+            >
               <Textfield
-                type="text"
                 v-model="newLocation.label"
+                type="text"
                 label="Location label"
                 hint="For e.g. Farm label"
                 persistent-hint
@@ -250,9 +286,9 @@ const onSubmit = () => {
             <Button
               variant="outlined"
               type="submit"
-              @click.prevent="addContainer"
               :disabled="!newLocation.address || !newLocation.label"
               class="mt-4 mt-sm-0 mx-auto"
+              @click.prevent="addContainer"
             >
               Add
             </Button>
@@ -260,9 +296,9 @@ const onSubmit = () => {
           <VRow no-gutters>
             <LocationItems
               :locations="locations"
-              isCloseBtn
-              @onRemove="openRemoveLocationDialog"
+              is-close-btn
               :style="{ width: '100%' }"
+              @onRemove="openRemoveLocationDialog"
             />
           </VRow>
         </template>
@@ -277,7 +313,11 @@ const onSubmit = () => {
         >
           Next
         </Button>
-        <Button v-if="stepper.isLast.value" type="submit" class="button">
+        <Button
+          v-if="stepper.isLast.value"
+          type="submit"
+          class="button"
+        >
           Create workspace
         </Button>
 
@@ -306,18 +346,29 @@ const onSubmit = () => {
   </form>
 
   <template>
-    <Dialog ref="memberDialog" width="50%" minWidth="400px">
+    <Dialog
+      ref="memberDialog"
+      width="50%"
+      min-width="400px"
+    >
       <template #text>
         <div class="pa-0">
           Are you sure you want to remove
-          <Typography type="text-body-m-semibold" class="d-inline">
+          <Typography
+            type="text-body-m-semibold"
+            class="d-inline"
+          >
             Member {{ removedMember.value }}
           </Typography>
           from the team?
         </div>
       </template>
       <template #actions>
-        <Button block variant="plain" @click="removeMember(removedMember.id)">
+        <Button
+          block
+          variant="plain"
+          @click="removeMember(removedMember.id)"
+        >
           Remove
         </Button>
       </template>
@@ -325,11 +376,18 @@ const onSubmit = () => {
   </template>
 
   <template>
-    <Dialog ref="locationDialog" width="50%" minWidth="400px">
+    <Dialog
+      ref="locationDialog"
+      width="50%"
+      min-width="400px"
+    >
       <template #text>
         <div class="pa-0">
           Are you sure you want to remove Good location
-          <Typography type="text-body-m-semibold" class="d-inline">
+          <Typography
+            type="text-body-m-semibold"
+            class="d-inline"
+          >
             {{ removedLocation.value }}
           </Typography>
           from your locations?
