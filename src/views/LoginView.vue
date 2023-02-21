@@ -35,7 +35,7 @@ const onSubmit = () => {
     />
     <VRow no-gutters align="center" justify="space-between">
       <Checkbox label="Remember me" v-model="form.remember" />
-      <RouterLink :to="{ name: '' }">
+      <RouterLink :to="{ name: 'reset-password' }">
         <Typography
           type="text-body-s-semibold"
           :style="{ color: getColor('textInteractive-01') }"
