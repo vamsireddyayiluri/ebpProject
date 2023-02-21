@@ -4,21 +4,35 @@ import { uid } from 'uid'
 import { delay } from 'lodash'
 import moment from 'moment-timezone'
 
-import markersFixture from '@/fixtures/markers'
-import imgUrl from '@/assets/icons/default-map-marker.svg'
+import markersFixture from '~/fixtures/markers'
+import imgUrl from '~/assets/icons/default-map-marker.svg'
 
 import { useTheme } from 'vuetify'
 
+const items = ref([
+  {
+    name: 'dashboard',
+    icon: 'mdi-home',
+  },
+  {
+    name: 'marketplace',
+    icon: 'mdi-cube-scan',
+  },
+  {
+    name: 'settings',
+    icon: 'mdi-cog',
+  },
+])
 const theme = useTheme()
 const computedTheme = computed(() => theme.global.name.value)
 
 const lines = getAllLines()
 const statuses = ['approved', 'declined', 'canceled']
 
-const random = (arr) => arr[Math.floor(Math.random() * arr.length)]
+const random = arr => arr[Math.floor(Math.random() * arr.length)]
 
 const useData = () =>
-  useArrayMap(Array.from(Array(1000).keys()), (item) => ({
+  useArrayMap(Array.from(Array(1000).keys()), item => ({
     id: uid(),
     ref: item,
     label: 42268,
@@ -136,8 +150,8 @@ let { markers } = markRaw({
 const mapOptions = markRaw({ zoom: 3, zoomControls: true })
 const mapHeight = `${window.innerHeight - 130}px`
 const onMapLoaded = async ({ api, map }) => console.log({ api, map })
-const onMarkerClick = (e) => console.log(JSON.stringify(e))
-const renderInfoWindow = (marker) => JSON.stringify(marker)
+const onMarkerClick = e => console.log(JSON.stringify(e))
+const renderInfoWindow = marker => JSON.stringify(marker)
 const renderMarkerIcon = () => imgUrl
 
 const panes = ref([
@@ -145,7 +159,7 @@ const panes = ref([
   { name: 'map', size: 50 },
 ])
 
-const onSplitPaneClosed = (e) => console.log(JSON.stringify(e))
+const onSplitPaneClosed = e => console.log(JSON.stringify(e))
 
 const loading = ref(false)
 const showActions = ref(true)
@@ -165,15 +179,12 @@ const onAction = (e, action) => {
 </script>
 
 <template>
+  <Header :items="items" sticky />
   <ThemeSwitcher :style="{ position: 'fixed', top: '-4px', right: '9em' }" />
   <VContainer class="bg-background ma-0 pa-0" fluid>
     <Panes :panes="panes" @onSplitPaneClosed="onSplitPaneClosed">
       <template #content>
-        <VContainer
-          class="bg-background pl-8 pr-0 pb-4 pt-4"
-          fluid
-          :style="{ minWidth: '960px' }"
-        >
+        <VContainer class="bg-background pl-8 pr-0 pb-4 pt-4" fluid :style="{ minWidth: '960px' }">
           <VRow>
             <VCol>
               <AverageCard
@@ -213,11 +224,7 @@ const onAction = (e, action) => {
             </VCol>
           </VRow>
           <VRow>
-            <VCol
-              v-for="({ label, settings, data }, n) in charts"
-              :key="n"
-              cols="6"
-            >
+            <VCol v-for="({ label, settings, data }, n) in charts" :key="n" cols="6">
               <Card elevation="0">
                 <CardTitle>{{ label }}</CardTitle>
                 <Chart
@@ -251,7 +258,7 @@ const onAction = (e, action) => {
                       legend: { show: false },
                       dataLabels: {
                         enabled: settings.showLabels,
-                        formatter: (n) => `${n}%`,
+                        formatter: n => `${n}%`,
                       },
                       grid: {
                         show: true,
@@ -293,7 +300,7 @@ const onAction = (e, action) => {
           </VRow>
           <VRow>
             <VCol>
-              <Typography type="text-h2" class="mb-4">Turns</Typography>
+              <Typography type="text-h2" class="mb-4"> Turns </Typography>
               <VirtualTable
                 :entities="entities"
                 :headers="headers"
@@ -351,10 +358,7 @@ const onAction = (e, action) => {
                     <Avatar size="small" start />
                     {{ trucker }}
                   </Chip>
-                  <Typography
-                    class="text-truncate"
-                    type="text-body-xs-semibold"
-                  >
+                  <Typography class="text-truncate" type="text-body-xs-semibold">
                     +3 carriers
                   </Typography>
                 </template>
@@ -374,9 +378,7 @@ const onAction = (e, action) => {
                         v-for="({ action, color, icon, label }, n) in actions"
                         :key="n"
                         :color="color"
-                        @click="
-                          onAction(selected.length ? selected : [item], action)
-                        "
+                        @click="onAction(selected.length ? selected : [item], action)"
                       >
                         <template #prepend>
                           <Icon :color="color" :icon="icon" />

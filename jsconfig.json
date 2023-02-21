@@ -15,7 +15,7 @@
     "moduleResolution": "node",
     "jsx": "preserve",
     "paths": {
-      "@/*": ["src/*"],
+      "~/*": ["src/*"],
       "@layouts/*": ["src/@layouts/*"],
       "@layouts": ["src/@layouts"],
       "@core/*": ["src/@core/*"],

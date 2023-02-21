@@ -1,9 +1,9 @@
-import App from '@/App.vue'
-import router from '@/router'
-import vuetify from '@/plugins/vuetify'
-import { loadFonts } from '@/plugins/webfontloader'
+import App from '~/App.vue'
+import router from '~/router'
+import vuetify from '~/plugins/vuetify'
+import { loadFonts } from '~/plugins/webfontloader'
 
-import '@/styles/styles.scss'
+import '~/styles/styles.scss'
 import '@core/scss/index.scss'
 
 import { createApp } from 'vue'

@@ -4,6 +4,6 @@ import { Auth } from '@layouts'
 
 <template>
   <Auth>
-    <LoginView />
+    <NewPasswordView />
   </Auth>
 </template>
