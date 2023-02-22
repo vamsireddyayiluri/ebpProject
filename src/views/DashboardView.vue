@@ -1,5 +1,6 @@
 <script setup>
 import { getAllLines } from '@qualle-admin/qutil/dist/ssl'
+import { getColor } from '~/helpers/colors.js'
 import { uid } from 'uid'
 import { delay } from 'lodash'
 import moment from 'moment-timezone'
@@ -23,6 +24,9 @@ const items = ref([
     icon: 'mdi-cog',
   },
 ])
+const regions = ref(['All regions', 'SW USA', 'SE USA', 'NW USA', 'NE USA'])
+const years = ref(['By years', 'By month', 'By weeks'])
+
 const theme = useTheme()
 const computedTheme = computed(() => theme.global.name.value)
 
@@ -103,52 +107,50 @@ const useActions = () => [
   },
 ]
 
-const charts = [
-  {
-    label: 'Turns by market',
-    settings: { horizontal: true, type: 'bar', showLabels: false },
-    data: {
-      categories: [
-        'LA/LGB',
-        'NJ/NEWARK',
-        'TX/HOUSTON',
-        'GA/SAVANNAH',
-        'SF/OAKLAND',
-        'NW/SEATTLE',
-        'LA/LGB',
-      ],
-      series: [{ data: [140, 90, 95, 130, 170, 105, 120] }],
-    },
+const charts = {
+  label: 'Turns by market',
+  settings: { horizontal: true, type: 'bar', showLabels: false },
+  data: {
+    categories: [
+      'LA/LGB',
+      'NJ/NEWARK',
+      'TX/HOUSTON',
+      'GA/SAVANNAH',
+      'SF/OAKLAND',
+      'NW/SEATTLE',
+      'LA/LGB',
+    ],
+    series: [{ data: [140, 90, 95, 130, 170, 105, 120] }],
   },
-  {
-    label: 'Ranking by street turns',
-    settings: { type: 'area', showLabels: false },
-    data: {
-      categories: [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec',
-      ],
-      series: [{ data: [20, 50, 40, 70, 50, 90, 40, 100, 80, 120, 70, 140] }],
-    },
-  },
-]
+}
 
+const rankingData = ref({
+  Exporters: [
+    { label: 'General Motors', value: 700 },
+    { label: 'American Chung Nam', value: 600 },
+    { label: 'Koch Industries', value: 550 },
+  ],
+  'Exporters 2': [
+    { label: 'Louis Dreyfus Company', value: 500 },
+    { label: 'DeLong', value: 400 },
+    { label: 'International Paper', value: 370 },
+  ],
+  'Exporters 3': [
+    { label: 'Shintech', value: 370 },
+    { label: 'General Motors', value: 350 },
+    { label: 'Georgia Pacific', value: 300 },
+  ],
+})
+
+const onDownload = e => console.log(e)
+const onExpand = e => console.log(e)
+const onSelectRank = e => console.log(e)
 let { markers } = markRaw({
   markers: markersFixture,
 })
 
 const mapOptions = markRaw({ zoom: 3, zoomControls: true })
-const mapHeight = `${window.innerHeight - 130}px`
+const mapHeight = `${window.innerHeight - 121}px`
 const onMapLoaded = async ({ api, map }) => console.log({ api, map })
 const onMarkerClick = e => console.log(JSON.stringify(e))
 const renderInfoWindow = marker => JSON.stringify(marker)
@@ -176,267 +178,315 @@ const onAction = (e, action) => {
 
   delay(() => (loading.value = false), 1500)
 }
+const onSelect = () => {
+  console.log('select')
+}
 </script>
 
 <template>
-  <Header :items="items" sticky />
-  <ThemeSwitcher :style="{ position: 'fixed', top: '-4px', right: '9em' }" />
-  <VContainer class="bg-background ma-0 pa-0" fluid>
-    <Panes :panes="panes" @onSplitPaneClosed="onSplitPaneClosed">
-      <template #content>
-        <VContainer class="bg-background pl-8 pr-0 pb-4 pt-4" fluid :style="{ minWidth: '960px' }">
-          <VRow>
-            <VCol>
-              <AverageCard
-                v-bind="{
-                  message: 'this year',
-                  sum: 123,
-                  title: 'Amount of street turns per year',
-                  increase: false,
-                  value: 7,
-                }"
-                :style="{ height: '142.398px' }"
-              />
-            </VCol>
-            <VCol>
-              <AverageCard
-                v-bind="{
-                  message: 'this year',
-                  sum: 123,
-                  title: 'Amount of street turns per year',
-                  increase: false,
-                  value: 7,
-                }"
-                :style="{ height: '142.398px' }"
-              />
-            </VCol>
-            <VCol>
-              <AverageCard
-                v-bind="{
-                  message: 'this year',
-                  sum: 123,
-                  title: 'Average marketplace dwell time (days)',
-                  increase: true,
-                  value: 7,
-                }"
-                :style="{ height: '142.398px' }"
-              />
-            </VCol>
-          </VRow>
-          <VRow>
-            <VCol v-for="({ label, settings, data }, n) in charts" :key="n" cols="6">
-              <Card elevation="0">
-                <CardTitle>{{ label }}</CardTitle>
-                <Chart
-                  :options="
-                    ({ colors, dark }) => ({
-                      chart: {
-                        type: settings.type,
-                        height: 280,
-                        // background: colors.uiBackground,
-                        animations: {
-                          enabled: false,
-                        },
-                        toolbar: { show: false },
-                      },
-                      colors: [colors.uiChart],
-                      plotOptions: {
-                        bar: {
-                          horizontal: settings.horizontal,
-                          ...(settings.horizontal && { barHeight: '20%' }),
-                          borderRadius: 4,
-                          startingShape: 'rounded',
-                          endingShape: 'rounded',
-                          distributed: false,
-                          colors: {
-                            backgroundBarColors: ['transparent'],
-                            backgroundBarOpacity: 0,
-                            backgroundBarRadius: 4,
-                          },
-                        },
-                      },
-                      legend: { show: false },
-                      dataLabels: {
-                        enabled: settings.showLabels,
-                        formatter: n => `${n}%`,
-                      },
-                      grid: {
-                        show: true,
-                        borderColor: colors.uiLine,
-                      },
-                      xaxis: {
-                        show: true,
-                        categories: data.categories,
-                        labels: {
-                          show: true,
-                          style: {
-                            colors: colors.textSecondary,
-                          },
-                        },
-                        axisBorder: { show: true, color: colors.uiLine },
-                        axisTicks: { show: true },
-                      },
-                      yaxis: {
-                        show: true,
-                        labels: {
-                          show: true,
-                          style: {
-                            colors: colors.textSecondary,
-                          },
-                        },
-                        axisBorder: { show: true, color: colors.uiLine },
-                      },
-                      tooltip: {
-                        enabled: true,
-                        intersect: false,
-                        theme: dark,
-                      },
-                    })
-                  "
-                  :data="data"
+  <div class="dashboardView">
+    <Header :items="items" sticky />
+    <SubHeader class="overflow-visible">
+      <template #controls>
+        <SimpleSelect :items="regions" :selected="regions[0]" />
+        <Divider vertical class="my-2 mx-4" />
+        <SimpleSelect :items="years" @onSelect="onSelect" />
+        <Divider vertical class="my-2 mx-4" />
+        <div class="d-flex align-center">
+          <IconButton icon="mdi-chevron-left" />
+          <IconButton class="mr-2" icon="mdi-chevron-right" />
+          <Typography type="text-body-s-regular" :color="getColor('textSecondary')">
+            2022
+          </Typography>
+        </div>
+      </template>
+      <template #actions>
+        <RouterLink :to="{}" @click="goToMap">
+          <Button prepend-icon="mdi-map-marker" variant="plain" secondary="true"> Map</Button>
+        </RouterLink>
+      </template>
+    </SubHeader>
+    <ThemeSwitcher :style="{ position: 'absolute', top: '-4px', right: '9em' }" />
+    <VContainer class="bg-background ma-0 pa-0" fluid>
+      <Panes :panes="panes" @onSplitPaneClosed="onSplitPaneClosed">
+        <template #content>
+          <VContainer
+            class="bg-background pl-8 pr-0 pb-6 pt-10"
+            fluid
+            :style="{ minWidth: '960px' }"
+          >
+            <VRow no-gutters class="gap-5">
+              <VCol>
+                <AverageCard
+                  v-bind="{
+                    message: 'this year',
+                    sum: 123,
+                    title: 'Amount of street turns per year',
+                    increase: false,
+                    value: 7,
+                  }"
                 />
-              </Card>
-            </VCol>
-          </VRow>
-          <VRow>
-            <VCol>
-              <Typography type="text-h2" class="mb-4"> Turns </Typography>
-              <VirtualTable
-                :entities="entities"
-                :headers="headers"
-                :loading="loading"
-                :options="{
-                  rowHeight: 64,
-                  showActions,
-                  showSelect,
-                  tableHeight: 575,
-                  tableMinWidth: 960,
-                }"
-                @onScroll="() => {}"
-                @onSelectRow="() => {}"
-                @onSort="() => {}"
-                @onUpdated="() => {}"
-              >
-                <template #ref="{ item }">
-                  <Typography type="text-body-m-regular">
-                    {{ item.ref }}
-                  </Typography>
-                </template>
-                <template #label="{ item }">
-                  <Typography type="text-body-m-regular">
-                    {{ item.label }}
-                  </Typography>
-                </template>
-                <template #ssl="{ item }">
-                  <Typography
-                    class="text-truncate"
-                    type="text-body-m-regular"
-                    :style="{ width: '5rem' }"
-                  >
-                    {{ item.ssl }}
-                    <Tooltip>
+              </VCol>
+              <VCol>
+                <AverageCard
+                  v-bind="{
+                    message: 'this year',
+                    sum: 123,
+                    title: 'Amount of street turns per year',
+                    increase: false,
+                    value: 7,
+                  }"
+                />
+              </VCol>
+              <VCol>
+                <AverageCard
+                  v-bind="{
+                    message: 'this year',
+                    sum: 123,
+                    title: 'Average marketplace dwell time (days)',
+                    increase: true,
+                    value: 7,
+                  }"
+                />
+              </VCol>
+            </VRow>
+            <VRow no-gutters class="my-10 gap-5">
+              <VCol>
+                <Card elevation="0">
+                  <CardTitle>{{ charts.label }}</CardTitle>
+                  <Chart
+                    :options="
+                      ({ colors, dark }) => ({
+                        chart: {
+                          type: charts.settings.type,
+                          height: 280,
+                          // background: colors.uiBackground,
+                          animations: {
+                            enabled: false,
+                          },
+                          toolbar: { show: false },
+                        },
+                        colors: [colors.uiChart],
+                        plotOptions: {
+                          bar: {
+                            horizontal: charts.settings.horizontal,
+                            ...(charts.settings.horizontal && { barHeight: '20%' }),
+                            borderRadius: 4,
+                            startingShape: 'rounded',
+                            endingShape: 'rounded',
+                            distributed: false,
+                            colors: {
+                              backgroundBarColors: ['transparent'],
+                              backgroundBarOpacity: 0,
+                              backgroundBarRadius: 4,
+                            },
+                          },
+                        },
+                        legend: { show: false },
+                        dataLabels: {
+                          enabled: charts.settings.showLabels,
+                          formatter: n => `${n}%`,
+                        },
+                        grid: {
+                          show: true,
+                          borderColor: colors.uiLine,
+                        },
+                        xaxis: {
+                          show: true,
+                          categories: charts.data.categories,
+                          labels: {
+                            show: true,
+                            style: {
+                              colors: colors.textSecondary,
+                            },
+                          },
+                          axisBorder: { show: true, color: colors.uiLine },
+                          axisTicks: { show: true },
+                        },
+                        yaxis: {
+                          show: true,
+                          labels: {
+                            show: true,
+                            style: {
+                              colors: colors.textSecondary,
+                            },
+                          },
+                          axisBorder: { show: true, color: colors.uiLine },
+                        },
+                        tooltip: {
+                          enabled: true,
+                          intersect: false,
+                          theme: dark,
+                        },
+                      })
+                    "
+                    :data="charts.data"
+                  />
+                </Card>
+              </VCol>
+              <VCol>
+                <RankingCard
+                  title="Ranking by street turns"
+                  :data="rankingData"
+                  @onDownload="onDownload"
+                  @onExpand="onExpand"
+                  @onSelect="onSelectRank"
+                />
+              </VCol>
+            </VRow>
+            <VRow>
+              <VCol>
+                <Typography type="text-h2" class="mb-4"> Turns</Typography>
+                <VirtualTable
+                  :entities="entities"
+                  :headers="headers"
+                  :loading="loading"
+                  :options="{
+                    rowHeight: 64,
+                    showActions,
+                    showSelect,
+                    tableHeight: 575,
+                    tableMinWidth: 'fit-content',
+                  }"
+                  @onScroll="() => {}"
+                  @onSelectRow="() => {}"
+                  @onSort="() => {}"
+                  @onUpdated="() => {}"
+                >
+                  <template #ref="{ item }">
+                    <Typography type="text-body-m-regular">
+                      {{ item.ref }}
+                    </Typography>
+                  </template>
+                  <template #label="{ item }">
+                    <Typography type="text-body-m-regular">
+                      {{ item.label }}
+                    </Typography>
+                  </template>
+                  <template #ssl="{ item }">
+                    <Typography
+                      class="text-truncate"
+                      type="text-body-m-regular"
+                      :style="{ width: '5rem' }"
+                    >
                       {{ item.ssl }}
-                    </Tooltip>
-                  </Typography>
-                </template>
-                <template #expiry="{ item }">
-                  <Typography type="text-body-m-regular">
-                    {{ item.expiry }}
-                  </Typography>
-                </template>
-                <template #status="{ item }">
-                  <Classification type="status" :value="item.status" />
-                </template>
-                <template #carriers="{ item }">
-                  <Chip
-                    v-for="trucker in item.carriers"
-                    :key="trucker"
-                    class="mr-1"
-                    avatar
-                    size="small"
-                  >
-                    <Avatar size="small" start />
-                    {{ trucker }}
-                  </Chip>
-                  <Typography class="text-truncate" type="text-body-xs-semibold">
-                    +3 carriers
-                  </Typography>
-                </template>
-                <template #actions="{ item, selected }">
-                  <Menu location="bottom end" offset="3">
-                    <template #activator="{ props, isActive }">
-                      <IconButton
-                        v-bind="props"
-                        icon="mdi-dots-horizontal"
-                        variant="plain"
-                        :focused="isActive"
-                      />
-                    </template>
+                      <Tooltip>
+                        {{ item.ssl }}
+                      </Tooltip>
+                    </Typography>
+                  </template>
+                  <template #expiry="{ item }">
+                    <Typography type="text-body-m-regular">
+                      {{ item.expiry }}
+                    </Typography>
+                  </template>
+                  <template #status="{ item }">
+                    <Classification type="status" :value="item.status" />
+                  </template>
+                  <template #carriers="{ item }">
+                    <Chip
+                      v-for="trucker in item.carriers"
+                      :key="trucker"
+                      class="mr-1"
+                      avatar
+                      size="small"
+                    >
+                      <Avatar size="small" start />
+                      {{ trucker }}
+                    </Chip>
+                    <Typography class="text-truncate" type="text-body-xs-semibold">
+                      +3 carriers
+                    </Typography>
+                  </template>
+                  <template #actions="{ item, selected }">
+                    <Menu location="bottom end" offset="3">
+                      <template #activator="{ props, isActive }">
+                        <IconButton
+                          v-bind="props"
+                          icon="mdi-dots-horizontal"
+                          variant="plain"
+                          :focused="isActive"
+                        />
+                      </template>
 
-                    <List>
-                      <ListItem
-                        v-for="({ action, color, icon, label }, n) in actions"
-                        :key="n"
-                        :color="color"
-                        @click="onAction(selected.length ? selected : [item], action)"
-                      >
-                        <template #prepend>
-                          <Icon :color="color" :icon="icon" />
-                        </template>
-                        <ListItemTitle :color="color">
-                          {{ label }}
-                          <Badge
-                            v-if="selected.length"
-                            color="uiInteractive"
-                            :content="selected.length"
-                            inline
-                          />
-                        </ListItemTitle>
-                      </ListItem>
-                    </List>
-                  </Menu>
-                </template>
-              </VirtualTable>
-            </VCol>
-          </VRow>
-        </VContainer>
-      </template>
-      <template #map>
-        <Map
-          :style="{ height: '1200px' }"
-          :map-options="mapOptions"
-          :markers="markers"
-          :render-info-window="renderInfoWindow"
-          :render-marker-icon="renderMarkerIcon"
-          :theme="computedTheme"
-          @onMapLoaded="onMapLoaded"
-          @onMarkerClick="onMarkerClick"
-        />
-      </template>
-    </Panes>
-  </VContainer>
+                      <List>
+                        <ListItem
+                          v-for="({ action, color, icon, label }, n) in actions"
+                          :key="n"
+                          :color="color"
+                          @click="onAction(selected.length ? selected : [item], action)"
+                        >
+                          <template #prepend>
+                            <Icon :color="color" :icon="icon" />
+                          </template>
+                          <ListItemTitle :color="color">
+                            {{ label }}
+                            <Badge
+                              v-if="selected.length"
+                              color="uiInteractive"
+                              :content="selected.length"
+                              inline
+                            />
+                          </ListItemTitle>
+                        </ListItem>
+                      </List>
+                    </Menu>
+                  </template>
+                </VirtualTable>
+              </VCol>
+            </VRow>
+          </VContainer>
+        </template>
+        <template #map>
+          <Map
+            :style="{ height: '1200px' }"
+            :map-options="mapOptions"
+            :markers="markers"
+            :render-info-window="renderInfoWindow"
+            :render-marker-icon="renderMarkerIcon"
+            :theme="computedTheme"
+            @onMapLoaded="onMapLoaded"
+            @onMarkerClick="onMarkerClick"
+          />
+        </template>
+      </Panes>
+    </VContainer>
+  </div>
 </template>
 
 <style lang="scss">
-.splitpanes {
-  background: transparent !important;
-}
-.splitpanes__pane {
-  height: v-bind(mapHeight) !important;
-
-  &:hover {
-    overflow: overlay;
-    overflow-y: auto;
+.dashboardView {
+  .gap-5 {
+    gap: 1.25rem;
   }
-}
+  .styledSubHeader {
+    overflow: visible;
+    .v-toolbar__content {
+      height: 56px !important;
+    }
+  }
 
-.google-map-wrapper {
-  height: v-bind(mapHeight) !important;
-}
+  .splitpanes {
+    background: transparent !important;
+  }
 
-.styledVCard {
-  justify-content: space-between;
-  display: flex;
-  flex-direction: column;
+  .splitpanes__pane {
+    height: v-bind(mapHeight) !important;
+
+    &:hover {
+      overflow: overlay;
+      overflow-y: auto;
+    }
+  }
+
+  .google-map-wrapper {
+    height: v-bind(mapHeight) !important;
+  }
+
+  .styledVCard {
+    justify-content: space-between;
+    display: flex;
+    flex-direction: column;
+  }
 }
 </style>
