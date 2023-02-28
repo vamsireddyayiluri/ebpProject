@@ -1,8 +1,10 @@
 <script setup></script>
 
 <template>
-  <MyAlert />
-  <RouterView />
+  <ThemeProvider>
+    <MyAlert />
+    <RouterView />
+  </ThemeProvider>
 </template>
 
 <style scoped></style>
