@@ -1,0 +1,58 @@
+<script setup>
+const attrs = useAttrs()
+const items = ref([
+  {
+    name: 'dashboard',
+    icon: 'mdi-home',
+  },
+  {
+    name: 'marketplace',
+    icon: 'mdi-cube-scan',
+  },
+  {
+    name: 'settings',
+    icon: 'mdi-cog',
+  },
+])
+
+const data = [
+  { title: 'Trucker ABCD registered on the platform', label: 'Info [Notification]', type: 'info' },
+  {
+    title: 'Trucker ABCD registered on the platform',
+    content: '02/20/2022 5:23:17 am',
+    type: 'info',
+    button: true,
+  },
+  {
+    title: 'Trucker ABCD registered on the platform',
+    content: '02/20/2022 5:23:17 am',
+    type: 'warning',
+  },
+  {
+    title: 'Trucker ABCD registered on the platform',
+    content: '02/20/2022 5:23:17 am[Notification]',
+    type: 'avatar',
+  },
+  {
+    title: 'Trucker ABCD registered on the platform',
+    content: '02/20/2022 5:23:17 am',
+    type: 'avatar',
+  },
+  {
+    title: 'Trucker ABCD registered on the platform',
+    content: '02/20/2022 5:23:17 am',
+    type: 'avatar',
+    button: true,
+  },
+]
+const router = useRouter()
+</script>
+
+<template>
+  <div v-bind="{ ...attrs }">
+    <Header :items="items" :notifications="data" sticky />
+    <slot />
+  </div>
+</template>
+
+<style lang="scss"></style>
