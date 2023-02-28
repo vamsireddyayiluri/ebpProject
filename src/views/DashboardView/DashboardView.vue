@@ -7,7 +7,6 @@ import moment from 'moment-timezone'
 
 import markersFixture from '~/fixtures/markers'
 import imgUrl from '~/assets/icons/default-map-marker.svg'
-
 import { useTheme } from 'vuetify'
 
 const items = ref([
@@ -26,6 +25,8 @@ const items = ref([
 ])
 const regions = ref(['All regions', 'SW USA', 'SE USA', 'NW USA', 'NE USA'])
 const years = ref(['By years', 'By month', 'By weeks'])
+const tab = ref(0)
+const rankingDialog = ref(false)
 
 const theme = useTheme()
 const computedTheme = computed(() => theme.global.name.value)
@@ -107,23 +108,6 @@ const useActions = () => [
   },
 ]
 
-const charts = {
-  label: 'Turns by market',
-  settings: { horizontal: true, type: 'bar', showLabels: false },
-  data: {
-    categories: [
-      'LA/LGB',
-      'NJ/NEWARK',
-      'TX/HOUSTON',
-      'GA/SAVANNAH',
-      'SF/OAKLAND',
-      'NW/SEATTLE',
-      'LA/LGB',
-    ],
-    series: [{ data: [140, 90, 95, 130, 170, 105, 120] }],
-  },
-}
-
 const rankingData = ref({
   Exporters: [
     { label: 'General Motors', value: 700 },
@@ -141,9 +125,50 @@ const rankingData = ref({
     { label: 'Georgia Pacific', value: 300 },
   ],
 })
-
+const data = [
+  { title: 'Trucker ABCD registered on the platform', label: 'Info [Notification]', type: 'info' },
+  {
+    title: 'Trucker ABCD registered on the platform',
+    content: '02/20/2022 5:23:17 am',
+    type: 'info',
+    button: true,
+  },
+  {
+    title: 'Trucker ABCD registered on the platform',
+    content: '02/20/2022 5:23:17 am',
+    type: 'warning',
+  },
+  {
+    title: 'Trucker ABCD registered on the platform',
+    content: '02/20/2022 5:23:17 am[Notification]',
+    type: 'avatar',
+  },
+  {
+    title: 'Trucker ABCD registered on the platform',
+    content: '02/20/2022 5:23:17 am',
+    type: 'avatar',
+  },
+  {
+    title: 'Trucker ABCD registered on the platform',
+    content: '02/20/2022 5:23:17 am',
+    type: 'avatar',
+    button: true,
+  },
+]
+const mutableSelected = ref(Object.keys(rankingData.value)[0])
+const computedSelected = computed({
+  get() {
+    return mutableSelected.value
+  },
+  set(value) {
+    mutableSelected.value = value
+  },
+})
+const computedValues = computed(() => rankingData.value[computedSelected.value])
 const onDownload = e => console.log(e)
-const onExpand = e => console.log(e)
+const onExpand = () => {
+  rankingDialog.value.show(true)
+}
 const onSelectRank = e => console.log(e)
 let { markers } = markRaw({
   markers: markersFixture,
@@ -160,8 +185,18 @@ const panes = ref([
   { name: 'content', size: 50 },
   { name: 'map', size: 50 },
 ])
+const panesRef = ref(null)
+const mapToggled = ref(true)
 
-const onSplitPaneClosed = e => console.log(JSON.stringify(e))
+const toggleMap = () => {
+  const panes = toRaw(panesRef.value)
+  panes.toggleMap()
+  mapToggled.value = !mapToggled.value
+}
+
+const onSplitPaneClosed = e => {
+  toggleMap()
+}
 
 const loading = ref(false)
 const showActions = ref(true)
@@ -178,15 +213,15 @@ const onAction = (e, action) => {
 
   delay(() => (loading.value = false), 1500)
 }
-const onSelect = () => {
-  console.log('select')
+const onSelect = e => {
+  computedSelected.value = e
 }
 </script>
 
 <template>
   <div class="dashboardView">
-    <Header :items="items" sticky />
-    <SubHeader class="overflow-visible">
+    <Header :items="items" :notifications="data" sticky />
+    <SubHeader>
       <template #controls>
         <SimpleSelect :items="regions" :selected="regions[0]" />
         <Divider vertical class="my-2 mx-4" />
@@ -201,22 +236,22 @@ const onSelect = () => {
         </div>
       </template>
       <template #actions>
-        <RouterLink :to="{}" @click="goToMap">
-          <Button prepend-icon="mdi-map-marker" variant="plain" secondary="true"> Map</Button>
-        </RouterLink>
+        <Button
+          prepend-icon="mdi-map-marker"
+          variant="plain"
+          v-bind="!mapToggled && { secondary: 'false' }"
+          @click="toggleMap"
+        >
+          Map
+        </Button>
       </template>
     </SubHeader>
-    <ThemeSwitcher :style="{ position: 'absolute', top: '-4px', right: '9em' }" />
     <VContainer class="bg-background ma-0 pa-0" fluid>
-      <Panes :panes="panes" @onSplitPaneClosed="onSplitPaneClosed">
-        <template #content>
-          <VContainer
-            class="bg-background pl-8 pr-0 pb-6 pt-10"
-            fluid
-            :style="{ minWidth: '960px' }"
-          >
+      <Panes ref="panesRef" :panes="panes" @onSplitPaneClosed="onSplitPaneClosed">
+        <template #content class="test">
+          <VContainer class="bg-background px-8 pb-6 pt-10" fluid>
             <VRow no-gutters class="gap-5">
-              <VCol>
+              <VCol :style="{ minWidth: '250px' }">
                 <AverageCard
                   v-bind="{
                     message: 'this year',
@@ -227,7 +262,7 @@ const onSelect = () => {
                   }"
                 />
               </VCol>
-              <VCol>
+              <VCol :style="{ minWidth: '250px' }">
                 <AverageCard
                   v-bind="{
                     message: 'this year',
@@ -238,7 +273,7 @@ const onSelect = () => {
                   }"
                 />
               </VCol>
-              <VCol>
+              <VCol :style="{ minWidth: '250px' }">
                 <AverageCard
                   v-bind="{
                     message: 'this year',
@@ -251,80 +286,10 @@ const onSelect = () => {
               </VCol>
             </VRow>
             <VRow no-gutters class="my-10 gap-5">
-              <VCol>
-                <Card elevation="0">
-                  <CardTitle>{{ charts.label }}</CardTitle>
-                  <Chart
-                    :options="
-                      ({ colors, dark }) => ({
-                        chart: {
-                          type: charts.settings.type,
-                          height: 280,
-                          // background: colors.uiBackground,
-                          animations: {
-                            enabled: false,
-                          },
-                          toolbar: { show: false },
-                        },
-                        colors: [colors.uiChart],
-                        plotOptions: {
-                          bar: {
-                            horizontal: charts.settings.horizontal,
-                            ...(charts.settings.horizontal && { barHeight: '20%' }),
-                            borderRadius: 4,
-                            startingShape: 'rounded',
-                            endingShape: 'rounded',
-                            distributed: false,
-                            colors: {
-                              backgroundBarColors: ['transparent'],
-                              backgroundBarOpacity: 0,
-                              backgroundBarRadius: 4,
-                            },
-                          },
-                        },
-                        legend: { show: false },
-                        dataLabels: {
-                          enabled: charts.settings.showLabels,
-                          formatter: n => `${n}%`,
-                        },
-                        grid: {
-                          show: true,
-                          borderColor: colors.uiLine,
-                        },
-                        xaxis: {
-                          show: true,
-                          categories: charts.data.categories,
-                          labels: {
-                            show: true,
-                            style: {
-                              colors: colors.textSecondary,
-                            },
-                          },
-                          axisBorder: { show: true, color: colors.uiLine },
-                          axisTicks: { show: true },
-                        },
-                        yaxis: {
-                          show: true,
-                          labels: {
-                            show: true,
-                            style: {
-                              colors: colors.textSecondary,
-                            },
-                          },
-                          axisBorder: { show: true, color: colors.uiLine },
-                        },
-                        tooltip: {
-                          enabled: true,
-                          intersect: false,
-                          theme: dark,
-                        },
-                      })
-                    "
-                    :data="charts.data"
-                  />
-                </Card>
+              <VCol :style="{ minWidth: '350px' }">
+                <TurnsChart />
               </VCol>
-              <VCol>
+              <VCol :style="{ minWidth: '350px' }">
                 <RankingCard
                   title="Ranking by street turns"
                   :data="rankingData"
@@ -336,7 +301,14 @@ const onSelect = () => {
             </VRow>
             <VRow>
               <VCol>
-                <Typography type="text-h2" class="mb-4"> Turns</Typography>
+                <VRow no-gutters align="baseline" justify="space-between">
+                  <Typography type="text-h2" class="mb-7"> Turns</Typography>
+                  <ButtonToggle
+                    v-model="tab"
+                    :items="[{ label: 'Turns' }, { label: 'Marketplace' }]"
+                    density="compact"
+                  />
+                </VRow>
                 <VirtualTable
                   :entities="entities"
                   :headers="headers"
@@ -346,7 +318,7 @@ const onSelect = () => {
                     showActions,
                     showSelect,
                     tableHeight: 575,
-                    tableMinWidth: 'fit-content',
+                    tableMinWidth: '960',
                   }"
                   @onScroll="() => {}"
                   @onSelectRow="() => {}"
@@ -436,6 +408,47 @@ const onSelect = () => {
               </VCol>
             </VRow>
           </VContainer>
+          <!--Dialogs-->
+
+          <Dialog ref="rankingDialog" width="50%" min-width="400px">
+            <template #text>
+              <div class="pa-0">
+                <VRow no-gutters align="baseline" justify="space-between">
+                  <VRow no-gutters align="center">
+                    <Typography type="text-h3">Ranking by street turns</Typography>
+                    <SimpleSelect
+                      :items="Object.keys(rankingData)"
+                      :selected="computedSelected"
+                      class="ml-4"
+                      @onSelect="onSelect"
+                    />
+                  </VRow>
+                  <IconButton
+                    icon="mdi-download"
+                    size="20"
+                    width="32"
+                    min-width="32"
+                    height="32"
+                    variant="plain"
+                  >
+                    <Tooltip location="top"> Download in CSV </Tooltip>
+                  </IconButton>
+                </VRow>
+                <div
+                  v-for="(rank, n) of computedValues"
+                  :key="n"
+                  class="d-flex justify-space-between mt-2"
+                >
+                  <Typography type="text-body-s-regular" :color="getColor('textSecondary')">
+                    {{ rank.label }}
+                  </Typography>
+                  <Typography type="text-body-s-semibold">
+                    {{ rank.value }}
+                  </Typography>
+                </div>
+              </div>
+            </template>
+          </Dialog>
         </template>
         <template #map>
           <Map
@@ -460,7 +473,6 @@ const onSelect = () => {
     gap: 1.25rem;
   }
   .styledSubHeader {
-    overflow: visible;
     .v-toolbar__content {
       height: 56px !important;
     }
@@ -474,8 +486,7 @@ const onSelect = () => {
     height: v-bind(mapHeight) !important;
 
     &:hover {
-      overflow: overlay;
-      overflow-y: auto;
+      overflow: auto;
     }
   }
 
