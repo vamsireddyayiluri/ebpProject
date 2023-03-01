@@ -50,10 +50,17 @@ export const average3Parser = () => ({
   value: 7,
 })
 
-export const entitiesParser = () => map(snapshots, (entity, index) => ({ ...entity, id: index }))
+export const entitiesParser = () =>
+  chain(snapshots)
+    .map((entity, index) => ({ ...entity, id: index }))
+    .filter(({ location: { geohash } }) => geohash)
+    .value()
 
 export const markersParser = () => {
-  const locationsMap = uniqBy([...snapshots], ({ location: { geohash } }) => geohash)
+  const locationsMap = map(
+    uniqBy(snapshots, ({ location: { geohash } }) => geohash),
+    ({ location }) => ({ location }),
+  )
 
   const filteredLocationsMap = map(
     filter(locationsMap, ({ location: { geohash } }) => geohash),
