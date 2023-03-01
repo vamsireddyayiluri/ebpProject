@@ -372,10 +372,6 @@ watch(searchValue, _ => debouncedSearch())
 
   .splitpanes__pane {
     height: v-bind(mapHeight) !important;
-
-    &:hover {
-      overflow: auto;
-    }
   }
 
   .google-map-wrapper {
