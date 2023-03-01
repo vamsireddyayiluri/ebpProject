@@ -19,18 +19,12 @@ const turnsDialog = ref(false)
       elevation="0"
       :color="getColor('uiSecondary-01')"
       v-bind="{ ...props }"
-      class="px-3 position-relative"
+      class="pa-6 position-relative"
     >
-      <Typography
-        type="text-h4"
-        class="mt-6 pl-3"
-      >
+      <Typography type="text-h4">
         {{ charts.label }}
       </Typography>
-      <div
-        v-if="isHovering"
-        class="card-controls"
-      >
+      <div v-if="isHovering" class="card-controls">
         <IconButton
           class="border"
           icon="mdi-download"
@@ -40,9 +34,7 @@ const turnsDialog = ref(false)
           height="32"
           variant="plain"
         >
-          <Tooltip location="top">
-            Download in CSV
-          </Tooltip>
+          <Tooltip location="top"> Download in CSV </Tooltip>
         </IconButton>
         <IconButton
           class="no-hover border ml-3"
@@ -54,9 +46,7 @@ const turnsDialog = ref(false)
           variant="plain"
           @click="turnsDialog.show(true)"
         >
-          <Tooltip location="top">
-            Open in full
-          </Tooltip>
+          <Tooltip location="top"> Open in full </Tooltip>
         </IconButton>
       </div>
       <Chart
@@ -128,21 +118,11 @@ const turnsDialog = ref(false)
       />
     </Card>
   </VHover>
-  <Dialog
-    ref="turnsDialog"
-    width="50%"
-    min-width="400px"
-  >
+  <Dialog ref="turnsDialog" width="50%" min-width="400px">
     <template #text>
       <div class="pa-0">
-        <VRow
-          no-gutters
-          align="baseline"
-          justify="space-between"
-        >
-          <Typography type="text-h3">
-            Turns by market
-          </Typography>
+        <VRow no-gutters align="baseline" justify="space-between">
+          <Typography type="text-h3"> Turns by market </Typography>
           <IconButton
             icon="mdi-download"
             size="20"
@@ -151,9 +131,7 @@ const turnsDialog = ref(false)
             height="32"
             variant="plain"
           >
-            <Tooltip location="top">
-              Download in CSV
-            </Tooltip>
+            <Tooltip location="top"> Download in CSV </Tooltip>
           </IconButton>
         </VRow>
 

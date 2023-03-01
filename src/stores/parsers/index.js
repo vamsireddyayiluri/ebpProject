@@ -108,7 +108,7 @@ export const rankingDataParser = () => {
       .sortBy('value')
       .reverse()
       .value(),
-    9,
+    10,
   )
 
   const pagedExporters = fromPairs(

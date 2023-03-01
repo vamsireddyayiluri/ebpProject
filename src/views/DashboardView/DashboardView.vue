@@ -6,9 +6,7 @@ import imgUrl from '~/assets/icons/default-map-marker.svg'
 import { useTheme } from 'vuetify'
 import { Main } from '@layouts'
 
-import { useActions, useHeaders, useData } from '~/composables'
-
-const mapHeight = `${window.innerHeight - 121}px`
+import { useActions, useHeaders, useData, useDate } from '~/composables'
 
 const theme = useTheme()
 const computedTheme = computed(() => theme.global.name.value)
@@ -18,6 +16,7 @@ const { average1, average2, average3, entities, markers, marketData, rankingData
 )
 const headers = useHeaders()
 const actions = useActions()
+const formatDate = useDate()
 
 const regions = ref(['All regions', 'SW USA', 'SE USA', 'NW USA', 'NE USA'])
 const years = ref(['By years', 'By month', 'By weeks'])
@@ -26,8 +25,8 @@ const tab = ref(0)
 
 const rankingDialog = ref(false)
 const loading = ref(false)
-const showActions = ref(true)
-const showSelect = ref(true)
+const showActions = ref(false)
+const showSelect = ref(false)
 
 const mutableSelected = ref(Object.keys(rankingData.value)[0])
 const computedSelected = computed({
@@ -41,11 +40,10 @@ const computedSelected = computed({
 const computedValues = computed(() => rankingData.value[computedSelected.value])
 
 const onDownload = e => console.log(e)
-const onExpand = () => {
-  rankingDialog.value.show(true)
-}
+const onExpand = () => rankingDialog.value.show(true)
 const onSelectRank = e => console.log(e)
 
+const mapHeight = `${window.innerHeight - 121}px`
 const mapOptions = markRaw({ zoom: 3, zoomControls: true })
 const onMapLoaded = async ({ api, map }) => console.log({ api, map })
 const onMarkerClick = e => console.log(JSON.stringify(e))
@@ -65,7 +63,9 @@ const toggleMap = () => {
   mapToggled.value = !mapToggled.value
 }
 
-const onSplitPaneClosed = () => toggleMap()
+const onSplitPaneClosed = () => {
+  toggleMap()
+}
 
 const onAction = (e, action) => {
   console.log({ action, e })
@@ -83,32 +83,14 @@ const onSelect = e => {
   <Main class="dashboardView">
     <SubHeader>
       <template #controls>
-        <SimpleSelect
-          :items="regions"
-          :selected="regions[0]"
-        />
-        <Divider
-          vertical
-          class="my-2 mx-4"
-        />
-        <SimpleSelect
-          :items="years"
-          @onSelect="onSelect"
-        />
-        <Divider
-          vertical
-          class="my-2 mx-4"
-        />
+        <SimpleSelect :items="regions" :selected="regions[0]" />
+        <Divider vertical class="my-2 mx-4" />
+        <SimpleSelect :items="years" @onSelect="onSelect" />
+        <Divider vertical class="my-2 mx-4" />
         <div class="d-flex align-center">
           <IconButton icon="mdi-chevron-left" />
-          <IconButton
-            class="mr-2"
-            icon="mdi-chevron-right"
-          />
-          <Typography
-            type="text-body-s-regular"
-            :color="getColor('textSecondary')"
-          >
+          <IconButton class="mr-2" icon="mdi-chevron-right" />
+          <Typography type="text-body-s-regular" :color="getColor('textSecondary')">
             2022
           </Typography>
         </div>
@@ -124,27 +106,11 @@ const onSelect = e => {
         </Button>
       </template>
     </SubHeader>
-    <VContainer
-      class="bg-background ma-0 pa-0"
-      fluid
-    >
-      <Panes
-        ref="panesRef"
-        :panes="panes"
-        @onSplitPaneClosed="onSplitPaneClosed"
-      >
-        <template
-          #content
-          class="test"
-        >
-          <VContainer
-            class="content bg-background px-8 pb-6 pt-10"
-            fluid
-          >
-            <VRow
-              no-gutters
-              class="gap-5"
-            >
+    <VContainer class="bg-background ma-0 pa-0" fluid>
+      <Panes ref="panesRef" :panes="panes" @onSplitPaneClosed="onSplitPaneClosed">
+        <template #content class="test">
+          <VContainer class="content bg-background px-8 pb-6 pt-10" fluid>
+            <VRow no-gutters class="gap-5">
               <VCol :style="{ minWidth: '250px' }">
                 <AverageCard v-bind="average1" />
               </VCol>
@@ -155,10 +121,7 @@ const onSelect = e => {
                 <AverageCard v-bind="average3" />
               </VCol>
             </VRow>
-            <VRow
-              no-gutters
-              class="my-10 gap-5"
-            >
+            <VRow no-gutters class="my-10 gap-5">
               <VCol :style="{ minWidth: '350px' }">
                 <TurnsChart
                   :charts="{
@@ -180,17 +143,8 @@ const onSelect = e => {
             </VRow>
             <VRow>
               <VCol>
-                <VRow
-                  no-gutters
-                  align="baseline"
-                  justify="space-between"
-                >
-                  <Typography
-                    type="text-h2"
-                    class="mb-7"
-                  >
-                    Turns
-                  </Typography>
+                <VRow no-gutters align="baseline" justify="space-between">
+                  <Typography type="text-h2" class="mb-7"> Turns </Typography>
                   <ButtonToggle
                     v-model="tab"
                     :items="[{ label: 'Turns' }, { label: 'Marketplace' }]"
@@ -220,7 +174,7 @@ const onSelect = e => {
                     </Typography>
                   </template>
                   <template #container="{ item }">
-                    <Typography type="text-body-m-regular">
+                    <Typography type="text-body-m-regular text-uppercase">
                       {{ item.container }}
                     </Typography>
                   </template>
@@ -231,14 +185,11 @@ const onSelect = e => {
                   </template>
                   <template #created="{ item }">
                     <Typography type="text-body-m-regular">
-                      {{ item.created }}
+                      {{ formatDate(item.created) }}
                     </Typography>
                   </template>
                   <template #actions="{ item, selected }">
-                    <Menu
-                      location="bottom end"
-                      offset="3"
-                    >
+                    <Menu location="bottom end" offset="3">
                       <template #activator="{ props, isActive }">
                         <IconButton
                           v-bind="props"
@@ -256,10 +207,7 @@ const onSelect = e => {
                           @click="onAction(selected.length ? selected : [item], action)"
                         >
                           <template #prepend>
-                            <Icon
-                              :color="color"
-                              :icon="icon"
-                            />
+                            <Icon :color="color" :icon="icon" />
                           </template>
                           <ListItemTitle :color="color">
                             {{ label }}
@@ -280,25 +228,12 @@ const onSelect = e => {
           </VContainer>
           <!-- Dialogs -->
 
-          <Dialog
-            ref="rankingDialog"
-            width="50%"
-            min-width="400px"
-          >
+          <Dialog ref="rankingDialog" width="50%" min-width="400px">
             <template #text>
               <div class="pa-0">
-                <VRow
-                  no-gutters
-                  align="baseline"
-                  justify="space-between"
-                >
-                  <VRow
-                    no-gutters
-                    align="center"
-                  >
-                    <Typography type="text-h3">
-                      Ranking by exporters
-                    </Typography>
+                <VRow no-gutters align="baseline" justify="space-between">
+                  <VRow no-gutters align="center" class="mb-4">
+                    <Typography type="text-h3"> Ranking by exporters </Typography>
                     <SimpleSelect
                       :items="Object.keys(rankingData)"
                       :selected="computedSelected"
@@ -314,9 +249,7 @@ const onSelect = e => {
                     height="32"
                     variant="plain"
                   >
-                    <Tooltip location="top">
-                      Download in CSV
-                    </Tooltip>
+                    <Tooltip location="top"> Download in CSV </Tooltip>
                   </IconButton>
                 </VRow>
                 <div
@@ -324,10 +257,7 @@ const onSelect = e => {
                   :key="n"
                   class="d-flex justify-space-between mt-2"
                 >
-                  <Typography
-                    type="text-body-s-regular"
-                    :color="getColor('textSecondary')"
-                  >
+                  <Typography type="text-body-s-regular" :color="getColor('textSecondary')">
                     {{ rank.label }}
                   </Typography>
                   <Typography type="text-body-s-semibold">
