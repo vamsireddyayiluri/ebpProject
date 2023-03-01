@@ -91,21 +91,18 @@ const onClearSearch = () => {
 }
 
 const debouncedSearch = useDebounceFn(() => {
-  loading.value = true
-
-  setTimeout(() => {
-    if (!searchValue.value) {
-      onClearSearch()
-    } else {
-      filteredEntities.value = useArrayFilter(entities.value, entity =>
-        useArrayMap(Object.values(entity), entity => String(entity).toLowerCase()).value.includes(
-          searchValue.value.toLowerCase(),
-        ),
-      ).value
-    }
-
-    loading.value = false
-  }, 1000)
+  if (!searchValue.value) {
+    onClearSearch()
+  } else {
+    filteredEntities.value = useArrayFilter(
+      entities.value,
+      ({ container, ref, size }) =>
+        useArraySome(
+          useArrayMap(Object.values({ container, ref, size }), value => value.toLowerCase()).value,
+          values => values.includes(searchValue.value.toLowerCase()),
+        ).value,
+    ).value
+  }
 }, 300)
 
 watch(searchValue, _ => debouncedSearch())
@@ -219,7 +216,7 @@ watch(searchValue, _ => debouncedSearch())
                     showActions,
                     showSelect,
                     tableHeight: 575,
-                    tableMinWidth: '960',
+                    tableMinWidth: 960,
                   }"
                   @onScroll="() => {}"
                   @onSelectRow="() => {}"
@@ -227,18 +224,33 @@ watch(searchValue, _ => debouncedSearch())
                   @onUpdated="() => {}"
                 >
                   <template #ref="{ item }">
-                    <Typography type="text-body-m-regular">
-                      {{ item.ref || '--' }}
+                    <Typography type="text-body-m-regular text-uppercase">
+                      <Highlighter v-if="searchValue" :query="searchValue">
+                        {{ item.ref || '--' }}
+                      </Highlighter>
+                      <template v-else>
+                        {{ item.ref || '--' }}
+                      </template>
                     </Typography>
                   </template>
                   <template #container="{ item }">
                     <Typography type="text-body-m-regular text-uppercase">
-                      {{ item.container }}
+                      <Highlighter v-if="searchValue" :query="searchValue">
+                        {{ item.container }}
+                      </Highlighter>
+                      <template v-else>
+                        {{ item.container }}
+                      </template>
                     </Typography>
                   </template>
                   <template #size="{ item }">
                     <Typography type="text-body-m-regular">
-                      {{ item.size }}
+                      <Highlighter v-if="searchValue" :query="searchValue">
+                        {{ item.size }}
+                      </Highlighter>
+                      <template v-else>
+                        {{ item.size }}
+                      </template>
                     </Typography>
                   </template>
                   <template #created="{ item }">
