@@ -81,19 +81,31 @@ const onSelect = e => {
 }
 
 const onClearSearch = () => {
-  filteredEntities.value = entities.value
+  loading.value = true
+
+  setTimeout(() => {
+    filteredEntities.value = entities.value
+
+    loading.value = false
+  }, 1000)
 }
 
 const debouncedSearch = useDebounceFn(() => {
-  if (!searchValue.value) {
-    onClearSearch()
-  } else {
-    filteredEntities.value = useArrayFilter(entities.value, entity =>
-      useArrayMap(Object.values(entity), entity => String(entity).toLowerCase()).value.includes(
-        searchValue.value.toLowerCase(),
-      ),
-    ).value
-  }
+  loading.value = true
+
+  setTimeout(() => {
+    if (!searchValue.value) {
+      onClearSearch()
+    } else {
+      filteredEntities.value = useArrayFilter(entities.value, entity =>
+        useArrayMap(Object.values(entity), entity => String(entity).toLowerCase()).value.includes(
+          searchValue.value.toLowerCase(),
+        ),
+      ).value
+    }
+
+    loading.value = false
+  }, 1000)
 }, 300)
 
 watch(searchValue, _ => debouncedSearch())
@@ -316,7 +328,6 @@ watch(searchValue, _ => debouncedSearch())
         </template>
         <template #map>
           <Map
-            :style="{ height: '1200px' }"
             :map-options="mapOptions"
             :markers="markers"
             :render-info-window="renderInfoWindow"
