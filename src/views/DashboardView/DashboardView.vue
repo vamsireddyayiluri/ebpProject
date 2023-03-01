@@ -18,6 +18,8 @@ const headers = useHeaders()
 const actions = useActions()
 const formatDate = useDate()
 
+const filteredEntities = ref(entities.value)
+
 const regions = ref(['All regions', 'SW USA', 'SE USA', 'NW USA', 'NE USA'])
 const years = ref(['By years', 'By month', 'By weeks'])
 
@@ -27,6 +29,7 @@ const rankingDialog = ref(false)
 const loading = ref(false)
 const showActions = ref(false)
 const showSelect = ref(false)
+const searchValue = ref(null)
 
 const mutableSelected = ref(Object.keys(rankingData.value)[0])
 const computedSelected = computed({
@@ -63,9 +66,7 @@ const toggleMap = () => {
   mapToggled.value = !mapToggled.value
 }
 
-const onSplitPaneClosed = () => {
-  toggleMap()
-}
+const onSplitPaneClosed = e => toggleMap()
 
 const onAction = (e, action) => {
   console.log({ action, e })
@@ -74,9 +75,28 @@ const onAction = (e, action) => {
 
   delay(() => (loading.value = false), 1500)
 }
+
 const onSelect = e => {
   computedSelected.value = e
 }
+
+const onClearSearch = () => {
+  filteredEntities.value = entities.value
+}
+
+const debouncedSearch = useDebounceFn(() => {
+  if (!searchValue.value) {
+    onClearSearch()
+  } else {
+    filteredEntities.value = useArrayFilter(entities.value, entity =>
+      useArrayMap(Object.values(entity), entity => String(entity).toLowerCase()).value.includes(
+        searchValue.value.toLowerCase(),
+      ),
+    ).value
+  }
+}, 300)
+
+watch(searchValue, _ => debouncedSearch())
 </script>
 
 <template>
@@ -143,8 +163,8 @@ const onSelect = e => {
             </VRow>
             <VRow>
               <VCol>
-                <VRow no-gutters align="baseline" justify="space-between">
-                  <Typography type="text-h2" class="mb-7"> Turns </Typography>
+                <VRow class="mb-7" no-gutters align="center" justify="space-between">
+                  <Typography type="text-h2"> Turns </Typography>
                   <ButtonToggle
                     v-model="tab"
                     :items="[{ label: 'Turns' }, { label: 'Marketplace' }]"
@@ -152,8 +172,34 @@ const onSelect = e => {
                   />
                 </VRow>
 
+                <VRow class="mb-4" no-gutters align="center" justify="space-between">
+                  <Textfield
+                    v-model="searchValue"
+                    class="mr-4"
+                    type="text"
+                    placeholder="Search..."
+                    prepend-inner-icon="mdi-magnify"
+                    clearable
+                    @click:clear="onClearSearch"
+                  />
+                  <Autocomplete class="mr-4" placeholder="Container #" />
+                  <Autocomplete placeholder="Size / Type" />
+                  <VSpacer />
+                  <IconButton
+                    class="border"
+                    icon="mdi-download"
+                    size="24"
+                    width="48"
+                    min-width="48"
+                    height="48"
+                    variant="plain"
+                  >
+                    <Tooltip location="top"> Download PDF </Tooltip>
+                  </IconButton>
+                </VRow>
+
                 <VirtualTable
-                  :entities="entities"
+                  :entities="filteredEntities"
                   :headers="headers"
                   :loading="loading"
                   :options="{
@@ -249,7 +295,7 @@ const onSelect = e => {
                     height="32"
                     variant="plain"
                   >
-                    <Tooltip location="top"> Download in CSV </Tooltip>
+                    <Tooltip location="top"> Download PDF </Tooltip>
                   </IconButton>
                 </VRow>
                 <div
