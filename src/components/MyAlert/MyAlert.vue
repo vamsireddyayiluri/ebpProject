@@ -6,8 +6,14 @@ const { alert } = storeToRefs(alertStore)
 </script>
 
 <template>
-  <div v-if="alert" class="alertWrapper">
-    <Alert :type="alert.type" @close="alertStore.clear()">
+  <div
+    v-if="alert"
+    class="alertWrapper"
+  >
+    <Alert
+      :type="alert.type"
+      @close="alertStore.clear()"
+    >
       <AlertTitle>{{ alert.title }}</AlertTitle>
       <AlertText>{{ alert.message }}</AlertText>
     </Alert>

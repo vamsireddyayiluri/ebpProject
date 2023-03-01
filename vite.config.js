@@ -44,7 +44,6 @@ export default defineConfig({
       '@configured-variables': fileURLToPath(
         new URL('./src/styles/variables/_template.scss', import.meta.url),
       ),
-      '@axios': fileURLToPath(new URL('./src/plugins/axios', import.meta.url)),
     },
   },
   build: {

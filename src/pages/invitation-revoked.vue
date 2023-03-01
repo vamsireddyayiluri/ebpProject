@@ -1,6 +1,6 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
-import alert from '/src/assets/images/alert.svg'
+import alert from '~/assets/images/alert.svg'
 </script>
 
 <template>

@@ -1,6 +1,6 @@
 <script setup>
 import { patterns } from '@qualle-admin/qutil'
-import { getColor } from '~/helpers/colors.js'
+import { getColor } from '~/helpers/colors'
 import { useAlertStore } from '~/stores/alert.store'
 
 const alertStore = useAlertStore()
@@ -34,12 +34,25 @@ const openMail = () => {
 </script>
 
 <template>
-  <Typography type="text-h1" :style="{ marginTop: '140px' }">
+  <Typography
+    type="text-h1"
+    :style="{ marginTop: '140px' }"
+  >
     {{ stepper.current.value.title }}
   </Typography>
-  <form class="mx-auto" @submit.prevent="onSubmit" :style="{ maxWidth: '360px' }">
+  <form
+    class="mx-auto"
+    :style="{ maxWidth: '360px' }"
+    @submit.prevent="onSubmit"
+  >
     <template v-if="stepper.isCurrent('reset-pass')">
-      <Textfield type="email" v-model="form.email" label="Email" required class="mt-10" />
+      <Textfield
+        v-model="form.email"
+        type="email"
+        label="Email"
+        required
+        class="mt-10"
+      />
       <Button
         type="submit"
         :disabled="!form.email.match(patterns.emailRegex)"
@@ -50,14 +63,30 @@ const openMail = () => {
     </template>
 
     <template v-if="stepper.isCurrent('check-email')">
-      <Typography type="text-body-m-regular" :color="getColor('textSecondary')" class="mt-3 mb-10">
+      <Typography
+        type="text-body-m-regular"
+        :color="getColor('textSecondary')"
+        class="mt-3 mb-10"
+      >
         We sent a password reset link to <b>{{ form.email }}</b>
       </Typography>
-      <Button type="submit" class="w-100 mx-auto" @click="openMail">Open mailbox</Button>
+      <Button
+        type="submit"
+        class="w-100 mx-auto"
+        @click="openMail"
+      >
+        Open mailbox
+      </Button>
     </template>
 
-    <VRow no-gutters class="d-flex justify-center align-center mt-4">
-      <Typography type="text-body-s-regular" :style="{ color: getColor('textSecondary') }">
+    <VRow
+      no-gutters
+      class="d-flex justify-center align-center mt-4"
+    >
+      <Typography
+        type="text-body-s-regular"
+        :style="{ color: getColor('textSecondary') }"
+      >
         {{
           stepper.isCurrent('reset-pass') ? "Don't have an account?" : "Didn't receive the mail?"
         }}
@@ -74,7 +103,13 @@ const openMail = () => {
         </RouterLink>
       </template>
       <template v-else>
-        <Button variant="plain" class="pl-1" @click="resendLink"> Click to resend </Button>
+        <Button
+          variant="plain"
+          class="pl-1"
+          @click="resendLink"
+        >
+          Click to resend
+        </Button>
       </template>
     </VRow>
   </form>

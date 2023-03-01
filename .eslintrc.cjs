@@ -122,6 +122,8 @@ module.exports = {
         map: [
           ['~', './src'],
           ['apexcharts', 'node_modules/apexcharts-clevision'],
+          ['@core', './src/@core'],
+          ['@layouts', './src/@layouts'],
         ],
       },
     },

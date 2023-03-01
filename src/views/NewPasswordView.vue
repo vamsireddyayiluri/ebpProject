@@ -1,5 +1,5 @@
 <script setup>
-import { getColor } from '~/helpers/colors.js'
+import { getColor } from '~/helpers/colors'
 import { useAuthStore } from '~/stores/auth.store'
 const form = reactive({
   password: '',
@@ -24,6 +24,7 @@ const stepper = useStepper(steps)
 const onSubmit = () => {
   if (stepper.isLast.value) {
     authStore.login()
+
     return
   }
   console.log('send ', form)
@@ -32,10 +33,17 @@ const onSubmit = () => {
 </script>
 
 <template>
-  <Typography type="text-h1" :style="{ marginTop: '140px' }">
+  <Typography
+    type="text-h1"
+    :style="{ marginTop: '140px' }"
+  >
     {{ stepper.current.value.title }}
   </Typography>
-  <form class="mx-auto" @submit.prevent="onSubmit" :style="{ maxWidth: '360px' }">
+  <form
+    class="mx-auto"
+    :style="{ maxWidth: '360px' }"
+    @submit.prevent="onSubmit"
+  >
     <template v-if="stepper.isCurrent('new-password')">
       <Textfield
         v-model="form.password"
@@ -48,23 +56,36 @@ const onSubmit = () => {
         @click:append-inner="isPasswordVisible = !isPasswordVisible"
       />
       <Textfield
-        type="password"
         v-model="form.confirmPassword"
+        type="password"
         label="Confirm password"
         minlength="8"
         required
         class="mt-4 mb-10"
       />
-      <Button type="submit" :disabled="!stepper.current.value.isValid()" class="w-100 mx-auto">
+      <Button
+        type="submit"
+        :disabled="!stepper.current.value.isValid()"
+        class="w-100 mx-auto"
+      >
         Reset password
       </Button>
     </template>
 
     <template v-else>
-      <Typography type="text-body-m-regular" :color="getColor('textSecondary')" class="mt-3 mb-10">
+      <Typography
+        type="text-body-m-regular"
+        :color="getColor('textSecondary')"
+        class="mt-3 mb-10"
+      >
         Your password has been successfully reset. Click below to log in into platform.
       </Typography>
-      <Button type="submit" class="w-100 mx-auto"> Log in </Button>
+      <Button
+        type="submit"
+        class="w-100 mx-auto"
+      >
+        Log in
+      </Button>
     </template>
   </form>
 </template>

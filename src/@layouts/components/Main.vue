@@ -50,7 +50,11 @@ const router = useRouter()
 
 <template>
   <div v-bind="{ ...attrs }">
-    <Header :items="items" :notifications="data" sticky />
+    <Header
+      :items="items"
+      :notifications="data"
+      sticky
+    />
     <slot />
   </div>
 </template>

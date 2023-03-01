@@ -1,22 +1,15 @@
 <script setup>
-import { getColor } from '~/helpers/colors.js'
+import { getColor } from '~/helpers/colors'
 
-const charts = {
-  label: 'Turns by market',
-  settings: { horizontal: true, type: 'bar', showLabels: false },
-  data: {
-    categories: [
-      'LA/LGB',
-      'NJ/NEWARK',
-      'TX/HOUSTON',
-      'GA/SAVANNAH',
-      'SF/OAKLAND',
-      'NW/SEATTLE',
-      'LA/LGB',
-    ],
-    series: [{ data: [140, 90, 95, 130, 170, 105, 120] }],
+const props = defineProps({
+  charts: {
+    type: Object,
+    required: true,
   },
-}
+})
+
+const { charts } = toRefs(props)
+
 const turnsDialog = ref(false)
 </script>
 
@@ -28,8 +21,16 @@ const turnsDialog = ref(false)
       v-bind="{ ...props }"
       class="px-3 position-relative"
     >
-      <Typography type="text-h4" class="mt-6 pl-3">{{ charts.label }}</Typography>
-      <div v-if="isHovering" class="card-controls">
+      <Typography
+        type="text-h4"
+        class="mt-6 pl-3"
+      >
+        {{ charts.label }}
+      </Typography>
+      <div
+        v-if="isHovering"
+        class="card-controls"
+      >
         <IconButton
           class="border"
           icon="mdi-download"
@@ -39,7 +40,9 @@ const turnsDialog = ref(false)
           height="32"
           variant="plain"
         >
-          <Tooltip location="top"> Download in CSV </Tooltip>
+          <Tooltip location="top">
+            Download in CSV
+          </Tooltip>
         </IconButton>
         <IconButton
           class="no-hover border ml-3"
@@ -51,7 +54,9 @@ const turnsDialog = ref(false)
           variant="plain"
           @click="turnsDialog.show(true)"
         >
-          <Tooltip location="top"> Open in full </Tooltip>
+          <Tooltip location="top">
+            Open in full
+          </Tooltip>
         </IconButton>
       </div>
       <Chart
@@ -123,11 +128,21 @@ const turnsDialog = ref(false)
       />
     </Card>
   </VHover>
-  <Dialog ref="turnsDialog" width="50%" min-width="400px">
+  <Dialog
+    ref="turnsDialog"
+    width="50%"
+    min-width="400px"
+  >
     <template #text>
       <div class="pa-0">
-        <VRow no-gutters align="baseline" justify="space-between">
-          <Typography type="text-h3"> Turns by market</Typography>
+        <VRow
+          no-gutters
+          align="baseline"
+          justify="space-between"
+        >
+          <Typography type="text-h3">
+            Turns by market
+          </Typography>
           <IconButton
             icon="mdi-download"
             size="20"
@@ -136,7 +151,9 @@ const turnsDialog = ref(false)
             height="32"
             variant="plain"
           >
-            <Tooltip location="top"> Download in CSV </Tooltip>
+            <Tooltip location="top">
+              Download in CSV
+            </Tooltip>
           </IconButton>
         </VRow>
 
