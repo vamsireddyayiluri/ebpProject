@@ -1,19 +1,18 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
-import { delay } from 'lodash'
 
 import imgUrl from '~/assets/icons/default-map-marker.svg'
 import { useTheme } from 'vuetify'
 import { Main } from '@layouts'
 
 import { useActions, useHeaders, useData, useDate } from '~/composables'
+import { markersParser } from '~/stores/parsers'
 
 const theme = useTheme()
 const computedTheme = computed(() => theme.global.name.value)
 
-const { average1, average2, average3, entities, markers, marketData, rankingData } = toRefs(
-  useData(),
-)
+const { average1, average2, average3, entities, markers, marketData, rankingData } = useData()
+
 const headers = useHeaders()
 const actions = useActions()
 const formatDate = useDate()
@@ -27,8 +26,14 @@ const rankingDialog = ref(false)
 const loading = ref(false)
 const showActions = ref(false)
 const showSelect = ref(false)
+const searchValue = ref(null)
+const paneOpened = ref(false)
 
-const mutableSelected = ref(Object.keys(rankingData.value)[0])
+const mutableSelected = ref(Object.keys(rankingData)[0])
+
+const filteredEntities = ref(entities)
+const filteredMarkers = ref(markers)
+
 const computedSelected = computed({
   get() {
     return mutableSelected.value
@@ -37,7 +42,16 @@ const computedSelected = computed({
     mutableSelected.value = value
   },
 })
-const computedValues = computed(() => rankingData.value[computedSelected.value])
+
+const computedMarkers = computed({
+  get() {
+    return filteredMarkers.value
+  },
+  set(value) {
+    filteredMarkers.value = value
+  },
+})
+const computedValues = computed(() => rankingData[computedSelected.value])
 
 const onDownload = e => console.log(e)
 const onExpand = () => rankingDialog.value.show(true)
@@ -63,8 +77,16 @@ const toggleMap = () => {
   mapToggled.value = !mapToggled.value
 }
 
-const onSplitPaneClosed = () => {
-  toggleMap()
+const onSplitPaneClosed = e => toggleMap()
+const onSplitPaneResized = e => {
+  const { size } = useArrayFindLast(e, element => element).value
+
+  paneOpened.value = Boolean(size >= 60)
+}
+const onSplitterClicked = e => {
+  const { size } = e
+
+  paneOpened.value = Boolean(size < 100)
 }
 
 const onAction = (e, action) => {
@@ -72,11 +94,43 @@ const onAction = (e, action) => {
 
   loading.value = true
 
-  delay(() => (loading.value = false), 1500)
+  setTimeout(() => (loading.value = false), 1500)
 }
+
 const onSelect = e => {
   computedSelected.value = e
 }
+
+const onUpdated = e => {
+  computedMarkers.value = markersParser(e)
+}
+
+const onClearSearch = () => {
+  loading.value = true
+
+  setTimeout(() => {
+    filteredEntities.value = entities
+
+    loading.value = false
+  }, 1000)
+}
+
+const debouncedSearch = useDebounceFn(searchValue => {
+  if (!searchValue) {
+    onClearSearch()
+  } else {
+    filteredEntities.value = useArrayFilter(
+      entities,
+      ({ container, ref, size }) =>
+        useArraySome(
+          useArrayMap(Object.values({ container, ref, size }), value => value.toLowerCase()).value,
+          values => values.includes(searchValue.toLowerCase()),
+        ).value,
+    ).value
+  }
+}, 300)
+
+watch(searchValue, value => debouncedSearch(value))
 </script>
 
 <template>
@@ -107,7 +161,13 @@ const onSelect = e => {
       </template>
     </SubHeader>
     <VContainer class="bg-background ma-0 pa-0" fluid>
-      <Panes ref="panesRef" :panes="panes" @onSplitPaneClosed="onSplitPaneClosed">
+      <Panes
+        ref="panesRef"
+        :panes="panes"
+        @onSplitPaneClosed="onSplitPaneClosed"
+        @onSplitPaneResized="onSplitPaneResized"
+        @onSplitterClicked="onSplitterClicked"
+      >
         <template #content class="test">
           <VContainer class="content bg-background px-8 pb-6 pt-10" fluid>
             <VRow no-gutters class="gap-5">
@@ -143,8 +203,8 @@ const onSelect = e => {
             </VRow>
             <VRow>
               <VCol>
-                <VRow no-gutters align="baseline" justify="space-between">
-                  <Typography type="text-h2" class="mb-7"> Turns </Typography>
+                <VRow class="mb-7" no-gutters align="center" justify="space-between">
+                  <Typography type="text-h2"> Turns </Typography>
                   <ButtonToggle
                     v-model="tab"
                     :items="[{ label: 'Turns' }, { label: 'Marketplace' }]"
@@ -152,8 +212,34 @@ const onSelect = e => {
                   />
                 </VRow>
 
+                <VRow class="mb-4" no-gutters align="center" justify="space-between">
+                  <Textfield
+                    v-model="searchValue"
+                    class="mr-4"
+                    type="text"
+                    placeholder="Search..."
+                    prepend-inner-icon="mdi-magnify"
+                    clearable
+                    @click:clear="onClearSearch"
+                  />
+                  <Autocomplete class="mr-4" placeholder="Container #" />
+                  <Autocomplete placeholder="Size / Type" />
+                  <VSpacer />
+                  <IconButton
+                    class="border"
+                    icon="mdi-download"
+                    size="24"
+                    width="48"
+                    min-width="48"
+                    height="48"
+                    variant="plain"
+                  >
+                    <Tooltip location="top"> Download PDF </Tooltip>
+                  </IconButton>
+                </VRow>
+
                 <VirtualTable
-                  :entities="entities"
+                  :entities="filteredEntities"
                   :headers="headers"
                   :loading="loading"
                   :options="{
@@ -161,26 +247,41 @@ const onSelect = e => {
                     showActions,
                     showSelect,
                     tableHeight: 575,
-                    tableMinWidth: '960',
+                    tableMinWidth: 960,
                   }"
                   @onScroll="() => {}"
                   @onSelectRow="() => {}"
                   @onSort="() => {}"
-                  @onUpdated="() => {}"
+                  @onUpdated="onUpdated"
                 >
                   <template #ref="{ item }">
-                    <Typography type="text-body-m-regular">
-                      {{ item.ref || '--' }}
+                    <Typography type="text-body-m-regular text-uppercase">
+                      <Highlighter v-if="searchValue" :query="searchValue">
+                        {{ item.ref || '--' }}
+                      </Highlighter>
+                      <template v-else>
+                        {{ item.ref || '--' }}
+                      </template>
                     </Typography>
                   </template>
                   <template #container="{ item }">
                     <Typography type="text-body-m-regular text-uppercase">
-                      {{ item.container }}
+                      <Highlighter v-if="searchValue" :query="searchValue">
+                        {{ item.container }}
+                      </Highlighter>
+                      <template v-else>
+                        {{ item.container }}
+                      </template>
                     </Typography>
                   </template>
                   <template #size="{ item }">
                     <Typography type="text-body-m-regular">
-                      {{ item.size }}
+                      <Highlighter v-if="searchValue" :query="searchValue">
+                        {{ item.size }}
+                      </Highlighter>
+                      <template v-else>
+                        {{ item.size }}
+                      </template>
                     </Typography>
                   </template>
                   <template #created="{ item }">
@@ -249,7 +350,7 @@ const onSelect = e => {
                     height="32"
                     variant="plain"
                   >
-                    <Tooltip location="top"> Download in CSV </Tooltip>
+                    <Tooltip location="top"> Download PDF </Tooltip>
                   </IconButton>
                 </VRow>
                 <div
@@ -269,10 +370,31 @@ const onSelect = e => {
           </Dialog>
         </template>
         <template #map>
+          <VFadeTransition>
+            <div
+              v-if="paneOpened"
+              class="styledMapFilters d-flex position-absolute ma-8"
+              no-gutters
+              align="center"
+            >
+              <VSpacer />
+              <Autocomplete
+                class="styledMapFilter bg-uiPrimary mr-4 rounded-sm"
+                placeholder="Age of containers"
+              />
+              <Autocomplete
+                class="styledMapFilter bg-uiPrimary mr-4 rounded-sm"
+                placeholder="Containers in marketplace"
+              />
+              <Autocomplete
+                class="styledMapFilter bg-uiPrimary rounded-sm"
+                placeholder="Exporter facilities"
+              />
+            </div>
+          </VFadeTransition>
           <Map
-            :style="{ height: '1200px' }"
             :map-options="mapOptions"
-            :markers="markers"
+            :markers="computedMarkers"
             :render-info-window="renderInfoWindow"
             :render-marker-icon="renderMarkerIcon"
             :render-marker-cluster="true"
@@ -303,10 +425,7 @@ const onSelect = e => {
 
   .splitpanes__pane {
     height: v-bind(mapHeight) !important;
-
-    &:hover {
-      overflow: auto;
-    }
+    position: relative;
   }
 
   .google-map-wrapper {
@@ -321,11 +440,15 @@ const onSelect = e => {
 
   .content {
     min-width: 50vw;
-    overflow: overlay;
+  }
 
-    &::-webkit-scrollbar {
-      width: 0;
-      height: 0;
+  .styledMapFilters {
+    top: 0;
+    right: 0;
+    z-index: 5;
+
+    > .styledMapFilter {
+      width: 280px;
     }
   }
 }

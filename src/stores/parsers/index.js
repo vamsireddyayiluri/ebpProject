@@ -1,8 +1,6 @@
 import { getNearestLocation } from '@qualle-admin/qutil/dist/region'
 import { streetTurnDailyAverage, streetTurnYearlyAverage } from './average'
 
-import snapshots from '~/fixtures/snapshots.json'
-
 import {
   chain,
   chunk,
@@ -18,8 +16,8 @@ import {
   values,
 } from 'lodash'
 
-export const average1Parser = () => {
-  const { change: value, increase, sum } = streetTurnYearlyAverage(snapshots)
+export const average1Parser = entities => {
+  const { change: value, increase, sum } = streetTurnYearlyAverage(entities)
 
   return {
     increase,
@@ -30,8 +28,8 @@ export const average1Parser = () => {
   }
 }
 
-export const average2Parser = () => {
-  const { change: value, increase, sum } = streetTurnDailyAverage(snapshots)
+export const average2Parser = entities => {
+  const { change: value, increase, sum } = streetTurnDailyAverage(entities)
 
   return {
     increase,
@@ -42,7 +40,7 @@ export const average2Parser = () => {
   }
 }
 
-export const average3Parser = () => ({
+export const average3Parser = entities => ({
   message: 'this year',
   sum: 123,
   title: 'Average marketplace dwell time (days)',
@@ -50,15 +48,15 @@ export const average3Parser = () => ({
   value: 7,
 })
 
-export const entitiesParser = () =>
-  chain(snapshots)
+export const entitiesParser = entities =>
+  chain(entities)
     .map((entity, index) => ({ ...entity, id: index }))
     .filter(({ location: { geohash } }) => geohash)
     .value()
 
-export const markersParser = () => {
+export const markersParser = entities => {
   const locationsMap = map(
-    uniqBy(snapshots, ({ location: { geohash } }) => geohash),
+    uniqBy(entities, ({ location: { geohash } }) => geohash),
     ({ location }) => ({ location }),
   )
 
@@ -69,7 +67,7 @@ export const markersParser = () => {
 
   const preparedMarkers = flatMap(filteredLocationsMap, ({ location }) => ({
     location,
-    containers: filter(snapshots, ({ location: { geohash } }) => geohash === location.geohash),
+    containers: filter(entities, ({ location: { geohash } }) => geohash === location.geohash),
   }))
 
   const groupedLocations = map(
@@ -84,8 +82,8 @@ export const markersParser = () => {
   return groupedLocations
 }
 
-export const marketDataParser = () => {
-  const series = map(snapshots, ({ exportLocation }) => ({
+export const marketDataParser = entities => {
+  const series = map(entities, ({ exportLocation }) => ({
     market: getNearestLocation(exportLocation).shift().market,
   }))
   const counts = countBy(series, ({ market }) => market)
@@ -96,8 +94,8 @@ export const marketDataParser = () => {
   }
 }
 
-export const rankingDataParser = () => {
-  const exporters = groupBy(snapshots, ({ exportLocation: { label } }) => label)
+export const rankingDataParser = entities => {
+  const exporters = groupBy(entities, ({ exportLocation: { label } }) => label)
   const chunkedExporters = chunk(
     chain(exporters)
       .keys()

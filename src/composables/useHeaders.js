@@ -12,7 +12,7 @@ export default () => [
     sortable: true,
   },
   {
-    text: 'Size/Type',
+    text: 'Size / Type',
     value: 'size',
     align: 'start',
     sortable: true,
