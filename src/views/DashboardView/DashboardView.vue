@@ -1,24 +1,21 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
-import { delay } from 'lodash'
 
 import imgUrl from '~/assets/icons/default-map-marker.svg'
 import { useTheme } from 'vuetify'
 import { Main } from '@layouts'
 
 import { useActions, useHeaders, useData, useDate } from '~/composables'
+import { markersParser } from '~/stores/parsers'
 
 const theme = useTheme()
 const computedTheme = computed(() => theme.global.name.value)
 
-const { average1, average2, average3, entities, markers, marketData, rankingData } = toRefs(
-  useData(),
-)
+const { average1, average2, average3, entities, markers, marketData, rankingData } = useData()
+
 const headers = useHeaders()
 const actions = useActions()
 const formatDate = useDate()
-
-const filteredEntities = ref(entities.value)
 
 const regions = ref(['All regions', 'SW USA', 'SE USA', 'NW USA', 'NE USA'])
 const years = ref(['By years', 'By month', 'By weeks'])
@@ -30,8 +27,13 @@ const loading = ref(false)
 const showActions = ref(false)
 const showSelect = ref(false)
 const searchValue = ref(null)
+const paneOpened = ref(false)
 
-const mutableSelected = ref(Object.keys(rankingData.value)[0])
+const mutableSelected = ref(Object.keys(rankingData)[0])
+
+const filteredEntities = ref(entities)
+const filteredMarkers = ref(markers)
+
 const computedSelected = computed({
   get() {
     return mutableSelected.value
@@ -40,7 +42,16 @@ const computedSelected = computed({
     mutableSelected.value = value
   },
 })
-const computedValues = computed(() => rankingData.value[computedSelected.value])
+
+const computedMarkers = computed({
+  get() {
+    return filteredMarkers.value
+  },
+  set(value) {
+    filteredMarkers.value = value
+  },
+})
+const computedValues = computed(() => rankingData[computedSelected.value])
 
 const onDownload = e => console.log(e)
 const onExpand = () => rankingDialog.value.show(true)
@@ -67,45 +78,59 @@ const toggleMap = () => {
 }
 
 const onSplitPaneClosed = e => toggleMap()
+const onSplitPaneResized = e => {
+  const { size } = useArrayFindLast(e, element => element).value
+
+  paneOpened.value = Boolean(size >= 60)
+}
+const onSplitterClicked = e => {
+  const { size } = e
+
+  paneOpened.value = Boolean(size < 100)
+}
 
 const onAction = (e, action) => {
   console.log({ action, e })
 
   loading.value = true
 
-  delay(() => (loading.value = false), 1500)
+  setTimeout(() => (loading.value = false), 1500)
 }
 
 const onSelect = e => {
   computedSelected.value = e
 }
 
+const onUpdated = e => {
+  computedMarkers.value = markersParser(e)
+}
+
 const onClearSearch = () => {
   loading.value = true
 
   setTimeout(() => {
-    filteredEntities.value = entities.value
+    filteredEntities.value = entities
 
     loading.value = false
   }, 1000)
 }
 
-const debouncedSearch = useDebounceFn(() => {
-  if (!searchValue.value) {
+const debouncedSearch = useDebounceFn(searchValue => {
+  if (!searchValue) {
     onClearSearch()
   } else {
     filteredEntities.value = useArrayFilter(
-      entities.value,
+      entities,
       ({ container, ref, size }) =>
         useArraySome(
           useArrayMap(Object.values({ container, ref, size }), value => value.toLowerCase()).value,
-          values => values.includes(searchValue.value.toLowerCase()),
+          values => values.includes(searchValue.toLowerCase()),
         ).value,
     ).value
   }
 }, 300)
 
-watch(searchValue, _ => debouncedSearch())
+watch(searchValue, value => debouncedSearch(value))
 </script>
 
 <template>
@@ -136,7 +161,13 @@ watch(searchValue, _ => debouncedSearch())
       </template>
     </SubHeader>
     <VContainer class="bg-background ma-0 pa-0" fluid>
-      <Panes ref="panesRef" :panes="panes" @onSplitPaneClosed="onSplitPaneClosed">
+      <Panes
+        ref="panesRef"
+        :panes="panes"
+        @onSplitPaneClosed="onSplitPaneClosed"
+        @onSplitPaneResized="onSplitPaneResized"
+        @onSplitterClicked="onSplitterClicked"
+      >
         <template #content class="test">
           <VContainer class="content bg-background px-8 pb-6 pt-10" fluid>
             <VRow no-gutters class="gap-5">
@@ -221,7 +252,7 @@ watch(searchValue, _ => debouncedSearch())
                   @onScroll="() => {}"
                   @onSelectRow="() => {}"
                   @onSort="() => {}"
-                  @onUpdated="() => {}"
+                  @onUpdated="onUpdated"
                 >
                   <template #ref="{ item }">
                     <Typography type="text-body-m-regular text-uppercase">
@@ -339,9 +370,31 @@ watch(searchValue, _ => debouncedSearch())
           </Dialog>
         </template>
         <template #map>
+          <VFadeTransition>
+            <div
+              v-if="paneOpened"
+              class="styledMapFilters d-flex position-absolute ma-8"
+              no-gutters
+              align="center"
+            >
+              <VSpacer />
+              <Autocomplete
+                class="styledMapFilter bg-uiPrimary mr-4 rounded-sm"
+                placeholder="Age of containers"
+              />
+              <Autocomplete
+                class="styledMapFilter bg-uiPrimary mr-4 rounded-sm"
+                placeholder="Containers in marketplace"
+              />
+              <Autocomplete
+                class="styledMapFilter bg-uiPrimary rounded-sm"
+                placeholder="Exporter facilities"
+              />
+            </div>
+          </VFadeTransition>
           <Map
             :map-options="mapOptions"
-            :markers="markers"
+            :markers="computedMarkers"
             :render-info-window="renderInfoWindow"
             :render-marker-icon="renderMarkerIcon"
             :render-marker-cluster="true"
@@ -372,6 +425,7 @@ watch(searchValue, _ => debouncedSearch())
 
   .splitpanes__pane {
     height: v-bind(mapHeight) !important;
+    position: relative;
   }
 
   .google-map-wrapper {
@@ -386,11 +440,15 @@ watch(searchValue, _ => debouncedSearch())
 
   .content {
     min-width: 50vw;
-    overflow: overlay;
+  }
 
-    &::-webkit-scrollbar {
-      width: 0;
-      height: 0;
+  .styledMapFilters {
+    top: 0;
+    right: 0;
+    z-index: 5;
+
+    > .styledMapFilter {
+      width: 280px;
     }
   }
 }
