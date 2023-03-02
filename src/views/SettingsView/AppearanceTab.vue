@@ -22,14 +22,39 @@ watch(() => {
 </script>
 
 <template>
-  <Typography type="text-h1" class="mb-8">Appearance </Typography>
-  <RadioGroup v-model="radio" inline>
-    <VRow no-gutters class="gap-6">
-      <label v-for="t in themes" class="themeItem">
-        <div class="skeleton" :class="{ dark: t.name === 'dark' }">
-          <div v-for="i in [100, 130, 90]" class="line" :style="{ width: i + 'px' }"></div>
+  <Typography
+    type="text-h1"
+    class="mb-8"
+  >
+    Appearance
+  </Typography>
+  <RadioGroup
+    v-model="radio"
+    inline
+  >
+    <VRow
+      no-gutters
+      class="gap-6"
+    >
+      <label
+        v-for="t in themes"
+        class="themeItem"
+      >
+        <div
+          class="skeleton"
+          :class="{ dark: t.name === 'dark' }"
+        >
+          <div
+            v-for="i in [100, 130, 90]"
+            class="line"
+            :style="{ width: i + 'px' }"
+          />
         </div>
-        <Radio :label="t.label" :value="t.name" class="radioItem" />
+        <Radio
+          :label="t.label"
+          :value="t.name"
+          class="radioItem"
+        />
       </label>
     </VRow>
   </RadioGroup>

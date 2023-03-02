@@ -97,14 +97,30 @@ const editSlot = slot => {
   <Main class="settingsView">
     <SubHeader>
       <template #controls>
-        <Tabs v-model="tab" :items="items" />
+        <Tabs
+          v-model="tab"
+          :items="items"
+        />
       </template>
     </SubHeader>
 
-    <VContainer fluid class="pt-10 pb-6 px-8">
+    <VContainer
+      fluid
+      class="pt-10 pb-6 px-8"
+    >
       <template v-if="!tab">
-        <Typography type="text-h1" class="mb-8"> Data reports </Typography>
-        <VRow no-gutters justify="start" align="center" class="w-fit">
+        <Typography
+          type="text-h1"
+          class="mb-8"
+        >
+          Data reports
+        </Typography>
+        <VRow
+          no-gutters
+          justify="start"
+          align="center"
+          class="w-fit"
+        >
           <VCol cols="auto">
             <Switch
               id="containers"
@@ -114,18 +130,32 @@ const editSlot = slot => {
             />
           </VCol>
           <VCol>
-            <label for="containers" :style="{ cursor: 'pointer' }">
-              <Typography type="text-body-m-regular" class="mb-1">
+            <label
+              for="containers"
+              :style="{ cursor: 'pointer' }"
+            >
+              <Typography
+                type="text-body-m-regular"
+                class="mb-1"
+              >
                 Empty container data report
               </Typography>
-              <Typography type="text-body-s-regular" :color="getColor('textSecondary')">
+              <Typography
+                type="text-body-s-regular"
+                :color="getColor('textSecondary')"
+              >
                 Empty container data report
               </Typography>
             </label>
           </VCol>
         </VRow>
 
-        <VRow no-gutters justify="start" align="center" class="mt-6 w-fit">
+        <VRow
+          no-gutters
+          justify="start"
+          align="center"
+          class="mt-6 w-fit"
+        >
           <VCol cols="auto">
             <Switch
               id="facility"
@@ -135,26 +165,59 @@ const editSlot = slot => {
             />
           </VCol>
           <VCol>
-            <label for="facility" :style="{ cursor: 'pointer' }">
-              <Typography type="text-body-m-regular" class="mb-1">
+            <label
+              for="facility"
+              :style="{ cursor: 'pointer' }"
+            >
+              <Typography
+                type="text-body-m-regular"
+                class="mb-1"
+              >
                 Exporter facility data report
               </Typography>
-              <Typography type="text-body-s-regular" :color="getColor('textSecondary')">
+              <Typography
+                type="text-body-s-regular"
+                :color="getColor('textSecondary')"
+              >
                 Metrics around performance at your exporter customers facilities
               </Typography>
             </label>
           </VCol>
         </VRow>
 
-        <VRow no-gutters justify="start" align="center" class="mt-10">
-          <Typography type="text-h3" class="mr-10">Time slots for receiving</Typography>
-          <Button prepend-icon="mdi-plus" variant="plain" class="pa-0" @click="openSlotDialog">
+        <VRow
+          no-gutters
+          justify="start"
+          align="center"
+          class="mt-10"
+        >
+          <Typography
+            type="text-h3"
+            class="mr-10"
+          >
+            Time slots for receiving
+          </Typography>
+          <Button
+            prepend-icon="mdi-plus"
+            variant="plain"
+            class="pa-0"
+            @click="openSlotDialog"
+          >
             Create new slot
           </Button>
         </VRow>
-        <div v-for="slot in slotItems" class="slotsWrapper py-4 px-3 mt-6 rounded">
-          <VRow no-gutters justify="space-between">
-            <Typography type="text-h4" class="mr-10">
+        <div
+          v-for="slot in slotItems"
+          class="slotsWrapper py-4 px-3 mt-6 rounded"
+        >
+          <VRow
+            no-gutters
+            justify="space-between"
+          >
+            <Typography
+              type="text-h4"
+              class="mr-10"
+            >
               {{ slot.frequency.label }}; {{ slot.timeZone }}; {{ slot.time }}
             </Typography>
             <IconButton
@@ -167,7 +230,10 @@ const editSlot = slot => {
               @click="editSlot(slot)"
             />
           </VRow>
-          <VRow no-gutters class="gap-2">
+          <VRow
+            no-gutters
+            class="gap-2"
+          >
             <MemberItems
               :members="slot.members"
               @onRemove="memberId => removeMemberDialog(slot.id, memberId)"
@@ -175,15 +241,33 @@ const editSlot = slot => {
           </VRow>
         </div>
 
-        <Dialog ref="slotDialog" width="50%" min-width="400px">
+        <Dialog
+          ref="slotDialog"
+          width="50%"
+          min-width="400px"
+        >
           <template #text>
-            <Typography type="text-h3">Create slot</Typography>
-            <Typography type="text-body-m-regular" class="mt-2 mb-6">
+            <Typography type="text-h3">
+              Create slot
+            </Typography>
+            <Typography
+              type="text-body-m-regular"
+              class="mt-2 mb-6"
+            >
               Create time slot for recipients to receive the reports
             </Typography>
             <form @submit.prevent="addMember">
-              <VRow no-gutters align="center" class="gap-4">
-                <Textfield v-model="email" type="email" label="Email *" required />
+              <VRow
+                no-gutters
+                align="center"
+                class="gap-4"
+              >
+                <Textfield
+                  v-model="email"
+                  type="email"
+                  label="Email *"
+                  required
+                />
                 <Button
                   type="submit"
                   variant="outlined"
@@ -194,7 +278,10 @@ const editSlot = slot => {
                 </Button>
               </VRow>
             </form>
-            <VRow no-gutters class="gap-2">
+            <VRow
+              no-gutters
+              class="gap-2"
+            >
               <MemberItems
                 :members="editableSlot ? editableSlot.members : members"
                 @onRemove="removeMember"
@@ -202,16 +289,19 @@ const editSlot = slot => {
             </VRow>
 
             <form @submit.prevent="onSubmit">
-              <VRow no-gutters class="my-4">
+              <VRow
+                no-gutters
+                class="my-4"
+              >
                 <template v-if="editableSlot">
                   <VCol cols="6">
                     <Select
                       v-model="editableSlot.frequency"
                       label="Frequency *"
                       :items="frequencyItems"
-                      itemTitle="label"
-                      itemValue="id"
-                      returnObject="true"
+                      item-title="label"
+                      item-value="id"
+                      return-object="true"
                       class="mr-2"
                     />
                   </VCol>
@@ -220,7 +310,7 @@ const editSlot = slot => {
                       v-model="editableSlot.timeZone"
                       label="Time zone *"
                       :items="timeZoneItems"
-                      returnObject="true"
+                      return-object="true"
                       class="ml-2"
                     />
                   </VCol>
@@ -231,9 +321,9 @@ const editSlot = slot => {
                       v-model="frequency"
                       label="Frequency *"
                       :items="frequencyItems"
-                      itemTitle="label"
-                      itemValue="id"
-                      returnObject="true"
+                      item-title="label"
+                      item-value="id"
+                      return-object="true"
                       class="mr-2"
                     />
                   </VCol>
@@ -242,14 +332,17 @@ const editSlot = slot => {
                       v-model="timeZone"
                       label="Time zone *"
                       :items="timeZoneItems"
-                      returnObject="true"
+                      return-object="true"
                       class="ml-2"
                     />
                   </VCol>
                 </template>
               </VRow>
               <VRow no-gutters>
-                <Timepicker label="Time *" @change="onChangeTime" />
+                <Timepicker
+                  label="Time *"
+                  @change="onChangeTime"
+                />
               </VRow>
               <template v-if="editableSlot">
                 <Button
@@ -257,9 +350,9 @@ const editSlot = slot => {
                   class="w-100 mt-6"
                   :disabled="
                     !editableSlot.members.length ||
-                    !editableSlot.frequency?.label ||
-                    !editableSlot.timeZone ||
-                    !editableSlot.time
+                      !editableSlot.frequency?.label ||
+                      !editableSlot.timeZone ||
+                      !editableSlot.time
                   "
                 >
                   Ready
@@ -277,16 +370,26 @@ const editSlot = slot => {
             </form>
           </template>
         </Dialog>
-        <Dialog ref="isRemoveMemberDialog" width="50%" min-width="400px">
+        <Dialog
+          ref="isRemoveMemberDialog"
+          width="50%"
+          min-width="400px"
+        >
           <template #text>
             <div class="pa-0">
               Are you sure you want to remove recipient
-              <Typography type="text-body-m-semibold" class="d-inline">
+              <Typography
+                type="text-body-m-semibold"
+                class="d-inline"
+              >
                 Member {{ removedMember.value }}?
               </Typography>
             </div>
 
-            <Button class="w-100 mt-7" @click="removeMemberFromSlot(removedMember.id)">
+            <Button
+              class="w-100 mt-7"
+              @click="removeMemberFromSlot(removedMember.id)"
+            >
               Remove
             </Button>
           </template>
@@ -296,9 +399,16 @@ const editSlot = slot => {
       <template v-if="tab === 1">
         <AppearanceTab />
       </template>
-      <VRow no-gutters class="mt-10">
-        <Button class="mr-4">Save</Button>
-        <Button variant="outlined"> Cancel changes</Button>
+      <VRow
+        no-gutters
+        class="mt-10"
+      >
+        <Button class="mr-4">
+          Save
+        </Button>
+        <Button variant="outlined">
+          Cancel changes
+        </Button>
       </VRow>
     </VContainer>
   </Main>

@@ -45,7 +45,7 @@ const data = [
     button: true,
   },
 ]
-const router = useRouter()
+const route = useRoute()
 </script>
 
 <template>
@@ -53,6 +53,7 @@ const router = useRouter()
     <Header
       :items="items"
       :notifications="data"
+      :route="route"
       sticky
     />
     <slot />

@@ -137,14 +137,32 @@ watch(searchValue, value => debouncedSearch(value))
   <Main class="dashboardView">
     <SubHeader>
       <template #controls>
-        <SimpleSelect :items="regions" :selected="regions[0]" />
-        <Divider vertical class="my-2 mx-4" />
-        <SimpleSelect :items="years" @onSelect="onSelect" />
-        <Divider vertical class="my-2 mx-4" />
+        <SimpleSelect
+          :items="regions"
+          :selected="regions[0]"
+        />
+        <Divider
+          vertical
+          class="my-2 mx-4"
+        />
+        <SimpleSelect
+          :items="years"
+          @onSelect="onSelect"
+        />
+        <Divider
+          vertical
+          class="my-2 mx-4"
+        />
         <div class="d-flex align-center">
           <IconButton icon="mdi-chevron-left" />
-          <IconButton class="mr-2" icon="mdi-chevron-right" />
-          <Typography type="text-body-s-regular" :color="getColor('textSecondary')">
+          <IconButton
+            class="mr-2"
+            icon="mdi-chevron-right"
+          />
+          <Typography
+            type="text-body-s-regular"
+            :color="getColor('textSecondary')"
+          >
             2022
           </Typography>
         </div>
@@ -160,7 +178,10 @@ watch(searchValue, value => debouncedSearch(value))
         </Button>
       </template>
     </SubHeader>
-    <VContainer class="bg-background ma-0 pa-0" fluid>
+    <VContainer
+      class="bg-background ma-0 pa-0"
+      fluid
+    >
       <Panes
         ref="panesRef"
         :panes="panes"
@@ -168,23 +189,43 @@ watch(searchValue, value => debouncedSearch(value))
         @onSplitPaneResized="onSplitPaneResized"
         @onSplitterClicked="onSplitterClicked"
       >
-        <template #content class="test">
-          <VContainer class="content bg-background px-8 pb-6 pt-10" fluid>
-            <VRow no-gutters class="gap-5">
+        <template
+          #content
+          class="test"
+        >
+          <VContainer
+            class="content bg-background px-8 pb-6 pt-10"
+            fluid
+          >
+            <VRow
+              no-gutters
+              class="gap-5"
+            >
               <VCol :style="{ minWidth: '250px' }">
-                <AverageCard v-bind="average1" />
+                <AverageCard
+                  class="fill-height"
+                  v-bind="average1"
+                />
               </VCol>
               <VCol :style="{ minWidth: '250px' }">
-                <AverageCard v-bind="average2" />
+                <AverageCard
+                  class="fill-height"
+                  v-bind="average2"
+                />
               </VCol>
               <VCol :style="{ minWidth: '250px' }">
-                <AverageCard v-bind="average3" />
+                <AverageCard
+                  class="fill-height"
+                  v-bind="average3"
+                />
               </VCol>
             </VRow>
-            <VRow no-gutters class="my-10 gap-5">
+            <VRow
+              no-gutters
+              class="my-10 gap-5"
+            >
               <VCol :style="{ minWidth: '350px' }">
                 <TurnsChart
-                  class="fill-height"
                   :charts="{
                     label: 'Turns by market',
                     settings: { horizontal: true, type: 'bar', showLabels: false },
@@ -205,8 +246,15 @@ watch(searchValue, value => debouncedSearch(value))
             </VRow>
             <VRow>
               <VCol>
-                <VRow class="mb-7" no-gutters align="center" justify="space-between">
-                  <Typography type="text-h2"> Turns </Typography>
+                <VRow
+                  class="mb-7"
+                  no-gutters
+                  align="center"
+                  justify="space-between"
+                >
+                  <Typography type="text-h2">
+                    Turns
+                  </Typography>
                   <ButtonToggle
                     v-model="tab"
                     :items="[{ label: 'Turns' }, { label: 'Marketplace' }]"
@@ -214,7 +262,12 @@ watch(searchValue, value => debouncedSearch(value))
                   />
                 </VRow>
 
-                <VRow class="mb-4" no-gutters align="center" justify="space-between">
+                <VRow
+                  class="mb-4"
+                  no-gutters
+                  align="center"
+                  justify="space-between"
+                >
                   <Textfield
                     v-model="searchValue"
                     class="mr-4"
@@ -224,7 +277,10 @@ watch(searchValue, value => debouncedSearch(value))
                     clearable
                     @click:clear="onClearSearch"
                   />
-                  <Autocomplete class="mr-4" placeholder="Container #" />
+                  <Autocomplete
+                    class="mr-4"
+                    placeholder="Container #"
+                  />
                   <Autocomplete placeholder="Size / Type" />
                   <VSpacer />
                   <IconButton
@@ -236,7 +292,9 @@ watch(searchValue, value => debouncedSearch(value))
                     height="48"
                     variant="plain"
                   >
-                    <Tooltip location="top"> Download PDF </Tooltip>
+                    <Tooltip location="top">
+                      Download PDF
+                    </Tooltip>
                   </IconButton>
                 </VRow>
 
@@ -248,7 +306,7 @@ watch(searchValue, value => debouncedSearch(value))
                     rowHeight: 64,
                     showActions,
                     showSelect,
-                    tableHeight: 575,
+                    tableHeight: 511,
                     tableMinWidth: 960,
                   }"
                   @onScroll="() => {}"
@@ -258,7 +316,10 @@ watch(searchValue, value => debouncedSearch(value))
                 >
                   <template #ref="{ item }">
                     <Typography type="text-body-m-regular text-uppercase">
-                      <Highlighter v-if="searchValue" :query="searchValue">
+                      <Highlighter
+                        v-if="searchValue"
+                        :query="searchValue"
+                      >
                         {{ item.ref || '--' }}
                       </Highlighter>
                       <template v-else>
@@ -268,7 +329,10 @@ watch(searchValue, value => debouncedSearch(value))
                   </template>
                   <template #container="{ item }">
                     <Typography type="text-body-m-regular text-uppercase">
-                      <Highlighter v-if="searchValue" :query="searchValue">
+                      <Highlighter
+                        v-if="searchValue"
+                        :query="searchValue"
+                      >
                         {{ item.container }}
                       </Highlighter>
                       <template v-else>
@@ -278,7 +342,10 @@ watch(searchValue, value => debouncedSearch(value))
                   </template>
                   <template #size="{ item }">
                     <Typography type="text-body-m-regular">
-                      <Highlighter v-if="searchValue" :query="searchValue">
+                      <Highlighter
+                        v-if="searchValue"
+                        :query="searchValue"
+                      >
                         {{ item.size }}
                       </Highlighter>
                       <template v-else>
@@ -292,13 +359,20 @@ watch(searchValue, value => debouncedSearch(value))
                     </Typography>
                   </template>
                   <template #status="{ item }">
-                    <Classification class="mr-2" type="status" :value="item.status" />
+                    <Classification
+                      class="overflow-visible mr-2"
+                      type="status"
+                      :value="item.status"
+                    />
                     <Typography type="text-body-s-regular">
                       {{ formatDate(item.approved || item.declined || item.canceled) }}
                     </Typography>
                   </template>
                   <template #actions="{ item, selected }">
-                    <Menu location="bottom end" offset="3">
+                    <Menu
+                      location="bottom end"
+                      offset="3"
+                    >
                       <template #activator="{ props, isActive }">
                         <IconButton
                           v-bind="props"
@@ -316,7 +390,10 @@ watch(searchValue, value => debouncedSearch(value))
                           @click="onAction(selected.length ? selected : [item], action)"
                         >
                           <template #prepend>
-                            <Icon :color="color" :icon="icon" />
+                            <Icon
+                              :color="color"
+                              :icon="icon"
+                            />
                           </template>
                           <ListItemTitle :color="color">
                             {{ label }}
@@ -337,12 +414,26 @@ watch(searchValue, value => debouncedSearch(value))
           </VContainer>
           <!-- Dialogs -->
 
-          <Dialog ref="rankingDialog" width="50%" min-width="400px">
+          <Dialog
+            ref="rankingDialog"
+            width="50%"
+            min-width="400px"
+          >
             <template #text>
               <div class="pa-0">
-                <VRow no-gutters align="baseline" justify="space-between">
-                  <VRow no-gutters align="center" class="mb-4">
-                    <Typography type="text-h3"> Ranking by exporters </Typography>
+                <VRow
+                  no-gutters
+                  align="baseline"
+                  justify="space-between"
+                >
+                  <VRow
+                    no-gutters
+                    align="center"
+                    class="mb-4"
+                  >
+                    <Typography type="text-h3">
+                      Ranking by exporters
+                    </Typography>
                     <SimpleSelect
                       :items="Object.keys(rankingData)"
                       :selected="computedSelected"
@@ -358,7 +449,9 @@ watch(searchValue, value => debouncedSearch(value))
                     height="32"
                     variant="plain"
                   >
-                    <Tooltip location="top"> Download PDF </Tooltip>
+                    <Tooltip location="top">
+                      Download PDF
+                    </Tooltip>
                   </IconButton>
                 </VRow>
                 <div
@@ -366,7 +459,10 @@ watch(searchValue, value => debouncedSearch(value))
                   :key="n"
                   class="d-flex justify-space-between mt-2"
                 >
-                  <Typography type="text-body-s-regular" :color="getColor('textSecondary')">
+                  <Typography
+                    type="text-body-s-regular"
+                    :color="getColor('textSecondary')"
+                  >
                     {{ rank.label }}
                   </Typography>
                   <Typography type="text-body-s-semibold">
@@ -447,7 +543,7 @@ watch(searchValue, value => debouncedSearch(value))
   }
 
   .content {
-    min-width: 50vw;
+    min-width: 480px;
   }
 
   .styledMapFilters {

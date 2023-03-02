@@ -60,7 +60,10 @@ const emit = defineEmits(['goTo'])
           </Typography>
         </div>
       </div>
-      <div class="line" :style="{ borderColor: getColor('uiLine') }" />
+      <div
+        class="line"
+        :style="{ borderColor: getColor('uiLine') }"
+      />
     </div>
   </div>
 </template>
