@@ -13,12 +13,18 @@ declare module '@vue/runtime-core' {
     LoginView: typeof import('./views/LoginView.vue')['default']
     MyAlert: typeof import('./components/MyAlert/MyAlert.vue')['default']
     NewPasswordView: typeof import('./views/NewPasswordView.vue')['default']
+    ProfileView: typeof import('./views/ProfileView/ProfileView.vue')['default']
+    RegionSettingsTab: typeof import('./views/ProfileView/RegionSettingsTab.vue')['default']
     RegisterView: typeof import('./views/RegisterView.vue')['default']
+    RemoveLocationDialog: typeof import('./components/Dialogs/RemoveLocationDialog.vue')['default']
+    RemoveTeamMemberDialog: typeof import('./components/Dialogs/RemoveTeamMemberDialog.vue')['default']
     ResetPasswordView: typeof import('./views/ResetPasswordView.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SettingsView: typeof import('./views/SettingsView/SettingsView.vue')['default']
     Stepper: typeof import('./components/Stepper/Stepper.vue')['default']
+    TeamMembers: typeof import('./views/ProfileView/TeamMembers.vue')['default']
+    TeamMembersTab: typeof import('./views/ProfileView/TeamMembersTab.vue')['default']
     TurnsChart: typeof import('./views/DashboardView/TurnsChart.vue')['default']
   }
 }
