@@ -16,7 +16,7 @@ const emit = defineEmits(['goTo'])
         v-for="(s, id, number) in steps"
         :key="s.step"
         tabindex="0"
-        :style="{ cursor: 'pointer' }"
+        :style="{ cursor: 'pointer', zIndex: 1 }"
         @click="emit('goTo', id)"
         @keydown.enter="emit('goTo', id)"
       >
@@ -60,10 +60,7 @@ const emit = defineEmits(['goTo'])
           </Typography>
         </div>
       </div>
-      <div
-        class="line"
-        :style="{ borderColor: getColor('uiLine') }"
-      />
+      <div class="line" :style="{ borderColor: getColor('uiLine') }" />
     </div>
   </div>
 </template>
@@ -85,7 +82,6 @@ const emit = defineEmits(['goTo'])
   border-bottom: 1px solid grey;
   position: absolute;
   top: 16px;
-  z-index: -1;
   margin: 0 auto;
 }
 .title {
