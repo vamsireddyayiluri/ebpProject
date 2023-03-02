@@ -7,6 +7,7 @@ export {}
 
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
+    AppearanceTab: typeof import('./views/SettingsView/AppearanceTab.vue')['default']
     DashboardView: typeof import('./views/DashboardView/DashboardView.vue')['default']
     ErrorHeader: typeof import('./@core/components/ErrorHeader.vue')['default']
     LoginView: typeof import('./views/LoginView.vue')['default']
@@ -16,8 +17,8 @@ declare module '@vue/runtime-core' {
     ResetPasswordView: typeof import('./views/ResetPasswordView.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SettingsView: typeof import('./views/SettingsView/SettingsView.vue')['default']
     Stepper: typeof import('./components/Stepper/Stepper.vue')['default']
     TurnsChart: typeof import('./views/DashboardView/TurnsChart.vue')['default']
-    TurnsGraph: typeof import('./views/DashboardView/TurnsGraph.vue')['default']
   }
 }
