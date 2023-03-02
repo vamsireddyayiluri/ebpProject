@@ -184,6 +184,7 @@ watch(searchValue, value => debouncedSearch(value))
             <VRow no-gutters class="my-10 gap-5">
               <VCol :style="{ minWidth: '350px' }">
                 <TurnsChart
+                  class="fill-height"
                   :charts="{
                     label: 'Turns by market',
                     settings: { horizontal: true, type: 'bar', showLabels: false },
@@ -193,6 +194,7 @@ watch(searchValue, value => debouncedSearch(value))
               </VCol>
               <VCol :style="{ minWidth: '350px' }">
                 <RankingCard
+                  class="fill-height"
                   title="Ranking by exporters"
                   :data="rankingData"
                   @onDownload="onDownload"
@@ -287,6 +289,12 @@ watch(searchValue, value => debouncedSearch(value))
                   <template #created="{ item }">
                     <Typography type="text-body-m-regular">
                       {{ formatDate(item.created) }}
+                    </Typography>
+                  </template>
+                  <template #status="{ item }">
+                    <Classification class="mr-2" type="status" :value="item.status" />
+                    <Typography type="text-body-s-regular">
+                      {{ formatDate(item.approved || item.declined || item.canceled) }}
                     </Typography>
                   </template>
                   <template #actions="{ item, selected }">

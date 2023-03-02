@@ -52,6 +52,7 @@ export const entitiesParser = entities =>
   chain(entities)
     .map((entity, index) => ({ ...entity, id: index }))
     .filter(({ location: { geohash } }) => geohash)
+    .filter(({ status }) => status === 'approved' || status === 'declined' || status === 'canceled')
     .value()
 
 export const markersParser = entities => {

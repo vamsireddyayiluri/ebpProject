@@ -16,10 +16,17 @@ export default () => [
     value: 'size',
     align: 'start',
     sortable: true,
+    width: 2,
   },
   {
     text: 'Requested',
     value: 'created',
+    sortable: true,
+    sorter: (a, b) => moment(a).diff(moment(b)),
+  },
+  {
+    text: 'Status',
+    value: 'status',
     sortable: true,
     sorter: (a, b) => moment(a).diff(moment(b)),
   },
