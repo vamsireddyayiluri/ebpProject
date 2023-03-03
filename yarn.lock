@@ -465,9 +465,9 @@
   integrity sha512-y+EHuSchhL7FjHgvQL/0fnnFmO4T1bhvWANX6gcnqTjtnKWbTvUMCpGnv2+t+31d7RzyEAYAd4u2fnIhHL6N/Q==
 
 "@eslint-community/eslint-utils@^4.1.2":
-  version "4.1.2"
-  resolved "https://registry.yarnpkg.com/@eslint-community/eslint-utils/-/eslint-utils-4.1.2.tgz#14ca568ddaa291dd19a4a54498badc18c6cfab78"
-  integrity sha512-7qELuQWWjVDdVsFQ5+beUl+KPczrEDA7S3zM4QUd/bJl7oXgsmpXaEVqrRTnOBqenOV4rWf2kVZk2Ot085zPWA==
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/@eslint-community/eslint-utils/-/eslint-utils-4.2.0.tgz#a831e6e468b4b2b5ae42bf658bea015bf10bc518"
+  integrity sha512-gB8T4H4DEfX2IV9zGDJPOBgP1e/DbfCPDTtEqUMckpvzS1OYtva8JdFYBqMwYk7xAQ429WGF/UPqn8uQ//h2vQ==
   dependencies:
     eslint-visitor-keys "^3.3.0"
 
@@ -1472,9 +1472,9 @@
   integrity sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==
 
 "@qualle-admin/qui@^latest":
-  version "1.95.0"
-  resolved "https://npm.pkg.github.com/download/@qualle-admin/qui/1.95.0/d0b7bcc9bea518fd3d30177d8495a4d7a141676e#d0b7bcc9bea518fd3d30177d8495a4d7a141676e"
-  integrity sha512-hfMesEjJMDWl81QCrQi0pTmpH7wv7lrUSWXkpWBLqRM9bz0j9BQ5H3NOOD7Kxsr7LoRTMezgQR2XFq/eHDrhNA==
+  version "1.98.0"
+  resolved "https://npm.pkg.github.com/download/@qualle-admin/qui/1.98.0/b47be726c9f8ae1895600fdf13995a37734f59d5#b47be726c9f8ae1895600fdf13995a37734f59d5"
+  integrity sha512-EwJmihyW9MnY5f7IgiNa3QklZHQpdjxR/8i3GRH5S4uJXoqVkHLLbrrneixeIOsilDWF2Nx6GAG6dcStwDwKWA==
   dependencies:
     uid "^2.0.1"
     "@fullcalendar/core" "^6.0.3"
@@ -1726,9 +1726,9 @@
   integrity sha512-iiUgKzV9AuaEkZqkOLDIvlQiL6ltuZd9tGcW3gwpnX8JbuiuhFlEGmmFXEXkN50Cvq7Os88IY2v0dkDqXYWVgA==
 
 "@types/node@*", "@types/node@>=12.12.47", "@types/node@>=13.7.0":
-  version "18.14.4"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.14.4.tgz#0e64ec0b35a772e1e3d849f9a0ff61782d0cb647"
-  integrity sha512-VhCw7I7qO2X49+jaKcAUwi3rR+hbxT5VcYF493+Z5kMLI0DL568b7JI4IDJaxWFH0D/xwmGJNoXisyX+w7GH/g==
+  version "18.14.5"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.14.5.tgz#4a13a6445862159303fc38586598a9396fc408b3"
+  integrity sha512-CRT4tMK/DHYhw1fcCEBwME9CSaZNclxfzVMe7GsO6ULSwsttbj70wSiX6rZdIjGblu93sTJxLdhNIT85KKI7Qw==
 
 "@types/node@^14.14.31":
   version "14.18.37"
@@ -2579,9 +2579,9 @@ camelcase@^6.0.0:
   integrity sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==
 
 caniuse-lite@^1.0.30001449:
-  version "1.0.30001458"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001458.tgz#871e35866b4654a7d25eccca86864f411825540c"
-  integrity sha512-lQ1VlUUq5q9ro9X+5gOEyH7i3vm+AYVT1WDCVB69XOZ17KZRhnZ9J0Sqz7wTHQaLBJccNCHq8/Ww5LlOIZbB0w==
+  version "1.0.30001460"
+  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001460.tgz#31d2e26f0a2309860ed3eff154e03890d9d851a7"
+  integrity sha512-Bud7abqjvEjipUkpLs4D7gR0l8hBYBHoa+tGtKJHvT2AYzLp1z7EmVkUT4ERpVUfca8S2HGIVs883D8pUH1ZzQ==
 
 cardinal@^2.1.1:
   version "2.1.1"
@@ -3300,9 +3300,9 @@ editorconfig@^0.15.3:
     sigmund "^1.0.1"
 
 electron-to-chromium@^1.4.284:
-  version "1.4.316"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.316.tgz#7f2cfda199ae1a32a69b3eb9046b8b0640086064"
-  integrity sha512-9urqVpdeJYAwVL/sBjsX2pSlgYI/b4nOqC6UaNa0xlq1VUbXLRhERWlxcQ4FWfUOQQxSSxN/taFtapEcwg5tVA==
+  version "1.4.318"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.318.tgz#7e0755bb80638175327bd9bc14dc4b9a0dbb62b5"
+  integrity sha512-EQHZE/yO9Sg6gIP9VezPltDWFA8pMnv7dNRb4Y0ukels3iyXTH313gbHvK/tZwUF+jeh5F5fDf1rqWb8ZWX8fw==
 
 emoji-regex@^8.0.0:
   version "8.0.0"

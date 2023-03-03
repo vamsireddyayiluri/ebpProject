@@ -123,5 +123,5 @@ export const rankingDataParser = entities => {
   return pagedExporters
 }
 
-export const reservationsDataParser = entities =>
-  entities.map(({ container }, index) => ({ id: index, ...container }))
+export const marketplaceDataParser = entities =>
+  entities.map((entity, index) => ({ id: index, ...entity }))

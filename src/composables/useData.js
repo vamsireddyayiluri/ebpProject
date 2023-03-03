@@ -11,8 +11,8 @@ export default () => {
     markers,
     marketData,
     rankingData,
-    reservationsData,
-    reservationsMarkers,
+    marketplaceData,
+    marketplaceMarkers,
   } = store
 
   return {
@@ -23,7 +23,7 @@ export default () => {
     markers,
     marketData,
     rankingData,
-    reservationsData,
-    reservationsMarkers,
+    marketplaceData,
+    marketplaceMarkers,
   }
 }

@@ -52,10 +52,10 @@ export const marketplaceHeaders = [
     sorter: (a, b) => moment(a).diff(moment(b)),
   },
   {
-    text: 'location',
+    text: 'Location',
     value: 'location',
     sortable: true,
-    width: 3,
+    width: 4,
   },
   {
     text: 'Timestamp of exchange',

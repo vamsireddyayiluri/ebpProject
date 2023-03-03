@@ -7,11 +7,11 @@ import {
   markersParser,
   marketDataParser,
   rankingDataParser,
-  reservationsDataParser,
+  marketplaceDataParser,
 } from './parsers'
 
 import { default as entities } from '~/fixtures/snapshots.json'
-import { default as reservations } from '~/fixtures/reservations.json'
+import { default as marketplaceEntities } from '~/fixtures/marketplace.json'
 
 export const useDataStore = defineStore('data', () => ({
   average1: average1Parser(entities),
@@ -21,6 +21,6 @@ export const useDataStore = defineStore('data', () => ({
   markers: markersParser(entities),
   marketData: marketDataParser(entities),
   rankingData: rankingDataParser(entities),
-  reservationsData: reservationsDataParser(reservations),
-  reservationsMarkers: markersParser(reservationsDataParser(reservations)),
+  marketplaceData: marketplaceDataParser(marketplaceEntities),
+  marketplaceMarkers: markersParser(marketplaceDataParser(marketplaceEntities)),
 }))

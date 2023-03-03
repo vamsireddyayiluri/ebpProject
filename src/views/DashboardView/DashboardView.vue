@@ -19,8 +19,8 @@ const {
   markers,
   marketData,
   rankingData,
-  reservationsData,
-  reservationsMarkers,
+  marketplaceData,
+  marketplaceMarkers,
 } = useData()
 
 const { turnsHeaders, marketplaceHeaders } = useHeaders()
@@ -79,7 +79,7 @@ const mapHeight = `${window.innerHeight - 121}px`
 const mapOptions = markRaw({ zoom: 3, zoomControls: true })
 const onMapLoaded = async ({ api, map }) => console.log({ api, map })
 const onMarkerClick = e => console.log(JSON.stringify(e))
-const renderInfoWindow = marker => JSON.stringify(marker)
+const renderInfoWindow = ({ containers }) => String(`${containers.length} containers`)
 const renderMarkerIcon = () => imgUrl
 
 const panes = ref([
@@ -121,13 +121,15 @@ const onSelect = e => {
 
 const onUpdated = e => {
   computedMarkers.value = markersParser(e)
+
+  console.log(computedMarkers.value)
 }
 
 const onClearSearch = () => {
   loading.value = true
 
   setTimeout(() => {
-    computedEntities.value = tab.value === 0 ? entities : reservationsData
+    computedEntities.value = tab.value === 0 ? entities : marketplaceData
 
     loading.value = false
   }, 1000)
@@ -138,7 +140,7 @@ const debouncedSearch = useDebounceFn(searchValue => {
     onClearSearch()
   } else {
     computedEntities.value = useArrayFilter(
-      computedEntities.value,
+      tab.value === 0 ? entities : marketplaceData,
       ({ container, ref, size }) =>
         useArraySome(
           useArrayMap(Object.values({ container, ref, size }), value => String(value).toLowerCase())
@@ -152,8 +154,8 @@ const debouncedSearch = useDebounceFn(searchValue => {
 watch(searchValue, value => debouncedSearch(value))
 watch(tab, value => {
   searchValue.value = null
-  computedEntities.value = value === 0 ? entities : reservationsData
-  computedMarkers.value = value === 0 ? markers : reservationsMarkers
+  computedEntities.value = value === 0 ? entities : marketplaceData
+  computedMarkers.value = value === 0 ? markers : marketplaceMarkers
 })
 </script>
 
@@ -161,32 +163,14 @@ watch(tab, value => {
   <Main class="dashboardView">
     <SubHeader>
       <template #controls>
-        <SimpleSelect
-          :items="regions"
-          :selected="regions[0]"
-        />
-        <Divider
-          vertical
-          class="my-2 mx-4"
-        />
-        <SimpleSelect
-          :items="years"
-          @onSelect="onSelect"
-        />
-        <Divider
-          vertical
-          class="my-2 mx-4"
-        />
+        <SimpleSelect :items="regions" :selected="regions[0]" />
+        <Divider vertical class="my-2 mx-4" />
+        <SimpleSelect :items="years" @onSelect="onSelect" />
+        <Divider vertical class="my-2 mx-4" />
         <div class="d-flex align-center">
           <IconButton icon="mdi-chevron-left" />
-          <IconButton
-            class="mr-2"
-            icon="mdi-chevron-right"
-          />
-          <Typography
-            type="text-body-s-regular"
-            :color="getColor('textSecondary')"
-          >
+          <IconButton class="mr-2" icon="mdi-chevron-right" />
+          <Typography type="text-body-s-regular" :color="getColor('textSecondary')">
             2022
           </Typography>
         </div>
@@ -202,10 +186,7 @@ watch(tab, value => {
         </Button>
       </template>
     </SubHeader>
-    <VContainer
-      class="bg-background ma-0 pa-0"
-      fluid
-    >
+    <VContainer class="bg-background ma-0 pa-0" fluid>
       <Panes
         ref="panesRef"
         :panes="panes"
@@ -213,41 +194,20 @@ watch(tab, value => {
         @onSplitPaneResized="onSplitPaneResized"
         @onSplitterClicked="onSplitterClicked"
       >
-        <template
-          #content
-          class="test"
-        >
-          <VContainer
-            class="content bg-background px-8 pb-6 pt-10"
-            fluid
-          >
-            <VRow
-              no-gutters
-              class="gap-5"
-            >
+        <template #content class="test">
+          <VContainer class="content bg-background px-8 pb-6 pt-10" fluid>
+            <VRow no-gutters class="gap-5">
               <VCol :style="{ minWidth: '250px' }">
-                <AverageCard
-                  class="fill-height"
-                  v-bind="average1"
-                />
+                <AverageCard class="fill-height" v-bind="average1" />
               </VCol>
               <VCol :style="{ minWidth: '250px' }">
-                <AverageCard
-                  class="fill-height"
-                  v-bind="average2"
-                />
+                <AverageCard class="fill-height" v-bind="average2" />
               </VCol>
               <VCol :style="{ minWidth: '250px' }">
-                <AverageCard
-                  class="fill-height"
-                  v-bind="average3"
-                />
+                <AverageCard class="fill-height" v-bind="average3" />
               </VCol>
             </VRow>
-            <VRow
-              no-gutters
-              class="my-10 gap-5"
-            >
+            <VRow no-gutters class="my-10 gap-5">
               <VCol :style="{ minWidth: '350px' }">
                 <TurnsChart
                   :charts="{
@@ -270,15 +230,8 @@ watch(tab, value => {
             </VRow>
             <VRow>
               <VCol>
-                <VRow
-                  class="mb-7"
-                  no-gutters
-                  align="center"
-                  justify="space-between"
-                >
-                  <Typography type="text-h2">
-                    Turns
-                  </Typography>
+                <VRow class="mb-7" no-gutters align="center" justify="space-between">
+                  <Typography type="text-h2"> Turns </Typography>
                   <ButtonToggle
                     v-model="tab"
                     :items="[{ label: 'Turns' }, { label: 'Marketplace' }]"
@@ -286,12 +239,7 @@ watch(tab, value => {
                   />
                 </VRow>
 
-                <VRow
-                  class="mb-4"
-                  no-gutters
-                  align="center"
-                  justify="space-between"
-                >
+                <VRow class="mb-4" no-gutters align="center" justify="space-between">
                   <Textfield
                     v-model="searchValue"
                     class="mr-4"
@@ -301,10 +249,7 @@ watch(tab, value => {
                     clearable
                     @click:clear="onClearSearch"
                   />
-                  <Autocomplete
-                    class="mr-4"
-                    placeholder="Container #"
-                  />
+                  <Autocomplete class="mr-4" placeholder="Container #" />
                   <Autocomplete placeholder="Size / Type" />
                   <VSpacer />
                   <IconButton
@@ -316,9 +261,7 @@ watch(tab, value => {
                     height="48"
                     variant="plain"
                   >
-                    <Tooltip location="top">
-                      Download PDF
-                    </Tooltip>
+                    <Tooltip location="top"> Download PDF </Tooltip>
                   </IconButton>
                 </VRow>
 
@@ -341,10 +284,7 @@ watch(tab, value => {
                 >
                   <template #ref="{ item: { ref } }">
                     <Typography type="text-body-m-regular text-uppercase">
-                      <Highlighter
-                        v-if="searchValue"
-                        :query="searchValue"
-                      >
+                      <Highlighter v-if="searchValue" :query="searchValue">
                         {{ ref || '--' }}
                       </Highlighter>
                       <template v-else>
@@ -354,10 +294,7 @@ watch(tab, value => {
                   </template>
                   <template #container="{ item: { container } }">
                     <Typography type="text-body-m-regular text-uppercase">
-                      <Highlighter
-                        v-if="searchValue"
-                        :query="searchValue"
-                      >
+                      <Highlighter v-if="searchValue" :query="searchValue">
                         {{ container }}
                       </Highlighter>
                       <template v-else>
@@ -367,10 +304,7 @@ watch(tab, value => {
                   </template>
                   <template #size="{ item: { size } }">
                     <Typography type="text-body-m-regular">
-                      <Highlighter
-                        v-if="searchValue"
-                        :query="searchValue"
-                      >
+                      <Highlighter v-if="searchValue" :query="searchValue">
                         {{ size }}
                       </Highlighter>
                       <template v-else>
@@ -412,10 +346,7 @@ watch(tab, value => {
                     </Typography>
                   </template>
                   <template #actions="{ item, selected }">
-                    <Menu
-                      location="bottom end"
-                      offset="3"
-                    >
+                    <Menu location="bottom end" offset="3">
                       <template #activator="{ props, isActive }">
                         <IconButton
                           v-bind="props"
@@ -433,10 +364,7 @@ watch(tab, value => {
                           @click="onAction(selected.length ? selected : [item], action)"
                         >
                           <template #prepend>
-                            <Icon
-                              :color="color"
-                              :icon="icon"
-                            />
+                            <Icon :color="color" :icon="icon" />
                           </template>
                           <ListItemTitle :color="color">
                             {{ label }}
@@ -457,61 +385,40 @@ watch(tab, value => {
           </VContainer>
           <!-- Dialogs -->
 
-          <Dialog
-            ref="rankingDialog"
-            width="50%"
-            min-width="400px"
-          >
+          <Dialog ref="rankingDialog" width="50%" min-width="400px">
             <template #text>
-              <div class="pa-0">
-                <VRow
-                  no-gutters
-                  align="baseline"
-                  justify="space-between"
-                >
-                  <VRow
-                    no-gutters
-                    align="center"
-                    class="mb-4"
-                  >
-                    <Typography type="text-h3">
-                      Ranking by exporters
-                    </Typography>
-                    <SimpleSelect
-                      :items="Object.keys(rankingData)"
-                      :selected="computedSelected"
-                      class="ml-4"
-                      @onSelect="onSelect"
-                    />
-                  </VRow>
-                  <IconButton
-                    icon="mdi-download"
-                    size="20"
-                    width="32"
-                    min-width="32"
-                    height="32"
-                    variant="plain"
-                  >
-                    <Tooltip location="top">
-                      Download PDF
-                    </Tooltip>
-                  </IconButton>
+              <VRow no-gutters align="baseline" justify="space-between">
+                <VRow no-gutters align="center" class="mb-4">
+                  <Typography type="text-h3"> Ranking by exporters </Typography>
+                  <SimpleSelect
+                    :items="Object.keys(rankingData)"
+                    :selected="computedSelected"
+                    class="ml-4"
+                    @onSelect="onSelect"
+                  />
                 </VRow>
-                <div
-                  v-for="(rank, n) of computedValues"
-                  :key="n"
-                  class="d-flex justify-space-between mt-2"
+                <IconButton
+                  icon="mdi-download"
+                  size="20"
+                  width="32"
+                  min-width="32"
+                  height="32"
+                  variant="plain"
                 >
-                  <Typography
-                    type="text-body-s-regular"
-                    :color="getColor('textSecondary')"
-                  >
-                    {{ rank.label }}
-                  </Typography>
-                  <Typography type="text-body-s-semibold">
-                    {{ rank.value }}
-                  </Typography>
-                </div>
+                  <Tooltip location="top"> Download PDF </Tooltip>
+                </IconButton>
+              </VRow>
+              <div
+                v-for="(rank, n) of computedValues"
+                :key="n"
+                class="d-flex justify-space-between mt-2"
+              >
+                <Typography type="text-body-s-regular" :color="getColor('textSecondary')">
+                  {{ rank.label }}
+                </Typography>
+                <Typography type="text-body-s-semibold">
+                  {{ rank.value }}
+                </Typography>
               </div>
             </template>
           </Dialog>
@@ -540,6 +447,7 @@ watch(tab, value => {
             </div>
           </VFadeTransition>
           <Map
+            :key="tab"
             :map-options="mapOptions"
             :markers="computedMarkers"
             :render-info-window="renderInfoWindow"
