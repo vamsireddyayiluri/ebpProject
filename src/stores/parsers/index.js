@@ -122,3 +122,6 @@ export const rankingDataParser = entities => {
 
   return pagedExporters
 }
+
+export const reservationsDataParser = entities =>
+  entities.map(({ container }, index) => ({ id: index, ...container }))

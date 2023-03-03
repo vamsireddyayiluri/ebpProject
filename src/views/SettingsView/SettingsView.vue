@@ -1,5 +1,5 @@
 <script setup>
-import { getColor } from '~/helpers/colors.js'
+import { getColor } from '~/helpers/colors'
 import { patterns } from '@qualle-admin/qutil'
 import { Main } from '@layouts'
 const items = ref([{ label: 'Data reports' }, { label: 'Appearance' }])
@@ -246,13 +246,15 @@ const editSlot = slot => {
           width="50%"
           min-width="400px"
         >
-          <template #text>
+          <template #title>
             <Typography type="text-h3">
               Create slot
             </Typography>
+          </template>
+          <template #text>
             <Typography
               type="text-body-m-regular"
-              class="mt-2 mb-6"
+              class="mb-6"
             >
               Create time slot for recipients to receive the reports
             </Typography>

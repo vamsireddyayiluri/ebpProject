@@ -24,17 +24,33 @@ const router = useRouter()
   <Main class="profileView">
     <SubHeader>
       <template #controls>
-        <Tabs v-model="tab" :items="items" />
+        <Tabs
+          v-model="tab"
+          :items="items"
+        />
       </template>
     </SubHeader>
 
-    <VContainer fluid class="pt-10 pb-6 px-8">
+    <VContainer
+      fluid
+      class="pt-10 pb-6 px-8"
+    >
       <template v-if="!tab">
-        <Typography type="text-h1" class="mb-8">Account information</Typography>
+        <Typography
+          type="text-h1"
+          class="mb-8"
+        >
+          Account information
+        </Typography>
         <VRow no-gutters>
           <Avatar type="changeAvatar" />
           <VCol class="ml-5">
-            <Typography type="text-h4" class="mb-1">Account information</Typography>
+            <Typography
+              type="text-h4"
+              class="mb-1"
+            >
+              Account information
+            </Typography>
             <VRow no-gutters>
               <Typography
                 type="text-body-s-regular"
@@ -43,14 +59,21 @@ const router = useRouter()
               >
                 {{ accountInfo.type }}
               </Typography>
-              <Typography type="text-body-s-semibold" :color="getColor('textSecondary')">
+              <Typography
+                type="text-body-s-semibold"
+                :color="getColor('textSecondary')"
+              >
                 {{ accountInfo.userEmail }}
               </Typography>
             </VRow>
           </VCol>
         </VRow>
 
-        <VRow no-gutters class="mt-8" :style="{ maxWidth: '650px' }">
+        <VRow
+          no-gutters
+          class="mt-8"
+          :style="{ maxWidth: '650px' }"
+        >
           <VCol cols="auto">
             <Textfield
               v-model.trim="accountInfo.companyName"
@@ -82,8 +105,8 @@ const router = useRouter()
               persistent-hint
               :type="isPasswordVisible ? 'text' : 'password'"
               :append-inner-icon="isPasswordVisible ? 'mdi-eye-off-outline' : 'mdi-eye-outline'"
-              @click:append-inner="isPasswordVisible = !isPasswordVisible"
               :style="{ width: '300px' }"
+              @click:append-inner="isPasswordVisible = !isPasswordVisible"
             />
             <PasswordMeter :password="accountInfo.password" />
           </VCol>
@@ -105,9 +128,16 @@ const router = useRouter()
       <template v-if="tab === 2">
         <RegionSettingsTab />
       </template>
-      <VRow no-gutters class="mt-10">
-        <Button class="mr-4">Save</Button>
-        <Button variant="outlined"> Cancel changes</Button>
+      <VRow
+        no-gutters
+        class="mt-10"
+      >
+        <Button class="mr-4">
+          Save
+        </Button>
+        <Button variant="outlined">
+          Cancel changes
+        </Button>
       </VRow>
     </VContainer>
   </Main>

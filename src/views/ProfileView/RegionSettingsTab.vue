@@ -33,10 +33,24 @@ const removeLocation = locationId => {
 </script>
 
 <template>
-  <Typography type="text-h1" class="mb-8">Region settings </Typography>
-  <form @submit.prevent="addContainer" :style="{ maxWidth: '600px' }">
-    <VRow no-gutters class="mt-10 mb-4">
-      <VCol cols="12" sm="5">
+  <Typography
+    type="text-h1"
+    class="mb-8"
+  >
+    Region settings
+  </Typography>
+  <form
+    :style="{ maxWidth: '600px' }"
+    @submit.prevent="addContainer"
+  >
+    <VRow
+      no-gutters
+      class="mt-10 mb-4"
+    >
+      <VCol
+        cols="12"
+        sm="5"
+      >
         <Autocomplete
           v-model="newLocation.address"
           :items="selectItems"
@@ -50,7 +64,10 @@ const removeLocation = locationId => {
           class="text-left"
         />
       </VCol>
-      <VCol cols="12" sm="">
+      <VCol
+        cols="12"
+        sm=""
+      >
         <Textfield
           v-model="newLocation.label"
           type="text"
@@ -80,9 +97,16 @@ const removeLocation = locationId => {
     </VRow>
   </form>
 
-  <Dialog ref="locationDialog" width="50%" min-width="400px">
+  <Dialog
+    ref="locationDialog"
+    width="50%"
+    min-width="400px"
+  >
     <template #text>
-      <RemoveLocationDialog :removedLocation="removedLocation" @onRemove="removeLocation" />
+      <RemoveLocationDialog
+        :removed-location="removedLocation"
+        @onRemove="removeLocation"
+      />
     </template>
   </Dialog>
 </template>

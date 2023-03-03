@@ -32,10 +32,25 @@ const removeMember = memberId => {
 </script>
 
 <template>
-  <Typography type="text-h1" class="mb-8">Team members</Typography>
-  <form @submit.prevent="addMember" :style="{ maxWidth: '600px' }">
-    <VRow no-gutters class="mt-10 d-flex">
-      <VCol class="w-100 text-left mr-4" cols="12" sm="">
+  <Typography
+    type="text-h1"
+    class="mb-8"
+  >
+    Team members
+  </Typography>
+  <form
+    :style="{ maxWidth: '600px' }"
+    @submit.prevent="addMember"
+  >
+    <VRow
+      no-gutters
+      class="mt-10 d-flex"
+    >
+      <VCol
+        class="w-100 text-left mr-4"
+        cols="12"
+        sm=""
+      >
         <TextFieldWithSelector
           v-model="newMember.email"
           type="email"
@@ -68,9 +83,16 @@ const removeMember = memberId => {
     />
   </form>
 
-  <Dialog ref="memberDialog" width="50%" min-width="400px">
+  <Dialog
+    ref="memberDialog"
+    width="50%"
+    min-width="400px"
+  >
     <template #text>
-      <RemoveTeamMemberDialog :removedMember="removedMember" @onRemove="removeMember" />
+      <RemoveTeamMemberDialog
+        :removed-member="removedMember"
+        @onRemove="removeMember"
+      />
     </template>
   </Dialog>
 </template>

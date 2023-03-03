@@ -11,9 +11,19 @@ import { markersParser } from '~/stores/parsers'
 const theme = useTheme()
 const computedTheme = computed(() => theme.global.name.value)
 
-const { average1, average2, average3, entities, markers, marketData, rankingData } = useData()
+const {
+  average1,
+  average2,
+  average3,
+  entities,
+  markers,
+  marketData,
+  rankingData,
+  reservationsData,
+  reservationsMarkers,
+} = useData()
 
-const headers = useHeaders()
+const { turnsHeaders, marketplaceHeaders } = useHeaders()
 const actions = useActions()
 const formatDate = useDate()
 
@@ -30,9 +40,8 @@ const searchValue = ref(null)
 const paneOpened = ref(false)
 
 const mutableSelected = ref(Object.keys(rankingData)[0])
-
-const filteredEntities = ref(entities)
-const filteredMarkers = ref(markers)
+const mutableEntities = ref(entities)
+const mutableMarkers = ref(markers)
 
 const computedSelected = computed({
   get() {
@@ -42,15 +51,24 @@ const computedSelected = computed({
     mutableSelected.value = value
   },
 })
-
 const computedMarkers = computed({
   get() {
-    return filteredMarkers.value
+    return mutableMarkers.value
   },
   set(value) {
-    filteredMarkers.value = value
+    mutableMarkers.value = value
   },
 })
+const computedEntities = computed({
+  get() {
+    return mutableEntities.value
+  },
+  set(value) {
+    mutableEntities.value = value
+  },
+})
+
+const computedHeaders = computed(() => (tab.value === 0 ? turnsHeaders : marketplaceHeaders))
 const computedValues = computed(() => rankingData[computedSelected.value])
 
 const onDownload = e => console.log(e)
@@ -109,7 +127,7 @@ const onClearSearch = () => {
   loading.value = true
 
   setTimeout(() => {
-    filteredEntities.value = entities
+    computedEntities.value = tab.value === 0 ? entities : reservationsData
 
     loading.value = false
   }, 1000)
@@ -119,11 +137,12 @@ const debouncedSearch = useDebounceFn(searchValue => {
   if (!searchValue) {
     onClearSearch()
   } else {
-    filteredEntities.value = useArrayFilter(
-      entities,
+    computedEntities.value = useArrayFilter(
+      computedEntities.value,
       ({ container, ref, size }) =>
         useArraySome(
-          useArrayMap(Object.values({ container, ref, size }), value => value.toLowerCase()).value,
+          useArrayMap(Object.values({ container, ref, size }), value => String(value).toLowerCase())
+            .value,
           values => values.includes(searchValue.toLowerCase()),
         ).value,
     ).value
@@ -131,6 +150,11 @@ const debouncedSearch = useDebounceFn(searchValue => {
 }, 300)
 
 watch(searchValue, value => debouncedSearch(value))
+watch(tab, value => {
+  searchValue.value = null
+  computedEntities.value = value === 0 ? entities : reservationsData
+  computedMarkers.value = value === 0 ? markers : reservationsMarkers
+})
 </script>
 
 <template>
@@ -299,8 +323,9 @@ watch(searchValue, value => debouncedSearch(value))
                 </VRow>
 
                 <VirtualTable
-                  :entities="filteredEntities"
-                  :headers="headers"
+                  :key="tab"
+                  :entities="computedEntities"
+                  :headers="computedHeaders"
                   :loading="loading"
                   :options="{
                     rowHeight: 64,
@@ -314,42 +339,42 @@ watch(searchValue, value => debouncedSearch(value))
                   @onSort="() => {}"
                   @onUpdated="onUpdated"
                 >
-                  <template #ref="{ item }">
+                  <template #ref="{ item: { ref } }">
                     <Typography type="text-body-m-regular text-uppercase">
                       <Highlighter
                         v-if="searchValue"
                         :query="searchValue"
                       >
-                        {{ item.ref || '--' }}
+                        {{ ref || '--' }}
                       </Highlighter>
                       <template v-else>
-                        {{ item.ref || '--' }}
+                        {{ ref || '--' }}
                       </template>
                     </Typography>
                   </template>
-                  <template #container="{ item }">
+                  <template #container="{ item: { container } }">
                     <Typography type="text-body-m-regular text-uppercase">
                       <Highlighter
                         v-if="searchValue"
                         :query="searchValue"
                       >
-                        {{ item.container }}
+                        {{ container }}
                       </Highlighter>
                       <template v-else>
-                        {{ item.container }}
+                        {{ container }}
                       </template>
                     </Typography>
                   </template>
-                  <template #size="{ item }">
+                  <template #size="{ item: { size } }">
                     <Typography type="text-body-m-regular">
                       <Highlighter
                         v-if="searchValue"
                         :query="searchValue"
                       >
-                        {{ item.size }}
+                        {{ size }}
                       </Highlighter>
                       <template v-else>
-                        {{ item.size }}
+                        {{ size }}
                       </template>
                     </Typography>
                   </template>
@@ -357,6 +382,24 @@ watch(searchValue, value => debouncedSearch(value))
                     <Typography type="text-body-m-regular">
                       {{ formatDate(item.created) }}
                     </Typography>
+                  </template>
+                  <template
+                    #location="{
+                      item: {
+                        location: { address, label },
+                      },
+                    }"
+                  >
+                    <LocationItems
+                      :locations="[
+                        {
+                          id: 0,
+                          value: address,
+                          label,
+                        },
+                      ]"
+                      :style="{ width: '100%' }"
+                    />
                   </template>
                   <template #status="{ item }">
                     <Classification
