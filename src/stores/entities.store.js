@@ -10,7 +10,7 @@ export const useEntitiesStore = defineStore({
   }),
   actions: {
     async loadEntities(line) {
-      if (import.meta.env.MODE === 'development') {
+      if (import.meta.env.MODE !== 'development') {
         return mockEntities
       } else {
         try {

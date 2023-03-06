@@ -1,16 +1,11 @@
 <script setup>
 import { useTheme } from 'vuetify'
-import { useDataStore } from '~/stores/data.store'
-
-const dataStore = useDataStore()
 
 const vuetifyTheme = useTheme()
 const storage = useStorage('theme')
 
-onMounted(async () => {
+onMounted(() => {
   vuetifyTheme.global.name.value = isDefined(storage.value) ? storage.value : 'light'
-
-  await dataStore.parseData()
 })
 </script>
 
