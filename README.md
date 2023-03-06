@@ -1,4 +1,4 @@
-<img src="src/assets/png/logo.png?raw=true" width="33%" />
+<img src="src/assets/images/png/logo.png?raw=true" width="33%" />
 
 # platform-boilerplate
 
