@@ -1,6 +1,6 @@
-<img src="src/assets/images/png/logo.png?raw=true" width="33%" />
+<img src="src/assets/images/logo.png?raw=true" width="33%" />
 
-# platform-boilerplate
+# ssl-portal
 
 This template should help get you started developing with Vue 3 in Vite.
 
