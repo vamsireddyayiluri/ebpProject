@@ -21,6 +21,7 @@ const {
   rankingData,
   marketplaceData,
   marketplaceMarkers,
+  loaded,
 } = useData()
 
 const { turnsHeaders, marketplaceHeaders } = useHeaders()
@@ -39,10 +40,21 @@ const showSelect = ref(false)
 const searchValue = ref(null)
 const paneOpened = ref(false)
 
-const mutableSelected = ref(Object.keys(rankingData)[0])
-const mutableEntities = ref(entities)
-const mutableMarkers = ref(markers)
+const count = ref(0)
+const counting = setInterval(function () {
+  if (count.value < 100) {
+    count.value++
+  } else {
+    clearInterval(counting)
+  }
+}, 50)
 
+const mutableSelected = ref(null)
+const mutableEntities = ref(entities.value)
+const mutableMarkers = ref(markers.value)
+
+const computedTabs = computed(() => ({ 0: 'default', 1: 'marketplace' }))
+const computedDefaultTab = computed(() => computedTabs.value[tab.value] === 'default')
 const computedSelected = computed({
   get() {
     return mutableSelected.value
@@ -68,16 +80,17 @@ const computedEntities = computed({
   },
 })
 
-const computedHeaders = computed(() => (tab.value === 0 ? turnsHeaders : marketplaceHeaders))
-const computedValues = computed(() => rankingData[computedSelected.value])
+const computedHeaders = computed(() =>
+  computedDefaultTab.value ? turnsHeaders : marketplaceHeaders,
+)
+const computedValues = computed(() => rankingData.value[computedSelected.value])
 
 const onDownload = e => console.log(e)
 const onExpand = () => rankingDialog.value.show(true)
 const onSelectRank = e => console.log(e)
 
-const mapHeight = `${window.innerHeight - 121}px`
 const mapOptions = markRaw({ zoom: 3, zoomControls: true })
-const onMapLoaded = async ({ api, map }) => console.log({ api, map })
+const onMapLoaded = ({ api, map }) => console.log({ api, map })
 const onMarkerClick = e => console.log(JSON.stringify(e))
 const renderInfoWindow = ({ containers }) => String(`${containers.length} containers`)
 const renderMarkerIcon = () => imgUrl
@@ -121,15 +134,13 @@ const onSelect = e => {
 
 const onUpdated = e => {
   computedMarkers.value = markersParser(e)
-
-  console.log(computedMarkers.value)
 }
 
 const onClearSearch = () => {
   loading.value = true
 
   setTimeout(() => {
-    computedEntities.value = tab.value === 0 ? entities : marketplaceData
+    computedEntities.value = computedDefaultTab.value ? entities.value : marketplaceData.value
 
     loading.value = false
   }, 1000)
@@ -140,7 +151,7 @@ const debouncedSearch = useDebounceFn(searchValue => {
     onClearSearch()
   } else {
     computedEntities.value = useArrayFilter(
-      tab.value === 0 ? entities : marketplaceData,
+      computedDefaultTab.value ? entities : marketplaceData,
       ({ container, ref, size }) =>
         useArraySome(
           useArrayMap(Object.values({ container, ref, size }), value => String(value).toLowerCase())
@@ -152,15 +163,15 @@ const debouncedSearch = useDebounceFn(searchValue => {
 }, 300)
 
 watch(searchValue, value => debouncedSearch(value))
-watch(tab, value => {
+watch([entities, tab], () => {
   searchValue.value = null
-  computedEntities.value = value === 0 ? entities : marketplaceData
-  computedMarkers.value = value === 0 ? markers : marketplaceMarkers
+  computedEntities.value = computedDefaultTab.value ? entities.value : marketplaceData.value
+  computedMarkers.value = computedDefaultTab.value ? markers.value : marketplaceMarkers.value
 })
 </script>
 
 <template>
-  <Main class="dashboardView">
+  <Main v-if="loaded" class="dashboardView">
     <SubHeader>
       <template #controls>
         <SimpleSelect :items="regions" :selected="regions[0]" />
@@ -194,7 +205,7 @@ watch(tab, value => {
         @onSplitPaneResized="onSplitPaneResized"
         @onSplitterClicked="onSplitterClicked"
       >
-        <template #content class="test">
+        <template #content>
           <VContainer class="content bg-background px-8 pb-6 pt-10" fluid>
             <VRow no-gutters class="gap-5">
               <VCol :style="{ minWidth: '250px' }">
@@ -231,7 +242,9 @@ watch(tab, value => {
             <VRow>
               <VCol>
                 <VRow class="mb-7" no-gutters align="center" justify="space-between">
-                  <Typography type="text-h2"> Turns </Typography>
+                  <Typography type="text-h2">
+                    {{ computedDefaultTab ? 'Turns' : 'Marketplace' }}
+                  </Typography>
                   <ButtonToggle
                     v-model="tab"
                     :items="[{ label: 'Turns' }, { label: 'Marketplace' }]"
@@ -264,7 +277,6 @@ watch(tab, value => {
                     <Tooltip location="top"> Download PDF </Tooltip>
                   </IconButton>
                 </VRow>
-
                 <VirtualTable
                   :key="tab"
                   :entities="computedEntities"
@@ -461,6 +473,9 @@ watch(tab, value => {
       </Panes>
     </VContainer>
   </Main>
+  <VContainer v-else class="progress-wrapper d-flex align-center justify-center" fluid>
+    <ProgressCircular :size="350" :value="count" text="Loading..."> {{ count }}% </ProgressCircular>
+  </VContainer>
 </template>
 
 <style lang="scss">
@@ -479,12 +494,12 @@ watch(tab, value => {
   }
 
   .splitpanes__pane {
-    height: v-bind(mapHeight) !important;
+    height: calc(100vh - 121px);
     position: relative;
   }
 
   .google-map-wrapper {
-    height: v-bind(mapHeight) !important;
+    height: calc(100vh - 121px);
   }
 
   .styledVCard {
@@ -506,5 +521,9 @@ watch(tab, value => {
       width: 280px;
     }
   }
+}
+
+.progress-wrapper {
+  height: 100vh;
 }
 </style>

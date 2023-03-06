@@ -1,4 +1,6 @@
 import { defineStore } from 'pinia'
+import { useEntitiesStore } from './entities.store'
+
 import {
   average1Parser,
   average2Parser,
@@ -10,17 +12,38 @@ import {
   marketplaceDataParser,
 } from './parsers'
 
-import { default as entities } from '~/fixtures/snapshots.json'
-import { default as marketplaceEntities } from '~/fixtures/marketplace.json'
+import marketplaceEntities from '~/fixtures/marketplace.json'
 
-export const useDataStore = defineStore('data', () => ({
-  average1: average1Parser(entities),
-  average2: average2Parser(entities),
-  average3: average3Parser(entities),
-  entities: entitiesParser(entities),
-  markers: markersParser(entities),
-  marketData: marketDataParser(entities),
-  rankingData: rankingDataParser(entities),
-  marketplaceData: marketplaceDataParser(marketplaceEntities),
-  marketplaceMarkers: markersParser(marketplaceDataParser(marketplaceEntities)),
-}))
+export const useDataStore = defineStore({
+  id: 'data',
+  state: () => ({
+    average1: null,
+    average2: null,
+    average3: null,
+    entities: [],
+    markers: [],
+    marketData: null,
+    rankingData: null,
+    marketplaceData: [],
+    marketplaceMarkers: [],
+    loaded: false,
+  }),
+
+  actions: {
+    async parseData() {
+      const entitiesStore = useEntitiesStore()
+      const entities = await entitiesStore.loadEntities(import.meta.env.VITE_APP_LINE_ID)
+
+      this.average1 = average1Parser(entities)
+      this.average2 = average2Parser(entities)
+      this.average3 = average3Parser(entities)
+      this.entities = entitiesParser(entities)
+      this.markers = markersParser(entities)
+      this.marketData = marketDataParser(entities)
+      this.rankingData = rankingDataParser(entities)
+      this.marketplaceData = marketplaceDataParser(marketplaceEntities)
+      this.marketplaceMarkers = markersParser(marketplaceDataParser(marketplaceEntities))
+      this.loaded = true
+    },
+  },
+})

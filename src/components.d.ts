@@ -23,7 +23,6 @@ declare module '@vue/runtime-core' {
     RouterView: typeof import('vue-router')['RouterView']
     SettingsView: typeof import('./views/SettingsView/SettingsView.vue')['default']
     Stepper: typeof import('./components/Stepper/Stepper.vue')['default']
-    TeamMembers: typeof import('./views/ProfileView/TeamMembers.vue')['default']
     TeamMembersTab: typeof import('./views/ProfileView/TeamMembersTab.vue')['default']
     TurnsChart: typeof import('./views/DashboardView/TurnsChart.vue')['default']
   }

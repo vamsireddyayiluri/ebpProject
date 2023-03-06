@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 export const useAuthStore = defineStore('auth', () => {
   const router = useRouter()
   const isLogin = ref(false)
+
   const login = () => {
     setTimeout(() => {
       isLogin.value = true
