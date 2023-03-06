@@ -11,7 +11,7 @@ onMounted(() => {
 
 <template>
   <ThemeProvider>
-    <MyAlert />
+    <AppAlert />
     <RouterView />
   </ThemeProvider>
 </template>

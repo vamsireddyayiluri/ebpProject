@@ -14,36 +14,45 @@ import {
 
 import marketplaceEntities from '~/fixtures/marketplace.json'
 
-export const useDataStore = defineStore({
-  id: 'data',
-  state: () => ({
-    average1: null,
-    average2: null,
-    average3: null,
-    entities: [],
-    markers: [],
-    marketData: null,
-    rankingData: null,
-    marketplaceData: [],
-    marketplaceMarkers: [],
-    loaded: false,
-  }),
+export const useDataStore = defineStore('data', () => {
+  const average1 = ref(null),
+    average2 = ref(null),
+    average3 = ref(null),
+    entities = ref([]),
+    markers = ref([]),
+    marketData = ref(null),
+    rankingData = ref(null),
+    marketplaceData = ref([]),
+    marketplaceMarkers = ref([]),
+    loaded = ref(false)
 
-  actions: {
-    async parseData() {
-      const entitiesStore = useEntitiesStore()
-      const entities = await entitiesStore.loadEntities(import.meta.env.VITE_APP_LINE_ID)
+  const parseData = async () => {
+    const entitiesStore = useEntitiesStore()
+    const rawEntities = await entitiesStore.loadEntities(import.meta.env.VITE_APP_LINE_ID)
 
-      this.average1 = average1Parser(entities)
-      this.average2 = average2Parser(entities)
-      this.average3 = average3Parser(entities)
-      this.entities = entitiesParser(entities)
-      this.markers = markersParser(entities)
-      this.marketData = marketDataParser(entities)
-      this.rankingData = rankingDataParser(entities)
-      this.marketplaceData = marketplaceDataParser(marketplaceEntities)
-      this.marketplaceMarkers = markersParser(marketplaceDataParser(marketplaceEntities))
-      this.loaded = true
-    },
-  },
+    average1.value = average1Parser(rawEntities)
+    average2.value = average2Parser(rawEntities)
+    average3.value = average3Parser(rawEntities)
+    entities.value = entitiesParser(rawEntities)
+    markers.value = markersParser(rawEntities)
+    marketData.value = marketDataParser(rawEntities)
+    rankingData.value = rankingDataParser(rawEntities)
+    marketplaceData.value = marketplaceDataParser(marketplaceEntities)
+    marketplaceMarkers.value = markersParser(marketplaceDataParser(marketplaceEntities))
+    loaded.value = true
+  }
+
+  return {
+    average1,
+    average2,
+    average3,
+    entities,
+    markers,
+    marketData,
+    rankingData,
+    marketplaceData,
+    marketplaceMarkers,
+    loaded,
+    parseData,
+  }
 })

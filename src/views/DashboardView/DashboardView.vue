@@ -171,6 +171,7 @@ watch([entities, tab], () => {
   searchValue.value = null
   computedEntities.value = computedDefaultTab.value ? entities.value : marketplaceData.value
   computedMarkers.value = computedDefaultTab.value ? markers.value : marketplaceMarkers.value
+  computedSelected.value = Object.keys(rankingData.value)[0]
 })
 
 onMounted(async () => {
@@ -179,17 +180,38 @@ onMounted(async () => {
 </script>
 
 <template>
-  <Main v-if="loaded" class="dashboardView">
+  <Main
+    v-if="loaded"
+    class="dashboardView"
+  >
     <SubHeader>
       <template #controls>
-        <SimpleSelect :items="regions" :selected="regions[0]" />
-        <Divider vertical class="my-2 mx-4" />
-        <SimpleSelect :items="years" @onSelect="onSelect" />
-        <Divider vertical class="my-2 mx-4" />
+        <SimpleSelect
+          :items="regions"
+          :selected="regions[0]"
+        />
+        <Divider
+          vertical
+          class="my-2 mx-4"
+        />
+        <SimpleSelect
+          :items="years"
+          @onSelect="onSelect"
+        />
+        <Divider
+          vertical
+          class="my-2 mx-4"
+        />
         <div class="d-flex align-center">
           <IconButton icon="mdi-chevron-left" />
-          <IconButton class="mr-2" icon="mdi-chevron-right" />
-          <Typography type="text-body-s-regular" :color="getColor('textSecondary')">
+          <IconButton
+            class="mr-2"
+            icon="mdi-chevron-right"
+          />
+          <Typography
+            type="text-body-s-regular"
+            :color="getColor('textSecondary')"
+          >
             2022
           </Typography>
         </div>
@@ -205,7 +227,10 @@ onMounted(async () => {
         </Button>
       </template>
     </SubHeader>
-    <VContainer class="bg-background ma-0 pa-0" fluid>
+    <VContainer
+      class="bg-background ma-0 pa-0"
+      fluid
+    >
       <Panes
         ref="panesRef"
         :panes="panes"
@@ -214,19 +239,37 @@ onMounted(async () => {
         @onSplitterClicked="onSplitterClicked"
       >
         <template #content>
-          <VContainer class="content bg-background px-8 pb-6 pt-10" fluid>
-            <VRow no-gutters class="gap-5">
+          <VContainer
+            class="content bg-background px-8 pb-6 pt-10"
+            fluid
+          >
+            <VRow
+              no-gutters
+              class="gap-5"
+            >
               <VCol :style="{ minWidth: '250px' }">
-                <AverageCard class="fill-height" v-bind="average1" />
+                <AverageCard
+                  class="fill-height"
+                  v-bind="average1"
+                />
               </VCol>
               <VCol :style="{ minWidth: '250px' }">
-                <AverageCard class="fill-height" v-bind="average2" />
+                <AverageCard
+                  class="fill-height"
+                  v-bind="average2"
+                />
               </VCol>
               <VCol :style="{ minWidth: '250px' }">
-                <AverageCard class="fill-height" v-bind="average3" />
+                <AverageCard
+                  class="fill-height"
+                  v-bind="average3"
+                />
               </VCol>
             </VRow>
-            <VRow no-gutters class="my-10 gap-5">
+            <VRow
+              no-gutters
+              class="my-10 gap-5"
+            >
               <VCol :style="{ minWidth: '350px' }">
                 <TurnsChart
                   :charts="{
@@ -249,7 +292,12 @@ onMounted(async () => {
             </VRow>
             <VRow>
               <VCol>
-                <VRow class="mb-7" no-gutters align="center" justify="space-between">
+                <VRow
+                  class="mb-7"
+                  no-gutters
+                  align="center"
+                  justify="space-between"
+                >
                   <Typography type="text-h2">
                     {{ computedDefaultTab ? 'Turns' : 'Marketplace' }}
                   </Typography>
@@ -260,7 +308,12 @@ onMounted(async () => {
                   />
                 </VRow>
 
-                <VRow class="mb-4" no-gutters align="center" justify="space-between">
+                <VRow
+                  class="mb-4"
+                  no-gutters
+                  align="center"
+                  justify="space-between"
+                >
                   <Textfield
                     v-model="searchValue"
                     class="mr-4"
@@ -270,7 +323,10 @@ onMounted(async () => {
                     clearable
                     @click:clear="onClearSearch"
                   />
-                  <Autocomplete class="mr-4" placeholder="Container #" />
+                  <Autocomplete
+                    class="mr-4"
+                    placeholder="Container #"
+                  />
                   <Autocomplete placeholder="Size / Type" />
                   <VSpacer />
                   <IconButton
@@ -282,7 +338,9 @@ onMounted(async () => {
                     height="48"
                     variant="plain"
                   >
-                    <Tooltip location="top"> Download PDF </Tooltip>
+                    <Tooltip location="top">
+                      Download PDF
+                    </Tooltip>
                   </IconButton>
                 </VRow>
                 <VirtualTable
@@ -304,7 +362,10 @@ onMounted(async () => {
                 >
                   <template #ref="{ item: { ref } }">
                     <Typography type="text-body-m-regular text-uppercase">
-                      <Highlighter v-if="searchValue" :query="searchValue">
+                      <Highlighter
+                        v-if="searchValue"
+                        :query="searchValue"
+                      >
                         {{ ref || '--' }}
                       </Highlighter>
                       <template v-else>
@@ -314,7 +375,10 @@ onMounted(async () => {
                   </template>
                   <template #container="{ item: { container } }">
                     <Typography type="text-body-m-regular text-uppercase">
-                      <Highlighter v-if="searchValue" :query="searchValue">
+                      <Highlighter
+                        v-if="searchValue"
+                        :query="searchValue"
+                      >
                         {{ container }}
                       </Highlighter>
                       <template v-else>
@@ -324,7 +388,10 @@ onMounted(async () => {
                   </template>
                   <template #size="{ item: { size } }">
                     <Typography type="text-body-m-regular">
-                      <Highlighter v-if="searchValue" :query="searchValue">
+                      <Highlighter
+                        v-if="searchValue"
+                        :query="searchValue"
+                      >
                         {{ size }}
                       </Highlighter>
                       <template v-else>
@@ -366,7 +433,10 @@ onMounted(async () => {
                     </Typography>
                   </template>
                   <template #actions="{ item, selected }">
-                    <Menu location="bottom end" offset="3">
+                    <Menu
+                      location="bottom end"
+                      offset="3"
+                    >
                       <template #activator="{ props, isActive }">
                         <IconButton
                           v-bind="props"
@@ -384,7 +454,10 @@ onMounted(async () => {
                           @click="onAction(selected.length ? selected : [item], action)"
                         >
                           <template #prepend>
-                            <Icon :color="color" :icon="icon" />
+                            <Icon
+                              :color="color"
+                              :icon="icon"
+                            />
                           </template>
                           <ListItemTitle :color="color">
                             {{ label }}
@@ -405,11 +478,25 @@ onMounted(async () => {
           </VContainer>
           <!-- Dialogs -->
 
-          <Dialog ref="rankingDialog" width="50%" min-width="400px">
+          <Dialog
+            ref="rankingDialog"
+            width="50%"
+            min-width="400px"
+          >
             <template #text>
-              <VRow no-gutters align="baseline" justify="space-between">
-                <VRow no-gutters align="center" class="mb-4">
-                  <Typography type="text-h3"> Ranking by exporters </Typography>
+              <VRow
+                no-gutters
+                align="baseline"
+                justify="space-between"
+              >
+                <VRow
+                  no-gutters
+                  align="center"
+                  class="mb-4"
+                >
+                  <Typography type="text-h3">
+                    Ranking by exporters
+                  </Typography>
                   <SimpleSelect
                     :items="Object.keys(rankingData)"
                     :selected="computedSelected"
@@ -425,7 +512,9 @@ onMounted(async () => {
                   height="32"
                   variant="plain"
                 >
-                  <Tooltip location="top"> Download PDF </Tooltip>
+                  <Tooltip location="top">
+                    Download PDF
+                  </Tooltip>
                 </IconButton>
               </VRow>
               <div
@@ -433,7 +522,10 @@ onMounted(async () => {
                 :key="n"
                 class="d-flex justify-space-between mt-2"
               >
-                <Typography type="text-body-s-regular" :color="getColor('textSecondary')">
+                <Typography
+                  type="text-body-s-regular"
+                  :color="getColor('textSecondary')"
+                >
                   {{ rank.label }}
                 </Typography>
                 <Typography type="text-body-s-semibold">
@@ -481,8 +573,18 @@ onMounted(async () => {
       </Panes>
     </VContainer>
   </Main>
-  <VContainer v-else class="progress-wrapper d-flex align-center justify-center" fluid>
-    <ProgressCircular :size="350" :value="count" text="Loading..."> {{ count }}% </ProgressCircular>
+  <VContainer
+    v-else
+    class="progress-wrapper d-flex align-center justify-center"
+    fluid
+  >
+    <ProgressCircular
+      :size="350"
+      :value="count"
+      text="Loading..."
+    >
+      {{ count }}%
+    </ProgressCircular>
   </VContainer>
 </template>
 

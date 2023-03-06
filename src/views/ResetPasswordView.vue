@@ -25,7 +25,6 @@ const onSubmit = () => {
 const resendLink = () => {
   alertStore.info({
     message: 'The link has been resent. Check your mailbox again, please.',
-    timeout: true,
   })
 }
 const openMail = () => {

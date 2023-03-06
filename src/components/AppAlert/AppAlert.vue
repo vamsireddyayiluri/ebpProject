@@ -6,24 +6,16 @@ const { alert } = storeToRefs(alertStore)
 </script>
 
 <template>
-  <div
-    v-if="alert"
-    class="alertWrapper"
+  <Snackbar
+    v-model="alert.show"
+    :timeout="alert.timeout"
   >
     <Alert
       :type="alert.type"
-      @close="alertStore.clear()"
+      @close="alertStore.close()"
     >
       <AlertTitle>{{ alert.title }}</AlertTitle>
       <AlertText>{{ alert.message }}</AlertText>
     </Alert>
-  </div>
+  </Snackbar>
 </template>
-
-<style lang="scss" scoped>
-.alertWrapper {
-  position: absolute;
-  z-index: 20;
-  right: 0;
-}
-</style>

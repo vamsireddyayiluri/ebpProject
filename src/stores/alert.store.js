@@ -1,30 +1,23 @@
 import { defineStore } from 'pinia'
 
-export const useAlertStore = defineStore({
-  id: 'alert',
-  state: () => ({
-    alert: null,
-  }),
-  actions: {
-    text({ title, message, timeout }) {
-      this.alert = { title, message, type: 'text' }
-      if (timeout) this.timeout()
-    },
-    info({ title, message, timeout }) {
-      this.alert = { title, message, type: 'info' }
-      if (timeout) this.timeout()
-    },
-    warning({ title, message, timeout }) {
-      this.alert = { title, message, type: 'warning' }
-      if (timeout) this.timeout()
-    },
-    timeout() {
-      setTimeout(() => {
-        this.clear()
-      }, 2000)
-    },
-    clear() {
-      this.alert = null
-    },
-  },
+export const useAlertStore = defineStore('alert', () => {
+  const alert = ref({ show: false })
+
+  const text = ({ title, message, timeout }) => {
+    alert.value = { show: true, title, message, type: 'text', timeout }
+  }
+
+  const info = ({ title, message, timeout }) => {
+    alert.value = { show: true, title, message, type: 'info', timeout }
+  }
+
+  const warning = ({ title, message, timeout }) => {
+    alert.value = { show: true, title, message, type: 'warning', timeout }
+  }
+
+  const close = () => {
+    alert.value = { show: false }
+  }
+
+  return { alert, close, text, info, warning }
 })
