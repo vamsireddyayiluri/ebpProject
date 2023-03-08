@@ -1,6 +1,6 @@
 {
   "projects": {
-    "default": "platform-boilerplate",
+    "default": "qualle-slp"
   },
   "targets": {}
 }
