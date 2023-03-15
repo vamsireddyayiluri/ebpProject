@@ -353,7 +353,7 @@ onMounted(async () => {
                     showActions,
                     showSelect,
                     tableHeight: 511,
-                    tableMinWidth: 1440,
+                    tableMinWidth: 960,
                   }"
                   @onScroll="() => {}"
                   @onSelectRow="() => {}"

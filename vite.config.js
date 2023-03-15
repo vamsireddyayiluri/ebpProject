@@ -49,6 +49,12 @@ export default ({ mode }) => {
       },
     },
     server: {
+      watch: {
+        usePolling: true,
+      },
+      host: true,
+      strictPort: true,
+      port: 5173,
       proxy: {
         '/api': {
           target: `${process.env.VITE_APP_API_URL}/snapshots/get`,

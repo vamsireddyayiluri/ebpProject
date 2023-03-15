@@ -38,6 +38,7 @@ watch(() => {
     >
       <label
         v-for="t in themes"
+        :key="t"
         class="themeItem"
       >
         <div
@@ -46,6 +47,7 @@ watch(() => {
         >
           <div
             v-for="i in [100, 130, 90]"
+            :key="i"
             class="line"
             :style="{ width: i + 'px' }"
           />

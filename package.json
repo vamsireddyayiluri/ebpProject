@@ -17,7 +17,7 @@
     "@qualle-admin/qutil": "latest",
     "@vueuse/core": "^9.9.0",
     "axios": "^1.2.2",
-    "firebase": "^9.15.0",
+    "firebase": "^9.17.2",
     "lodash": "^4.17.21",
     "moment-timezone": "^0.5.40",
     "pinia": "^2.0.29",
