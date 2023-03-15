@@ -105,7 +105,7 @@ const onSubmit = async () => {
     return
   }
   if (stepper.isLast.value) {
-    await authStore.register({ email: form.value.email, password: form.value.password })
+    await authStore.register({ email: form.email, password: form.password })
 
     console.log('send', {
       ...form,
@@ -124,15 +124,27 @@ const onSubmit = async () => {
     :style="{ maxWidth: '540px' }"
     @goTo="goToStep"
   />
-  <form class="mt-16" @submit.prevent="onSubmit">
+  <form
+    class="mt-16"
+    @submit.prevent="onSubmit"
+  >
     <Typography type="text-h1">
       {{ stepper.current.value.title }}
     </Typography>
     <div>
-      <VContainer class="pa-0" :style="{ maxWidth: '730px' }">
+      <VContainer
+        class="pa-0"
+        :style="{ maxWidth: '730px' }"
+      >
         <template v-if="stepper.isCurrent('account-information')">
-          <VRow no-gutters class="mt-10 mb-4">
-            <VCol cols="12" sm="6">
+          <VRow
+            no-gutters
+            class="mt-10 mb-4"
+          >
+            <VCol
+              cols="12"
+              sm="6"
+            >
               <Textfield
                 v-model.trim="form.companyName"
                 type="text"
@@ -141,7 +153,10 @@ const onSubmit = async () => {
                 class="mx-2 mb-4"
               />
             </VCol>
-            <VCol cols="12" sm="6">
+            <VCol
+              cols="12"
+              sm="6"
+            >
               <Textfield
                 v-model.trim="form.email"
                 type="email"
@@ -153,7 +168,10 @@ const onSubmit = async () => {
           </VRow>
           <VResponsive width="100%" />
           <VRow no-gutters>
-            <VCol cols="12" sm="6">
+            <VCol
+              cols="12"
+              sm="6"
+            >
               <Textfield
                 v-model="form.password"
                 label="Password"
@@ -166,7 +184,10 @@ const onSubmit = async () => {
               />
               <PasswordMeter :password="form.password" />
             </VCol>
-            <VCol cols="12" sm="6">
+            <VCol
+              cols="12"
+              sm="6"
+            >
               <Textfield
                 v-model="form.confirmPassword"
                 type="password"
@@ -180,8 +201,15 @@ const onSubmit = async () => {
         </template>
 
         <template v-if="stepper.isCurrent('invite-team-members')">
-          <VRow no-gutters class="mt-10 d-flex">
-            <VCol class="w-100 text-left mr-4" cols="12" sm="">
+          <VRow
+            no-gutters
+            class="mt-10 d-flex"
+          >
+            <VCol
+              class="w-100 text-left mr-4"
+              cols="12"
+              sm=""
+            >
               <TextFieldWithSelector
                 v-model="newMember.email"
                 type="email"
@@ -221,8 +249,14 @@ const onSubmit = async () => {
           >
             Add the locations that manage or is partnered with
           </Typography>
-          <VRow no-gutters class="mt-10">
-            <VCol cols="12" sm="5">
+          <VRow
+            no-gutters
+            class="mt-10"
+          >
+            <VCol
+              cols="12"
+              sm="5"
+            >
               <Autocomplete
                 v-model="newLocation.address"
                 :items="selectItems"
@@ -236,7 +270,10 @@ const onSubmit = async () => {
                 class="text-left"
               />
             </VCol>
-            <VCol cols="12" sm="">
+            <VCol
+              cols="12"
+              sm=""
+            >
               <Textfield
                 v-model="newLocation.label"
                 type="text"
@@ -276,10 +313,22 @@ const onSubmit = async () => {
         >
           Next
         </Button>
-        <Button v-if="stepper.isLast.value" type="submit" class="button"> Create workspace </Button>
+        <Button
+          v-if="stepper.isLast.value"
+          type="submit"
+          class="button"
+        >
+          Create workspace
+        </Button>
 
-        <div v-if="stepper.isFirst.value" class="d-flex justify-center align-center mt-4">
-          <Typography type="text-body-s-regular" :style="{ color: getColor('textSecondary') }">
+        <div
+          v-if="stepper.isFirst.value"
+          class="d-flex justify-center align-center mt-4"
+        >
+          <Typography
+            type="text-body-s-regular"
+            :style="{ color: getColor('textSecondary') }"
+          >
             Already have an account?
           </Typography>
           <RouterLink :to="{ name: 'login' }">
@@ -296,15 +345,29 @@ const onSubmit = async () => {
     </div>
   </form>
 
-  <Dialog ref="memberDialog" width="50%" min-width="400px">
+  <Dialog
+    ref="memberDialog"
+    width="50%"
+    min-width="400px"
+  >
     <template #text>
-      <RemoveTeamMemberDialog :removed-member="removedMember" @onRemove="removeMember" />
+      <RemoveTeamMemberDialog
+        :removed-member="removedMember"
+        @onRemove="removeMember"
+      />
     </template>
   </Dialog>
 
-  <Dialog ref="locationDialog" width="50%" min-width="400px">
+  <Dialog
+    ref="locationDialog"
+    width="50%"
+    min-width="400px"
+  >
     <template #text>
-      <RemoveLocationDialog :removed-location="removedLocation" @onRemove="removeLocation" />
+      <RemoveLocationDialog
+        :removed-location="removedLocation"
+        @onRemove="removeLocation"
+      />
     </template>
   </Dialog>
 </template>
