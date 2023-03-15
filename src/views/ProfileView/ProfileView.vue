@@ -1,6 +1,11 @@
 <script setup>
+import { storeToRefs } from 'pinia'
 import { Main } from '@layouts'
 import { getColor } from '~/helpers/colors'
+import { useAuthStore } from '~/stores/auth.store'
+
+const authStore = useAuthStore()
+const { currentUser } = storeToRefs(authStore)
 
 const items = ref([
   { label: 'Account information' },
@@ -11,8 +16,8 @@ const tab = ref(0)
 const accountInfo = ref({
   companyName: 'Evergreen',
   type: 'Member',
-  userEmail: 'alex@example.com',
-  companyEmail: 'evergreen@mail.com',
+  userEmail: currentUser.value.email,
+  companyEmail: currentUser.value.email,
   password: '12345678',
   passwordLastChanges: 'Last change 03/13/2022',
 })

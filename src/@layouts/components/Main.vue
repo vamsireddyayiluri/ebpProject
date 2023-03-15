@@ -1,5 +1,9 @@
 <script setup>
+import { useAuthStore } from '~/stores/auth.store'
+
+const authStore = useAuthStore()
 const attrs = useAttrs()
+const route = useRoute()
 const items = ref([
   {
     name: 'dashboard',
@@ -45,7 +49,8 @@ const data = [
     button: true,
   },
 ]
-const route = useRoute()
+
+const userMenuItems = ref([{ name: 'Profile settings', path: 'profile' }])
 </script>
 
 <template>
@@ -54,7 +59,9 @@ const route = useRoute()
       :items="items"
       :notifications="data"
       :route="route"
+      :user-menu-items="userMenuItems"
       sticky
+      @logout="authStore.logout()"
     />
     <slot />
   </div>

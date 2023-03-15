@@ -3,17 +3,16 @@ import { auth } from '~/firebase'
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth'
 import { useAlertStore } from '~/stores/alert.store'
 
-const alertStore = useAlertStore()
-
 export const useAuthStore = defineStore('auth', () => {
   const router = useRouter()
-  const user = ref(null)
+  const alertStore = useAlertStore()
+  const currentUser = ref(null)
 
   const login = async ({ email, password }) => {
     try {
       const { user } = await signInWithEmailAndPassword(auth, email, password)
 
-      user.value = user
+      currentUser.value = user
 
       router.push({ name: 'dashboard' })
     } catch (error) {
@@ -33,7 +32,7 @@ export const useAuthStore = defineStore('auth', () => {
   const logout = async () => {
     await signOut(auth)
 
-    user.value = null
+    currentUser.value = null
 
     router.push({ name: 'login' })
   }
@@ -42,7 +41,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const { user } = await createUserWithEmailAndPassword(auth, email, password)
 
-      user.value = user
+      currentUser.value = user
 
       router.push({ name: 'dashboard' })
     } catch (error) {
@@ -65,5 +64,19 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  return { login, logout, register, user }
+  const getUser = () => {
+    auth.onAuthStateChanged(async user => {
+      if (user === null) {
+        currentUser.value = null
+      } else {
+        currentUser.value = user
+
+        if (router.currentRoute.value.name === 'login') {
+          router.push({ name: 'dashboard' })
+        }
+      }
+    })
+  }
+
+  return { login, logout, register, currentUser, getUser }
 })
