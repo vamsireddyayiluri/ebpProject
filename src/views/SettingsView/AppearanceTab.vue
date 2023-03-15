@@ -15,7 +15,7 @@ const themes = [
   },
 ]
 
-watch(() => {
+watchEffect(() => {
   vuetifyTheme.global.name.value = radio.value
   storage.value = radio.value
 })
