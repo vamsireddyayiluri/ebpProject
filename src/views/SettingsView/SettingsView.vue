@@ -208,6 +208,7 @@ const editSlot = slot => {
         </VRow>
         <div
           v-for="slot in slotItems"
+          :key="slot"
           class="slotsWrapper py-4 px-3 mt-6 rounded"
         >
           <VRow

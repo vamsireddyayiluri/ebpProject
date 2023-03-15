@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   app:
-    container_name: platform-boilerplate
+    container_name: ssl-portal
     build:
       context: .
       args:

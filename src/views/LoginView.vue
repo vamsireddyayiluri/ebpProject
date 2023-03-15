@@ -9,9 +9,8 @@ const form = ref({
   remember: false,
 })
 
-const onSubmit = () => {
-  console.log('send ', form.value)
-  authStore.login()
+const onSubmit = async () => {
+  await authStore.login({ email: form.value.email, password: form.value.password })
 }
 </script>
 
