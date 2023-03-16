@@ -5,10 +5,15 @@ import { useAuthStore } from './stores/auth.store'
 const authStore = useAuthStore()
 
 const vuetifyTheme = useTheme()
-const storage = useStorage('theme')
+const storage = useStorage('theme', '')
 
 onMounted(() => {
-  vuetifyTheme.global.name.value = isDefined(storage.value) ? storage.value : 'light'
+  if (!storage.value) {
+    vuetifyTheme.global.name.value = 'light'
+    storage.value = 'light'
+  } else {
+    vuetifyTheme.global.name.value = storage.value
+  }
 })
 
 onBeforeMount(() => {

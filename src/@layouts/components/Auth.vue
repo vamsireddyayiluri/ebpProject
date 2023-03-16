@@ -1,7 +1,17 @@
 <script setup>
 import logo from '~/assets/images/logo.png'
+import { useTheme } from 'vuetify'
 
 const router = useRouter()
+const vuetifyTheme = useTheme()
+const storage = useStorage('theme')
+
+onMounted(() => {
+  vuetifyTheme.global.name.value = 'light'
+})
+tryOnUnmounted(() => {
+  vuetifyTheme.global.name.value = storage.value
+})
 </script>
 
 <template>
@@ -17,11 +27,7 @@ const router = useRouter()
       >
         Go back
       </Button>
-      <img
-        :src="logo"
-        alt="qualle logo"
-        class="logo"
-      >
+      <img :src="logo" alt="qualle logo" class="logo" />
     </div>
     <div>
       <slot />
