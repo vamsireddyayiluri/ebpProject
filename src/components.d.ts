@@ -9,12 +9,8 @@ declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     AppAlert: typeof import('./components/AppAlert/AppAlert.vue')['default']
     AppearanceTab: typeof import('./views/SettingsView/AppearanceTab.vue')['default']
-    ColumnsMenu: typeof import('./components/ColumnsMenu.vue')['default']
-    ContainerDialog: typeof import('./components/ContainerDialog.vue')['default']
     DashboardView: typeof import('./views/DashboardView/DashboardView.vue')['default']
     ErrorHeader: typeof import('./@core/components/ErrorHeader.vue')['default']
-    KanbanColumns: typeof import('./components/KanbanColumns.vue')['default']
-    LocationChip: typeof import('./components/LocationChip.vue')['default']
     LoginView: typeof import('./views/LoginView.vue')['default']
     NewPasswordView: typeof import('./views/NewPasswordView.vue')['default']
     ProfileView: typeof import('./views/ProfileView/ProfileView.vue')['default']
@@ -26,10 +22,8 @@ declare module '@vue/runtime-core' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SettingsView: typeof import('./views/SettingsView/SettingsView.vue')['default']
-    Status: typeof import('./components/Status.vue')['default']
     Stepper: typeof import('./components/Stepper/Stepper.vue')['default']
     TeamMembersTab: typeof import('./views/ProfileView/TeamMembersTab.vue')['default']
-    TestComp: typeof import('./components/TestComp.vue')['default']
     TurnsChart: typeof import('./views/DashboardView/TurnsChart.vue')['default']
   }
 }

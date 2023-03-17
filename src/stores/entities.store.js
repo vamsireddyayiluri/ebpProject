@@ -9,9 +9,12 @@ export const useEntitiesStore = defineStore('entities', () => {
   const error = ref(null)
 
   const loadEntities = async line => {
-    if (import.meta.env.MODE === 'development') {
+    const isDev = import.meta.env.MODE === 'development'
+    const apiUrl = isDev ? '/api' : import.meta.env.VITE_APP_API_URL + '/snapshots/get'
+
+    if (!isDev) {
       try {
-        const { data } = await axios.get('/api', {
+        const { data } = await axios.get(apiUrl, {
           headers: {
             api_key: import.meta.env.VITE_APP_API_KEY,
           },
