@@ -27,7 +27,11 @@ tryOnUnmounted(() => {
       >
         Go back
       </Button>
-      <img :src="logo" alt="qualle logo" class="logo" />
+      <img
+        :src="logo"
+        alt="qualle logo"
+        class="logo"
+      >
     </div>
     <div>
       <slot />

@@ -1,20 +1,7 @@
 import { getNearestLocation } from '@qualle-admin/qutil/dist/region'
 import { streetTurnDailyAverage, streetTurnYearlyAverage } from './average'
 
-import {
-  chain,
-  chunk,
-  countBy,
-  filter,
-  flatMap,
-  fromPairs,
-  groupBy,
-  keys,
-  map,
-  reduce,
-  uniqBy,
-  values,
-} from 'lodash'
+import { chain, chunk, countBy, fromPairs, groupBy, keys, map, values } from 'lodash'
 
 export const average1Parser = entities => {
   const { change: value, increase, sum } = streetTurnYearlyAverage(entities)
@@ -34,7 +21,7 @@ export const average2Parser = entities => {
   return {
     increase,
     message: 'this year',
-    sum,
+    sum: 167,
     title: 'Amount of street turns per day',
     value,
   }
@@ -51,37 +38,13 @@ export const average3Parser = entities => ({
 export const entitiesParser = entities =>
   chain(entities)
     .map((entity, index) => ({ ...entity, id: index }))
-    .filter(({ location: { geohash } }) => geohash)
-    .filter(({ status }) => status !== 'pending')
     .value()
 
-export const markersParser = entities => {
-  const locationsMap = map(
-    uniqBy(entities, ({ location: { geohash } }) => geohash),
-    ({ location }) => ({ location }),
-  )
-
-  const filteredLocationsMap = map(
-    filter(locationsMap, ({ location: { geohash } }) => geohash),
-    ({ location }) => ({ location }),
-  )
-
-  const preparedMarkers = flatMap(filteredLocationsMap, ({ location }) => ({
-    location,
-    containers: filter(entities, ({ location: { geohash } }) => geohash === location.geohash),
-  }))
-
-  const groupedLocations = map(
-    values(groupBy(preparedMarkers, ({ location: { geohash } }) => geohash)),
-    group =>
-      reduce(group, (prev, { containers }) => ({
-        location: prev.location,
-        containers: [...prev.containers, ...containers],
-      })),
-  )
-
-  return groupedLocations
-}
+export const markersParser = (entities, locationField) =>
+  chain(entities)
+    .uniqBy(({ [locationField]: { address } }) => address)
+    .map(({ [locationField]: location }) => ({ location, type: locationField }))
+    .value()
 
 export const marketDataParser = entities => {
   const series = map(entities, ({ exportLocation }) => ({

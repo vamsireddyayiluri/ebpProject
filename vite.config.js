@@ -11,6 +11,7 @@ import vuetify from 'vite-plugin-vuetify'
 
 export default ({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) }
+  const port = 5173
 
   return defineConfig({
     plugins: [
@@ -52,9 +53,10 @@ export default ({ mode }) => {
       watch: {
         usePolling: true,
       },
+      hmr: { host: '0.0.0.0', port },
       host: true,
       strictPort: true,
-      port: 5173,
+      port,
       proxy: {
         '/api': {
           target: `${process.env.VITE_APP_API_URL}/snapshots/get`,

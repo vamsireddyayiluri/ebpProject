@@ -283,7 +283,7 @@ const editSlot = slot => {
             </form>
             <VRow
               no-gutters
-              class="gap-2"
+              class="mt-2 gap-2"
             >
               <MemberItems
                 :members="editableSlot ? editableSlot.members : members"

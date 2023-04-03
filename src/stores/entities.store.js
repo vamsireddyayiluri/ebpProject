@@ -6,13 +6,11 @@ import mockEntities from '~/fixtures/snapshots.json'
 const alertStore = useAlertStore()
 
 export const useEntitiesStore = defineStore('entities', () => {
-  const error = ref(null)
-
   const loadEntities = async line => {
     const isDev = import.meta.env.MODE === 'development'
     const apiUrl = isDev ? '/api' : import.meta.env.VITE_APP_API_URL + '/snapshots/get'
 
-    if (!isDev) {
+    if (isDev) {
       try {
         const { data } = await axios.get(apiUrl, {
           headers: {
@@ -35,5 +33,18 @@ export const useEntitiesStore = defineStore('entities', () => {
     }
   }
 
-  return { error, loadEntities }
+  const loadEmissions = async () => {
+    try {
+      const { data } = await axios.get(import.meta.env.VITE_APP_API_URL + '/external')
+
+      return data
+    } catch (error) {
+      alertStore.warning({
+        message: error,
+        timeout: -1,
+      })
+    }
+  }
+
+  return { loadEmissions, loadEntities }
 })

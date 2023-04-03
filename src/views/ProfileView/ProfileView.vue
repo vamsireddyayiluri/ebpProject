@@ -14,7 +14,7 @@ const items = ref([
 ])
 const tab = ref(0)
 const accountInfo = ref({
-  companyName: 'Evergreen',
+  companyName: 'Maersk',
   type: 'Member',
   userEmail: currentUser.value.email,
   companyEmail: currentUser.value.email,

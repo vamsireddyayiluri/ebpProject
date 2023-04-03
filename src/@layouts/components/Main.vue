@@ -56,6 +56,7 @@ const userMenuItems = ref([{ name: 'Profile settings', path: 'profile' }])
 <template>
   <div v-bind="{ ...attrs }">
     <Header
+      class="default"
       :items="items"
       :notifications="data"
       :route="route"

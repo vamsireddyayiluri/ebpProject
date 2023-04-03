@@ -1,7 +1,8 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
 
-import imgUrl from '~/assets/icons/default-map-marker.svg'
+import markerIcon from '~/assets/icons/default-map-marker.svg'
+import exporterMarkerIcon from '~/assets/icons/exporter-map-marker.svg'
 import { useTheme } from 'vuetify'
 import { Main } from '@layouts'
 
@@ -18,8 +19,11 @@ const computedTheme = computed(() => theme.global.name.value)
 const {
   average1,
   average2,
-  average3,
+
+  // average3,
+  emissions,
   entities,
+  exporterMarkers,
   markers,
   marketData,
   rankingData,
@@ -43,6 +47,7 @@ const showActions = ref(false)
 const showSelect = ref(false)
 const searchValue = ref(null)
 const paneOpened = ref(false)
+const showExporters = ref(false)
 
 const count = ref(0)
 const counting = setInterval(function () {
@@ -55,7 +60,8 @@ const counting = setInterval(function () {
 
 const mutableSelected = ref(null)
 const mutableEntities = ref(entities.value)
-const mutableMarkers = ref(markers.value)
+const mutableMarkers = ref([])
+const mutableExporterMarkers = ref([])
 
 const computedTabs = computed(() => ({ 0: 'default', 1: 'marketplace' }))
 const computedDefaultTab = computed(() => computedTabs.value[tab.value] === 'default')
@@ -73,6 +79,14 @@ const computedMarkers = computed({
   },
   set(value) {
     mutableMarkers.value = value
+  },
+})
+const computedExporterMarkers = computed({
+  get() {
+    return mutableExporterMarkers.value
+  },
+  set(value) {
+    mutableExporterMarkers.value = value
   },
 })
 const computedEntities = computed({
@@ -96,8 +110,15 @@ const onSelectRank = e => console.log(e)
 const mapOptions = markRaw({ zoom: 3, zoomControls: true })
 const onMapLoaded = ({ api, map }) => console.log({ api, map })
 const onMarkerClick = e => console.log(JSON.stringify(e))
-const renderInfoWindow = ({ containers }) => String(`${containers.length} containers`)
-const renderMarkerIcon = () => imgUrl
+const renderInfoWindow = ({ location, type }) =>
+  type === 'exportLocation' ? location.label : location.address
+const renderMarkerIcon = ({ type }) => {
+  if (type === 'exportLocation') {
+    return exporterMarkerIcon
+  } else {
+    return markerIcon
+  }
+}
 
 const panes = ref([
   { name: 'content', size: 50 },
@@ -137,7 +158,7 @@ const onSelect = e => {
 }
 
 const onUpdated = e => {
-  computedMarkers.value = markersParser(e)
+  computedMarkers.value = markersParser(e, 'location')
 }
 
 const onClearSearch = () => {
@@ -172,6 +193,9 @@ watch([entities, tab], () => {
   computedEntities.value = computedDefaultTab.value ? entities.value : marketplaceData.value
   computedMarkers.value = computedDefaultTab.value ? markers.value : marketplaceMarkers.value
   computedSelected.value = Object.keys(rankingData.value)[0]
+})
+watch(showExporters, value => {
+  computedExporterMarkers.value = value ? exporterMarkers.value : []
 })
 
 onMounted(async () => {
@@ -260,10 +284,29 @@ onMounted(async () => {
                 />
               </VCol>
               <VCol :style="{ minWidth: '250px' }">
-                <AverageCard
-                  class="fill-height"
-                  v-bind="average3"
-                />
+                <Card class="fill-height">
+                  <CardText>
+                    <Typography
+                      type="text-body-xs-regular"
+                      :color="getColor('textSecondary')"
+                    >
+                      Total emissions
+                    </Typography>
+                    <Typography type="text-h2">
+                      {{ emissions.totalEmissions }} kg
+                    </Typography>
+                    <Typography
+                      class="mt-2"
+                      type="text-body-xs-regular"
+                      :color="getColor('textSecondary')"
+                    >
+                      Total emissions saved
+                    </Typography>
+                    <Typography type="text-h2">
+                      {{ emissions.totalEmissionsSaved }} kg
+                    </Typography>
+                  </CardText>
+                </Card>
               </VCol>
             </VRow>
             <VRow
@@ -537,31 +580,30 @@ onMounted(async () => {
         </template>
         <template #map>
           <VFadeTransition>
-            <div
+            <VContainer
               v-if="paneOpened"
-              class="styledMapFilters d-flex position-absolute ma-8"
+              class="styledMapFilters d-flex position-absolute"
               no-gutters
               align="center"
             >
               <VSpacer />
-              <Autocomplete
-                class="styledMapFilter bg-uiPrimary mr-4 rounded-sm"
-                placeholder="Age of containers"
-              />
-              <Autocomplete
-                class="styledMapFilter bg-uiPrimary mr-4 rounded-sm"
-                placeholder="Containers in marketplace"
-              />
-              <Autocomplete
-                class="styledMapFilter bg-uiPrimary rounded-sm"
-                placeholder="Exporter facilities"
-              />
-            </div>
+              <div
+                class="exporterToggle bg-uiPrimary d-flex"
+                @click="showExporters = !showExporters"
+              >
+                <Checkbox
+                  v-model="showExporters"
+                  class="mr-2"
+                />
+                Exporter facilities
+              </div>
+            </VContainer>
           </VFadeTransition>
           <Map
+            v-if="computedMarkers.length"
             :key="tab"
             :map-options="mapOptions"
-            :markers="computedMarkers"
+            :markers="[...computedMarkers, ...computedExporterMarkers]"
             :render-info-window="renderInfoWindow"
             :render-marker-icon="renderMarkerIcon"
             :render-marker-cluster="true"
@@ -635,5 +677,13 @@ onMounted(async () => {
 
 .progress-wrapper {
   height: 100vh;
+}
+
+// need component
+.exporterToggle {
+  border: 2px solid rgba(var(--v-theme-uiLine), 1);
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 0.5rem;
 }
 </style>
