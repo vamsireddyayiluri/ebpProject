@@ -381,7 +381,10 @@ onMounted(async () => {
                     height="48"
                     variant="plain"
                   >
-                    <Tooltip location="top">
+                    <Tooltip
+                      location="top"
+                      :attach="false"
+                    >
                       Download PDF
                     </Tooltip>
                   </IconButton>
