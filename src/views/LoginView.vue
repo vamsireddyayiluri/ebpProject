@@ -16,14 +16,12 @@ const onSubmit = async () => {
 
 <template>
   <Typography
-    type="text-h1"
-    :style="{ marginTop: '140px' }"
+    type="text-h1 mt-[140px]"
   >
     Welcome back!
   </Typography>
   <form
-    class="mt-10 mx-auto"
-    :style="{ maxWidth: '360px' }"
+    class="mt-10 mx-auto max-w-[360px]"
     @submit.prevent="onSubmit"
   >
     <Textfield
@@ -52,7 +50,7 @@ const onSubmit = async () => {
       <RouterLink :to="{ name: 'reset-password' }">
         <Typography
           type="text-body-s-semibold"
-          :style="{ color: getColor('textInteractive-01') }"
+          :color="getColor('textInteractive-01')"
         >
           Forgot password
         </Typography>
@@ -62,7 +60,7 @@ const onSubmit = async () => {
     <Button
       type="submit"
       :disabled="!form.email || !form.password"
-      class="w-100 mt-10 mx-auto"
+      class="w-full mt-10 mx-auto"
     >
       Log in
     </Button>
@@ -70,7 +68,7 @@ const onSubmit = async () => {
 
   <VRow
     no-gutters
-    class="d-flex justify-center align-center mt-4"
+    class="flex justify-center items-center mt-4"
   >
     <Typography
       type="text-body-s-regular"
@@ -81,8 +79,8 @@ const onSubmit = async () => {
     <RouterLink :to="{ name: 'register' }">
       <Typography
         type="text-body-s-semibold"
-        class="pa-0 ml-1"
-        :style="{ color: getColor('textInteractive-01') }"
+        class="p-0 ml-1"
+        :color="getColor('textInteractive-01')"
       >
         Sign up
       </Typography>
@@ -91,5 +89,4 @@ const onSubmit = async () => {
 </template>
 
 <style lang="scss">
-@use '@core/scss/pages/page-auth.scss';
 </style>

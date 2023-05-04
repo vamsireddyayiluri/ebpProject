@@ -13,10 +13,6 @@ const items = ref([
     name: 'marketplace',
     icon: 'mdi-cube-scan',
   },
-  {
-    name: 'settings',
-    icon: 'mdi-cog',
-  },
 ])
 
 const data = [
@@ -67,5 +63,3 @@ const userMenuItems = ref([{ name: 'Profile settings', path: 'profile' }])
     <slot />
   </div>
 </template>
-
-<style lang="scss"></style>

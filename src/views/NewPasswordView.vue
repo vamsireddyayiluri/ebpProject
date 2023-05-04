@@ -34,14 +34,12 @@ const onSubmit = () => {
 
 <template>
   <Typography
-    type="text-h1"
-    :style="{ marginTop: '140px' }"
+    type="text-h1 mt-[140px]"
   >
     {{ stepper.current.value.title }}
   </Typography>
   <form
-    class="mx-auto"
-    :style="{ maxWidth: '360px' }"
+    class="mx-auto max-w-[360px]"
     @submit.prevent="onSubmit"
   >
     <template v-if="stepper.isCurrent('new-password')">
@@ -66,7 +64,7 @@ const onSubmit = () => {
       <Button
         type="submit"
         :disabled="!stepper.current.value.isValid()"
-        class="w-100 mx-auto"
+        class="w-full mx-auto"
       >
         Reset password
       </Button>
@@ -82,7 +80,7 @@ const onSubmit = () => {
       </Typography>
       <Button
         type="submit"
-        class="w-100 mx-auto"
+        class="w-full mx-auto"
       >
         Log in
       </Button>
@@ -91,5 +89,4 @@ const onSubmit = () => {
 </template>
 
 <style lang="scss">
-@use '@core/scss/pages/page-auth.scss';
 </style>

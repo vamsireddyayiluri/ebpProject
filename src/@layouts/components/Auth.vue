@@ -15,14 +15,14 @@ tryOnUnmounted(() => {
 </script>
 
 <template>
-  <div class="authLayout">
-    <div class="position-relative">
+  <div class="py-12 px-8 mx-auto text-center">
+    <div class="relative">
       <Button
         v-if="router.currentRoute.value.name === 'reset-password'"
         prepend-icon="mdi-arrow-left-thin"
         variant="plain"
         secondary="true"
-        class="backButton"
+        class="absolute -top-1.5 left-0 p-0"
         @click="router.go(-1)"
       >
         Go back
@@ -30,7 +30,7 @@ tryOnUnmounted(() => {
       <img
         :src="logo"
         alt="qualle logo"
-        class="logo"
+        class="h-9 mx-auto"
       >
     </div>
     <div>
@@ -39,20 +39,3 @@ tryOnUnmounted(() => {
     </div>
   </div>
 </template>
-
-<style lang="scss">
-.authLayout {
-  padding: 48px 32px;
-  margin: 0 auto;
-  text-align: center;
-  .logo {
-    height: 36px;
-  }
-  .backButton {
-    position: absolute;
-    top: -5px;
-    left: 0;
-    padding: 0;
-  }
-}
-</style>

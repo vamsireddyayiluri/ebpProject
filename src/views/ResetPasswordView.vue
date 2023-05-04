@@ -34,14 +34,12 @@ const openMail = () => {
 
 <template>
   <Typography
-    type="text-h1"
-    :style="{ marginTop: '140px' }"
+    type="text-h1 mt-[140px]"
   >
     {{ stepper.current.value.title }}
   </Typography>
   <form
-    class="mx-auto"
-    :style="{ maxWidth: '360px' }"
+    class="mx-auto  max-w-[360px]"
     @submit.prevent="onSubmit"
   >
     <template v-if="stepper.isCurrent('reset-pass')">
@@ -55,7 +53,7 @@ const openMail = () => {
       <Button
         type="submit"
         :disabled="!form.email.match(patterns.emailRegex)"
-        class="w-100 mt-10 mx-auto"
+        class="w-full mt-10 mx-auto"
       >
         Send reset mail
       </Button>
@@ -71,7 +69,7 @@ const openMail = () => {
       </Typography>
       <Button
         type="submit"
-        class="w-100 mx-auto"
+        class="w-full mx-auto"
         @click="openMail"
       >
         Open mailbox
@@ -80,11 +78,11 @@ const openMail = () => {
 
     <VRow
       no-gutters
-      class="d-flex justify-center align-center mt-4"
+      class="flex justify-center items-center mt-4"
     >
       <Typography
         type="text-body-s-regular"
-        :style="{ color: getColor('textSecondary') }"
+        :color="getColor('textSecondary')"
       >
         {{
           stepper.isCurrent('reset-pass') ? "Don't have an account?" : "Didn't receive the mail?"
@@ -94,7 +92,7 @@ const openMail = () => {
         <RouterLink :to="{ name: 'register' }">
           <Typography
             type="text-body-s-semibold"
-            class="pa-0 ml-1"
+            class="p-0 ml-1"
             :color="getColor('textInteractive-01')"
           >
             Sign up
@@ -115,5 +113,4 @@ const openMail = () => {
 </template>
 
 <style lang="scss">
-@use '@core/scss/pages/page-auth.scss';
 </style>
