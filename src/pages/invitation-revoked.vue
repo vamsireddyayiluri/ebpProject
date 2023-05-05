@@ -4,7 +4,7 @@ import alert from '~/assets/images/alert.svg'
 </script>
 
 <template>
-  <div class="wrapper">
+  <div class="w-[410px] h-screen pt-[180px] mx-auto text-center">
     <img
       :src="alert"
       alt="alert!"
@@ -25,10 +25,6 @@ import alert from '~/assets/images/alert.svg'
 </template>
 
 <style lang="scss">
-.wrapper {
-  margin: 180px auto 0 auto;
-  width: 410px;
-}
 </style>
 
 <route lang="yaml">

@@ -14,7 +14,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       currentUser.value = user
 
-      router.push({ name: 'dashboard' })
+      // router.push({ name: 'dashboard' })
     } catch (error) {
       switch (error.code) {
       case 'auth/user-not-found':
@@ -43,7 +43,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       currentUser.value = user
 
-      router.push({ name: 'dashboard' })
+      // router.push({ name: 'dashboard' })
     } catch (error) {
       switch (error.code) {
       case 'auth/email-already-in-use':
@@ -72,7 +72,7 @@ export const useAuthStore = defineStore('auth', () => {
         currentUser.value = user
 
         if (router.currentRoute.value.name === 'login') {
-          router.push({ name: 'dashboard' })
+          // router.push({ name: 'dashboard' })
         }
       }
     })

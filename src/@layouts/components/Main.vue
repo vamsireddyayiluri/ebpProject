@@ -4,16 +4,7 @@ import { useAuthStore } from '~/stores/auth.store'
 const authStore = useAuthStore()
 const attrs = useAttrs()
 const route = useRoute()
-const items = ref([
-  {
-    name: 'dashboard',
-    icon: 'mdi-home',
-  },
-  {
-    name: 'marketplace',
-    icon: 'mdi-cube-scan',
-  },
-])
+const items = ref([])
 
 const data = [
   { title: 'Trucker ABCD registered on the platform', label: 'Info [Notification]', type: 'info' },
