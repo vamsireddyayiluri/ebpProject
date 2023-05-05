@@ -21,7 +21,6 @@ import alert from '~/assets/images/alert.svg'
       :style="{ color: getColor('textSecondary') }"
     >
       The page you are looking for doesn't exist anymore. Please contact your admin.
-      lorem
     </Typography>
   </div>
 </template>
