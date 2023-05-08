@@ -50,10 +50,7 @@ export default ({ mode }) => {
       },
     },
     server: {
-      watch: {
-        usePolling: true,
-      },
-      hmr: { port },
+      hmr: { clientPort: port, port },
       host: '0.0.0.0',
       strictPort: true,
       port,
