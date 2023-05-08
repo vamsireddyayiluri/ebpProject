@@ -322,7 +322,7 @@ onMounted(async () => {
                     height="48"
                     variant="plain"
                   >
-                    <Tooltip location="top"> Download PDF </Tooltip>
+                    <Tooltip location="top" :attach="false"> Download PDF </Tooltip>
                   </IconButton>
                 </VRow>
                 <VirtualTable

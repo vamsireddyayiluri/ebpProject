@@ -19,7 +19,7 @@ const turnsDialog = ref(false)
       elevation="0"
       :color="getColor('uiSecondary-01')"
       v-bind="{ ...props }"
-      class="fill-height pa-6 position-relative"
+      class="fill-height pa-6 position-relative overflow-visible"
     >
       <Typography type="text-h4">
         {{ charts.label }}
