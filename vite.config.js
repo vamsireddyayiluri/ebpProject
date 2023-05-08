@@ -53,8 +53,8 @@ export default ({ mode }) => {
       watch: {
         usePolling: true,
       },
-      hmr: { host: '0.0.0.0', port },
-      host: true,
+      hmr: { port },
+      host: '0.0.0.0',
       strictPort: true,
       port,
       proxy: {
