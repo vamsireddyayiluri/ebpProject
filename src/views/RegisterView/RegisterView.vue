@@ -63,7 +63,7 @@ const onSubmit = async () => {
     class="mt-16"
     @submit.prevent="onSubmit"
   >
-    <Typography type="text-h1">
+    <Typography class="text-9xl">
       {{ stepper.current.value.title }}
     </Typography>
     <div>
