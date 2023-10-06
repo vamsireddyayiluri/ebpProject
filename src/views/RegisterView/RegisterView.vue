@@ -1,31 +1,63 @@
 <script setup>
 import PasswordMeter from 'vue-simple-password-meter'
-import { patterns } from '@qualle-admin/qutil'
 import Stepper from '~/components/Stepper/Stepper.vue'
 import { getColor } from '~/helpers/colors'
 import { useAuthStore } from '~/stores/auth.store'
+import { storeToRefs } from 'pinia'
+import { patterns } from '@qualle-admin/qutil'
+import { phoneRegex, emailRegex } from '@qualle-admin/qutil/dist/patterns'
 
 const authStore = useAuthStore()
+const { isLoading } = storeToRefs(authStore)
+
 const form = reactive({
-  companyName: '',
+  fullName: '',
   email: '',
+  companyName: '',
+  cell: '',
   password: '',
   confirmPassword: '',
 })
-const isPasswordVisible = ref(false)
-
+const rules = {
+  cell(value) {
+    return phoneRegex.test(value) || 'Invalid phone number format'
+  },
+  email(value) {
+    return emailRegex.test(value) || 'Invalid e-mail'
+  },
+}
 const steps = {
   'account-information': {
     title: 'Account information',
     isValid: () =>
-      form.companyName?.trim() !== '' &&
+      form.fullName?.trim() !== '' &&
       form.email.match(patterns.emailRegex) &&
+      form.companyName?.trim() !== '' &&
+      form.cell.match(patterns.phoneRegex) &&
       form.password &&
       form.confirmPassword &&
       form.password === form.confirmPassword,
   },
+  'work-details': {
+    title: 'Work details',
+    isValid: () => true,
+  },
+  'invite-members': {
+    title: 'Invite team members',
+    isValid: () => true,
+  },
+  'required-onboarding-documents': {
+    title: 'Required onboarding documents',
+    isValid: () => true,
+  },
+  'trucker-requirements': {
+    title: 'Trucker requirements',
+    isValid: () => true,
+  },
 }
 const stepper = useStepper(steps)
+
+const isPasswordVisible = ref(false)
 
 const goToStep = stepId => {
   if (stepper.isFirst.value) {
@@ -34,19 +66,11 @@ const goToStep = stepId => {
 }
 
 const onSubmit = async () => {
+  if (stepper.isLast.value) {
+    await authStore.register({ form })
+  }
   if (stepper.current.value.isValid()) {
     stepper.goToNext()
-
-    return
-  }
-  if (stepper.isLast.value) {
-    await authStore.register({ email: form.email, password: form.password })
-
-    console.log('send', {
-      ...form,
-      members: members.value,
-      location: locations.value,
-    })
   }
 }
 </script>
@@ -56,85 +80,83 @@ const onSubmit = async () => {
     :steps="stepper.steps.value"
     :active-step="stepper.index"
     class="mt-10"
-    :style="{ maxWidth: '540px' }"
+    :style="{ maxWidth: '940px' }"
     @goTo="goToStep"
   />
   <form
     class="mt-16"
     @submit.prevent="onSubmit"
   >
-    <Typography class="text-9xl">
+    <Typography type="text-h1 mb-10">
       {{ stepper.current.value.title }}
     </Typography>
     <div>
-      <div
-        class="p-0 mx-auto max-w-[730px]"
-      >
+      <div class="p-0 mx-auto mt-10 max-w-[730px]">
         <template v-if="stepper.isCurrent('account-information')">
-          <VRow
-            no-gutters
-            class="mt-10 mb-4"
+          <div
+            class="max-w-[730px] mx-auto mt-10 grid sm:grid-cols-2 grid-cols-1 gap-4 text-left [&>div]:h-fit"
           >
-            <VCol
-              cols="12"
-              sm="6"
-            >
-              <Textfield
-                v-model.trim="form.companyName"
-                type="text"
-                label="Company name"
-                required
-                class="mx-2 mb-4"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              sm="6"
-            >
-              <Textfield
-                v-model.trim="form.email"
-                type="email"
-                label="Email"
-                required
-                class="mx-2 mb-4"
-              />
-            </VCol>
-          </VRow>
-          <VResponsive width="100%" />
-          <VRow no-gutters>
-            <VCol
-              cols="12"
-              sm="6"
-            >
+            <Textfield
+              v-model.trim="form.fullName"
+              type="text"
+              label="Full name *"
+              required
+            />
+            <Textfield
+              v-model.trim="form.email"
+              type="email"
+              label="Email *"
+              :rules="[rules.email]"
+              required
+            />
+            <Textfield
+              v-model.trim="form.companyName"
+              type="text"
+              label="Company name *"
+              required
+            />
+            <Textfield
+              v-model.trim="form.cell"
+              type="tel"
+              label="Work phone *"
+              :rules="[rules.cell]"
+              required
+            />
+            <div>
               <Textfield
                 v-model="form.password"
-                label="Password"
+                label="Password *"
                 minlength="8"
                 required
-                class="mx-2 mb-3"
                 :type="isPasswordVisible ? 'text' : 'password'"
                 :append-inner-icon="isPasswordVisible ? 'mdi-eye-off-outline' : 'mdi-eye-outline'"
                 @click:append-inner="isPasswordVisible = !isPasswordVisible"
               />
               <PasswordMeter :password="form.password" />
-            </VCol>
-            <VCol
-              cols="12"
-              sm="6"
-            >
-              <Textfield
-                v-model="form.confirmPassword"
-                type="password"
-                label="Confirm password"
-                minlength="8"
-                required
-                class="mx-2"
-              />
-            </VCol>
-          </VRow>
+            </div>
+            <Textfield
+              v-model="form.confirmPassword"
+              type="password"
+              label="Confirm password *"
+              minlength="8"
+              required
+              class="h-12"
+            />
+          </div>
+        </template>
+        <template v-if="stepper.isCurrent('work-details')">
+          <Yards />
+        </template>
+        <template v-if="stepper.isCurrent('invite-members')">
+          <TeamMembers />
+        </template>
+        <template v-if="stepper.isCurrent('required-onboarding-documents')">
+          <FileUpload />
+        </template>
+        <template v-if="stepper.isCurrent('trucker-requirements')">
+          <TruckerRequirements />
         </template>
       </div>
-
       <div class="mt-10 mx-auto">
         <Button
           v-if="!stepper.isLast.value"
@@ -146,6 +168,7 @@ const onSubmit = async () => {
         </Button>
         <Button
           v-if="stepper.isLast.value"
+          :disabled="!stepper.current.value.isValid()"
           type="submit"
           class="max-w-[360px] w-full"
         >
@@ -175,33 +198,4 @@ const onSubmit = async () => {
       </div>
     </div>
   </form>
-
-  <Dialog
-    ref="memberDialog"
-    width="50%"
-    min-width="400px"
-  >
-    <template #text>
-      <RemoveTeamMemberDialog
-        :removed-member="removedMember"
-        @onRemove="removeMember"
-      />
-    </template>
-  </Dialog>
-
-  <Dialog
-    ref="locationDialog"
-    width="50%"
-    min-width="400px"
-  >
-    <template #text>
-      <RemoveLocationDialog
-        :removed-location="removedLocation"
-        @onRemove="removeLocation"
-      />
-    </template>
-  </Dialog>
 </template>
-
-<style lang="scss">
-</style>
