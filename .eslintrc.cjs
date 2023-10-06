@@ -54,6 +54,8 @@ module.exports = {
     // Plugin: eslint-plugin-import
     'import/prefer-default-export': 'off',
 
+    'import/no-unresolved': 'off',
+
     // Plugin: eslint-plugin-import
     // For omitting extension for ts files
     'import/extensions': [
@@ -107,6 +109,7 @@ module.exports = {
     'vue/v-on-event-hyphenation': 'off',
     'vue/require-default-prop': 'off',
     'vue/no-empty-component-block': 'off',
+    'vue/no-side-effects-in-computed-properties': 'off',
 
     // -- Extension Rules
     'vue/no-irregular-whitespace': 'error',
