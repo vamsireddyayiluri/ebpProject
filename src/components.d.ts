@@ -8,13 +8,21 @@ export {}
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     AppAlert: typeof import('./components/AppAlert/AppAlert.vue')['default']
+    BeforeRegisterView: typeof import('./views/RegisterView/BeforeRegisterView.vue')['default']
     ErrorHeader: typeof import('./@core/components/ErrorHeader.vue')['default']
+    FileUpload: typeof import('./components/FileUpload/FileUpload.vue')['default']
     LoginView: typeof import('./views/LoginView.vue')['default']
     NewPasswordView: typeof import('./views/NewPasswordView.vue')['default']
-    RegisterView: typeof import('./views/RegisterView.vue')['default']
+    RegisterView: typeof import('./views/RegisterView/RegisterView.vue')['default']
+    RemoveCancelDialog: typeof import('./components/RemoveCancelDialog/RemoveCancelDialog.vue')['default']
     ResetPasswordView: typeof import('./views/ResetPasswordView.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Stepper: typeof import('./components/Stepper/Stepper.vue')['default']
+    TeamMembers: typeof import('./components/TeamMembers/TeamMembers.vue')['default']
+    TruckerRequirements: typeof import('./components/TruckerRequirements/TruckerRequirements.vue')['default']
+    Verify: typeof import('./views/Verify.vue')['default']
+    VerifyAuth: typeof import('./views/VerifyAuth.vue')['default']
+    Yards: typeof import('./components/Yards/Yards.vue')['default']
   }
 }
