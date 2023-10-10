@@ -6,6 +6,15 @@ import { useAuthStore } from '~/stores/auth.store'
 const authStore = useAuthStore()
 const { requiresForTruckers, preferredTruckersList, questionList } = storeToRefs(authStore)
 const question = ref(null)
+const items = ref(preferredTruckersList)
+
+const scacList = ['aass', 'qqww']
+
+const removeRequiry = item => {
+  const index = preferredTruckersList.value.findIndex(i => i === item)
+  items.value.splice(index, 1)
+  console.log('item', item)
+}
 </script>
 
 <template>
@@ -13,30 +22,28 @@ const question = ref(null)
     Search truckers you already work with by SCAC code and add them to your Preferred truckers list
   </Typography>
   <Autocomplete
-    v-model="preferredTruckersList"
-    :items="[
-      {
-        id: 0,
-        label: 'aass',
-      },
-      {
-        id: 1,
-        label: 'qqww',
-      },
-      {
-        id: 2,
-        label: 'ccvv',
-      },
-    ]"
-    label="Seach for truckers by SCAC"
+    v-model="items"
+    :items="scacList"
+    placeholder="Seach for truckers by SCAC"
     prepend-inner-icon="mdi-magnify"
-    return-object
-    closeable-chips
-    chips
     multiple
+    with-btn
     class="text-left"
   />
-  <Typography type="text-body-m-semibold mt-12 mb-6 text-left">
+  <div class="flex gap-3 mt-3">
+    <template
+      v-for="i in items"
+      :key="i"
+    >
+      <Chip
+        closable
+        @click:close="removeRequiry(i)"
+      >
+        {{ i }}
+      </Chip>
+    </template>
+  </div>
+  <Typography type="text-body-m-semibold mt-10 mb-6 text-left">
     Which of the following do you require for truckers to onboard with your company?*
   </Typography>
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-5">
@@ -50,7 +57,7 @@ const question = ref(null)
       />
     </template>
   </div>
-  <Typography type="text-body-m-semibold mt-12 mb-6 text-left">
+  <Typography type="text-body-m-semibold mt-10 mb-6 text-left">
     Type additional questions here
   </Typography>
   <div class="flex gap-5">
