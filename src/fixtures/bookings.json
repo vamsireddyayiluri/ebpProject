@@ -1,0 +1,167 @@
+[
+  {
+    "amount": 10,
+    "booked": 5,
+    "chassis": null,
+    "chassisType": "private",
+    "company": "Cognine",
+    "container": "AAAA0000000",
+    "created": "2023-03-09T14:30:49+00:00",
+    "expiryDate": "2023-03-14T23:59:59+05:30",
+    "lfd": "2023-03-08T23:59:59+05:30",
+    "line": {
+      "id": "1161e60730156d8f",
+      "label": "CAI"
+    },
+    "location": {
+      "address": "875 Blake Wilbur Dr, Palo Alto, CA 94304, USA",
+      "details": {
+        "hoursOfOperation": null,
+        "pickupInstructions": null,
+        "primaryContact": null,
+        "primaryContactName": null,
+        "secondaryContact": null,
+        "secondaryContactName": null
+      },
+      "geohash": "9q9hgycyy",
+      "label": "california",
+      "lat": 37.4357319,
+      "lng": -122.1762866
+    },
+    "mc": null,
+    "orgId": "33e1f6a41797e8a0049f65046c35",
+    "owner": "2HRqyOHsAVclCQ0FmqqY3k0G6u22",
+    "ref": "1235",
+    "id": "1235",
+    "reported": "",
+    "scac": "ABCD",
+    "size": "20 RF",
+    "status": "available",
+    "__collections__": {}
+  },
+  {
+    "amount": 7,
+    "booked": 5,
+    "chassis": null,
+    "chassisType": "private",
+    "company": "Cognine",
+    "container": "AAAA0000001",
+    "created": "2023-03-09T14:30:49+00:00",
+    "expiryDate": "2023-03-14T23:59:59+05:30",
+    "lfd": "2023-03-08T23:59:59+05:30",
+    "line": {
+      "id": "1161e60730156d8f",
+      "label": "CAI"
+    },
+    "location": {
+      "address": "875 Blake Wilbur Dr, Palo Alto, CA 94304, USA",
+      "details": {
+        "hoursOfOperation": null,
+        "pickupInstructions": null,
+        "primaryContact": null,
+        "primaryContactName": null,
+        "secondaryContact": null,
+        "secondaryContactName": null
+      },
+      "geohash": "9q9hgycyy",
+      "label": "california",
+      "lat": 37.4357319,
+      "lng": -122.1762866
+    },
+    "mc": null,
+    "orgId": "33e1f6a41797e8a0049f65046c35",
+    "owner": "2HRqyOHsAVclCQ0FmqqY3k0G6u22",
+    "ref": "7835",
+    "id": "7835",
+    "reported": "",
+    "scac": "ABCD",
+    "size": "20 RF",
+    "status": "available",
+    "__collections__": {}
+  },
+  {
+    "amount": 15,
+    "booked": 5,
+    "chassis": null,
+    "chassisType": "private",
+    "company": "Test Company 1",
+    "container": "AAAA0000005",
+    "created": "2023-02-20T13:07:19+00:00",
+    "expiryDate": "2023-02-25T23:59:59+05:30",
+    "id": "AAAA0000005_bf48a4ef951cab59d4262a7a7890",
+    "lfd": "2023-01-23T23:59:59+05:30",
+    "line": {
+      "id": "9d8d49984308f116",
+      "label": "Alianca"
+    },
+    "location": {
+      "address": "911 Sigsbee Ave, Wilmington, CA 90744, USA",
+      "details": {
+        "hoursOfOperation": [
+          {
+            "day": "Sunday",
+            "from": "9:30",
+            "status": true,
+            "to": "17:30"
+          },
+          {
+            "day": "Monday",
+            "from": "9:30",
+            "status": true,
+            "to": "17:30"
+          },
+          {
+            "day": "Tuesday",
+            "from": "9:30",
+            "status": true,
+            "to": "17:30"
+          },
+          {
+            "day": "Wednesday",
+            "from": "9:30",
+            "status": false,
+            "to": "17:30"
+          },
+          {
+            "day": "Thursday",
+            "from": "9:30",
+            "status": false,
+            "to": "17:30"
+          },
+          {
+            "day": "Friday",
+            "from": "9:30",
+            "status": true,
+            "to": "17:30"
+          },
+          {
+            "day": "Saturday",
+            "from": "9:30",
+            "status": true,
+            "to": "17:30"
+          }
+        ],
+        "isFlipYard": true,
+        "pickupInstructions": "dfh gfhfgh",
+        "primaryContact": "35346346346",
+        "primaryContactName": "dgdfg",
+        "secondaryContact": null,
+        "secondaryContactName": null
+      },
+      "geohash": "9q5bjw01b",
+      "label": "RoadEx Sigsbee Yard",
+      "lat": 33.7832625,
+      "lng": -118.2348517
+    },
+    "mc": null,
+    "orgId": "bf48a4ef951cab59d4262a7a7890",
+    "owner": "omLZ0n3pk3ejmhXVqsVTS3CP96a2",
+    "ref": "3273",
+    "reported": "",
+    "row_id": "AAAA0000005_bf48a4ef951cab59d4262a7a7890",
+    "scac": "QUAL",
+    "size": "20 ST",
+    "status": "available",
+    "__collections__": {}
+  }
+]

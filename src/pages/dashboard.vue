@@ -1,3 +1,3 @@
 <template>
-  dashboard
+  <DashboardView />
 </template>
