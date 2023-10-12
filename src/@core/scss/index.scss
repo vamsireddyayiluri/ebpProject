@@ -2,16 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
-html {
+html,
+body,
+#app,
+.v-theme-provider {
   overflow: auto;
+  height: 100%;
+  min-height: 100%;
 }
 
 a {
-  color: rgb(var(--v-theme-primary));
   text-decoration: none;
 }
 
 // Vuetify 3 don't provide margin bottom style like vuetify 2
 p {
   margin-block-end: 1rem;
+}
+
+.styledSubHeader>.v-toolbar__content {
+  height: auto !important;
+}
+
+@media (max-width: 640px) {
+  .v-navigation-drawer {
+    height: calc(100vh - 110px) !important;
+    top: 121px !important;
+    position: fixed !important;
+  }
+}
+
+.hoverBtn {
+  min-width: 36px;
+  min-height: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  i, button {
+    margin: 0 !important;
+  }
+  .viewDetailsBtn {
+    top: 0;
+    right: 0;
+
+    .gradient {
+      display: none;
+    }
+  }
 }

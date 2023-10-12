@@ -18,11 +18,11 @@ export const markersParser = entities => {
   })
 }
 
-export const groupedContainerLocations = containers =>
+export const groupedBookingLocations = containers =>
   values(groupBy(containers, ({ location: { geohash } }) => geohash)).map(group => ({
     id: group[0].location.geohash,
     location: group[0].location,
-    containers: group,
+    entities: group,
     lines: uniqBy(
       group.map(val => val.line),
       ({ id }) => id,
