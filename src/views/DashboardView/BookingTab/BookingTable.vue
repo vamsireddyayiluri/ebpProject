@@ -1,8 +1,8 @@
 <script setup>
-import {useActions, useDate, useHeaders} from '~/composables'
-import {getLineAvatar} from '~/firebase/getLineAvatar'
-import {useDisplay} from 'vuetify'
-import {getBookingLoad} from '~/helpers/countings'
+import { useActions, useDate, useHeaders } from '~/composables'
+import { getLineAvatar } from '~/firebase/getLineAvatar'
+import { useDisplay } from 'vuetify'
+import { getBookingLoad } from '~/helpers/countings'
 
 const props = defineProps({
   computedEntities: Array,
@@ -10,17 +10,17 @@ const props = defineProps({
   loading: Boolean,
 })
 const emit = defineEmits(['selectTableRow', 'editBooking'])
-const {smAndDown} = useDisplay()
+const { smAndDown } = useDisplay()
 const showActions = ref(true)
 const tableHeight = ref(0)
 const removeBookingDialog = ref(false)
 const selectedBooking = ref(null)
 
-const {bookingsHeaders} = useHeaders()
-const {bookingsActions} = useActions()
+const { bookingsHeaders } = useHeaders()
+const { bookingsActions } = useActions()
 const formatDate = useDate()
 
-const containerActionHandler = ({action, e}) => {
+const containerActionHandler = ({ action, e }) => {
   if (action === 'edit-booking') emit('editBooking', e)
   if (action === 'remove-booking') removeBookingDialog.value.show(true), (selectedBooking.value = e)
 }
@@ -68,9 +68,9 @@ onMounted(() => {
         </template>
       </Typography>
     </template>
-    <template #yard="{ item }">
+    <template #yardLabel="{ item }">
       <Typography type="text-body-m-regular">
-        {{ item.container }}
+        {{ item.location.label }}
       </Typography>
     </template>
     <template #ssl="{ item }">

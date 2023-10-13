@@ -1,9 +1,8 @@
 <script setup>
 import { useDisplay, useTheme } from 'vuetify'
-import bookingsData from '~/fixtures/bookings.json'
+import yardsData from '~/fixtures/yards.json'
 import { filterMatchingObjects } from '~/helpers/filters'
 import { uid } from 'uid'
-import { groupedBookingLocations } from '~/stores/helpers'
 import { getAllLines } from '@qualle-admin/qutil/dist/ssl'
 import { getColor } from '~/helpers/colors'
 
@@ -28,8 +27,8 @@ const panes = ref(getPanes())
 const vuetifyTheme = useTheme()
 const theme = computed(() => vuetifyTheme.global.name.value)
 const panesRef = ref(null)
-const mutableSearchedEntities = ref([...JSON.parse(JSON.stringify(bookingsData))])
-const mutableFilteredEntities = ref([...JSON.parse(JSON.stringify(bookingsData))])
+const mutableSearchedEntities = ref([...JSON.parse(JSON.stringify(yardsData))])
+const mutableFilteredEntities = ref([...JSON.parse(JSON.stringify(yardsData))])
 const searchValue = ref(null)
 const loading = ref(false)
 const newId = ref(uid(8))
@@ -102,7 +101,6 @@ const viewStatistics = e => {
   selectedBooking.value = e
 }
 
-
 const onClearSearch = () => {
   loading.value = true
 
@@ -118,10 +116,10 @@ const debouncedSearch = useDebounceFn(searchValue => {
     onClearSearch()
   } else {
     computedSearchedEntities.value = useArrayFilter(
-      bookingsData,
-      ({ ref }) =>
+      yardsData,
+      ({ location: {address, label} }) =>
         useArraySome(
-          useArrayMap(Object.values({ ref }), value => String(value).toLowerCase())
+          useArrayMap(Object.values({ address, label }), value => String(value).toLowerCase())
             .value,
           values => values.includes(searchValue.toLowerCase()),
         ).value,
@@ -130,12 +128,15 @@ const debouncedSearch = useDebounceFn(searchValue => {
 }, 300)
 
 const applyFilter = () => {
-  let filteredData = bookingsData
+  let filteredData = yardsData
 
   if (filters.value.ssl) {
     filteredData = useArrayFilter(
       filteredData,
-      container => container.line.label === filters.value.ssl,
+      yard => useArraySome(
+        yard.lines,
+        line => line.label === filters.value.ssl,
+      ).value,
     ).value
   }
   computedFilteredEntities.value = filteredData
@@ -167,7 +168,7 @@ watch(searchValue, value => {
         <div class="flex flex-wrap items-center gap-4 mb-7">
           <div class="flex justify-between sm:justify-normal items-center gap-4">
             <Typography type="text-h1 shrink-0">
-              Bookings
+              Yards
             </Typography>
           </div>
           <Button
@@ -198,7 +199,7 @@ watch(searchValue, value => {
             @update:modelValue="applyFilter"
           />
         </div>
-        <BookingTable
+        <YardsTable
           :computed-entities="computedEntities"
           :search-value="searchValue"
           :loading="loading"
@@ -233,7 +234,7 @@ watch(searchValue, value => {
       <Map
         :key="newId"
         :map-options="mapOptions"
-        :markers="groupedBookingLocations(computedEntities)"
+        :markers="computedEntities"
         render-marker-cluster
         :theme="theme"
         @onMapLoaded="onMapLoaded"

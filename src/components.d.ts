@@ -31,5 +31,7 @@ declare module '@vue/runtime-core' {
     Verify: typeof import('./views/Verify.vue')['default']
     VerifyAuth: typeof import('./views/VerifyAuth.vue')['default']
     Yards: typeof import('./components/Yards/Yards.vue')['default']
+    YardsTab: typeof import('./views/DashboardView/YardsTab/YardsTab.vue')['default']
+    YardsTable: typeof import('./views/DashboardView/YardsTab/YardsTable.vue')['default']
   }
 }

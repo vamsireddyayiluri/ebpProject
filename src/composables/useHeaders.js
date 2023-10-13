@@ -3,10 +3,11 @@ export const bookingsHeaders = [
     text: 'Ref #',
     value: 'ref',
     align: 'start',
+    width: 2,
   },
   {
-    text: 'Yard',
-    value: 'yard',
+    text: 'Yard label',
+    value: 'yardLabel',
   },
   {
     text: 'SSL',
@@ -21,6 +22,23 @@ export const bookingsHeaders = [
     value: 'progress',
   },
 ]
+export const yardsHeaders = [
+  {
+    text: 'Yard label',
+    value: 'yardLabel',
+    align: 'start',
+    width: 3,
+  },
+  {
+    text: 'Location',
+    value: 'location',
+  },
+  {
+    text: 'Progress',
+    value: 'progress',
+  },
+]
 export default () => ({
   bookingsHeaders,
+  yardsHeaders,
 })
