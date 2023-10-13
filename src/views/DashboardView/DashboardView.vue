@@ -69,4 +69,11 @@ watch(tab, () => mapToggled.value = true)
       @selectRow="toggleMap"
     />
   </template>
+  <template v-if="tab === 2">
+    <DraftsTab
+      :map-toggled="mapToggled"
+      @closeMap="toggleMap"
+      @selectRow="toggleMap"
+    />
+  </template>
 </template>

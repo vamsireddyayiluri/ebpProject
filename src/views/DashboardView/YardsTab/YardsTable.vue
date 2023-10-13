@@ -2,7 +2,7 @@
 import { useActions, useDate, useHeaders } from '~/composables'
 import { getLineAvatar } from '~/firebase/getLineAvatar'
 import { useDisplay } from 'vuetify'
-import { getYardBookingLoad } from '~/helpers/countings'
+import { getYardBookingLoad, getBookingLoad } from '~/helpers/countings'
 
 const props = defineProps({
   computedEntities: Array,

@@ -1,3 +1,5 @@
+import moment from "moment-timezone"
+
 export const bookingsHeaders = [
   {
     text: 'Ref #',
@@ -16,6 +18,8 @@ export const bookingsHeaders = [
   {
     text: 'Expiry',
     value: 'expiry',
+    sortable: true,
+    sorter: (a, b) => moment(a).diff(moment(b)),
   },
   {
     text: 'Progress',
@@ -38,7 +42,30 @@ export const yardsHeaders = [
     value: 'progress',
   },
 ]
+export const draftsHeaders = [
+  {
+    text: 'Ref #',
+    value: 'ref',
+    align: 'start',
+    width: 2,
+  },
+  {
+    text: 'SSL',
+    value: 'ssl',
+  },
+  {
+    text: 'Yard label',
+    value: 'yardLabel',
+  },
+  {
+    text: 'Expiry',
+    value: 'expiry',
+    sortable: true,
+    sorter: (a, b) => moment(a).diff(moment(b)),
+  },
+]
 export default () => ({
   bookingsHeaders,
   yardsHeaders,
+  draftsHeaders,
 })
