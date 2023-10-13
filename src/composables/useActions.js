@@ -11,6 +11,20 @@ export const bookingsActions = () => [
     color: 'functionalError',
   },
 ]
+export const draftsActions = () => [
+  {
+    icon: 'mdi-pencil',
+    label: 'Edit',
+    action: 'edit-draft',
+  },
+  {
+    icon: 'mdi-delete',
+    label: 'Delete',
+    action: 'delete-draft',
+    color: 'functionalError',
+  },
+]
 export default () => ({
   bookingsActions,
+  draftsActions,
 })

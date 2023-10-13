@@ -9,11 +9,14 @@ declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     AppAlert: typeof import('./components/AppAlert/AppAlert.vue')['default']
     BeforeRegisterView: typeof import('./views/RegisterView/BeforeRegisterView.vue')['default']
-    BookingsMapPopup: typeof import('./views/DashboardView/BookingTab/BookingsMapPopup.vue')['default']
-    BookingStatisticsDialog: typeof import('./views/DashboardView/BookingTab/BookingStatisticsDialog.vue')['default']
+    BookingsMapPopup: typeof import('./components/BookingsMapPopup/BookingsMapPopup.vue')['default']
+    BookingStatisticsDialog: typeof import('./components/BookingStatisticsDialog/BookingStatisticsDialog.vue')['default']
     BookingTab: typeof import('./views/DashboardView/BookingTab/BookingTab.vue')['default']
     BookingTable: typeof import('./views/DashboardView/BookingTab/BookingTable.vue')['default']
     DashboardView: typeof import('./views/DashboardView/DashboardView.vue')['default']
+    DraftMapPopup: typeof import('./views/DashboardView/DraftsTab/DraftMapPopup.vue')['default']
+    DraftsTab: typeof import('./views/DashboardView/DraftsTab/DraftsTab.vue')['default']
+    DraftsTable: typeof import('./views/DashboardView/DraftsTab/DraftsTable.vue')['default']
     ErrorHeader: typeof import('./@core/components/ErrorHeader.vue')['default']
     FileUpload: typeof import('./components/FileUpload/FileUpload.vue')['default']
     LoginView: typeof import('./views/LoginView.vue')['default']
@@ -31,5 +34,7 @@ declare module '@vue/runtime-core' {
     Verify: typeof import('./views/Verify.vue')['default']
     VerifyAuth: typeof import('./views/VerifyAuth.vue')['default']
     Yards: typeof import('./components/Yards/Yards.vue')['default']
+    YardsTab: typeof import('./views/DashboardView/YardsTab/YardsTab.vue')['default']
+    YardsTable: typeof import('./views/DashboardView/YardsTab/YardsTable.vue')['default']
   }
 }

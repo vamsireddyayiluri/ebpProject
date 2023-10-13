@@ -2,33 +2,34 @@
 import { useActions, useDate, useHeaders } from '~/composables'
 import { getLineAvatar } from '~/firebase/getLineAvatar'
 import { useDisplay } from 'vuetify'
-import { getBookingLoad } from '~/helpers/countings'
 
 const props = defineProps({
   computedEntities: Array,
   searchValue: String,
   loading: Boolean,
 })
-const emit = defineEmits(['selectTableRow', 'editBooking'])
-const { smAndDown } = useDisplay()
+const emit = defineEmits(['selectTableRow', 'editDraft'])
+
+const { smAndDown, width } = useDisplay()
 const showActions = ref(true)
-const tableHeight = ref(0)
-const removeBookingDialog = ref(false)
+const tableHeight = ref(1)
+const deleteDraftDialog = ref(false)
 const selectedBooking = ref(null)
 
-const { bookingsHeaders } = useHeaders()
-const { bookingsActions } = useActions()
+const { draftsHeaders } = useHeaders()
+const { draftsActions } = useActions()
 const formatDate = useDate()
 
 const containerActionHandler = ({ action, e }) => {
-  if (action === 'edit-booking') emit('editBooking', e)
-  if (action === 'remove-booking') removeBookingDialog.value.show(true), (selectedBooking.value = e)
+  if (action === 'edit-draft') emit('editDraft', e)
+  if (action === 'delete-draft') deleteDraftDialog.value.show(true), (selectedBooking.value = e)
 }
 
 const onSelectRow = e => {
   emit('selectTableRow', e)
 }
-const tableId = 'bookingsTable'
+
+const tableId = 'draftTable'
 onMounted(() => {
   setTimeout(() => {
     const table = document.getElementById(tableId)
@@ -42,14 +43,13 @@ onMounted(() => {
 <template>
   <VirtualTable
     :id="tableId"
-    key="bookings"
     :entities="computedEntities"
-    :headers="bookingsHeaders"
+    :headers="draftsHeaders"
     :loading="loading"
     :options="{
       rowHeight: 64,
-      showActions,
       tableHeight: tableHeight,
+      showActions,
       tableMinWidth: 960,
     }"
     class="mb-5"
@@ -68,17 +68,23 @@ onMounted(() => {
         </template>
       </Typography>
     </template>
-    <template #yardLabel="{ item }">
-      <Typography type="text-body-m-regular">
-        {{ item.location.label }}
-      </Typography>
-    </template>
     <template #ssl="{ item }">
       <img
         :src="getLineAvatar(item.line.id)"
         :alt="item.line.label"
         class="h-8"
       >
+    </template>
+    <template #yardLabel="{ item }">
+      <Highlighter
+        v-if="searchValue"
+        :query="searchValue"
+      >
+        {{ item.location.label }}
+      </Highlighter>
+      <template v-else>
+        {{ item.location.label }}
+      </template>
     </template>
     <template #expiry="{ item }">
       <Typography type="text-body-m-regular">
@@ -88,15 +94,9 @@ onMounted(() => {
     <template #location="{ item }">
       <LocationChip :location="item?.location" />
     </template>
-    <template #progress="{ item }">
-      <ProgressLinear :value="getBookingLoad(item.booked, item.amount)">
-        {{ getBookingLoad(item.booked, item.amount) }}%
-      </ProgressLinear>
-    </template>
-
     <template #actions="{ item, selected }">
       <MenuActions
-        :actions="bookingsActions"
+        :actions="draftsActions"
         :selected="selected"
         :container="item"
         @containerActionHandler="containerActionHandler"
@@ -105,21 +105,22 @@ onMounted(() => {
   </VirtualTable>
 
   <Dialog
-    ref="removeBookingDialog"
+    ref="deleteDraftDialog"
     max-width="480"
   >
     <template #text>
       <RemoveCancelDialog
-        btn-name="Remove"
-        @close="removeBookingDialog.show(false)"
-        @onClickBtn="removeBookingDialog.show(false)"
+        btn-name="Delete"
+        @close="deleteDraftDialog.show(false)"
+        @onClickBtn="deleteDraftDialog.show(false)"
       >
         <Typography>
-          Are you sure you want to remove ref#
-          <b>{{ selectedBooking[0].ref }}</b>
-          from your bookings?
+          Are you sure you want to delete draft
+          <b>{{ selectedBooking[0].ref }}</b>?
         </Typography>
       </RemoveCancelDialog>
     </template>
   </Dialog>
 </template>
+
+<style lang="scss"></style>

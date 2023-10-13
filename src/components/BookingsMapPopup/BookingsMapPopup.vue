@@ -1,26 +1,11 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
+import { getYardBookingLoad } from '~/helpers/countings'
 
 const props = defineProps({
   booking: Object,
 })
 const attrs = useAttrs()
-
-const countProgress = items => {
-  const obj = {
-    amount: 0,
-    booked: 0,
-  }
-  items.forEach(i => {
-    obj.amount += i.amount
-    obj.booked += i.booked
-  })
-
-  return {
-    ...obj,
-    rate: Number(obj.booked*100/obj.amount).toFixed(2),
-  }
-}
 </script>
 
 <template>
@@ -42,15 +27,15 @@ const countProgress = items => {
     </div>
     <ProgressCircular
       :size="260"
-      :value="countProgress(booking.entities).rate"
+      :value="getYardBookingLoad(booking.entities).rate"
       text="fullfilled"
       class="flex mx-auto"
     >
-      {{ countProgress(booking.entities).rate }}%
+      {{ getYardBookingLoad(booking.entities).rate }}%
     </ProgressCircular>
     <div class="flex justify-between flex-wrap">
       <Typography type="text-body-m-semibold mb-3">
-        You have {{ countProgress(booking.entities).amount }} bookings
+        You have {{ getYardBookingLoad(booking.entities).amount }} bookings
       </Typography>
       <div>
         <div class="flex items-center gap-3">
@@ -59,7 +44,7 @@ const countProgress = items => {
             :style="{background: getColor('uiLineInteractiveActive')}"
           />
           <Typography type="text-body-m-semibold">
-            {{ countProgress(booking.entities).rate }}%
+            {{ getYardBookingLoad(booking.entities).rate }}%
           </Typography>
           <Typography :color="getColor('textSecondary')">
             fullfilled
@@ -71,7 +56,7 @@ const countProgress = items => {
             :style="{background: getColor('uiLine')}"
           />
           <Typography type="text-body-m-semibold">
-            {{ 100 - countProgress(booking.entities).rate }}%
+            {{ (100 - getYardBookingLoad(booking.entities).rate).toFixed(2) }}%
           </Typography>
           <Typography :color="getColor('textSecondary')">
             not fullfilled

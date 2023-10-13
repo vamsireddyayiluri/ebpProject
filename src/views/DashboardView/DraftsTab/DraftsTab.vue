@@ -1,11 +1,11 @@
 <script setup>
 import { useDisplay, useTheme } from 'vuetify'
-import bookingsData from '~/fixtures/bookings.json'
+import draftsData from '~/fixtures/drafts.json'
 import { filterMatchingObjects } from '~/helpers/filters'
 import { uid } from 'uid'
-import { groupedBookingLocations } from '~/stores/helpers'
 import { getAllLines } from '@qualle-admin/qutil/dist/ssl'
 import { getColor } from '~/helpers/colors'
+import { groupedBookingLocations } from '~/stores/helpers'
 
 const props = defineProps({
   mapToggled: Boolean,
@@ -28,13 +28,11 @@ const panes = ref(getPanes())
 const vuetifyTheme = useTheme()
 const theme = computed(() => vuetifyTheme.global.name.value)
 const panesRef = ref(null)
-const mutableSearchedEntities = ref([...JSON.parse(JSON.stringify(bookingsData))])
-const mutableFilteredEntities = ref([...JSON.parse(JSON.stringify(bookingsData))])
+const mutableSearchedEntities = ref([...JSON.parse(JSON.stringify(draftsData))])
+const mutableFilteredEntities = ref([...JSON.parse(JSON.stringify(draftsData))])
 const searchValue = ref(null)
 const loading = ref(false)
 const newId = ref(uid(8))
-const bookingStatisticsDialog = ref(null)
-const selectedBooking = ref(null)
 const filters = ref({
   ssl: null,
 })
@@ -97,12 +95,6 @@ const selectTableRow = e => {
   mapRef.value.panTo({ lat: e.location.lat, lng: e.location.lng })
 }
 
-const viewStatistics = e => {
-  bookingStatisticsDialog.value.show(true)
-  selectedBooking.value = e
-}
-
-
 const onClearSearch = () => {
   loading.value = true
 
@@ -118,10 +110,10 @@ const debouncedSearch = useDebounceFn(searchValue => {
     onClearSearch()
   } else {
     computedSearchedEntities.value = useArrayFilter(
-      bookingsData,
-      ({ ref }) =>
+      draftsData,
+      ({ref, location: { label } }) =>
         useArraySome(
-          useArrayMap(Object.values({ ref }), value => String(value).toLowerCase())
+          useArrayMap(Object.values({ ref, label }), value => String(value).toLowerCase())
             .value,
           values => values.includes(searchValue.toLowerCase()),
         ).value,
@@ -130,7 +122,7 @@ const debouncedSearch = useDebounceFn(searchValue => {
 }, 300)
 
 const applyFilter = () => {
-  let filteredData = bookingsData
+  let filteredData = draftsData
 
   if (filters.value.ssl) {
     filteredData = useArrayFilter(
@@ -167,7 +159,7 @@ watch(searchValue, value => {
         <div class="flex flex-wrap items-center gap-4 mb-7">
           <div class="flex justify-between sm:justify-normal items-center gap-4">
             <Typography type="text-h1 shrink-0">
-              Bookings
+              Yards
             </Typography>
           </div>
           <Button
@@ -198,7 +190,7 @@ watch(searchValue, value => {
             @update:modelValue="applyFilter"
           />
         </div>
-        <BookingTable
+        <DraftsTable
           :computed-entities="computedEntities"
           :search-value="searchValue"
           :loading="loading"
@@ -239,27 +231,14 @@ watch(searchValue, value => {
         @onMapLoaded="onMapLoaded"
       >
         <template #marker="{ marker }">
-          <div @click="viewStatistics(marker)">
-            <MarkerIcon :type="renderMarkerIcon(marker)" />
-          </div>
+          <MarkerIcon :type="renderMarkerIcon(marker)" />
         </template>
         <template #infoWindow="{ marker }">
-          <BookingsMapPopup :booking="marker" />
+          <DraftMapPopup :draft="marker" />
         </template>
       </Map>
     </template>
   </Panes>
-  <Dialog
-    ref="bookingStatisticsDialog"
-    class="max-w-[720px] md:max-w-[980px]"
-  >
-    <template #text>
-      <BookingStatisticsDialog
-        :booking="selectedBooking"
-        @close="bookingStatisticsDialog.show(false)"
-      />
-    </template>
-  </Dialog>
 </template>
 
 <style lang="scss">

@@ -1,0 +1,371 @@
+[
+  {
+    "id": "00",
+    "location": {
+      "address": "7737 Hampton Blvd, Norfolk, VA 23505, USA",
+      "geohash": "dq9dp88bu",
+      "label": "7737 Hampton Blvd, Norfolk, VA 23505",
+      "lat": 36.9169609,
+      "lng": -76.3098145,
+      "details": {
+        "hoursOfOperation": [
+          {
+            "day": "Sunday",
+            "from": "9:30",
+            "status": true,
+            "to": "17:30"
+          },
+          {
+            "day": "Monday",
+            "from": "9:30",
+            "status": true,
+            "to": "17:30"
+          },
+          {
+            "day": "Tuesday",
+            "from": "9:30",
+            "status": true,
+            "to": "17:30"
+          },
+          {
+            "day": "Wednesday",
+            "from": "9:30",
+            "status": false,
+            "to": "17:30"
+          },
+          {
+            "day": "Thursday",
+            "from": "9:30",
+            "status": false,
+            "to": "17:30"
+          },
+          {
+            "day": "Friday",
+            "from": "9:30",
+            "status": true,
+            "to": "17:30"
+          },
+          {
+            "day": "Saturday",
+            "from": "9:30",
+            "status": true,
+            "to": "17:30"
+          }
+        ]
+      }
+    },
+    "available": "7k available",
+    "lines": [
+      {
+        "id": "1161e60730156d8f",
+        "label": "CAI"
+      },
+      {
+        "id": "0156d8f6819b2de4",
+        "label": "CS Leasing"
+      },
+      {
+        "id": "0156d8f6819b2de4",
+        "label": "CS Leasing"
+      }
+    ],
+    "entities": [
+      {
+        "id": "AAAA0000005_bf48a4ef951cab59d4262a7a78908",
+        "amount": 10,
+        "booked": 5,
+        "ref": 1148,
+        "line": {
+          "id": "0156d8f6819b2de4",
+          "label": "CS Leasing"
+        },
+        "expiryDate": "2023-09-05T23:59:59+05:30",
+        "location": {
+          "address": "7737 Hampton Blvd, Norfolk, VA 23505, USA",
+          "geohash": "dq9dp88bu",
+          "label": "7737 Hampton Blvd, Norfolk, VA 23505",
+          "lat": 36.9169609,
+          "lng": -76.3098145
+          }
+        },
+      {
+        "id": "AAAA0030005_bf48a4ef951cab59d4262a7a78908",
+        "amount": 70,
+        "booked": 55,
+        "ref": 1149,
+        "line": {
+          "id": "0156d8f6819b2de4",
+          "label": "CS Leasing"
+        },
+        "expiryDate": "2023-09-05T23:59:59+05:30",
+        "location": {
+          "address": "7737 Hampton Blvd, Norfolk, VA 23505, USA",
+          "geohash": "dq9dp88bu",
+          "label": "7737 Hampton Blvd, Norfolk, VA 23505",
+          "lat": 36.9169609,
+          "lng": -76.3098145
+        }
+      },
+      {
+        "id": "AAAA1000005_bf48a4ef951cab59d4262a7a78908",
+        "amount": 130,
+        "booked": 59,
+        "ref": 1150,
+        "line": {
+          "id": "0156d8f6819b2de4",
+          "label": "CS Leasing"
+        },
+        "expiryDate": "2023-09-05T23:59:59+05:30",
+        "location": {
+          "address": "7737 Hampton Blvd, Norfolk, VA 23505, USA",
+          "geohash": "dq9dp88bu",
+          "label": "7737 Hampton Blvd, Norfolk, VA 23505",
+          "lat": 36.9169609,
+          "lng": -76.3098145
+        }
+      },
+      {
+        "id": "AAAA0000005_pf48a4ef951cab59d4262a7a78908",
+        "amount": 63,
+        "booked": 35,
+        "ref": 1151,
+        "line": {
+          "id": "0156d8f6819b2de4",
+          "label": "CS Leasing"
+        },
+        "expiryDate": "2023-09-05T23:59:59+05:30",
+        "location": {
+          "address": "7737 Hampton Blvd, Norfolk, VA 23505, USA",
+          "geohash": "dq9dp88bu",
+          "label": "7737 Hampton Blvd, Norfolk, VA 23505",
+          "lat": 36.9169609,
+          "lng": -76.3098145
+        }
+      },
+      {
+        "id": "AAAA0000005_5f48a4ef951cab59d4262a7a78908",
+        "amount": 44,
+        "booked": 25,
+        "ref": 1152,
+        "line": {
+          "id": "0156d8f6819b2de4",
+          "label": "CS Leasing"
+        },
+        "expiryDate": "2023-09-05T23:59:59+05:30",
+        "location": {
+          "address": "7737 Hampton Blvd, Norfolk, VA 23505, USA",
+          "geohash": "dq9dp88bu",
+          "label": "7737 Hampton Blvd, Norfolk, VA 23505",
+          "lat": 36.9169609,
+          "lng": -76.3098145
+        }
+      },
+      {
+        "id": "AAAA0000005_bf48a4ef951cjb59d4262a7a78908",
+        "amount": 10,
+        "booked": 10,
+        "ref": 1153,
+        "line": {
+          "id": "0156d8f6819b2de4",
+          "label": "CS Leasing"
+        },
+        "expiryDate": "2023-09-05T23:59:59+05:30",
+        "location": {
+          "address": "7737 Hampton Blvd, Norfolk, VA 23505, USA",
+          "geohash": "dq9dp88bu",
+          "label": "7737 Hampton Blvd, Norfolk, VA 23505",
+          "lat": 36.9169609,
+          "lng": -76.3098145
+        }
+      },
+      {
+        "id": "AAAA0000005_bf48a4ef951cab59d42p2a7a78908",
+        "amount": 10,
+        "booked": 9,
+        "ref": 1154,
+        "line": {
+          "id": "0156d8f6819b2de4",
+          "label": "CS Leasing"
+        },
+        "expiryDate": "2023-09-05T23:59:59+05:30",
+        "location": {
+          "address": "7737 Hampton Blvd, Norfolk, VA 23505, USA",
+          "geohash": "dq9dp88bu",
+          "label": "7737 Hampton Blvd, Norfolk, VA 23505",
+          "lat": 36.9169609,
+          "lng": -76.3098145
+        }
+      },
+      {
+        "id": "AAAA0000005_bf48a4ef951cab59d4262a7a78928",
+        "amount": 10,
+        "booked": 1,
+        "ref": 1155,
+        "line": {
+          "id": "0156d8f6819b2de4",
+          "label": "CS Leasing"
+        },
+        "expiryDate": "2023-09-05T23:59:59+05:30",
+        "location": {
+          "address": "7737 Hampton Blvd, Norfolk, VA 23505, USA",
+          "geohash": "dq9dp88bu",
+          "label": "7737 Hampton Blvd, Norfolk, VA 23505",
+          "lat": 36.9169609,
+          "lng": -76.3098145
+        }
+      }
+    ],
+    "scac": "QUAL",
+    "email": "example@gigmail.com",
+    "primaryContact": "35346346346",
+    "primaryContactName": "Mark Rosso",
+    "secondaryContact": "0638415366",
+    "secondaryContactName": "Helga Corlovich",
+    "pickupInstructions": "Pickup containers in Terlicki’s cluttered front room are lined with vintage treasures: a billiards table from Montana, a chandelier from the Art Institute."
+  },
+  {
+    "id": "155",
+    "location": {
+      "address": "875 Blake Wilbur Dr Palo Alto  CA US 94304 2205",
+      "geohash": "9q9hgycyy",
+      "lat": 37.4357319,
+      "lng": -122.1762866
+    },
+    "lines": [
+      {
+        "id": "0156d8f6819b2de4",
+        "label": "CS Leasing"
+      },
+      {
+        "id": "9d8d49984308f116",
+        "label": "Alianca"
+      }
+    ],
+    "entities": [
+      {
+        "amount": 23,
+        "booked": 22,
+        "ref": 5548,
+        "id": "AAAA0050002_bf48a4ef955cab59d4262a7a7890",
+        "line": {
+          "id": "9d8d49984308f116",
+          "label": "Alianca"
+        },
+        "location": {
+          "address": "875 Blake Wilbur Dr, Palo Alto, CA 94304, USA"
+        },
+        "expiryDate": "2023-09-05T23:59:59+05:30"
+      }
+    ]
+  },
+  {
+    "id": "12523",
+    "location": {
+      "address": "911 Sigsbee Ave, Wilmington, CA 90744, USA",
+      "geohash": "9q5bjw01b",
+      "label": "RoadEx Sigsbee Yard",
+      "lat": 33.7832625,
+      "lng": -118.2348517
+    },
+    "lines": [
+      {
+        "id": "0156d8f6819b2de4",
+        "label": "CS Leasing"
+      },
+      {
+        "id": "0156d8f6819b2de4",
+        "label": "CS Leasing"
+      }
+    ],
+    "entities": [
+      {
+        "amount": 10,
+        "booked": 7,
+        "ref": 1198,
+        "id": "AAAA2000005_bf48a4ef951cab59d4262a7a78907",
+        "container": "AAAA0000005",
+        "line": {
+          "id": "0156d8f6819b2de4",
+          "label": "CS Leasing"
+        },
+        "location": {
+          "address": "911 Sigsbee Ave, Wilmington, CA 90744, USA"
+        },
+        "expiryDate": "2023-06-06T23:59:59+05:30"
+      }
+    ]
+  },
+  {
+    "id": "qw1a2",
+    "location": {
+      "address": "4741 Durfee Ave, Pico Rivera, CA 90660, USA",
+      "geohash": "9qh13n0vm",
+      "label": "RoadEx Pico Rivera Yard",
+      "lat": 34.0036191,
+      "lng": -118.0798038
+    },
+    "lines": [
+      {
+        "id": "0156d8f6819b2de4",
+        "label": "CS Leasing"
+      },
+      {
+        "id": "0156d8f6819b2de4",
+        "label": "CS Leasing"
+      }
+    ],
+    "entities": [
+      {
+        "amount": 26,
+        "booked": 8,
+        "ref": 10048,
+        "id": "AAAA5555005_bf48a4ef951cab59d4262a7a78907",
+        "container": "AAAA0000005",
+        "line": {
+          "id": "0156d8f6819b2de4",
+          "label": "CS Leasing"
+        },
+        "location": {
+          "address": "911 Sigsbee Ave, Wilmington, CA 90744, USA"
+        }
+      }
+    ]
+  },
+  {
+    "id": "123a2a",
+    "location": {
+      "address": "E Sitcum Plaza, Tacoma, WA 98421, USA",
+      "geohash": "c22uykmdd",
+      "label": "One Sitcum Plaza, Tacoma, WA 98421",
+      "lat": 47.2649925,
+      "lng": -122.4129934
+    },
+    "lines": [
+      {
+        "id": "0156d8f6819b2de4",
+        "label": "CS Leasing"
+      },
+      {
+        "id": "0156d8f6819b2de4",
+        "label": "CS Leasing"
+      }
+    ],
+    "entities": [
+      {
+        "amount": 40,
+        "booked": 33,
+        "ref": 5488,
+        "id": "AAAA0000007_bf48a4ef951cab59d4262a7a78907",
+        "container": "AAAA0000005",
+        "line": {
+          "id": "0156d8f6819b2de4",
+          "label": "CS Leasing"
+        },
+        "location": {
+          "address": "911 Sigsbee Ave, Wilmington, CA 90744, USA"
+        },
+        "expiryDate": "2023-06-06T23:59:59+05:30"
+      }
+    ]
+  }
+]
