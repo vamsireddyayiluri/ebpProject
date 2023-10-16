@@ -28,7 +28,6 @@ declare module '@vue/runtime-core' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Stepper: typeof import('./components/Stepper/Stepper.vue')['default']
-    StreetTurnsTable: typeof import('./views/DashboardView/BookingTab/BookingTable.vue')['default']
     TeamMembers: typeof import('./components/TeamMembers/TeamMembers.vue')['default']
     TruckerRequirements: typeof import('./components/TruckerRequirements/TruckerRequirements.vue')['default']
     Verify: typeof import('./views/Verify.vue')['default']
