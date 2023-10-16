@@ -67,7 +67,7 @@ const renameFile = () => {
     name="userDoc"
     class="input"
     @change="onChangeFile"
-  />
+  >
   <label
     for="fileUpload"
     @dragover.prevent="handleDragOver"
@@ -79,7 +79,10 @@ const renameFile = () => {
     >
       <template v-if="fileLoading">
         <div class="text-center mt-2">
-          <ProgressCircular :size="110" :value="count">
+          <ProgressCircular
+            :size="110"
+            :value="count"
+          >
             <Typography type="text-h4"> {{ count }}% </Typography>
           </ProgressCircular>
           <div class="flex items-center">
@@ -89,10 +92,20 @@ const renameFile = () => {
           </div>
         </div>
       </template>
-      <div v-else class="text-center">
-        <Icon size="56" icon="mdi-file-upload" :color="getColor('iconButton-2')" />
+      <div
+        v-else
+        class="text-center"
+      >
+        <Icon
+          size="56"
+          icon="mdi-file-upload"
+          :color="getColor('iconButton-2')"
+        />
         <Typography type="text-h4 mt-6"> Select file to upload (docx, pdf, excel, or others ) </Typography>
-        <Typography type="mt-2" :color="getColor('textSecondary')">
+        <Typography
+          type="mt-2"
+          :color="getColor('textSecondary')"
+        >
           or drag and drop it here
         </Typography>
       </div>
@@ -100,8 +113,15 @@ const renameFile = () => {
   </label>
 
   <div class="flex flex-wrap gap-2">
-    <template v-for="i in files" :key="i.name">
-      <Chip prepend-icon="mdi-file" closable @click:close="removeFile(i)">
+    <template
+      v-for="i in files"
+      :key="i.name"
+    >
+      <Chip
+        prepend-icon="mdi-file"
+        closable
+        @click:close="removeFile(i)"
+      >
         <span class="max-w-[80px] text-truncate">
           {{ i.name }}
         </span>
@@ -111,12 +131,21 @@ const renameFile = () => {
       </Chip>
     </template>
   </div>
-  <Dialog ref="renameFileDialog" max-width="480">
+  <Dialog
+    ref="renameFileDialog"
+    max-width="480"
+  >
     <template #text>
-      <Typography type="text-h3"> Rename file </Typography>
+      <Typography type="text-h3">
+        Rename file
+      </Typography>
       <form @submit.prevent="renameFile">
         <div class="flex gap-6 mt-10">
-          <Textfield v-model="fileName" label="File name" required/>
+          <Textfield
+            v-model="fileName"
+            label="File name"
+            required
+          />
           <Textfield
             v-model="getFilenameAndExtension(file.name)[1]"
             label="Extension"
@@ -124,7 +153,12 @@ const renameFile = () => {
             class="basis-0"
           />
         </div>
-        <Button class="w-full mt-10" type="submit"> rename</Button>
+        <Button
+          class="w-full mt-10"
+          type="submit"
+        >
+          rename
+        </Button>
       </form>
     </template>
   </Dialog>
