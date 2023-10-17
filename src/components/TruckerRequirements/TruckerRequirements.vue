@@ -43,8 +43,10 @@ const removeRequiry = item => {
       </Chip>
     </template>
   </div>
-  <Typography type="text-body-m-semibold mt-10 mb-6 text-left">
-    Which of the following do you require for truckers to onboard with your company?*
+  <Typography type="text-body-m-semibold mt-8 mb-6 text-left">
+    We will automatically collect the following information from each trucker as part of the onboarding process,
+    what other additional information will be required to onboard trucking companies wanting to move export loads for you?
+    (You’ll have a chance to add your own documents and PDFs/onboarding documents on the next screen)
   </Typography>
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-5">
     <template
