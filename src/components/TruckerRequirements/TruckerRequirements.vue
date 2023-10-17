@@ -13,7 +13,6 @@ const scacList = ['aass', 'qqww']
 const removeRequiry = item => {
   const index = preferredTruckersList.value.findIndex(i => i === item)
   items.value.splice(index, 1)
-  console.log('item', item)
 }
 </script>
 
