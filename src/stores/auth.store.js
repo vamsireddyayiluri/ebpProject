@@ -31,7 +31,7 @@ import {
 import { useAlertStore } from '~/stores/alert.store'
 import { getLocalServerTime, getLocalTime } from '@qualle-admin/qutil/dist/date'
 import { getOrgId } from '~/stores/helpers'
-import {uid} from "uid"
+import { uid } from 'uid'
 import listRequiresForTruckers from '~/fixtures/requiresForTruckers.json'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -53,7 +53,7 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true
     try {
       const { user } = await signInWithEmailAndPassword(auth, email, password)
-      console.log("-> user", user)
+      console.log('-> user', user)
       currentUser.value = user
 
       router.push({ name: 'dashboard' })
@@ -217,7 +217,6 @@ export const useAuthStore = defineStore('auth', () => {
       await deleteDoc(doc(db, 'pending_verifications', data.id))
 
       router.push({ name: 'dashboard' })
-
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
@@ -282,7 +281,6 @@ export const useAuthStore = defineStore('auth', () => {
       alertStore.warning({ content: message })
     }
   }
-
 
   // update user data in users collection
   const updateUserData = async payload => {
@@ -550,9 +548,9 @@ export const useAuthStore = defineStore('auth', () => {
     return Promise.resolve()
   }
 
-  const removeYard = question => {
-    const index = questionList.value.findIndex(q => q === question)
-    questionList.value.splice(index, 1)
+  const removeYard = yard => {
+    const index = yardList.value.findIndex(q => q === yard)
+    yardList.value.splice(index, 1)
   }
 
   return {
