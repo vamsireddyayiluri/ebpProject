@@ -46,12 +46,12 @@ const steps = {
     title: 'Invite team members',
     isValid: () => true,
   },
-  'required-onboarding-documents': {
-    title: 'Required onboarding documents',
-    isValid: () => true,
-  },
   'trucker-requirements': {
     title: 'Trucker requirements',
+    isValid: () => true,
+  },
+  'required-onboarding-documents': {
+    title: 'Required onboarding documents',
     isValid: () => true,
   },
 }
@@ -147,14 +147,16 @@ const onSubmit = async () => {
         <template v-if="stepper.isCurrent('work-details')">
           <Yards />
         </template>
-        <template v-if="stepper.isCurrent('invite-members')">
-          <TeamMembers />
+        <div>
+          <template v-if="stepper.isCurrent('invite-members')">
+            <TeamMembers />
+          </template>
+        </div>
+        <template v-if="stepper.isCurrent('trucker-requirements')">
+          <TruckerRequirements />
         </template>
         <template v-if="stepper.isCurrent('required-onboarding-documents')">
           <FileUpload />
-        </template>
-        <template v-if="stepper.isCurrent('trucker-requirements')">
-          <TruckerRequirements />
         </template>
       </div>
       <div class="mt-10 mx-auto">
