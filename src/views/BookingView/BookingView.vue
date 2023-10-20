@@ -5,6 +5,7 @@ import { getColor } from '~/helpers/colors'
 import { getAllLines } from '@qualle-admin/qutil/dist/ssl'
 import bookingsData from '~/fixtures/bookings.json'
 import draftsData from '~/fixtures/drafts.json'
+import yardsData from '~/fixtures/yards.json'
 import moment from 'moment-timezone'
 import { useDisplay } from 'vuetify'
 import { getBookingLoad } from '~/helpers/countings'
@@ -34,11 +35,20 @@ const cancelChanges = () => {}
 const onSave = () => {
   console.log('save ', booking.value)
 }
-const isDraft = router.options.history.state.from ==='draft'
+const fromDraft = router.options.history.state.from ==='draft'
 onMounted(() => {
   booking.value = useArrayFind(
-    isDraft ? draftsData: bookingsData,
+    fromDraft ? draftsData: bookingsData,
     i => i.ref === route.params.ref).value
+
+  if (!booking.value) {
+    yardsData.forEach(y => {
+      y.entities.forEach(e => {
+        if (+e.ref === +route.params.ref)
+          booking.value = e
+      })
+    })
+  }
 })
 </script>
 
@@ -79,7 +89,7 @@ onMounted(() => {
         <div class="flex items-center gap-4 mb-1.5">
           <Typography type="text-h1">
             Booking <b>Ref#{{ booking.ref }}</b>
-            {{ isDraft? '(Draft)': '' }}
+            {{ fromDraft? '(Draft)': '' }}
           </Typography>
           <IconButton
             icon="mdi-link"
@@ -98,7 +108,7 @@ onMounted(() => {
             data="secondary1"
             class="ml-auto"
           >
-            {{ isDraft? 'publish':'Remove from network' }}
+            {{ fromDraft? 'publish':'Remove from network' }}
           </Button>
         </div>
         <Typography :color="getColor('textSecondary')">

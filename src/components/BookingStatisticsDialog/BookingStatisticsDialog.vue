@@ -74,7 +74,7 @@ const selectedBooking = ref(false)
       </template>
       <div v-else>
         <Typography
-          type="text-h3 mb-1"
+          type="text-h3 mb-5"
           :color="getColor('textPrimary')"
         >
           Timeline

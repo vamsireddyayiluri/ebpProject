@@ -22,7 +22,7 @@ const { bookingsActions } = useActions()
 const formatDate = useDate()
 
 const containerActionHandler = ({ action, e }) => {
-  if (action === 'edit-booking') emit('editBooking', e)
+  if (action === 'edit-booking') emit('editBooking', e[0].ref)
   if (action === 'remove-booking') removeBookingDialog.value.show(true), (selectedBooking.value = e)
 }
 

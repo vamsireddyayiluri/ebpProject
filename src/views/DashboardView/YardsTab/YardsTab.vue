@@ -11,7 +11,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['closeMap', 'selectRow'])
 const { smAndDown } = useDisplay()
-
+const router = useRouter()
 const paneOpened = ref(false)
 const mapRef = ref(null)
 const { mapToggled } = toRefs(props)
@@ -38,6 +38,7 @@ const filters = ref({
   ssl: null,
 })
 const selectLine = ref(getAllLines())
+const createBookingDialog = ref(null)
 
 const computedSearchedEntities = computed({
   get() {
@@ -173,7 +174,7 @@ watch(searchValue, value => {
           </div>
           <Button
             class="ml-auto px-12"
-            @click="rstDialog.show(true)"
+            @click="createBookingDialog.show(true)"
           >
             Create booking
           </Button>
@@ -204,6 +205,7 @@ watch(searchValue, value => {
           :search-value="searchValue"
           :loading="loading"
           @selectTableRow="selectTableRow"
+          @editBooking="ref => router.push({ path: `booking/${ref}`})"
         />
       </div>
     </template>
@@ -250,6 +252,17 @@ watch(searchValue, value => {
       </Map>
     </template>
   </Panes>
+  <Dialog
+    ref="createBookingDialog"
+    class="max-w-[620px] md:max-w-[680px]"
+  >
+    <template #text>
+      <CreateBookingDialog
+        @close="createBookingDialog.show(false)"
+        @createBooking="createBookingDialog.show(false)"
+      />
+    </template>
+  </Dialog>
   <Dialog
     ref="bookingStatisticsDialog"
     class="max-w-[720px] md:max-w-[980px]"

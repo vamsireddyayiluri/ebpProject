@@ -37,6 +37,7 @@ const filters = ref({
   ssl: null,
 })
 const selectLine = ref(getAllLines())
+const createBookingDialog = ref(null)
 
 const computedSearchedEntities = computed({
   get() {
@@ -163,7 +164,7 @@ watch(searchValue, value => {
           </div>
           <Button
             class="ml-auto px-12"
-            @click="rstDialog.show(true)"
+            @click="createBookingDialog.show(true)"
           >
             Create booking
           </Button>
@@ -239,6 +240,17 @@ watch(searchValue, value => {
       </Map>
     </template>
   </Panes>
+  <Dialog
+    ref="createBookingDialog"
+    class="max-w-[620px] md:max-w-[680px]"
+  >
+    <template #text>
+      <CreateBookingDialog
+        @close="createBookingDialog.show(false)"
+        @createBooking="createBookingDialog.show(false)"
+      />
+    </template>
+  </Dialog>
 </template>
 
 <style lang="scss">
