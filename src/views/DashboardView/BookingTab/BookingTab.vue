@@ -12,6 +12,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['closeMap', 'selectRow'])
 const { smAndDown } = useDisplay()
+const router = useRouter()
 
 const paneOpened = ref(false)
 const mapRef = ref(null)
@@ -103,7 +104,6 @@ const viewStatistics = e => {
   selectedBooking.value = e
 }
 
-
 const onClearSearch = () => {
   loading.value = true
 
@@ -122,8 +122,7 @@ const debouncedSearch = useDebounceFn(searchValue => {
       bookingsData,
       ({ ref }) =>
         useArraySome(
-          useArrayMap(Object.values({ ref }), value => String(value).toLowerCase())
-            .value,
+          useArrayMap(Object.values({ ref }), value => String(value).toLowerCase()).value,
           values => values.includes(searchValue.toLowerCase()),
         ).value,
     ).value
@@ -204,6 +203,7 @@ watch(searchValue, value => {
           :search-value="searchValue"
           :loading="loading"
           @selectTableRow="selectTableRow"
+          @editBooking="ref => router.push({ path: `booking/${ref}`})"
         />
       </div>
     </template>

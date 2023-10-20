@@ -54,26 +54,26 @@ watch(tab, () => mapToggled.value = true)
         </Button>
       </template>
     </SubHeader>
+    <template v-if="tab === 0">
+      <BookingTab
+        :map-toggled="mapToggled"
+        @closeMap="toggleMap"
+        @selectRow="toggleMap"
+      />
+    </template>
+    <template v-if="tab === 1">
+      <YardsTab
+        :map-toggled="mapToggled"
+        @closeMap="toggleMap"
+        @selectRow="toggleMap"
+      />
+    </template>
+    <template v-if="tab === 2">
+      <DraftsTab
+        :map-toggled="mapToggled"
+        @closeMap="toggleMap"
+        @selectRow="toggleMap"
+      />
+    </template>
   </Main>
-  <template v-if="tab === 0">
-    <BookingTab
-      :map-toggled="mapToggled"
-      @closeMap="toggleMap"
-      @selectRow="toggleMap"
-    />
-  </template>
-  <template v-if="tab === 1">
-    <YardsTab
-      :map-toggled="mapToggled"
-      @closeMap="toggleMap"
-      @selectRow="toggleMap"
-    />
-  </template>
-  <template v-if="tab === 2">
-    <DraftsTab
-      :map-toggled="mapToggled"
-      @closeMap="toggleMap"
-      @selectRow="toggleMap"
-    />
-  </template>
 </template>

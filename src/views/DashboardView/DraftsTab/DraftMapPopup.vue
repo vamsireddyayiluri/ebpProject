@@ -5,6 +5,7 @@ const props = defineProps({
   draft: Object,
 })
 const attrs = useAttrs()
+const router = useRouter()
 </script>
 
 <template>
@@ -38,6 +39,7 @@ const attrs = useAttrs()
           variant="plain"
           density="compact"
           class="hidden group-hover:block !p-0 ml-auto"
+          @click="router.push({ path: `booking/${i.ref}`, state: {from: 'draft'}})"
         >
           Go to booking page
         </Button>

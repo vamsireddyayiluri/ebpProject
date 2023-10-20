@@ -11,32 +11,15 @@ const booking = ref({
   preferredDate: null,
   label: null,
   equipmentType: null,
+  scacList: { list: [] },
 })
-const scac = ref([])
-const preferredTruckersList = ref(['qqww', 'ggtr', 'asty'])
 const confirmDraftsDialog = ref(null)
-const sendDialog = ref(null)
-const autocompleteValue = ref()
 
 const updateExpiryDate = value => {
   booking.value.bookingExpiry = value
 }
 const updatePreferredDate = value => {
   booking.value.bookingExpiry = value
-}
-const scacList = ref([])
-const selectScac = e => {
-  scacList.value = useArrayMap(
-    e,
-    i => useArrayFind(preferredTruckersList.value, el => i === el).value,
-  ).value
-}
-const removeScac = e => {
-  scac.value = useArrayFilter(scac, i => i !== e).value
-}
-const sendToMarketplace = () => {
-  sendDialog.value.show(false)
-  autocompleteValue.value = 'Truckers from marketplace'
 }
 const saveDraft = () => {
   confirmDraftsDialog.value.show(false)
@@ -113,44 +96,7 @@ const saveDraft = () => {
         persistent-hint
       />
     </div>
-    <Autocomplete
-      v-model="scac"
-      :items="preferredTruckersList"
-      placeholder="Choose truckers by SCAС *"
-      multiple
-      with-btn
-      :value="autocompleteValue"
-      @update:modelValue="selectScac"
-    >
-      <template #prepend-item>
-        <div class="d-flex align-center ml-4">
-          <SvgIcon
-            icon="market"
-            size="24"
-            :color="getColor('iconButton-1')"
-          />
-          <Button
-            variant="plain"
-            @click="sendDialog.show(true)"
-          >
-            Truckers from marketplace
-          </Button>
-        </div>
-      </template>
-    </Autocomplete>
-    <div class="min-h-[32px] my-4 flex gap-2">
-      <template
-        v-for="i in scacList"
-        :key="i"
-      >
-        <Chip
-          closable
-          @click:close="removeScac(i)"
-        >
-          {{ i }}
-        </Chip>
-      </template>
-    </div>
+    <AutocompleteScac :scac-list="booking.scacList" />
     <Button
       type="submit"
       class="w-full"
@@ -169,9 +115,7 @@ const saveDraft = () => {
         align="center"
         class="mb-8"
       >
-        <Typography>
-          Do you want to keep the bookings in Drafts?
-        </Typography>
+        <Typography> Do you want to keep the bookings in Drafts? </Typography>
         <IconButton
           icon="mdi-close"
           class="-mt-1"
@@ -193,33 +137,6 @@ const saveDraft = () => {
           cancel
         </Button>
       </div>
-    </template>
-  </Dialog>
-  <Dialog
-    ref="sendDialog"
-    class="max-w-[450px] md:max-w-[560px]"
-  >
-    <template #text>
-      <VRow
-        no-gutters
-        justify="space-between"
-        class="flex-nowrap mb-8"
-      >
-        <Typography>
-          Are you sure you want to send this booking to truckers from marketplace?
-        </Typography>
-        <IconButton
-          icon="mdi-close"
-          class="-mt-1"
-          @click="sendDialog.show(false)"
-        />
-      </VRow>
-      <Button
-        class="w-full"
-        @click="sendToMarketplace"
-      >
-        send
-      </Button>
     </template>
   </Dialog>
 </template>
