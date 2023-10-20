@@ -26,7 +26,6 @@ const items = ref([
 
 const mobileMenuItems = [
   { name: 'Dashboard', path: 'dashboard', icon: 'container' },
-  { name: 'Profile settings', path: 'profile', icon: 'user' },
 ]
 const { notifications } = storeToRefs(notificationStore)
 const userMenuItems = ref([])

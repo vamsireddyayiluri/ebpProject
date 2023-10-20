@@ -8,12 +8,14 @@ export {}
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     AppAlert: typeof import('./components/AppAlert/AppAlert.vue')['default']
+    AutocompleteScac: typeof import('./components/AutocompleteScac/AutocompleteScac.vue')['default']
     BeforeRegisterView: typeof import('./views/RegisterView/BeforeRegisterView.vue')['default']
     BookingsMapPopup: typeof import('./components/BookingsMapPopup/BookingsMapPopup.vue')['default']
     BookingStatisticsDialog: typeof import('./components/BookingStatisticsDialog/BookingStatisticsDialog.vue')['default']
     BookingTab: typeof import('./views/DashboardView/BookingTab/BookingTab.vue')['default']
     BookingTable: typeof import('./views/DashboardView/BookingTab/BookingTable.vue')['default']
-    CreateBookingDialog: typeof import('./components/Yards/CreateBookingDialog/CreateBookingDialog.vue')['default']
+    BookingView: typeof import('./views/BookingView/BookingView.vue')['default']
+    CreateBookingDialog: typeof import('./components/CreateBookingDialog/CreateBookingDialog.vue')['default']
     DashboardView: typeof import('./views/DashboardView/DashboardView.vue')['default']
     DraftMapPopup: typeof import('./views/DashboardView/DraftsTab/DraftMapPopup.vue')['default']
     DraftsTab: typeof import('./views/DashboardView/DraftsTab/DraftsTab.vue')['default']

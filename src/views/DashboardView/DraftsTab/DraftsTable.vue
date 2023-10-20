@@ -21,7 +21,7 @@ const { draftsActions } = useActions()
 const formatDate = useDate()
 
 const containerActionHandler = ({ action, e }) => {
-  if (action === 'edit-draft') emit('editDraft', e)
+  if (action === 'edit-draft') emit('editDraft', e[0].ref)
   if (action === 'delete-draft') deleteDraftDialog.value.show(true), (selectedBooking.value = e)
 }
 

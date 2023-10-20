@@ -8,6 +8,7 @@
     "container": "AAAA0000000",
     "created": "2023-03-09T14:30:49+00:00",
     "expiryDate": "2023-03-14T23:59:59+05:30",
+    "preferredDate": "2023-11-10T23:59:59+05:30",
     "lfd": "2023-03-08T23:59:59+05:30",
     "line": {
       "id": "1161e60730156d8f",
@@ -24,7 +25,7 @@
         "secondaryContactName": null
       },
       "geohash": "9q9hgycyy",
-      "label": "california",
+      "label": "Work yard",
       "lat": 37.4357319,
       "lng": -122.1762866
     },
@@ -34,7 +35,7 @@
     "ref": "1235",
     "id": "1235",
     "reported": "",
-    "scac": "ABCD",
+    "scacList": { "list": [] },
     "size": "20 RF",
     "status": "available",
     "__collections__": {}
@@ -48,6 +49,7 @@
     "container": "AAAA0000001",
     "created": "2023-03-09T14:30:49+00:00",
     "expiryDate": "2023-03-14T23:59:59+05:30",
+    "preferredDate": "2023-11-02T23:59:59+05:30",
     "lfd": "2023-03-08T23:59:59+05:30",
     "line": {
       "id": "1161e60730156d8f",
@@ -64,7 +66,7 @@
         "secondaryContactName": null
       },
       "geohash": "9q9hgycyy",
-      "label": "california",
+      "label": "Good yard",
       "lat": 37.4357319,
       "lng": -122.1762866
     },
@@ -74,7 +76,7 @@
     "ref": "7835",
     "id": "7835",
     "reported": "",
-    "scac": "ABCD",
+    "scacList": { "list": ["ABCD"] },
     "size": "20 RF",
     "status": "available",
     "__collections__": {}
@@ -88,6 +90,7 @@
     "container": "AAAA0000005",
     "created": "2023-02-20T13:07:19+00:00",
     "expiryDate": "2023-02-25T23:59:59+05:30",
+    "preferredDate": "2022-10-10T23:59:59+05:30",
     "id": "AAAA0000005_bf48a4ef951cab59d4262a7a7890",
     "lfd": "2023-01-23T23:59:59+05:30",
     "line": {
@@ -149,7 +152,7 @@
         "secondaryContactName": null
       },
       "geohash": "9q5bjw01b",
-      "label": "RoadEx Sigsbee Yard",
+      "label": "Farm yard",
       "lat": 33.7832625,
       "lng": -118.2348517
     },
@@ -159,7 +162,7 @@
     "ref": "3273",
     "reported": "",
     "row_id": "AAAA0000005_bf48a4ef951cab59d4262a7a7890",
-    "scac": "QUAL",
+    "scacList": { "list": ["WWRT", "OPKL"] },
     "size": "20 ST",
     "status": "available",
     "__collections__": {}

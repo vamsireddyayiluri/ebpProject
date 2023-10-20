@@ -1,0 +1,3 @@
+<template>
+  <BookingView />
+</template>

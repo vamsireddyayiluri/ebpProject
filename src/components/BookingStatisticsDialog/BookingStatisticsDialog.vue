@@ -6,8 +6,8 @@ const props = defineProps({
   booking: Object,
 })
 const emit = defineEmits(['close', 'goToBookingPage'])
-
-const timeline = ref(false)
+const router = useRouter()
+const selectedBooking = ref(false)
 </script>
 
 <template>
@@ -39,7 +39,7 @@ const timeline = ref(false)
       class="hidden md:block -mb-6"
     />
     <div class="w-full md:w-50 pt-8 pb-1 overflow-visible">
-      <template v-if="!timeline">
+      <template v-if="!selectedBooking">
         <Typography
           type="text-h3 mb-5"
           :color="getColor('textPrimary')"
@@ -60,7 +60,7 @@ const timeline = ref(false)
                 <Button
                   variant="plain"
                   density="compact"
-                  @click="timeline = true"
+                  @click="selectedBooking = i"
                 >
                   see details
                 </Button>
@@ -73,6 +73,12 @@ const timeline = ref(false)
         </template>
       </template>
       <div v-else>
+        <Typography
+          type="text-h3 mb-1"
+          :color="getColor('textPrimary')"
+        >
+          Timeline
+        </Typography>
         <Timeline
           :items="[
             {
@@ -97,14 +103,14 @@ const timeline = ref(false)
           variant="vertical"
         />
         <div class="styledDrawerActions flex gap-6 pt-8 w-100">
-          <Button @click="emit('goToBookingPage')">
+          <Button @click="router.push({ path: `booking/${selectedBooking.ref}`})">
             Go to booking page
           </Button>
           <Button
             variant="plain"
             class="p-0"
             :style="{ background: 'rgba(var(--v-theme-uiPrimary), 1)' }"
-            @click="timeline = false"
+            @click="selectedBooking = false"
           >
             Back to all bookings
           </Button>
