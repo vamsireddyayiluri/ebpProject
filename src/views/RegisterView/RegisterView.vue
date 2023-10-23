@@ -145,7 +145,7 @@ const onSubmit = async () => {
           </div>
         </template>
         <template v-if="stepper.isCurrent('work-details')">
-          <Yards />
+          <Yards class="mx-auto" />
         </template>
         <div>
           <template v-if="stepper.isCurrent('invite-members')">

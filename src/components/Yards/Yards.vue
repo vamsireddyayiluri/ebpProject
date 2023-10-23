@@ -3,6 +3,7 @@ import { useDisplay } from 'vuetify'
 import { storeToRefs } from "pinia"
 import { useAuthStore } from '~/stores/auth.store'
 
+const attrs = useAttrs()
 const authStore = useAuthStore()
 const { yardList } = storeToRefs(authStore)
 const { xs } = useDisplay()
@@ -49,7 +50,8 @@ const removeLocation = () => {
 <template>
   <VRow
     no-gutters
-    class="w-full mx-auto md:w-11/12 [&>div]:mb-4 [&>div]:text-left"
+    class="w-full md:w-11/12 [&>div]:mb-4 [&>div]:text-left"
+    v-bind="{ ...attrs }"
   >
     <VCol
       cols="12"
@@ -103,7 +105,7 @@ const removeLocation = () => {
       Add
     </Button>
   </VRow>
-  <div 
+  <div
     class="w-full md:w-11/12 mx-auto"
   >
     <LocationItems
