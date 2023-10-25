@@ -64,8 +64,39 @@ export const draftsHeaders = [
     sorter: (a, b) => moment(a).diff(moment(b)),
   },
 ]
+export const truckersListHeaders = [
+  {
+    text: 'SCAC ad email',
+    value: 'scacEmail',
+    align: 'start',
+  },
+  {
+    text: 'Name of company',
+    value: 'company',
+  },
+  {
+    text: 'Last booking',
+    value: 'lastBooking',
+    sortable: true,
+    sorter: (a, b) => moment(a).diff(moment(b)),
+  },
+]
+export const truckersDocumentsHeaders = [
+  {
+    text: 'Trucker',
+    value: 'trucker',
+    align: 'start',
+    width: 3,
+  },
+  {
+    text: 'Documents',
+    value: 'documents',
+  },
+]
 export default () => ({
   bookingsHeaders,
   yardsHeaders,
   draftsHeaders,
+  truckersListHeaders,
+  truckersDocumentsHeaders,
 })

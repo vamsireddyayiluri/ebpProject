@@ -32,7 +32,6 @@ import { useAlertStore } from '~/stores/alert.store'
 import { getLocalServerTime, getLocalTime } from '@qualle-admin/qutil/dist/date'
 import { getOrgId } from '~/stores/helpers'
 import { uid } from 'uid'
-import listRequiresForTruckers from '~/fixtures/requiresForTruckers.json'
 
 export const useAuthStore = defineStore('auth', () => {
   const router = useRouter()
@@ -43,17 +42,13 @@ export const useAuthStore = defineStore('auth', () => {
   const orgData = ref(null)
   const invitedUsersData = ref(null)
   const isLoading = ref(null)
-  const onboardingDocuments = ref([])
-  const requiresForTruckers = ref(listRequiresForTruckers)
-  const preferredTruckersList = ref([])
-  const questionList = ref([])
+
   const yardList = ref([])
 
   const login = async ({ email, password }) => {
     isLoading.value = true
     try {
       const { user } = await signInWithEmailAndPassword(auth, email, password)
-      console.log('-> user', user)
       currentUser.value = user
 
       router.push({ name: 'dashboard' })
@@ -529,19 +524,6 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  const saveOnboardingDocuments = files => {
-    onboardingDocuments.value = files
-  }
-
-  const addAdditionalQuestion = question => {
-    questionList.value.push(question)
-  }
-
-  const removeQuestion = question => {
-    const index = questionList.value.findIndex(q => q === question)
-    questionList.value.splice(index, 1)
-  }
-
   const addYard = yard => {
     yardList.value.push(yard)
 
@@ -582,13 +564,6 @@ export const useAuthStore = defineStore('auth', () => {
     updateYardDetails,
     validateInviteUserEmail,
     saveUserDataReports,
-    onboardingDocuments,
-    saveOnboardingDocuments,
-    requiresForTruckers,
-    preferredTruckersList,
-    questionList,
-    addAdditionalQuestion,
-    removeQuestion,
     yardList,
     addYard,
     removeYard,

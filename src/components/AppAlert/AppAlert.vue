@@ -15,7 +15,7 @@ const { alert } = storeToRefs(alertStore)
       @close="alertStore.close()"
     >
       <AlertTitle>{{ alert.title }}</AlertTitle>
-      <AlertText>{{ alert.message }}</AlertText>
+      <AlertText>{{ alert.content }}</AlertText>
     </Alert>
   </Snackbar>
 </template>

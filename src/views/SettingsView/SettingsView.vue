@@ -52,7 +52,9 @@ const tabs = [
       <template v-if="tab === 2">
         <BookingRulesTab />
       </template>
-      <template v-if="tab === 3" />
+      <template v-if="tab === 3">
+        <TruckerManagementTab />
+      </template>
       <template v-if="tab === 4">
         <PreferredTruckersTab />
       </template>

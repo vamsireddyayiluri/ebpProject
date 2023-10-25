@@ -1,10 +1,15 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
+import {usePreferredTruckersStore} from "~/stores/preferredTruckers.store"
 
 const props = defineProps({
   scacList: {
     type: Object,
     default: () => {list: []},
+  },
+  menuBtn: {
+    type: Boolean,
+    default: () => true,
   },
 })
 
@@ -59,7 +64,10 @@ onUpdated(() => {
       @update:menu="updateMenu"
       @update:modelValue="updateModelValue"
     >
-      <template #prepend-item>
+      <template
+        v-if="menuBtn"
+        #prepend-item
+      >
         <div class="flex items-center ml-4">
           <SvgIcon
             icon="market"
@@ -76,7 +84,7 @@ onUpdated(() => {
       </template>
     </Autocomplete>
     <div
-      v-if="scacList?.length"
+      v-if="scacList?.length || !menuBtn"
       class="my-4 flex flex-wrap gap-2"
     >
       <template

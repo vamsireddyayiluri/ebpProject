@@ -34,7 +34,8 @@ const onSave = () => {
     />
     <AutocompleteScac
       :scac-list="rules.preferredTruckersList"
-      class="order-4 sm:!order-3"
+      :menu-btn="false"
+      class="order-4 sm:!order-3 !-mb-4"
     />
     <Textfield
       v-model="rules.timeForNotificationBeforeCutoff"
