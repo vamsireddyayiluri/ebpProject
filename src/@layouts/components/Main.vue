@@ -22,10 +22,15 @@ const items = ref([
     icon: getActiveRoute('dashboard') ? 'marketFill' : 'market',
     tooltip: 'Dashboard',
   },
+  {
+    name: 'settings',
+    icon: getActiveRoute('settings') ? 'settingFill' : 'setting',
+  },
 ])
 
 const mobileMenuItems = [
   { name: 'Dashboard', path: 'dashboard', icon: 'container' },
+  { name: 'Settings', path: 'settings', icon: 'setting'},
   { name: 'Profile settings', path: 'profile', icon: 'user' },
 ]
 const { notifications } = storeToRefs(notificationStore)
