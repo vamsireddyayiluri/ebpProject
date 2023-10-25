@@ -24,7 +24,21 @@ export const draftsActions = () => [
     color: 'functionalError',
   },
 ]
+export const truckersListActions = () => [
+  {
+    icon: 'mdi-message-text',
+    label: 'Message',
+    action: 'to-message',
+  },
+  {
+    icon: 'mdi-delete',
+    label: 'Delete trucker',
+    action: 'delete-trucker',
+    color: 'functionalError',
+  },
+]
 export default () => ({
   bookingsActions,
   draftsActions,
+  truckersListActions,
 })

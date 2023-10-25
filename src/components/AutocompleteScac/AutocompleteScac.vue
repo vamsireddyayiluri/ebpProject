@@ -1,13 +1,19 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
+import {usePreferredTruckersStore} from "~/stores/preferredTruckers.store"
 
 const props = defineProps({
   scacList: {
     type: Object,
     default: () => {list: []},
   },
+  menuBtn: {
+    type: Boolean,
+    default: () => true,
+  },
 })
 
+const attrs = useAttrs()
 const scacList = toRef(props.scacList, 'list')
 const preferredTruckersList = ref(['qqww', 'ggtr', 'asty'])
 const sendDialog = ref(null)
@@ -26,25 +32,28 @@ const updateModelValue = () => {
   if (autocompleteValue.value) autocompleteValue.value = null
 }
 const updateMenu = e => {
-  if (!e && scacList.value.length) {
+  if (!e && scacList.value?.length) {
     // add margin when menu is closed
     marginBottom.value = 'mb-10'
   } else marginBottom.value = ''
 }
 onMounted(() => {
-  if (scacList.value.length) {
+  if (scacList.value?.length) {
     marginBottom.value = 'mb-10'
   }
 })
 onUpdated(() => {
-  if (!scacList.value.length) {
+  if (!scacList.value?.length) {
     marginBottom.value = ''
   }
 })
 </script>
 
 <template>
-  <div :class="marginBottom">
+  <div
+    :class="marginBottom"
+    v-bind="{ ...attrs }"
+  >
     <Autocomplete
       v-model="scacList"
       :items="preferredTruckersList"
@@ -55,7 +64,10 @@ onUpdated(() => {
       @update:menu="updateMenu"
       @update:modelValue="updateModelValue"
     >
-      <template #prepend-item>
+      <template
+        v-if="menuBtn"
+        #prepend-item
+      >
         <div class="flex items-center ml-4">
           <SvgIcon
             icon="market"
@@ -72,7 +84,7 @@ onUpdated(() => {
       </template>
     </Autocomplete>
     <div
-      v-if="scacList.length"
+      v-if="scacList?.length || !menuBtn"
       class="my-4 flex flex-wrap gap-2"
     >
       <template

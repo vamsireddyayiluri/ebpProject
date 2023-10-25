@@ -1,8 +1,8 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
-import { useAuthStore } from '~/stores/auth.store'
+import { useTruckerManagementStore } from "~/stores/truckerManagement.store"
 
-const authStore = useAuthStore()
+const authStore = useTruckerManagementStore()
 const fileLoading = ref(false)
 const file = ref(null)
 const files = ref(authStore.onboardingDocuments)
@@ -150,7 +150,7 @@ const renameFile = () => {
             v-model="getFilenameAndExtension(file.name)[1]"
             label="Extension"
             readonly
-            class="basis-0"
+            class="basis-0 pointer-events-none"
           />
         </div>
         <Button

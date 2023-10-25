@@ -1,0 +1,54 @@
+[
+  {
+    "id": "ANRN",
+    "scac": "ANRN",
+    "email": "tim.jennings@example.com",
+    "company": "Gillette",
+    "lastBooking" : "",
+    "documents": [
+      {
+        "label": "Agreement_1",
+        "status": "checked"
+      },
+      {
+        "label": "Agreement_2",
+        "status": "waiting"
+      }]
+  },
+  {
+    "id": "ADEW",
+    "scac": "ADEW",
+    "email": "willie.jennings@example.com",
+    "company": "Louis Vuitton",
+    "lastBooking" : "2023-03-09T14:30:49+00:00",
+    "documents": [
+      {
+        "label": "Agreement_4",
+        "status": "waiting"
+    },
+      {
+        "label": "Agreement",
+        "status": "notConsider"
+    },
+      {
+        "label": "new_Agreement",
+        "status": "checked"
+    },
+      {
+        "label": "Agreement_update",
+        "status": "pending"
+    }]
+  },
+  {
+    "id": "BLJU ",
+    "scac": "BLJU ",
+    "email": "tom.johnson@example.com",
+    "company": "Johnson & Johnson",
+    "documents": [
+      {
+        "label": "Agreement_5",
+        "status": "waiting"
+      }
+    ]
+  }
+]
