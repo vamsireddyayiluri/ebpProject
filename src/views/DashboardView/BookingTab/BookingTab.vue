@@ -35,7 +35,6 @@ const searchValue = ref(null)
 const loading = ref(false)
 const newId = ref(uid(8))
 const bookingStatisticsDialog = ref(null)
-const selectedBooking = ref(null)
 const filters = ref({
   ssl: null,
 })
@@ -101,7 +100,7 @@ const selectTableRow = e => {
 
 const viewStatistics = e => {
   bookingStatisticsDialog.value.show(true)
-  selectedBooking.value = e
+  bookingStatisticsDialog.value.data = e
 }
 
 const onClearSearch = () => {
@@ -256,7 +255,7 @@ watch(searchValue, value => {
   >
     <template #text>
       <BookingStatisticsDialog
-        :booking="selectedBooking"
+        :booking="bookingStatisticsDialog.data"
         @close="bookingStatisticsDialog.show(false)"
       />
     </template>

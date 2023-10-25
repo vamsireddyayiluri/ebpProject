@@ -14,7 +14,6 @@ const { smAndDown, width } = useDisplay()
 const showActions = ref(true)
 const tableHeight = ref(1)
 const deleteDraftDialog = ref(false)
-const selectedBooking = ref(null)
 
 const { draftsHeaders } = useHeaders()
 const { draftsActions } = useActions()
@@ -22,7 +21,10 @@ const formatDate = useDate()
 
 const containerActionHandler = ({ action, e }) => {
   if (action === 'edit-draft') emit('editDraft', e[0].ref)
-  if (action === 'delete-draft') deleteDraftDialog.value.show(true), (selectedBooking.value = e)
+  if (action === 'delete-draft') {
+    deleteDraftDialog.value.show(true)
+    deleteDraftDialog.value.data = e[0]
+  }
 }
 
 const onSelectRow = e => {
@@ -115,8 +117,8 @@ onMounted(() => {
         @onClickBtn="deleteDraftDialog.show(false)"
       >
         <Typography>
-          Are you sure you want to delete draft
-          <b>{{ selectedBooking[0].ref }}</b>?
+          Are you sure you want to delete draft#
+          <b>{{ deleteDraftDialog.data.ref }}</b>?
         </Typography>
       </RemoveCancelDialog>
     </template>
