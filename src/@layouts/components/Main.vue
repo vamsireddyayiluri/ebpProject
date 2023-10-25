@@ -26,16 +26,17 @@ const items = ref([
 
 const mobileMenuItems = [
   { name: 'Dashboard', path: 'dashboard', icon: 'container' },
+  { name: 'Profile settings', path: 'profile', icon: 'user' },
 ]
 const { notifications } = storeToRefs(notificationStore)
-const userMenuItems = ref([])
+const userMenuItems = ref([{ name: 'Profile settings', path: 'profile' }])
 </script>
 
 <template>
   <div v-bind="{ ...attrs }">
     <Header
       class="default z-10 top-0"
-      :items="width < 760? mobileMenuItems: items"
+      :items="width < 760 ? mobileMenuItems : items"
       :notifications="notifications"
       :route="route"
       :user-menu-items="userMenuItems"

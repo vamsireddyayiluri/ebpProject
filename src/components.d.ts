@@ -32,6 +32,7 @@ declare module '@vue/runtime-core' {
     NotificationRadioButton: typeof import('./views/SettingsView/NotificationsTab/NotificationRadioButton.vue')['default']
     NotificationsTab: typeof import('./views/SettingsView/NotificationsTab/NotificationsTab.vue')['default']
     PreferredTruckersTab: typeof import('./views/SettingsView/PreferredTruckersTab/PreferredTruckersTab.vue')['default']
+    ProfileView: typeof import('./views/ProfileView.vue')['default']
     RegisterView: typeof import('./views/RegisterView/RegisterView.vue')['default']
     RemoveCancelDialog: typeof import('./components/RemoveCancelDialog/RemoveCancelDialog.vue')['default']
     ResetPasswordView: typeof import('./views/ResetPasswordView.vue')['default']
