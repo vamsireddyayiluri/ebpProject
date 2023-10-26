@@ -13,15 +13,14 @@ const { requiresForTruckers, questionList } = storeToRefs(truckerManagement)
 const openedPanel = ref([2])
 const loading = ref(false)
 const documentsDialog = ref(null)
-const selectedDocument= ref(null)
 
 const saveTruckerRequirements = () => {
   console.log('save ', requiresForTruckers.value, questionList.value)
   alertStore.info({ content: 'Trucker requirements saved!' })
 }
 const openDocuments = doc => {
-  selectedDocument.value = doc
   documentsDialog.value.show(true)
+  documentsDialog.value.data = doc
 }
 </script>
 
@@ -129,7 +128,7 @@ const openDocuments = doc => {
   >
     <template #text>
       <DocumentViewerDialog
-        :doc="selectedDocument"
+        :doc="documentsDialog.data"
         @close="documentsDialog.show(false)"
       />
     </template>
