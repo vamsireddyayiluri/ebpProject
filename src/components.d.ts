@@ -7,6 +7,7 @@ export {}
 
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
+    ActivityStatisticsChart: typeof import('./views/StatisticsView/OverallStatisticsTab/ActivityStatisticsChart.vue')['default']
     AppAlert: typeof import('./components/AppAlert/AppAlert.vue')['default']
     AppearanceTab: typeof import('./views/SettingsView/AppearanceTab/AppearanceTab.vue')['default']
     AutocompleteScac: typeof import('./components/AutocompleteScac/AutocompleteScac.vue')['default']
@@ -25,12 +26,14 @@ declare module '@vue/runtime-core' {
     DraftsTable: typeof import('./views/DashboardView/DraftsTab/DraftsTable.vue')['default']
     ErrorHeader: typeof import('./@core/components/ErrorHeader.vue')['default']
     FileUpload: typeof import('./components/FileUpload/FileUpload.vue')['default']
+    FulfillmentRateChart: typeof import('./views/StatisticsView/StatisticsSSLTab/FulfillmentRateChart.vue')['default']
     InviteTruckerDialog: typeof import('./views/SettingsView/PreferredTruckersTab/InviteTruckerDialog.vue')['default']
     LoginView: typeof import('./views/LoginView.vue')['default']
     MenuActions: typeof import('./components/MenuActions/MenuActions.vue')['default']
     NewPasswordView: typeof import('./views/NewPasswordView.vue')['default']
     NotificationRadioButton: typeof import('./views/SettingsView/NotificationsTab/NotificationRadioButton.vue')['default']
     NotificationsTab: typeof import('./views/SettingsView/NotificationsTab/NotificationsTab.vue')['default']
+    OverallStatisticsTab: typeof import('./views/StatisticsView/OverallStatisticsTab/OverallStatisticsTab.vue')['default']
     PreferredTruckersTab: typeof import('./views/SettingsView/PreferredTruckersTab/PreferredTruckersTab.vue')['default']
     ProfileView: typeof import('./views/ProfileView.vue')['default']
     RegisterView: typeof import('./views/RegisterView/RegisterView.vue')['default']
@@ -40,6 +43,10 @@ declare module '@vue/runtime-core' {
     RouterView: typeof import('vue-router')['RouterView']
     SaveCancelChanges: typeof import('./components/SaveCancelChanges/SaveCancelChanges.vue')['default']
     SettingsView: typeof import('./views/SettingsView/SettingsView.vue')['default']
+    StatisticsSSLTab: typeof import('./views/StatisticsView/StatisticsSSLTab/StatisticsSSLTab.vue')['default']
+    StatisticsTruckersTab: typeof import('./views/StatisticsView/StatisticsTruckersTab/StatisticsTruckersTab.vue')['default']
+    StatisticsView: typeof import('./views/StatisticsView/StatisticsView.vue')['default']
+    StatisticsYardsTab: typeof import('./views/StatisticsView/StatisticsYardsTab/StatisticsYardsTab.vue')['default']
     Stepper: typeof import('./components/Stepper/Stepper.vue')['default']
     TeamMembers: typeof import('./components/TeamMembers/TeamMembers.vue')['default']
     TeamMembersTab: typeof import('./views/SettingsView/TeamMembersTab/TeamMembersTab.vue')['default']
