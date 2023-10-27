@@ -3,10 +3,10 @@ import { getColor } from '~/helpers/colors'
 import { useDisplay } from 'vuetify'
 import { useActions, useDate, useHeaders } from '~/composables'
 import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
-import { storeToRefs } from "pinia"
+import { storeToRefs } from 'pinia'
 import allTruckers from '~/fixtures/truckers.json'
-import { pullAllBy } from "lodash"
-import { useAlertStore } from "~/stores/alert.store"
+import { pullAllBy } from 'lodash'
+import { useAlertStore } from '~/stores/alert.store'
 
 const alertStore = useAlertStore()
 const preferredTruckersStore = usePreferredTruckersStore()
@@ -17,7 +17,6 @@ const tableHeight = ref(0)
 const inviteTruckerDialog = ref(false)
 const confirmInviteTruckerDialog = ref(false)
 const deleteTruckerDialog = ref(false)
-const selectedTrucker = ref(null)
 
 const { truckersListHeaders } = useHeaders()
 const { truckersListActions } = useActions()
@@ -36,15 +35,19 @@ const computedEntities = computed({
 
 const confirmSendInvitation = trucker => {
   confirmInviteTruckerDialog.value.show(true)
-  selectedTrucker.value = trucker
+  confirmInviteTruckerDialog.value.data = trucker
 }
 const containerActionHandler = ({ action, e }) => {
   if (action === 'to-message') {
   }
-  if (action === 'delete-trucker') deleteTruckerDialog.value.show(true), (selectedTrucker.value = e[0])
+  if (action === 'delete-trucker') {
+    deleteTruckerDialog.value.show(true)
+    deleteTruckerDialog.value.data = e[0]
+  }
 }
 const deleteTrucker = () => {
-  preferredTruckersStore.deleteTrucker(selectedTrucker.value.email)
+  preferredTruckersStore.deleteTrucker(deleteTruckerDialog.value.data.email)
+  deleteTruckerDialog.value.show(false)
 }
 const sendInvitation = async () => {
   try {
@@ -52,19 +55,14 @@ const sendInvitation = async () => {
     if (result === 'sentInvitation') {
       confirmInviteTruckerDialog.value.show(false)
       setTimeout(() => {
-        alertStore.info({content: 'The invitation has been sent!'})
+        alertStore.info({ content: 'The invitation has been sent!' })
       }, 500)
     }
-  }
-  catch (e) {
+  } catch (e) {
     console.error(e)
   }
 }
 
-// that function runs when click outside the addEditDialog
-const onClickOutsideDialog = () => {
-  selectedTrucker.value = null
-}
 const tableId = 'truckersListTable'
 onMounted(() => {
   setTimeout(() => {
@@ -93,10 +91,7 @@ onMounted(() => {
   </Typography>
   <div class="flex justify-between flex-wrap gap-5 mb-5">
     <AutocompleteGroups
-      :lists="[
-        preferredTruckers,
-        pullAllBy(allTruckers, preferredTruckers, 'scac'),
-      ]"
+      :lists="[preferredTruckers, pullAllBy(allTruckers, preferredTruckers, 'scac')]"
       label="Search for truckers by SCAC and email"
       multiple2-list=""
       item-title="scac"
@@ -106,9 +101,7 @@ onMounted(() => {
       @onSelectMultiple="item => preferredTruckersStore.addTrucker(item)"
     >
       <template #noData>
-        <Typography
-          class="mb-5"
-        >
+        <Typography class="mb-5">
           There is no such trucker on the platform. Do you want to send an invitation via email?
         </Typography>
         <Button
@@ -197,7 +190,6 @@ onMounted(() => {
   <Dialog
     ref="inviteTruckerDialog"
     max-width="480"
-    @update:modelValue="onClickOutsideDialog"
   >
     <template #text>
       <InviteTruckerDialog @close="inviteTruckerDialog.show(false)" />
@@ -206,12 +198,11 @@ onMounted(() => {
   <Dialog
     ref="confirmInviteTruckerDialog"
     max-width="480"
-    @update:modelValue="onClickOutsideDialog"
   >
     <template #text>
       <div class="flex justify-between">
         <Typography>
-          Are you sure you want to send an invitation to trucker <b>{{ selectedTrucker.email }}</b>?
+          Are you sure you want to send an invitation to trucker <b>{{ confirmInviteTruckerDialog.data.email }}</b>?
         </Typography>
         <IconButton
           icon="mdi-close"
@@ -230,7 +221,6 @@ onMounted(() => {
   <Dialog
     ref="deleteTruckerDialog"
     max-width="480"
-    @update:modelValue="onClickOutsideDialog"
   >
     <template #text>
       <RemoveCancelDialog
@@ -239,7 +229,7 @@ onMounted(() => {
         @onClickBtn="deleteTrucker"
       >
         <Typography>
-          Are you sure you want to remove trucker <b>{{ selectedTrucker.email }}</b>
+          Are you sure you want to remove trucker <b>{{ deleteTruckerDialog.data.email }}</b>
           your preferred list?
         </Typography>
       </RemoveCancelDialog>

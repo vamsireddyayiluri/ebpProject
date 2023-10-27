@@ -15,7 +15,6 @@ const { smAndDown, width } = useDisplay()
 const showActions = ref(true)
 const tableHeight = ref(1)
 const removeBookingDialog = ref(false)
-const selectedBooking = ref(null)
 
 const { yardsHeaders, bookingsHeaders } = useHeaders()
 const { bookingsActions } = useActions()
@@ -23,7 +22,10 @@ const formatDate = useDate()
 
 const containerActionHandler = ({ action, e }) => {
   if (action === 'edit-booking') emit('editBooking', e[0].ref)
-  if (action === 'remove-booking') removeBookingDialog.value.show(true), (selectedBooking.value = e)
+  if (action === 'remove-booking') {
+    removeBookingDialog.value.show(true)
+    removeBookingDialog.value.data = e[0]
+  }
 }
 
 const onSelectRow = e => {
@@ -161,7 +163,7 @@ onMounted(() => {
       >
         <Typography>
           Are you sure you want to remove ref#
-          <b>{{ selectedBooking[0].ref }}</b>
+          <b>{{ removeBookingDialog.data.ref }}</b>
           from your bookings?
         </Typography>
       </RemoveCancelDialog>
