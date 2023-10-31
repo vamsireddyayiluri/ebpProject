@@ -93,10 +93,37 @@ export const truckersDocumentsHeaders = [
     value: 'documents',
   },
 ]
+export const statisticsTruckersHeaders = [
+  {
+    text: 'Trucker',
+    value: 'trucker',
+    align: 'start',
+    width: 3,
+  },
+  {
+    text: 'Name of company',
+    value: 'company',
+    width: 3,
+  },
+  {
+    text: 'Taken bookings',
+    value: 'takenBookings',
+  },
+  {
+    text: 'Taken/fulfilled',
+    value: 'takenFulfilled',
+  },
+  {
+    text: 'Ranging',
+    value: 'ranging',
+    width: 3,
+  },
+]
 export default () => ({
   bookingsHeaders,
   yardsHeaders,
   draftsHeaders,
   truckersListHeaders,
   truckersDocumentsHeaders,
+  statisticsTruckersHeaders,
 })

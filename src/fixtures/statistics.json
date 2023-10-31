@@ -1,0 +1,42 @@
+{
+  "totalNumberOfBookings": 125,
+  "bookingsMonthVolatility": "15",
+  "removedBookings": 12,
+  "removedBookingsMonthVolatility": "-7",
+  "successfullyBookings": 112,
+  "successfullyBookingsMonthVolatility": "9",
+  "lines": [
+    {
+      "id": "1161e60730156d8f",
+      "label": "CAI"
+    },
+    {
+      "id": "0156d8f6819b2de4",
+      "label": "CS Leasing"
+    },
+    {
+      "id": "9d8d49984308f116",
+      "label": "Alianca"
+    },
+    {
+      "id": "8d49984308f1161e",
+      "label": "APL"
+    },
+    {
+      "id": "1161e60730156d8f",
+      "label": "CAI"
+    },
+    {
+      "id": "1161e60730156d8f",
+      "label": "CAI"
+    },
+    {
+      "id": "1161e60730156d8f",
+      "label": "CAI"
+    },
+    {
+      "id": "1161e60730156d8f",
+      "label": "CAI"
+    }
+  ]
+}
