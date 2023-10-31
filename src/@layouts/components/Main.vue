@@ -23,6 +23,10 @@ const items = ref([
     tooltip: 'Dashboard',
   },
   {
+    name: 'calendar',
+    icon: getActiveRoute('calendar') ? 'calendarFill' : 'calendar',
+  },
+  {
     name: 'settings',
     icon: getActiveRoute('settings') ? 'settingFill' : 'setting',
   },
@@ -30,6 +34,7 @@ const items = ref([
 
 const mobileMenuItems = [
   { name: 'Dashboard', path: 'dashboard', icon: 'container' },
+  { name: 'Calendar', path: 'calendar', icon: 'calendar' },
   { name: 'Settings', path: 'settings', icon: 'setting'},
   { name: 'Profile settings', path: 'profile', icon: 'user' },
 ]

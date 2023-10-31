@@ -1,14 +1,63 @@
 [
   {
+    "amount": 11,
+    "booked": 11,
+    "chassis": null,
+    "chassisType": "private",
+    "company": "Cognine",
+    "container": "AAAA00000580",
+    "created": "2023-10-09T14:30:49+00:00",
+    "expiryDate": "2023-10-24T23:59:59+05:30",
+    "preferredDate": "2023-10-10T23:59:59+05:30",
+    "lfd": "2023-03-08T23:59:59+05:30",
+    "line": {
+      "id": "1161e60730156d8f",
+      "label": "CAI"
+    },
+    "location": {
+      "address": "875 Blake Wilbur Dr, Palo Alto, CA 94304, USA",
+      "details": {
+        "hoursOfOperation": null,
+        "pickupInstructions": null,
+        "primaryContact": null,
+        "primaryContactName": null,
+        "secondaryContact": null,
+        "secondaryContactName": null
+      },
+      "geohash": "9q9hgycyy",
+      "label": "Work yard",
+      "lat": 37.4357319,
+      "lng": -122.1762866
+    },
+    "mc": null,
+    "orgId": "33e1f6a41797e8a0049f65046c35",
+    "owner": "2HRqyOHsAVclCQ0FmqqY3k0G6u22",
+    "ref": "7775",
+    "id": "7775",
+    "reported": "",
+    "scacList": { "list": [] },
+    "size": "20 RF",
+    "status": "available",
+    "carriers": [
+      { "scac": "OTRH", "fulfilled": 6, "total": 13 },
+      { "scac": "ARYE", "fulfilled": 2, "total": 5 },
+      { "scac": "LORE", "fulfilled": 12, "total": 14 },
+      { "scac": "WNER", "fulfilled": 3, "total": 10 },
+      { "scac": "ABOR", "fulfilled": 6, "total": 13 },
+      { "scac": "ABOR", "fulfilled": 2, "total": 5 }
+    ],
+    "__collections__": {}
+  },
+  {
     "amount": 10,
     "booked": 5,
     "chassis": null,
     "chassisType": "private",
     "company": "Cognine",
     "container": "AAAA0000000",
-    "created": "2023-03-09T14:30:49+00:00",
-    "expiryDate": "2023-03-14T23:59:59+05:30",
-    "preferredDate": "2023-11-10T23:59:59+05:30",
+    "created": "2023-10-30T14:30:49+00:00",
+    "expiryDate": "2023-11-07T23:59:59+05:30",
+    "preferredDate": "2023-11-01T23:59:59+05:30",
     "lfd": "2023-03-08T23:59:59+05:30",
     "line": {
       "id": "1161e60730156d8f",
@@ -38,6 +87,13 @@
     "scacList": { "list": [] },
     "size": "20 RF",
     "status": "available",
+    "carriers": [
+      { "scac": "OTRH", "fulfilled": 7, "total": 13 },
+      { "scac": "ARYE", "fulfilled": 2, "total": 5 },
+      { "scac": "LORE", "fulfilled": 12, "total": 14 },
+      { "scac": "WNER", "fulfilled": 3, "total": 10 },
+      { "scac": "ABOR", "fulfilled": 2, "total": 5 }
+    ],
     "__collections__": {}
   },
   {
@@ -47,9 +103,9 @@
     "chassisType": "private",
     "company": "Cognine",
     "container": "AAAA0000001",
-    "created": "2023-03-09T14:30:49+00:00",
-    "expiryDate": "2023-03-14T23:59:59+05:30",
-    "preferredDate": "2023-11-02T23:59:59+05:30",
+    "created": "2024-03-09T14:30:49+00:00",
+    "expiryDate": "2024-04-14T23:59:59+05:30",
+    "preferredDate": "2024-03-29T23:59:59+05:30",
     "lfd": "2023-03-08T23:59:59+05:30",
     "line": {
       "id": "1161e60730156d8f",
@@ -79,6 +135,10 @@
     "scacList": { "list": ["ABCD"] },
     "size": "20 RF",
     "status": "available",
+    "carriers": [
+      { "scac": "OTRH", "fulfilled": 6, "total": 13 },
+      { "scac": "ABOR", "fulfilled": 2, "total": 5 }
+    ],
     "__collections__": {}
   },
   {
@@ -88,9 +148,9 @@
     "chassisType": "private",
     "company": "Test Company 1",
     "container": "AAAA0000005",
-    "created": "2023-02-20T13:07:19+00:00",
-    "expiryDate": "2023-02-25T23:59:59+05:30",
-    "preferredDate": "2022-10-10T23:59:59+05:30",
+    "created": "2023-12-20T13:07:19+00:00",
+    "expiryDate": "2023-12-25T23:59:59+05:30",
+    "preferredDate": "2022-12-22T23:59:59+05:30",
     "id": "AAAA0000005_bf48a4ef951cab59d4262a7a7890",
     "lfd": "2023-01-23T23:59:59+05:30",
     "line": {
@@ -165,6 +225,9 @@
     "scacList": { "list": ["WWRT", "OPKL"] },
     "size": "20 ST",
     "status": "available",
+    "carriers": [
+      { "scac": "ABOR", "fulfilled": 2, "total": 5 }
+    ],
     "__collections__": {}
   }
 ]
