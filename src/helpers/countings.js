@@ -16,3 +16,24 @@ export const getYardBookingLoad = items => {
     rate: Number((obj.booked*100/obj.amount).toFixed(2)),
   }
 }
+
+export const totalFulfilledBookings = bookings => {
+  const { fulfilled, total } = bookings.reduce((acc, item) => {
+    if (item.carriers) {
+      const { fulfilled, total } = item.carriers.reduce((carrierAcc, carrier) => ({
+        fulfilled: carrierAcc.fulfilled + (carrier.fulfilled || 0),
+        total: carrierAcc.total + (carrier.total || 0),
+      }), { fulfilled: 0, total: 0 })
+
+      acc.fulfilled += fulfilled
+      acc.total += total
+    } else {
+      acc.fulfilled += item.fulfilled || 0
+      acc.total += item.total || 0
+    }
+
+    return acc
+  }, { fulfilled: 0, total: 0 })
+
+  return (total !== 0) ? ((fulfilled / total) * 100).toFixed(2) : 0
+}

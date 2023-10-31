@@ -90,6 +90,7 @@ onMounted(() => {
           <Typography type="text-h1">
             Booking <b>Ref#{{ booking.ref }}</b>
             {{ fromDraft? '(Draft)': '' }}
+            {{ moment(booking.expiryDate).isAfter(moment(), 'day')? '': '(Expired)' }}
           </Typography>
           <IconButton
             icon="mdi-link"

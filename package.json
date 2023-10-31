@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@mdi/font": "^7.1.96",
-    "@qualle-admin/qui": "^1.175.0",
+    "@qualle-admin/qui": "^1.176.0",
     "@qualle-admin/qutil": "latest",
     "@vueuse/core": "^9.9.0",
     "autoprefixer": "^10.4.14",

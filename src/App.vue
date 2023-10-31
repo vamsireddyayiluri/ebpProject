@@ -9,7 +9,7 @@ const vuetifyTheme = useTheme()
 const storage = useStorage('theme', '')
 
 onMounted(() => {
-  if (!storage.value) {
+  if (!storage.value || storage.value === 'undefined') {
     vuetifyTheme.global.name.value = 'light'
     storage.value = 'light'
   } else {
