@@ -19,7 +19,7 @@ const { currentUser } = storeToRefs(authStore)
 const items = ref([
   {
     name: 'dashboard',
-    icon: getActiveRoute('dashboard') ? 'marketFill' : 'market',
+    icon: 'home',
     tooltip: 'Dashboard',
   },
   {
@@ -33,7 +33,7 @@ const items = ref([
 ])
 
 const mobileMenuItems = [
-  { name: 'Dashboard', path: 'dashboard', icon: 'container' },
+  { name: 'Dashboard', path: 'dashboard', icon: 'home' },
   { name: 'Calendar', path: 'calendar', icon: 'calendar' },
   { name: 'Settings', path: 'settings', icon: 'setting'},
   { name: 'Profile settings', path: 'profile', icon: 'user' },

@@ -34,7 +34,7 @@ const searchValue = ref(null)
 const loading = ref(false)
 const newId = ref(uid(8))
 const filters = ref({
-  ssl: null,
+  line: null,
 })
 const selectLine = ref(getAllLines())
 const createBookingDialog = ref(null)
@@ -124,10 +124,10 @@ const debouncedSearch = useDebounceFn(searchValue => {
 const applyFilter = () => {
   let filteredData = draftsData
 
-  if (filters.value.ssl) {
+  if (filters.value.line) {
     filteredData = useArrayFilter(
       filteredData,
-      container => container.line.label === filters.value.ssl,
+      container => container.line.label === filters.value.line,
     ).value
   }
   computedFilteredEntities.value = filteredData
@@ -180,7 +180,7 @@ watch(searchValue, value => {
             @click:clear="onClearSearch"
           />
           <Select
-            v-model="filters.ssl"
+            v-model="filters.line"
             :items="selectLine"
             label="SSL"
             item-title="label"
@@ -210,7 +210,7 @@ watch(searchValue, value => {
             class="w-full flex justify-end flex-wrap gap-5 [&>div]:w-full [&>div]:min-w-[220px] [&>div]:max-w-[288px]"
           >
             <Select
-              v-model="filters.ssl"
+              v-model="filters.line"
               :items="selectLine"
               label="SSL"
               item-title="label"

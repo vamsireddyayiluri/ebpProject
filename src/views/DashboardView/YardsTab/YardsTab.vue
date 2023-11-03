@@ -1,15 +1,19 @@
 <script setup>
 import { useDisplay, useTheme } from 'vuetify'
-import yardsData from '~/fixtures/yards.json'
 import { filterMatchingObjects } from '~/helpers/filters'
 import { uid } from 'uid'
 import { getAllLines } from '@qualle-admin/qutil/dist/ssl'
 import { getColor } from '~/helpers/colors'
+import {useBookingsStore} from "~/stores/bookings.store"
+import {storeToRefs} from "pinia"
+import {groupedBookingLocations} from "~/stores/helpers"
 
 const props = defineProps({
   mapToggled: Boolean,
 })
 const emit = defineEmits(['closeMap', 'selectRow'])
+const bookingsStore = useBookingsStore()
+const { bookings } = storeToRefs(bookingsStore)
 const { smAndDown } = useDisplay()
 const router = useRouter()
 const paneOpened = ref(false)
@@ -27,14 +31,14 @@ const panes = ref(getPanes())
 const vuetifyTheme = useTheme()
 const theme = computed(() => vuetifyTheme.global.name.value)
 const panesRef = ref(null)
-const mutableSearchedEntities = ref([...JSON.parse(JSON.stringify(yardsData))])
-const mutableFilteredEntities = ref([...JSON.parse(JSON.stringify(yardsData))])
+const mutableSearchedEntities = ref(groupedBookingLocations(bookings.value))
+const mutableFilteredEntities = ref(groupedBookingLocations(bookings.value))
 const searchValue = ref(null)
 const loading = ref(false)
 const newId = ref(uid(8))
 const bookingStatisticsDialog = ref(null)
 const filters = ref({
-  ssl: null,
+  line: null,
 })
 const selectLine = ref(getAllLines())
 const createBookingDialog = ref(null)
@@ -116,7 +120,7 @@ const debouncedSearch = useDebounceFn(searchValue => {
     onClearSearch()
   } else {
     computedSearchedEntities.value = useArrayFilter(
-      yardsData,
+      bookings.value,
       ({ location: {address, label} }) =>
         useArraySome(
           useArrayMap(Object.values({ address, label }), value => String(value).toLowerCase())
@@ -128,14 +132,14 @@ const debouncedSearch = useDebounceFn(searchValue => {
 }, 300)
 
 const applyFilter = () => {
-  let filteredData = yardsData
+  let filteredData = bookings.value
 
-  if (filters.value.ssl) {
+  if (filters.value.line) {
     filteredData = useArrayFilter(
       filteredData,
       yard => useArraySome(
         yard.lines,
-        line => line.label === filters.value.ssl,
+        line => line.label === filters.value.line,
       ).value,
     ).value
   }
@@ -189,7 +193,7 @@ watch(searchValue, value => {
             @click:clear="onClearSearch"
           />
           <Select
-            v-model="filters.ssl"
+            v-model="filters.line"
             :items="selectLine"
             label="SSL"
             item-title="label"
@@ -219,7 +223,7 @@ watch(searchValue, value => {
             class="w-full flex justify-end flex-wrap gap-5 [&>div]:w-full [&>div]:min-w-[220px] [&>div]:max-w-[288px]"
           >
             <Select
-              v-model="filters.ssl"
+              v-model="filters.line"
               :items="selectLine"
               label="SSL"
               item-title="label"

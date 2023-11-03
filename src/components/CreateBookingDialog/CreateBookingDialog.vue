@@ -1,15 +1,17 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
 import { getAllLines } from '@qualle-admin/qutil/dist/ssl'
+import { useBookingsStore } from '~/stores/bookings.store'
 
 const emit = defineEmits(['close', 'createBooking'])
+const { createBooking } = useBookingsStore()
 const booking = ref({
   ref: null,
   containers: null,
-  ssl: null,
+  line: null,
   bookingExpiry: null,
   preferredDate: null,
-  label: null,
+  location: null,
   equipmentType: null,
   scacList: { list: [] },
 })
@@ -24,6 +26,10 @@ const updatePreferredDate = value => {
 const saveDraft = () => {
   confirmDraftsDialog.value.show(false)
   emit('createBooking')
+}
+const saveBooking = () => {
+  createBooking(booking.value)
+  emit('close')
 }
 </script>
 
@@ -47,7 +53,7 @@ const saveDraft = () => {
   </VRow>
   <form
     class="w-mt-10 mx-auto"
-    @submit.prevent="confirmDraftsDialog.show(true)"
+    @submit.prevent="saveBooking"
   >
     <Textfield
       v-model="booking.ref"
@@ -63,12 +69,13 @@ const saveDraft = () => {
         required
       />
       <Select
-        v-model="booking.ssl"
+        v-model="booking.line"
         :items="getAllLines()"
-        label="SSL"
+        label="SSL *"
         required
         item-title="label"
         item-value="type"
+        return-object
       />
       <Datepicker
         :picked="booking.bookingExpiry"
@@ -82,10 +89,35 @@ const saveDraft = () => {
         @onUpdate="updatePreferredDate"
       />
       <Select
-        v-model="booking.label"
-        :items="['Good yard', 'Work yard', 'Farm yard']"
+        v-model="booking.location"
+        :items="[
+          {
+            address: '875 Blake Wilbur Dr, Palo Alto, CA 94304, USA',
+            geohash: '9q9hgycyy',
+            label: 'california',
+            lat: 37.4357319,
+            lng: -122.1762866
+          },
+          {
+            address: '3400 Bainbridge Ave, The Bronx, NY 10467, USA',
+            geohash: 'dr72wcgnz',
+            label: 'test2',
+            lat: 40.8799534,
+            lng: -73.878608
+          },
+          {
+            address: '11200 Iberia St, Mira Loma, CA 91752, USA',
+            geohash: '9qh3t96uz',
+            label: 'Mira Loma Yard',
+            lat: 34.0213706,
+            lng: -117.5276535
+          }
+        ]"
         label="Yard label *"
         required
+        item-title="label"
+        item-value="address"
+        return-object
         class="h-fit"
       />
       <Textfield

@@ -55,7 +55,6 @@ onMounted(() => {
       tableMinWidth: 960,
       expansionRow: true,
     }"
-    class="mb-5"
     @onSelectRow="onSelectRow"
   >
     <template #yardLabel="{ item }">

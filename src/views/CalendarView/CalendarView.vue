@@ -11,6 +11,7 @@ const options = ref({
 })
 const bookings = ref(bookingsData)
 const removeBookingDialog = ref(null)
+const createBookingDialog = ref(null)
 
 const getEvents = bookings => {
   return bookings.map(i => {
@@ -61,6 +62,9 @@ const nextCutoff = () => {
   )
 
   return moment(datesArray[0]?.expiryDate).format('MM/DD/YYYY')
+}
+const openCreateBookingDialog = () => {
+  createBookingDialog.value.show(true)
 }
 </script>
 
@@ -119,6 +123,7 @@ const nextCutoff = () => {
         @onEventClick="onEventClick"
         @onEventAdd="onEventAdd"
         @onEventChange="onEventChange"
+        @createBooking="openCreateBookingDialog"
       >
         <template #eventContent="{ event }">
           <Event
@@ -130,6 +135,17 @@ const nextCutoff = () => {
       </Calendar>
     </div>
   </Main>
+  <Dialog
+    ref="createBookingDialog"
+    class="max-w-[620px] md:max-w-[680px]"
+  >
+    <template #text>
+      <CreateBookingDialog
+        @close="createBookingDialog.show(false)"
+        @createBooking="createBookingDialog.show(false)"
+      />
+    </template>
+  </Dialog>
   <Dialog
     ref="removeBookingDialog"
     max-width="480"

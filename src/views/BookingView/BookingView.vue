@@ -3,14 +3,16 @@ import { Main } from '@layouts'
 import { useAuthStore } from '~/stores/auth.store'
 import { getColor } from '~/helpers/colors'
 import { getAllLines } from '@qualle-admin/qutil/dist/ssl'
-import bookingsData from '~/fixtures/bookings.json'
 import draftsData from '~/fixtures/drafts.json'
-import yardsData from '~/fixtures/yards.json'
 import moment from 'moment-timezone'
 import { useDisplay } from 'vuetify'
 import { getBookingLoad } from '~/helpers/countings'
+import { useBookingsStore } from "~/stores/bookings.store"
+import { storeToRefs } from "pinia"
 
 const authStore = useAuthStore()
+const bookingsStore = useBookingsStore()
+const { bookings } = storeToRefs(bookingsStore)
 const route = useRoute()
 const router = useRouter()
 const { smAndDown } = useDisplay()
@@ -38,17 +40,8 @@ const onSave = () => {
 const fromDraft = router.options.history.state.from ==='draft'
 onMounted(() => {
   booking.value = useArrayFind(
-    fromDraft ? draftsData: bookingsData,
+    fromDraft ? draftsData: bookings.value,
     i => i.ref === route.params.ref).value
-
-  if (!booking.value) {
-    yardsData.forEach(y => {
-      y.entities.forEach(e => {
-        if (+e.ref === +route.params.ref)
-          booking.value = e
-      })
-    })
-  }
 })
 </script>
 
@@ -116,7 +109,7 @@ onMounted(() => {
           created by Operator #23
         </Typography>
         <div
-          class="w-full md:w-3/4 grid sm:grid-cols-2 grid-cols-1 gap-6 mt-10"
+          class="w-full md:w-3/4 grid sm:grid-cols-2 grid-cols-1 gap-6 mt-10 [&>div]:h-fit"
           :class="{ 'md:w-full': drawer && !flyoutBottom }"
         >
           <Textfield
@@ -154,7 +147,6 @@ onMounted(() => {
             :items="['Good yard', 'Work yard', 'Farm yard']"
             label="Yard label *"
             required
-            class="h-fit"
           />
           <AutocompleteScac :scac-list="booking.scacList" />
           <Textfield
@@ -163,7 +155,6 @@ onMounted(() => {
             label="Equipment type*"
             hint="For e.g. 40 HC"
             persistent-hint
-            class="h-fit"
           />
         </div>
         <SaveCancelChanges
