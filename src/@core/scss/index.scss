@@ -22,9 +22,6 @@ p {
 
 .styledSubHeader>.v-toolbar__content {
   height: auto !important;
-  &>div {
-    background: rgba(var(--v-theme-uiPrimary), 1);
-  }
 }
 
 @media (max-width: 640px) {

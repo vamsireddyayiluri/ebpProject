@@ -3,14 +3,16 @@ import { Main } from '@layouts'
 import { useAuthStore } from '~/stores/auth.store'
 import { getColor } from '~/helpers/colors'
 import { getAllLines } from '@qualle-admin/qutil/dist/ssl'
-import bookingsData from '~/fixtures/bookings.json'
 import draftsData from '~/fixtures/drafts.json'
-import yardsData from '~/fixtures/yards.json'
 import moment from 'moment-timezone'
 import { useDisplay } from 'vuetify'
 import { getBookingLoad } from '~/helpers/countings'
+import { useBookingsStore } from '~/stores/bookings.store'
+import { storeToRefs } from 'pinia'
 
 const authStore = useAuthStore()
+const bookingsStore = useBookingsStore()
+const { bookings } = storeToRefs(bookingsStore)
 const route = useRoute()
 const router = useRouter()
 const { smAndDown } = useDisplay()
@@ -35,20 +37,12 @@ const cancelChanges = () => {}
 const onSave = () => {
   console.log('save ', booking.value)
 }
-const fromDraft = router.options.history.state.from ==='draft'
+const fromDraft = router.options.history.state.from === 'draft'
 onMounted(() => {
   booking.value = useArrayFind(
-    fromDraft ? draftsData: bookingsData,
-    i => i.ref === route.params.ref).value
-
-  if (!booking.value) {
-    yardsData.forEach(y => {
-      y.entities.forEach(e => {
-        if (+e.ref === +route.params.ref)
-          booking.value = e
-      })
-    })
-  }
+    fromDraft ? draftsData : bookings.value,
+    i => i.id === route.params.id,
+  ).value
 })
 </script>
 
@@ -89,8 +83,8 @@ onMounted(() => {
         <div class="flex items-center gap-4 mb-1.5">
           <Typography type="text-h1">
             Booking <b>Ref#{{ booking.ref }}</b>
-            {{ fromDraft? '(Draft)': '' }}
-            {{ moment(booking.expiryDate).isAfter(moment(), 'day')? '': '(Expired)' }}
+            {{ fromDraft ? '(Draft)' : '' }}
+            {{ moment(booking.expiryDate).isAfter(moment(), 'day') ? '' : '(Expired)' }}
           </Typography>
           <IconButton
             icon="mdi-link"
@@ -109,14 +103,14 @@ onMounted(() => {
             data="secondary1"
             class="ml-auto"
           >
-            {{ fromDraft? 'publish':'Remove from network' }}
+            {{ fromDraft ? 'publish' : 'Remove from network' }}
           </Button>
         </div>
         <Typography :color="getColor('textSecondary')">
           created by Operator #23
         </Typography>
         <div
-          class="w-full md:w-3/4 grid sm:grid-cols-2 grid-cols-1 gap-6 mt-10"
+          class="w-full md:w-3/4 grid sm:grid-cols-2 grid-cols-1 gap-6 mt-10 [&>div]:h-fit"
           :class="{ 'md:w-full': drawer && !flyoutBottom }"
         >
           <Textfield
@@ -154,7 +148,6 @@ onMounted(() => {
             :items="['Good yard', 'Work yard', 'Farm yard']"
             label="Yard label *"
             required
-            class="h-fit"
           />
           <AutocompleteScac :scac-list="booking.scacList" />
           <Textfield
@@ -163,7 +156,6 @@ onMounted(() => {
             label="Equipment type*"
             hint="For e.g. 40 HC"
             persistent-hint
-            class="h-fit"
           />
         </div>
         <SaveCancelChanges

@@ -1,233 +1,180 @@
 [
   {
-    "amount": 11,
-    "booked": 11,
-    "chassis": null,
-    "chassisType": "private",
-    "company": "Cognine",
-    "container": "AAAA00000580",
-    "created": "2023-10-09T14:30:49+00:00",
-    "expiryDate": "2023-10-24T23:59:59+05:30",
-    "preferredDate": "2023-10-10T23:59:59+05:30",
-    "lfd": "2023-03-08T23:59:59+05:30",
+    "amount": 40,
+    "booked": 33,
+    "ref": 5488,
+    "id": "AAAA0000007_bf48a4ef951cab59d4262a7a78907",
     "line": {
-      "id": "1161e60730156d8f",
-      "label": "CAI"
+      "id": "0156d8f6819b2de4",
+      "label": "CS Leasing"
     },
     "location": {
-      "address": "875 Blake Wilbur Dr, Palo Alto, CA 94304, USA",
-      "details": {
-        "hoursOfOperation": null,
-        "pickupInstructions": null,
-        "primaryContact": null,
-        "primaryContactName": null,
-        "secondaryContact": null,
-        "secondaryContactName": null
-      },
-      "geohash": "9q9hgycyy",
-      "label": "Work yard",
-      "lat": 37.4357319,
-      "lng": -122.1762866
+      "address": "E Sitcum Plaza, Tacoma, WA 98421, USA",
+      "geohash": "c22uykmdd",
+      "label": "One Sitcum Plaza, Tacoma, WA 98421",
+      "lat": 47.2649925,
+      "lng": -122.4129934
     },
-    "mc": null,
-    "orgId": "33e1f6a41797e8a0049f65046c35",
-    "owner": "2HRqyOHsAVclCQ0FmqqY3k0G6u22",
-    "ref": "7775",
-    "id": "7775",
-    "reported": "",
-    "scacList": { "list": [] },
-    "size": "20 RF",
-    "status": "available",
+    "created": "2023-11-30T14:30:49+00:00",
+    "preferredDate": "2023-12-01T23:59:59+05:30",
+    "expiryDate": "2023-12-07T23:59:59+05:30",
+    "scacList": { "list": ["ABCD", "OTRH"] },
     "carriers": [
-      { "scac": "OTRH", "fulfilled": 6, "total": 13 },
-      { "scac": "ARYE", "fulfilled": 2, "total": 5 },
-      { "scac": "LORE", "fulfilled": 12, "total": 14 },
-      { "scac": "WNER", "fulfilled": 3, "total": 10 },
-      { "scac": "ABOR", "fulfilled": 6, "total": 13 },
-      { "scac": "ABOR", "fulfilled": 2, "total": 5 }
+      { "scac": "OTRH", "fulfilled": 7, "total": 13 },
+      { "scac": "ABCD", "fulfilled": 2, "total": 5 }
     ],
-    "__collections__": {}
+    "size": "40 HC"
+  },
+  {
+    "amount": 26,
+    "booked": 8,
+    "ref": 10048,
+    "id": "AAAA5555005_bf48a4ef951cab59d4262a7a78907",
+    "created": "2023-11-10T14:30:49+00:00",
+    "preferredDate": "2023-12-01T23:59:59+05:30",
+    "expiryDate": "2023-12-07T23:59:59+05:30",
+    "line": {
+      "id": "0156d8f6819b2de4",
+      "label": "CS Leasing"
+    },
+    "location": {
+      "address": "4741 Durfee Ave, Pico Rivera, CA 90660, USA",
+      "geohash": "9qh13n0vm",
+      "label": "RoadEx Pico Rivera Yard",
+      "lat": 34.0036191,
+      "lng": -118.0798038
+    },
+    "scacList": { "list": ["OTRH"] },
+    "carriers": [
+      { "scac": "OTRH", "fulfilled": 7, "total": 13 }
+    ],
+    "size": "20 ST"
   },
   {
     "amount": 10,
-    "booked": 5,
-    "chassis": null,
-    "chassisType": "private",
-    "company": "Cognine",
-    "container": "AAAA0000000",
-    "created": "2023-10-30T14:30:49+00:00",
-    "expiryDate": "2023-11-07T23:59:59+05:30",
-    "preferredDate": "2023-11-01T23:59:59+05:30",
-    "lfd": "2023-03-08T23:59:59+05:30",
+    "booked": 7,
+    "ref": 1198,
+    "id": "AAAA2000005_bf48a4ef951cab59d4262a7a78907",
     "line": {
-      "id": "1161e60730156d8f",
-      "label": "CAI"
+      "id": "0156d8f6819b2de4",
+      "label": "CS Leasing"
     },
     "location": {
-      "address": "875 Blake Wilbur Dr, Palo Alto, CA 94304, USA",
-      "details": {
-        "hoursOfOperation": null,
-        "pickupInstructions": null,
-        "primaryContact": null,
-        "primaryContactName": null,
-        "secondaryContact": null,
-        "secondaryContactName": null
-      },
-      "geohash": "9q9hgycyy",
-      "label": "Work yard",
-      "lat": 37.4357319,
-      "lng": -122.1762866
+      "address": "911 Sigsbee Ave, Wilmington, CA 90744, USA",
+      "geohash": "9q5bjw01b",
+      "label": "RoadEx Sigsbee Yard",
+      "lat": 33.7832625,
+      "lng": -118.2348517
     },
-    "mc": null,
-    "orgId": "33e1f6a41797e8a0049f65046c35",
-    "owner": "2HRqyOHsAVclCQ0FmqqY3k0G6u22",
-    "ref": "1235",
-    "id": "1235",
-    "reported": "",
-    "scacList": { "list": [] },
-    "size": "20 RF",
-    "status": "available",
+    "created": "2023-12-02T14:30:49+00:00",
+    "preferredDate": "2023-12-03T23:59:59+05:30",
+    "expiryDate": "2023-12-07T23:59:59+05:30",
+    "scacList": { "list": ["WNER"] },
     "carriers": [
-      { "scac": "OTRH", "fulfilled": 7, "total": 13 },
-      { "scac": "ARYE", "fulfilled": 2, "total": 5 },
-      { "scac": "LORE", "fulfilled": 12, "total": 14 },
-      { "scac": "WNER", "fulfilled": 3, "total": 10 },
-      { "scac": "ABOR", "fulfilled": 2, "total": 5 }
+      { "scac": "WNER", "fulfilled": 0, "total": 10 }
     ],
-    "__collections__": {}
+    "size": "40 FR"
   },
   {
-    "amount": 7,
-    "booked": 5,
-    "chassis": null,
-    "chassisType": "private",
-    "company": "Cognine",
-    "container": "AAAA0000001",
-    "created": "2024-03-09T14:30:49+00:00",
-    "expiryDate": "2024-04-14T23:59:59+05:30",
-    "preferredDate": "2024-03-29T23:59:59+05:30",
-    "lfd": "2023-03-08T23:59:59+05:30",
-    "line": {
-      "id": "1161e60730156d8f",
-      "label": "CAI"
-    },
-    "location": {
-      "address": "875 Blake Wilbur Dr, Palo Alto, CA 94304, USA",
-      "details": {
-        "hoursOfOperation": null,
-        "pickupInstructions": null,
-        "primaryContact": null,
-        "primaryContactName": null,
-        "secondaryContact": null,
-        "secondaryContactName": null
-      },
-      "geohash": "9q9hgycyy",
-      "label": "Good yard",
-      "lat": 37.4357319,
-      "lng": -122.1762866
-    },
-    "mc": null,
-    "orgId": "33e1f6a41797e8a0049f65046c35",
-    "owner": "2HRqyOHsAVclCQ0FmqqY3k0G6u22",
-    "ref": "7835",
-    "id": "7835",
-    "reported": "",
-    "scacList": { "list": ["ABCD"] },
-    "size": "20 RF",
-    "status": "available",
-    "carriers": [
-      { "scac": "OTRH", "fulfilled": 6, "total": 13 },
-      { "scac": "ABOR", "fulfilled": 2, "total": 5 }
-    ],
-    "__collections__": {}
-  },
-  {
-    "amount": 15,
-    "booked": 5,
-    "chassis": null,
-    "chassisType": "private",
-    "company": "Test Company 1",
-    "container": "AAAA0000005",
-    "created": "2023-12-20T13:07:19+00:00",
-    "expiryDate": "2023-12-25T23:59:59+05:30",
-    "preferredDate": "2022-12-22T23:59:59+05:30",
-    "id": "AAAA0000005_bf48a4ef951cab59d4262a7a7890",
-    "lfd": "2023-01-23T23:59:59+05:30",
+    "amount": 23,
+    "booked": 22,
+    "ref": 5548,
+    "id": "AAAA0050002_bf48a4ef955cab59d4262a7a7890",
     "line": {
       "id": "9d8d49984308f116",
       "label": "Alianca"
     },
     "location": {
-      "address": "911 Sigsbee Ave, Wilmington, CA 90744, USA",
-      "details": {
-        "hoursOfOperation": [
-          {
-            "day": "Sunday",
-            "from": "9:30",
-            "status": true,
-            "to": "17:30"
-          },
-          {
-            "day": "Monday",
-            "from": "9:30",
-            "status": true,
-            "to": "17:30"
-          },
-          {
-            "day": "Tuesday",
-            "from": "9:30",
-            "status": true,
-            "to": "17:30"
-          },
-          {
-            "day": "Wednesday",
-            "from": "9:30",
-            "status": false,
-            "to": "17:30"
-          },
-          {
-            "day": "Thursday",
-            "from": "9:30",
-            "status": false,
-            "to": "17:30"
-          },
-          {
-            "day": "Friday",
-            "from": "9:30",
-            "status": true,
-            "to": "17:30"
-          },
-          {
-            "day": "Saturday",
-            "from": "9:30",
-            "status": true,
-            "to": "17:30"
-          }
-        ],
-        "isFlipYard": true,
-        "pickupInstructions": "dfh gfhfgh",
-        "primaryContact": "35346346346",
-        "primaryContactName": "dgdfg",
-        "secondaryContact": null,
-        "secondaryContactName": null
-      },
-      "geohash": "9q5bjw01b",
-      "label": "Farm yard",
-      "lat": 33.7832625,
-      "lng": -118.2348517
+      "address": "875 Blake Wilbur Dr Palo Alto  CA US 94304 2205",
+      "geohash": "9q9hgycyy",
+      "lat": 37.4357319,
+      "lng": -122.1762866
     },
-    "mc": null,
-    "orgId": "bf48a4ef951cab59d4262a7a7890",
-    "owner": "omLZ0n3pk3ejmhXVqsVTS3CP96a2",
-    "ref": "3273",
-    "reported": "",
-    "row_id": "AAAA0000005_bf48a4ef951cab59d4262a7a7890",
-    "scacList": { "list": ["WWRT", "OPKL"] },
-    "size": "20 ST",
-    "status": "available",
+    "created": "2023-11-03T14:30:49+00:00",
+    "preferredDate": "2023-11-11T23:59:59+05:30",
+    "expiryDate": "2023-11-22T23:59:59+05:30",
+    "scacList": { "list": ["LORE"] },
     "carriers": [
+      { "scac": "LORE", "fulfilled": 12, "total": 14 }
+    ],
+    "size": "40 ST"
+  },
+  {
+    "id": "AAAA0000005_bf48a4ef951cab59d4262a7a78908",
+    "amount": 10,
+    "booked": 5,
+    "ref": 1148,
+    "line": {
+      "id": "0156d8f6819b2de4",
+      "label": "CS Leasing"
+    },
+    "created": "2023-10-30T14:30:49+00:00",
+    "preferredDate": "2023-11-01T23:59:59+05:30",
+    "expiryDate": "2023-11-07T23:59:59+05:30",
+    "scacList": { "list": ["ABCD"] },
+    "location": {
+      "address": "7737 Hampton Blvd, Norfolk, VA 23505, USA",
+      "geohash": "dq9dp88bu",
+      "label": "7737 Hampton Blvd, Norfolk, VA 23505",
+      "lat": 36.9169609,
+      "lng": -76.3098145
+    },
+    "carriers": [
+      { "scac": "ABCD", "fulfilled": 7, "total": 10 }
+    ],
+    "size": "20 FR"
+  },
+  {
+    "id": "AAAA0030005_bf48a4ef951cab59d4262a7a78908",
+    "amount": 70,
+    "booked": 55,
+    "ref": 1149,
+    "line": {
+      "id": "0156d8f6819b2de4",
+      "label": "CS Leasing"
+    },
+    "created": "2023-11-30T14:30:49+00:00",
+    "preferredDate": "2023-11-11T23:59:59+05:30",
+    "expiryDate": "2023-11-27T23:59:59+05:30",
+    "scacList": { "list": ["ABCD", "OTRH"] },
+    "location": {
+      "address": "7737 Hampton Blvd, Norfolk, VA 23505, USA",
+      "geohash": "dq9dp88bu",
+      "label": "7737 Hampton Blvd, Norfolk, VA 23505",
+      "lat": 36.9169609,
+      "lng": -76.3098145
+    },
+    "carriers": [
+      { "scac": "OTRH", "fulfilled": 27, "total": 33 },
+      { "scac": "ARYE", "fulfilled": 23, "total": 37 }
+    ],
+    "size": "20 ST"
+  },
+  {
+    "id": "AAAA1000005_bf48a4ef951cab59d4262a7a78908",
+    "amount": 130,
+    "booked": 59,
+    "ref": 1150,
+    "line": {
+      "id": "0156d8f6819b2de4",
+      "label": "CS Leasing"
+    },
+    "created": "2023-10-31T14:30:49+00:00",
+    "preferredDate": "2023-11-08T23:59:59+05:30",
+    "expiryDate": "2023-11-09T23:59:59+05:30",
+    "scacList": { "list": ["ABOR", "WNER", "LORE"] },
+    "location": {
+      "address": "7737 Hampton Blvd, Norfolk, VA 23505, USA",
+      "geohash": "dq9dp88bu",
+      "label": "7737 Hampton Blvd, Norfolk, VA 23505",
+      "lat": 36.9169609,
+      "lng": -76.3098145
+    },
+    "carriers": [
+      { "scac": "LORE", "fulfilled": 12, "total": 14 },
+      { "scac": "WNER", "fulfilled": 3, "total": 10 },
       { "scac": "ABOR", "fulfilled": 2, "total": 5 }
     ],
-    "__collections__": {}
+    "size": "40 FR"
   }
 ]

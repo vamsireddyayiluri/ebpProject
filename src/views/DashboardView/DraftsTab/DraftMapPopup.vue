@@ -39,7 +39,7 @@ const router = useRouter()
           variant="plain"
           density="compact"
           class="hidden group-hover:block !p-0 ml-auto"
-          @click="router.push({ path: `booking/${i.ref}`, state: {from: 'draft'}})"
+          @click="router.push({ path: `booking/${i.id}`, state: {from: 'draft'}})"
         >
           Go to booking page
         </Button>

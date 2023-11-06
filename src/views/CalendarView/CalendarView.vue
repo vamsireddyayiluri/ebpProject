@@ -11,6 +11,7 @@ const options = ref({
 })
 const bookings = ref(bookingsData)
 const removeBookingDialog = ref(null)
+const createBookingDialog = ref(null)
 
 const getEvents = bookings => {
   return bookings.map(i => {
@@ -33,10 +34,10 @@ const events = ref(getEvents(bookings.value))
 const onEventClick = e => console.log(e.event)
 const onEvents = e => console.log(e)
 const onEdit = e => {
-  router.push({ path: `booking/${e.extendedProps.metadata.ref}`})
+  router.push({ path: `booking/${e.id}` })
 }
 const onEventAdd = e => console.log(e)
-const onEventChange = e => console.log('change',e)
+const onEventChange = e => console.log('change', e)
 const onRemove = e => {
   removeBookingDialog.value.show(true)
   removeBookingDialog.value.data = e
@@ -62,6 +63,9 @@ const nextCutoff = () => {
 
   return moment(datesArray[0]?.expiryDate).format('MM/DD/YYYY')
 }
+const openCreateBookingDialog = () => {
+  createBookingDialog.value.show(true)
+}
 </script>
 
 <template>
@@ -77,7 +81,7 @@ const nextCutoff = () => {
             <b>{{ nextCutoff() }}</b>
             <div
               class="text-center"
-              :style="{color: getColor('textSecondary')}"
+              :style="{ color: getColor('textSecondary') }"
             >
               Next Vessel Cutoff
             </div>
@@ -90,7 +94,7 @@ const nextCutoff = () => {
             <b>{{ bookings.length }}</b>
             <div
               class="text-center"
-              :style="{color: getColor('textSecondary')}"
+              :style="{ color: getColor('textSecondary') }"
             >
               total bookings
             </div>
@@ -103,7 +107,7 @@ const nextCutoff = () => {
             <b>{{ totalFulfilledBookings(activeBookings) }}</b>
             <div
               class="text-center"
-              :style="{color: getColor('textSecondary')}"
+              :style="{ color: getColor('textSecondary') }"
             >
               % of total bookings fulfilled
             </div>
@@ -119,6 +123,7 @@ const nextCutoff = () => {
         @onEventClick="onEventClick"
         @onEventAdd="onEventAdd"
         @onEventChange="onEventChange"
+        @createBooking="openCreateBookingDialog"
       >
         <template #eventContent="{ event }">
           <Event
@@ -131,6 +136,14 @@ const nextCutoff = () => {
     </div>
   </Main>
   <Dialog
+    ref="createBookingDialog"
+    class="max-w-[620px] md:max-w-[680px]"
+  >
+    <template #text>
+      <CreateBookingDialog @close="createBookingDialog.show(false)" />
+    </template>
+  </Dialog>
+  <Dialog
     ref="removeBookingDialog"
     max-width="480"
   >
@@ -141,7 +154,8 @@ const nextCutoff = () => {
         @onClickBtn="removeBooking(removeBookingDialog.data.extendedProps.metadata.ref)"
       >
         <Typography>
-          Are you sure you want to remove booking <b>ref# {{ removeBookingDialog.data.extendedProps.metadata.ref }}</b>
+          Are you sure you want to remove booking
+          <b>ref# {{ removeBookingDialog.data.extendedProps.metadata.ref }}</b>
           from network?
         </Typography>
       </RemoveCancelDialog>

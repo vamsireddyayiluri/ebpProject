@@ -3,6 +3,7 @@ import { useActions, useDate, useHeaders } from '~/composables'
 import { getLineAvatar } from '~/firebase/getLineAvatar'
 import { useDisplay } from 'vuetify'
 import { getBookingLoad } from '~/helpers/countings'
+import {useBookingsStore} from "~/stores/bookings.store"
 
 const props = defineProps({
   computedEntities: Array,
@@ -10,6 +11,7 @@ const props = defineProps({
   loading: Boolean,
 })
 const emit = defineEmits(['selectTableRow', 'editBooking'])
+const { deleteBooking } = useBookingsStore()
 const { smAndDown } = useDisplay()
 const showActions = ref(true)
 const tableHeight = ref(0)
@@ -20,15 +22,18 @@ const { bookingsActions } = useActions()
 const formatDate = useDate()
 
 const containerActionHandler = ({ action, e }) => {
-  if (action === 'edit-booking') emit('editBooking', e[0].ref)
+  if (action === 'edit-booking') emit('editBooking', e[0].id)
   if (action === 'remove-booking') {
     removeBookingDialog.value.show(true)
     removeBookingDialog.value.data = e[0]
   }
 }
-
 const onSelectRow = e => {
   emit('selectTableRow', e)
+}
+const removeBooking = id => {
+  deleteBooking(id)
+  removeBookingDialog.value.show(false)
 }
 const tableId = 'bookingsTable'
 onMounted(() => {
@@ -54,7 +59,6 @@ onMounted(() => {
       tableHeight: tableHeight,
       tableMinWidth: 960,
     }"
-    class="mb-5"
     @onSelectRow="onSelectRow"
   >
     <template #ref="{ item }">
@@ -72,7 +76,7 @@ onMounted(() => {
     </template>
     <template #yardLabel="{ item }">
       <Typography type="text-body-m-regular">
-        {{ item.location.label }}
+        {{ item.location.label || '--' }}
       </Typography>
     </template>
     <template #ssl="{ item }">
@@ -114,7 +118,7 @@ onMounted(() => {
       <RemoveCancelDialog
         btn-name="Remove"
         @close="removeBookingDialog.show(false)"
-        @onClickBtn="removeBookingDialog.show(false)"
+        @onClickBtn="removeBooking(removeBookingDialog.data.id)"
       >
         <Typography>
           Are you sure you want to remove ref#
