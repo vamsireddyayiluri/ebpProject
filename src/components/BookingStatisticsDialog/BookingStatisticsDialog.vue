@@ -106,7 +106,7 @@ const selectedBooking = ref(false)
           variant="vertical"
         />
         <div class="styledDrawerActions flex gap-6 pt-8">
-          <Button @click="router.push({ path: `booking/${selectedBooking.ref}`})">
+          <Button @click="router.push({ path: `booking/${selectedBooking.id}`})">
             Go to booking page
           </Button>
           <Button

@@ -213,7 +213,7 @@ watch(searchValue, value => {
           :search-value="searchValue"
           :loading="loading"
           @selectTableRow="selectTableRow"
-          @editBooking="ref => router.push({ path: `booking/${ref}` })"
+          @editBooking="id => router.push({ path: `booking/${id}` })"
         />
       </div>
     </template>

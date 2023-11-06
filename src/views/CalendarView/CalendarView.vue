@@ -34,7 +34,7 @@ const events = ref(getEvents(bookings.value))
 const onEventClick = e => console.log(e.event)
 const onEvents = e => console.log(e)
 const onEdit = e => {
-  router.push({ path: `booking/${e.extendedProps.metadata.ref}` })
+  router.push({ path: `booking/${e.id}` })
 }
 const onEventAdd = e => console.log(e)
 const onEventChange = e => console.log('change', e)

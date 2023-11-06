@@ -7,8 +7,8 @@ import draftsData from '~/fixtures/drafts.json'
 import moment from 'moment-timezone'
 import { useDisplay } from 'vuetify'
 import { getBookingLoad } from '~/helpers/countings'
-import { useBookingsStore } from "~/stores/bookings.store"
-import { storeToRefs } from "pinia"
+import { useBookingsStore } from '~/stores/bookings.store'
+import { storeToRefs } from 'pinia'
 
 const authStore = useAuthStore()
 const bookingsStore = useBookingsStore()
@@ -37,11 +37,12 @@ const cancelChanges = () => {}
 const onSave = () => {
   console.log('save ', booking.value)
 }
-const fromDraft = router.options.history.state.from ==='draft'
+const fromDraft = router.options.history.state.from === 'draft'
 onMounted(() => {
   booking.value = useArrayFind(
-    fromDraft ? draftsData: bookings.value,
-    i => i.ref === route.params.ref).value
+    fromDraft ? draftsData : bookings.value,
+    i => i.id === route.params.id,
+  ).value
 })
 </script>
 
@@ -82,8 +83,8 @@ onMounted(() => {
         <div class="flex items-center gap-4 mb-1.5">
           <Typography type="text-h1">
             Booking <b>Ref#{{ booking.ref }}</b>
-            {{ fromDraft? '(Draft)': '' }}
-            {{ moment(booking.expiryDate).isAfter(moment(), 'day')? '': '(Expired)' }}
+            {{ fromDraft ? '(Draft)' : '' }}
+            {{ moment(booking.expiryDate).isAfter(moment(), 'day') ? '' : '(Expired)' }}
           </Typography>
           <IconButton
             icon="mdi-link"
@@ -102,7 +103,7 @@ onMounted(() => {
             data="secondary1"
             class="ml-auto"
           >
-            {{ fromDraft? 'publish':'Remove from network' }}
+            {{ fromDraft ? 'publish' : 'Remove from network' }}
           </Button>
         </div>
         <Typography :color="getColor('textSecondary')">

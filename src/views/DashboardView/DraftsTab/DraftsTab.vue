@@ -205,7 +205,7 @@ watch(searchValue, value => {
           :search-value="searchValue"
           :loading="loading"
           @selectTableRow="selectTableRow"
-          @editDraft="ref => router.push({ path: `booking/${ref}`, state: { from: 'draft' } })"
+          @editDraft="id => router.push({ path: `booking/${id}`, state: { from: 'draft' } })"
         />
       </div>
     </template>
