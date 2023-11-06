@@ -1,16 +1,19 @@
 <script setup>
 import { useDisplay, useTheme } from 'vuetify'
-import draftsData from '~/fixtures/drafts.json'
 import { filterMatchingObjects } from '~/helpers/filters'
 import { uid } from 'uid'
 import { getAllLines } from '@qualle-admin/qutil/dist/ssl'
 import { getColor } from '~/helpers/colors'
 import { groupedBookingLocations } from '~/stores/helpers'
+import { useBookingsStore } from '~/stores/bookings.store'
+import { storeToRefs } from 'pinia'
 
 const props = defineProps({
   mapToggled: Boolean,
 })
 const emit = defineEmits(['closeMap', 'selectRow'])
+const bookingsStore = useBookingsStore()
+const { drafts } = storeToRefs(bookingsStore)
 const { smAndDown } = useDisplay()
 const router = useRouter()
 const paneOpened = ref(false)
@@ -28,8 +31,8 @@ const panes = ref(getPanes())
 const vuetifyTheme = useTheme()
 const theme = computed(() => vuetifyTheme.global.name.value)
 const panesRef = ref(null)
-const mutableSearchedEntities = ref([...JSON.parse(JSON.stringify(draftsData))])
-const mutableFilteredEntities = ref([...JSON.parse(JSON.stringify(draftsData))])
+const mutableSearchedEntities = ref(drafts.value)
+const mutableFilteredEntities = ref(drafts.value)
 const searchValue = ref(null)
 const loading = ref(false)
 const newId = ref(uid(8))
@@ -38,6 +41,7 @@ const filters = ref({
 })
 const selectLine = ref(getAllLines())
 const createBookingDialog = ref(null)
+const clickedOutside = ref(null)
 
 const computedSearchedEntities = computed({
   get() {
@@ -111,7 +115,7 @@ const debouncedSearch = useDebounceFn(searchValue => {
     onClearSearch()
   } else {
     computedSearchedEntities.value = useArrayFilter(
-      draftsData,
+      drafts.value,
       ({ ref, location: { label } }) =>
         useArraySome(
           useArrayMap(Object.values({ ref, label }), value => String(value).toLowerCase()).value,
@@ -122,7 +126,7 @@ const debouncedSearch = useDebounceFn(searchValue => {
 }, 300)
 
 const applyFilter = () => {
-  let filteredData = draftsData
+  let filteredData = drafts.value
 
   if (filters.value.line) {
     filteredData = useArrayFilter(
@@ -132,7 +136,13 @@ const applyFilter = () => {
   }
   computedFilteredEntities.value = filteredData
 }
-
+const onClickOutsideDialog = () => {
+  clickedOutside.value = true
+  createBookingDialog.value.show(true)
+  setInterval(() => {
+    clickedOutside.value = false
+  }, 1000)
+}
 watch(mapToggled, () => {
   toggleMap()
   panes.value = getPanes()
@@ -195,7 +205,7 @@ watch(searchValue, value => {
           :search-value="searchValue"
           :loading="loading"
           @selectTableRow="selectTableRow"
-          @editDraft="ref => router.push({ path: `booking/${ref}`, state: {from: 'draft'}})"
+          @editDraft="ref => router.push({ path: `booking/${ref}`, state: { from: 'draft' } })"
         />
       </div>
     </template>
@@ -243,11 +253,12 @@ watch(searchValue, value => {
   <Dialog
     ref="createBookingDialog"
     class="max-w-[620px] md:max-w-[680px]"
+    @update:modelValue="onClickOutsideDialog"
   >
     <template #text>
       <CreateBookingDialog
+        :clicked-outside="clickedOutside"
         @close="createBookingDialog.show(false)"
-        @createBooking="createBookingDialog.show(false)"
       />
     </template>
   </Dialog>

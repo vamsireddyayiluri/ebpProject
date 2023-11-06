@@ -3,8 +3,12 @@ import { getColor } from '~/helpers/colors'
 import { getAllLines } from '@qualle-admin/qutil/dist/ssl'
 import { useBookingsStore } from '~/stores/bookings.store'
 
-const emit = defineEmits(['close', 'createBooking'])
-const { createBooking } = useBookingsStore()
+const props = defineProps({
+  clickedOutside: Boolean,
+})
+
+const emit = defineEmits(['close'])
+const { createBooking, createDraft } = useBookingsStore()
 const booking = ref({
   ref: null,
   containers: null,
@@ -16,21 +20,49 @@ const booking = ref({
   scacList: { list: [] },
 })
 const confirmDraftsDialog = ref(null)
+const { clickedOutside } = toRefs(props)
 
+const rules = {
+  equipmentType: value => {
+    if (value.length >= 2) return true
+    else return 'Min length 2'
+  },
+}
 const updateExpiryDate = value => {
   booking.value.bookingExpiry = value
 }
 const updatePreferredDate = value => {
-  booking.value.bookingExpiry = value
+  booking.value.preferredDate = value
+}
+const isDisabled = computed(() => {
+  const values = Object.values(booking.value)
+  values.pop()
+
+  return values.some(i => !i) || !booking.value.scacList.list.length
+})
+const isDirty = () => {
+  const values = Object.values(booking.value)
+  values.pop()
+
+  return values.some(i => i) || booking.value.scacList.list.length
+}
+const closeBookingDialog = () => {
+  if (isDirty()) {
+    confirmDraftsDialog.value.show(true)
+  } else emit('close')
 }
 const saveDraft = () => {
+  createDraft(booking.value)
   confirmDraftsDialog.value.show(false)
-  emit('createBooking')
+  emit('close')
 }
-const saveBooking = () => {
+const saveBooking = async () => {
   createBooking(booking.value)
   emit('close')
 }
+watch(clickedOutside, () => {
+  confirmDraftsDialog.value.show(true)
+})
 </script>
 
 <template>
@@ -48,7 +80,7 @@ const saveBooking = () => {
     </Typography>
     <IconButton
       icon="mdi-close"
-      @click="emit('close')"
+      @click="closeBookingDialog"
     />
   </VRow>
   <form
@@ -80,7 +112,6 @@ const saveBooking = () => {
       <Datepicker
         :picked="booking.bookingExpiry"
         label="Booking expiry *"
-        required
         @onUpdate="updateExpiryDate"
       />
       <Datepicker
@@ -96,22 +127,22 @@ const saveBooking = () => {
             geohash: '9q9hgycyy',
             label: 'california',
             lat: 37.4357319,
-            lng: -122.1762866
+            lng: -122.1762866,
           },
           {
             address: '3400 Bainbridge Ave, The Bronx, NY 10467, USA',
             geohash: 'dr72wcgnz',
             label: 'test2',
             lat: 40.8799534,
-            lng: -73.878608
+            lng: -73.878608,
           },
           {
             address: '11200 Iberia St, Mira Loma, CA 91752, USA',
             geohash: '9qh3t96uz',
             label: 'Mira Loma Yard',
             lat: 34.0213706,
-            lng: -117.5276535
-          }
+            lng: -117.5276535,
+          },
         ]"
         label="Yard label *"
         required
@@ -126,12 +157,14 @@ const saveBooking = () => {
         label="Equipment type*"
         hint="For e.g. 40 HC"
         persistent-hint
+        :rules="[rules.equipmentType]"
       />
     </div>
     <AutocompleteScac :scac-list="booking.scacList" />
     <Button
       type="submit"
       class="w-full"
+      :disabled="isDisabled"
     >
       Create
     </Button>
@@ -164,7 +197,7 @@ const saveBooking = () => {
         <Button
           variant="outlined"
           class="w-full"
-          @click="confirmDraftsDialog.show(false)"
+          @click="emit('close')"
         >
           cancel
         </Button>

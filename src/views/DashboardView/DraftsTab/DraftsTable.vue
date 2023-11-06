@@ -2,6 +2,7 @@
 import { useActions, useDate, useHeaders } from '~/composables'
 import { getLineAvatar } from '~/firebase/getLineAvatar'
 import { useDisplay } from 'vuetify'
+import { useBookingsStore } from '~/stores/bookings.store'
 
 const props = defineProps({
   computedEntities: Array,
@@ -9,7 +10,7 @@ const props = defineProps({
   loading: Boolean,
 })
 const emit = defineEmits(['selectTableRow', 'editDraft'])
-
+const { deleteBooking } = useBookingsStore()
 const { smAndDown, width } = useDisplay()
 const showActions = ref(true)
 const tableHeight = ref(1)
@@ -30,7 +31,10 @@ const containerActionHandler = ({ action, e }) => {
 const onSelectRow = e => {
   emit('selectTableRow', e)
 }
-
+const deleteDraft = id => {
+  deleteBooking(id, true)
+  deleteDraftDialog.value.show(false)
+}
 const tableId = 'draftTable'
 onMounted(() => {
   setTimeout(() => {
@@ -114,7 +118,7 @@ onMounted(() => {
       <RemoveCancelDialog
         btn-name="Delete"
         @close="deleteDraftDialog.show(false)"
-        @onClickBtn="deleteDraftDialog.show(false)"
+        @onClickBtn="deleteDraft(deleteDraftDialog.data.id)"
       >
         <Typography>
           Are you sure you want to delete draft#

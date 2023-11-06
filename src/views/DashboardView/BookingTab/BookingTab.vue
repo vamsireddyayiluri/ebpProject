@@ -5,8 +5,8 @@ import { uid } from 'uid'
 import { groupedBookingLocations } from '~/stores/helpers'
 import { getAllLines } from '@qualle-admin/qutil/dist/ssl'
 import { getColor } from '~/helpers/colors'
-import {useBookingsStore} from "~/stores/bookings.store"
-import {storeToRefs} from "pinia"
+import { useBookingsStore } from '~/stores/bookings.store'
+import { storeToRefs } from 'pinia'
 
 const props = defineProps({
   mapToggled: Boolean,
@@ -43,6 +43,7 @@ const filters = ref({
 })
 const selectLine = ref(getAllLines())
 const createBookingDialog = ref(null)
+const clickedOutside = ref(null)
 
 const computedSearchedEntities = computed({
   get() {
@@ -142,6 +143,13 @@ const applyFilter = () => {
   }
   computedFilteredEntities.value = filteredData
 }
+const onClickOutsideDialog = () => {
+  clickedOutside.value = true
+  createBookingDialog.value.show(true)
+  setInterval(() => {
+    clickedOutside.value = false
+  }, 1000)
+}
 
 watch(mapToggled, () => {
   toggleMap()
@@ -205,7 +213,7 @@ watch(searchValue, value => {
           :search-value="searchValue"
           :loading="loading"
           @selectTableRow="selectTableRow"
-          @editBooking="ref => router.push({ path: `booking/${ref}`})"
+          @editBooking="ref => router.push({ path: `booking/${ref}` })"
         />
       </div>
     </template>
@@ -266,11 +274,12 @@ watch(searchValue, value => {
   <Dialog
     ref="createBookingDialog"
     class="max-w-[620px] md:max-w-[680px]"
+    @update:modelValue="onClickOutsideDialog"
   >
     <template #text>
       <CreateBookingDialog
+        :clicked-outside="clickedOutside"
         @close="createBookingDialog.show(false)"
-        @createBooking="createBookingDialog.show(false)"
       />
     </template>
   </Dialog>

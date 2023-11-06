@@ -4,7 +4,6 @@ import { getLineAvatar } from '~/firebase/getLineAvatar'
 import { useDisplay } from 'vuetify'
 import { getBookingLoad } from '~/helpers/countings'
 import {useBookingsStore} from "~/stores/bookings.store"
-import {storeToRefs} from "pinia"
 
 const props = defineProps({
   computedEntities: Array,
@@ -12,7 +11,7 @@ const props = defineProps({
   loading: Boolean,
 })
 const emit = defineEmits(['selectTableRow', 'editBooking'])
-const {deleteBooking} = useBookingsStore()
+const { deleteBooking } = useBookingsStore()
 const { smAndDown } = useDisplay()
 const showActions = ref(true)
 const tableHeight = ref(0)

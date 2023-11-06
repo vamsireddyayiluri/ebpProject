@@ -4,9 +4,9 @@ import { filterMatchingObjects } from '~/helpers/filters'
 import { uid } from 'uid'
 import { getAllLines } from '@qualle-admin/qutil/dist/ssl'
 import { getColor } from '~/helpers/colors'
-import {useBookingsStore} from "~/stores/bookings.store"
-import {storeToRefs} from "pinia"
-import {groupedBookingLocations} from "~/stores/helpers"
+import { useBookingsStore } from '~/stores/bookings.store'
+import { storeToRefs } from 'pinia'
+import { groupedBookingLocations } from '~/stores/helpers'
 
 const props = defineProps({
   mapToggled: Boolean,
@@ -31,8 +31,8 @@ const panes = ref(getPanes())
 const vuetifyTheme = useTheme()
 const theme = computed(() => vuetifyTheme.global.name.value)
 const panesRef = ref(null)
-const mutableSearchedEntities = ref(groupedBookingLocations(bookings.value))
-const mutableFilteredEntities = ref(groupedBookingLocations(bookings.value))
+const mutableSearchedEntities = ref(bookings.value)
+const mutableFilteredEntities = ref(bookings.value)
 const searchValue = ref(null)
 const loading = ref(false)
 const newId = ref(uid(8))
@@ -42,6 +42,7 @@ const filters = ref({
 })
 const selectLine = ref(getAllLines())
 const createBookingDialog = ref(null)
+const clickedOutside = ref(null)
 
 const computedSearchedEntities = computed({
   get() {
@@ -60,7 +61,9 @@ const computedFilteredEntities = computed({
   },
 })
 const computedEntities = computed(() =>
-  filterMatchingObjects(computedSearchedEntities.value, computedFilteredEntities.value),
+  groupedBookingLocations(
+    filterMatchingObjects(computedSearchedEntities.value, computedFilteredEntities.value),
+  ),
 )
 
 const mapOptions = markRaw({ zoom: 1, zoomControls: false })
@@ -121,7 +124,7 @@ const debouncedSearch = useDebounceFn(searchValue => {
   } else {
     computedSearchedEntities.value = useArrayFilter(
       bookings.value,
-      ({ location: {address, label} }) =>
+      ({ location: { address, label } }) =>
         useArraySome(
           useArrayMap(Object.values({ address, label }), value => String(value).toLowerCase())
             .value,
@@ -137,13 +140,17 @@ const applyFilter = () => {
   if (filters.value.line) {
     filteredData = useArrayFilter(
       filteredData,
-      yard => useArraySome(
-        yard.lines,
-        line => line.label === filters.value.line,
-      ).value,
+      yard => useArraySome(yard.lines, line => line.label === filters.value.line).value,
     ).value
   }
   computedFilteredEntities.value = filteredData
+}
+const onClickOutsideDialog = () => {
+  clickedOutside.value = true
+  createBookingDialog.value.show(true)
+  setInterval(() => {
+    clickedOutside.value = false
+  }, 1000)
 }
 
 watch(mapToggled, () => {
@@ -208,7 +215,7 @@ watch(searchValue, value => {
           :search-value="searchValue"
           :loading="loading"
           @selectTableRow="selectTableRow"
-          @editBooking="ref => router.push({ path: `booking/${ref}`})"
+          @editBooking="ref => router.push({ path: `booking/${ref}` })"
         />
       </div>
     </template>
@@ -258,11 +265,12 @@ watch(searchValue, value => {
   <Dialog
     ref="createBookingDialog"
     class="max-w-[620px] md:max-w-[680px]"
+    @update:modelValue="onClickOutsideDialog"
   >
     <template #text>
       <CreateBookingDialog
+        :clicked-outside="clickedOutside"
         @close="createBookingDialog.show(false)"
-        @createBooking="createBookingDialog.show(false)"
       />
     </template>
   </Dialog>

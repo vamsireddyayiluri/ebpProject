@@ -34,10 +34,10 @@ const events = ref(getEvents(bookings.value))
 const onEventClick = e => console.log(e.event)
 const onEvents = e => console.log(e)
 const onEdit = e => {
-  router.push({ path: `booking/${e.extendedProps.metadata.ref}`})
+  router.push({ path: `booking/${e.extendedProps.metadata.ref}` })
 }
 const onEventAdd = e => console.log(e)
-const onEventChange = e => console.log('change',e)
+const onEventChange = e => console.log('change', e)
 const onRemove = e => {
   removeBookingDialog.value.show(true)
   removeBookingDialog.value.data = e
@@ -81,7 +81,7 @@ const openCreateBookingDialog = () => {
             <b>{{ nextCutoff() }}</b>
             <div
               class="text-center"
-              :style="{color: getColor('textSecondary')}"
+              :style="{ color: getColor('textSecondary') }"
             >
               Next Vessel Cutoff
             </div>
@@ -94,7 +94,7 @@ const openCreateBookingDialog = () => {
             <b>{{ bookings.length }}</b>
             <div
               class="text-center"
-              :style="{color: getColor('textSecondary')}"
+              :style="{ color: getColor('textSecondary') }"
             >
               total bookings
             </div>
@@ -107,7 +107,7 @@ const openCreateBookingDialog = () => {
             <b>{{ totalFulfilledBookings(activeBookings) }}</b>
             <div
               class="text-center"
-              :style="{color: getColor('textSecondary')}"
+              :style="{ color: getColor('textSecondary') }"
             >
               % of total bookings fulfilled
             </div>
@@ -140,10 +140,7 @@ const openCreateBookingDialog = () => {
     class="max-w-[620px] md:max-w-[680px]"
   >
     <template #text>
-      <CreateBookingDialog
-        @close="createBookingDialog.show(false)"
-        @createBooking="createBookingDialog.show(false)"
-      />
+      <CreateBookingDialog @close="createBookingDialog.show(false)" />
     </template>
   </Dialog>
   <Dialog
@@ -157,7 +154,8 @@ const openCreateBookingDialog = () => {
         @onClickBtn="removeBooking(removeBookingDialog.data.extendedProps.metadata.ref)"
       >
         <Typography>
-          Are you sure you want to remove booking <b>ref# {{ removeBookingDialog.data.extendedProps.metadata.ref }}</b>
+          Are you sure you want to remove booking
+          <b>ref# {{ removeBookingDialog.data.extendedProps.metadata.ref }}</b>
           from network?
         </Typography>
       </RemoveCancelDialog>

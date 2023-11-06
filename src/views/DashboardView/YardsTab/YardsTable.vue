@@ -3,6 +3,7 @@ import { useActions, useDate, useHeaders } from '~/composables'
 import { getLineAvatar } from '~/firebase/getLineAvatar'
 import { useDisplay } from 'vuetify'
 import { getYardBookingLoad, getBookingLoad } from '~/helpers/countings'
+import { useBookingsStore } from '~/stores/bookings.store'
 
 const props = defineProps({
   computedEntities: Array,
@@ -10,7 +11,7 @@ const props = defineProps({
   loading: Boolean,
 })
 const emit = defineEmits(['selectTableRow', 'editBooking'])
-
+const { deleteBooking } = useBookingsStore()
 const { smAndDown, width } = useDisplay()
 const showActions = ref(true)
 const tableHeight = ref(1)
@@ -27,11 +28,13 @@ const containerActionHandler = ({ action, e }) => {
     removeBookingDialog.value.data = e[0]
   }
 }
-
 const onSelectRow = e => {
   emit('selectTableRow', e)
 }
-
+const removeBooking = id => {
+  deleteBooking(id)
+  removeBookingDialog.value.show(false)
+}
 const tableId = 'yardsTable'
 onMounted(() => {
   setTimeout(() => {
@@ -158,7 +161,7 @@ onMounted(() => {
       <RemoveCancelDialog
         btn-name="Remove"
         @close="removeBookingDialog.show(false)"
-        @onClickBtn="removeBookingDialog.show(false)"
+        @onClickBtn="removeBooking(removeBookingDialog.data.id)"
       >
         <Typography>
           Are you sure you want to remove ref#
