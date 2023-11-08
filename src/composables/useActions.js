@@ -1,3 +1,5 @@
+import { statuses } from '~/constants/statuses'
+
 export const bookingsActions = () => [
   {
     icon: 'mdi-pencil',
@@ -37,8 +39,37 @@ export const truckersListActions = () => [
     color: 'functionalError',
   },
 ]
+export const bookingHistoryActions = item => {
+  const defaultAction = [{
+    icon: 'mdi-delete',
+    label: 'Delete',
+    action: 'delete-booking',
+    color: 'functionalError',
+  }]
+  if (item.status === statuses.expired) {
+    return [
+      {
+        icon: 'mdi-replay',
+        label: 'Re-activate',
+        action: 're-activate',
+      },
+      ...defaultAction,
+    ]
+  }
+  if (item.status === statuses.completed) {
+    return [
+      {
+        icon: 'mdi-content-copy',
+        label: 'Duplicate',
+        action: 'duplicate',
+      },
+      ...defaultAction,
+    ]
+  }
+}
 export default () => ({
   bookingsActions,
   draftsActions,
   truckersListActions,
+  bookingHistoryActions,
 })

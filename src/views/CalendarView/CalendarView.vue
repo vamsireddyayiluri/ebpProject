@@ -115,7 +115,7 @@ const openCreateBookingDialog = () => {
         </div>
       </template>
     </SubHeader>
-    <div class="mt-10 mx-8 mb-8">
+    <div class="h-[calc(100vh-196px)] mt-10 mx-8 mb-8">
       <Calendar
         :events="events"
         :options="options"

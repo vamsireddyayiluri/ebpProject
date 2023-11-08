@@ -119,6 +119,36 @@ export const statisticsTruckersHeaders = [
     width: 3,
   },
 ]
+export const bookingsHistoryHeaders = [
+  {
+    text: 'Ref #',
+    value: 'ref',
+    align: 'start',
+    width: 2,
+  },
+  {
+    text: 'Yard label',
+    value: 'yardLabel',
+  },
+  {
+    text: 'SSL',
+    value: 'ssl',
+  },
+  {
+    text: 'Expiry',
+    value: 'expiry',
+    sortable: true,
+    sorter: (a, b) => moment(a).diff(moment(b)),
+  },
+  {
+    text: 'Status',
+    value: 'status',
+  },
+  {
+    text: 'Truckers',
+    value: 'truckers',
+  },
+]
 export default () => ({
   bookingsHeaders,
   yardsHeaders,
@@ -126,4 +156,5 @@ export default () => ({
   truckersListHeaders,
   truckersDocumentsHeaders,
   statisticsTruckersHeaders,
+  bookingsHistoryHeaders,
 })

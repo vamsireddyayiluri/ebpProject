@@ -9,10 +9,14 @@ import { useDisplay } from 'vuetify'
 import { getBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { storeToRefs } from 'pinia'
+import { statuses } from '~/constants/statuses'
+import {useBookingHistoryStore} from "~/stores/bookingHistory.store"
 
 const authStore = useAuthStore()
 const bookingsStore = useBookingsStore()
-const { bookings } = storeToRefs(bookingsStore)
+const bookingHistoryStore = useBookingHistoryStore()
+const { bookings, drafts } = storeToRefs(bookingsStore)
+const { bookings: historyBookings } = storeToRefs(bookingHistoryStore)
 const route = useRoute()
 const router = useRouter()
 const { smAndDown } = useDisplay()
@@ -38,9 +42,11 @@ const onSave = () => {
   console.log('save ', booking.value)
 }
 const fromDraft = router.options.history.state.from === 'draft'
+const fromHistory = router.options.history.state.from === 'history'
+
 onMounted(() => {
   booking.value = useArrayFind(
-    fromDraft ? draftsData : bookings.value,
+    fromDraft ? drafts.value : fromHistory? historyBookings.value: bookings.value,
     i => i.id === route.params.id,
   ).value
 })
@@ -83,8 +89,10 @@ onMounted(() => {
         <div class="flex items-center gap-4 mb-1.5">
           <Typography type="text-h1">
             Booking <b>Ref#{{ booking.ref }}</b>
-            {{ fromDraft ? '(Draft)' : '' }}
-            {{ moment(booking.expiryDate).isAfter(moment(), 'day') ? '' : '(Expired)' }}
+            <span :style="{color: getColor('textSecondary')}">
+              {{ fromDraft ? '(Draft)' : '' }}
+              {{ booking.status === statuses.completed ? '(Completed)' : '(Expired)' }}
+            </span>
           </Typography>
           <IconButton
             icon="mdi-link"
@@ -99,6 +107,7 @@ onMounted(() => {
             :color="getColor('iconButton-1')"
           />
           <Button
+            v-if="!fromHistory"
             variant="outlined"
             data="secondary1"
             class="ml-auto"
@@ -159,6 +168,7 @@ onMounted(() => {
           />
         </div>
         <SaveCancelChanges
+          v-if="!fromHistory"
           @onSave="onSave"
           @onCancel="cancelChanges"
         />

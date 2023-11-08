@@ -1,0 +1,56 @@
+[
+  {
+    "amount": 26,
+    "booked": 8,
+    "ref": 1196,
+    "id": "8748a4ef951cab59d4262a7a78907",
+    "created": "2023-11-10T14:30:49+00:00",
+    "preferredDate": "2024-12-01T23:59:59+05:30",
+    "expiryDate": "2024-12-07T23:59:59+05:30",
+    "line": {
+      "id": "0156d8f6819b2de4",
+      "label": "CS Leasing"
+    },
+    "location": {
+      "address": "4741 Durfee Ave, Pico Rivera, CA 90660, USA",
+      "geohash": "9qh13n0vm",
+      "label": "RoadEx Pico Rivera Yard",
+      "lat": 34.0036191,
+      "lng": -118.0798038
+    },
+    "scacList": { "list": ["OTRH", "REGT"] },
+    "carriers": [
+      { "scac": "OTRH", "fulfilled": 7, "total": 13 },
+      { "scac": "REGT", "fulfilled": 11, "total": 13 }
+    ],
+    "size": "20 ST",
+    "status": "completed"
+  },
+  {
+    "id": "5bf48a4ef951cab59d4262a7a78908",
+    "amount": 15,
+    "booked": 5,
+    "ref": 1179,
+    "line": {
+      "id": "9d8d49984308f116",
+      "label": "Alianca"
+    },
+    "created": "2023-10-30T14:30:49+00:00",
+    "preferredDate": "2023-11-01T23:59:59+05:30",
+    "expiryDate": "2023-11-07T23:59:59+05:30",
+    "scacList": { "list": ["ABCD", "POPJ"] },
+    "location": {
+      "address": "7737 Hampton Blvd, Norfolk, VA 23505, USA",
+      "geohash": "dq9dp88bu",
+      "label": "7737 Hampton Blvd, Norfolk, VA 23505",
+      "lat": 36.9169609,
+      "lng": -76.3098145
+    },
+    "carriers": [
+      { "scac": "ABCD", "fulfilled": 7, "total": 10 },
+      { "scac": "POPJ", "fulfilled": 5, "total": 5 }
+    ],
+    "size": "20 FR",
+    "status": "expired"
+  }
+]
