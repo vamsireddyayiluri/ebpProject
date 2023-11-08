@@ -12,6 +12,7 @@ declare module '@vue/runtime-core' {
     AppearanceTab: typeof import('./views/SettingsView/AppearanceTab/AppearanceTab.vue')['default']
     AutocompleteScac: typeof import('./components/AutocompleteScac/AutocompleteScac.vue')['default']
     BeforeRegisterView: typeof import('./views/RegisterView/BeforeRegisterView.vue')['default']
+    BookingHistoryTab: typeof import('./views/SettingsView/BookingHistoryTab/BookingHistoryTab.vue')['default']
     BookingRulesTab: typeof import('./views/SettingsView/BookingRulesTab/BookingRulesTab.vue')['default']
     BookingsMapPopup: typeof import('./components/BookingsMapPopup/BookingsMapPopup.vue')['default']
     BookingStatisticsDialog: typeof import('./components/BookingStatisticsDialog/BookingStatisticsDialog.vue')['default']

@@ -23,7 +23,8 @@
       { "scac": "OTRH", "fulfilled": 7, "total": 13 },
       { "scac": "ABCD", "fulfilled": 2, "total": 5 }
     ],
-    "size": "40 HC"
+    "size": "40 HC",
+    "status": ""
   },
   {
     "amount": 26,
@@ -48,7 +49,8 @@
     "carriers": [
       { "scac": "OTRH", "fulfilled": 7, "total": 13 }
     ],
-    "size": "20 ST"
+    "size": "20 ST",
+    "status": ""
   },
   {
     "amount": 10,
@@ -73,7 +75,8 @@
     "carriers": [
       { "scac": "WNER", "fulfilled": 0, "total": 10 }
     ],
-    "size": "40 FR"
+    "size": "40 FR",
+    "status": ""
   },
   {
     "amount": 23,
@@ -97,7 +100,8 @@
     "carriers": [
       { "scac": "LORE", "fulfilled": 12, "total": 14 }
     ],
-    "size": "40 ST"
+    "size": "40 ST",
+    "status": ""
   },
   {
     "id": "AAAA0000005_bf48a4ef951cab59d4262a7a78908",
@@ -122,7 +126,8 @@
     "carriers": [
       { "scac": "ABCD", "fulfilled": 7, "total": 10 }
     ],
-    "size": "20 FR"
+    "size": "20 FR",
+    "status": ""
   },
   {
     "id": "AAAA0030005_bf48a4ef951cab59d4262a7a78908",
@@ -148,7 +153,8 @@
       { "scac": "OTRH", "fulfilled": 27, "total": 33 },
       { "scac": "ARYE", "fulfilled": 23, "total": 37 }
     ],
-    "size": "20 ST"
+    "size": "20 ST",
+    "status": ""
   },
   {
     "id": "AAAA1000005_bf48a4ef951cab59d4262a7a78908",
@@ -175,6 +181,7 @@
       { "scac": "WNER", "fulfilled": 3, "total": 10 },
       { "scac": "ABOR", "fulfilled": 2, "total": 5 }
     ],
-    "size": "40 FR"
+    "size": "40 FR",
+    "status": ""
   }
 ]
