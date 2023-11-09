@@ -16,6 +16,9 @@ const tabs = [
   {
     label: 'Drafts',
   },
+  {
+    label: 'Booking history',
+  },
 ]
 const mapToggled = ref(true)
 
@@ -74,6 +77,9 @@ watch(tab, () => mapToggled.value = true)
         @closeMap="toggleMap"
         @selectRow="toggleMap"
       />
+    </template>
+    <template v-if="tab === 3">
+      <BookingHistoryTab />
     </template>
   </Main>
 </template>

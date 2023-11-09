@@ -56,7 +56,7 @@ const today = moment()
 const activeBookings = computed(() => {
   return bookings.value.filter(b => moment(b.expiryDate).isSameOrAfter(today, 'day'))
 })
-const nextCutoff = () => {
+const nextExpiring = () => {
   const datesArray = activeBookings.value.sort((a, b) =>
     moment(a.expiryDate).diff(moment(b.expiryDate)),
   )
@@ -78,12 +78,12 @@ const openCreateBookingDialog = () => {
       <template #controls>
         <div class="flex items-center py-1 sm:!py-5">
           <Typography class="flex justify-center flex-wrap gap-2">
-            <b>{{ nextCutoff() }}</b>
+            <b>{{ nextExpiring() }}</b>
             <div
               class="text-center"
               :style="{ color: getColor('textSecondary') }"
             >
-              Next Vessel Cutoff
+              next expiring booking
             </div>
           </Typography>
           <Divider

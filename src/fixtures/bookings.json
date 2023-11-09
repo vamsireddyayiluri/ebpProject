@@ -95,7 +95,7 @@
     },
     "created": "2023-11-03T14:30:49+00:00",
     "preferredDate": "2023-11-11T23:59:59+05:30",
-    "expiryDate": "2023-11-22T23:59:59+05:30",
+    "expiryDate": "2024-11-22T23:59:59+05:30",
     "scacList": { "list": ["LORE"] },
     "carriers": [
       { "scac": "LORE", "fulfilled": 12, "total": 14 }
@@ -112,9 +112,9 @@
       "id": "0156d8f6819b2de4",
       "label": "CS Leasing"
     },
-    "created": "2023-10-30T14:30:49+00:00",
-    "preferredDate": "2023-11-01T23:59:59+05:30",
-    "expiryDate": "2023-11-07T23:59:59+05:30",
+    "created": "2023-11-30T14:30:49+00:00",
+    "preferredDate": "2023-12-01T23:59:59+05:30",
+    "expiryDate": "2023-12-07T23:59:59+05:30",
     "scacList": { "list": ["ABCD"] },
     "location": {
       "address": "7737 Hampton Blvd, Norfolk, VA 23505, USA",
@@ -165,9 +165,9 @@
       "id": "0156d8f6819b2de4",
       "label": "CS Leasing"
     },
-    "created": "2023-10-31T14:30:49+00:00",
-    "preferredDate": "2023-11-08T23:59:59+05:30",
-    "expiryDate": "2023-11-09T23:59:59+05:30",
+    "created": "2023-11-31T14:30:49+00:00",
+    "preferredDate": "2023-12-08T23:59:59+05:30",
+    "expiryDate": "2023-12-09T23:59:59+05:30",
     "scacList": { "list": ["ABOR", "WNER", "LORE"] },
     "location": {
       "address": "7737 Hampton Blvd, Norfolk, VA 23505, USA",
