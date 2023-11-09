@@ -27,7 +27,7 @@ export const useBookingsStore = defineStore('bookings', () => {
               drafts.value.splice(index, 1)
               resolve()
               alertStore.info({ content: 'Draft was deleted' })
-            }
+            } else alertStore.warning({ content: 'Draft not found' })
           }, 200)
         })
 
@@ -40,11 +40,35 @@ export const useBookingsStore = defineStore('bookings', () => {
             bookings.value.splice(index, 1)
             resolve()
             alertStore.info({ content: 'Bookings was deleted' })
-          }
+          } else alertStore.warning({ content: 'Draft not found' })
         }, 200)
       })
     } catch (e) {
-      alertStore.info({ content: e })
+      alertStore.warning({ content: e })
+    }
+  }
+  const publishDraft = async booking => {
+    try {
+      await deleteBooking(booking.id, true)
+      bookings.value.push(booking)
+      alertStore.info({content: `Booking Ref#${booking.id} was published`})
+
+      return 'published'
+    }
+    catch (e) {
+      alertStore.warning({ content: e })
+    }
+  }
+  const removeFromNetwork = async booking => {
+    try {
+      await deleteBooking(booking.id)
+      drafts.value.push(booking)
+      alertStore.info({content: `Booking Ref#${booking.id} moved to the draft`})
+
+      return 'deleted'
+    }
+    catch (e) {
+      alertStore.warning({ content: e })
     }
   }
 
@@ -54,5 +78,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     createBooking,
     deleteBooking,
     createDraft,
+    publishDraft,
+    removeFromNetwork,
   }
 })

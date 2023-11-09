@@ -19,9 +19,6 @@ const tabs = [
     label: 'Preferred truckers list',
   },
   {
-    label: 'Booking history',
-  },
-  {
     label: 'Appearance',
   },
   {
@@ -60,9 +57,6 @@ const tabs = [
       </template>
       <template v-if="tab === 4">
         <PreferredTruckersTab />
-      </template>
-      <template v-if="tab === 5">
-        <BookingHistoryTab />
       </template>
       <template v-if="tab === 6">
         <AppearanceTab />

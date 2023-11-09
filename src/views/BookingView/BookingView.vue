@@ -3,7 +3,6 @@ import { Main } from '@layouts'
 import { useAuthStore } from '~/stores/auth.store'
 import { getColor } from '~/helpers/colors'
 import { getAllLines } from '@qualle-admin/qutil/dist/ssl'
-import draftsData from '~/fixtures/drafts.json'
 import moment from 'moment-timezone'
 import { useDisplay } from 'vuetify'
 import { getBookingLoad } from '~/helpers/countings'
@@ -13,16 +12,16 @@ import { statuses } from '~/constants/statuses'
 import {useBookingHistoryStore} from "~/stores/bookingHistory.store"
 
 const authStore = useAuthStore()
-const bookingsStore = useBookingsStore()
-const bookingHistoryStore = useBookingHistoryStore()
-const { bookings, drafts } = storeToRefs(bookingsStore)
-const { bookings: historyBookings } = storeToRefs(bookingHistoryStore)
+const { publishDraft, removeFromNetwork, deleteBooking } = useBookingsStore()
+const { bookings, drafts } = storeToRefs(useBookingsStore())
+const { bookings: historyBookings } = storeToRefs(useBookingHistoryStore())
 const route = useRoute()
 const router = useRouter()
 const { smAndDown } = useDisplay()
 const drawer = ref(true)
 const flyoutBottom = ref(false)
 const booking = ref(null)
+const removeBookingDialog = ref(null)
 
 const updateExpiryDate = value => {
   booking.value.bookingExpiry = value
@@ -37,12 +36,35 @@ const toggleFlyoutPosition = () => {
     drawer.value = true
   }, 350)
 }
+const fromDraft = router.options.history.state.from === 'draft'
+const fromHistory = router.options.history.state.from === 'history'
+
+const handleBookingChanges = async () => {
+  if (fromDraft) {
+    const res = await publishDraft(booking.value)
+    if (res === 'published') {
+      router.push('/dashboard')
+    }
+  } else {
+    const res = await removeFromNetwork(booking.value)
+    if (res === 'deleted') {
+      router.push('/dashboard')
+    }
+  }
+}
+
+const openRemoveDialog = () => {
+  removeBookingDialog.value.show(true)
+  removeBookingDialog.value.data = booking.value
+}
+const deleteFromPlatform = async () => {
+  deleteBooking(booking.value.id)
+  router.push('/dashboard')
+}
 const cancelChanges = () => {}
 const onSave = () => {
   console.log('save ', booking.value)
 }
-const fromDraft = router.options.history.state.from === 'draft'
-const fromHistory = router.options.history.state.from === 'history'
 
 onMounted(() => {
   booking.value = useArrayFind(
@@ -90,8 +112,8 @@ onMounted(() => {
           <Typography type="text-h1">
             Booking <b>Ref#{{ booking.ref }}</b>
             <span :style="{color: getColor('textSecondary')}">
-              {{ fromDraft ? '(Draft)' : '' }}
-              {{ booking.status === statuses.completed ? '(Completed)' : '(Expired)' }}
+              {{ fromDraft ? ' (Draft)' : '' }}
+              {{ booking.status? booking.status === statuses.completed ? '(Completed)' : '(Expired)' : '' }}
             </span>
           </Typography>
           <IconButton
@@ -105,12 +127,14 @@ onMounted(() => {
             size="22"
             variant="plain"
             :color="getColor('iconButton-1')"
+            @click="openRemoveDialog"
           />
           <Button
             v-if="!fromHistory"
             variant="outlined"
             data="secondary1"
-            class="ml-auto"
+            class="ml-auto px-12"
+            @click="handleBookingChanges"
           >
             {{ fromDraft ? 'publish' : 'Remove from network' }}
           </Button>
@@ -236,6 +260,24 @@ onMounted(() => {
       </div>
     </div>
   </Main>
+  <Dialog
+    ref="removeBookingDialog"
+    max-width="480"
+  >
+    <template #text>
+      <RemoveCancelDialog
+        btn-name="Remove"
+        @close="removeBookingDialog.show(false)"
+        @onClickBtn="deleteFromPlatform(removeBookingDialog.data.id)"
+      >
+        <Typography>
+          Are you sure you want to remove ref#
+          <b>{{ removeBookingDialog.data.ref }}</b>
+          from your bookings?
+        </Typography>
+      </RemoveCancelDialog>
+    </template>
+  </Dialog>
 </template>
 
 <style lang="scss">
