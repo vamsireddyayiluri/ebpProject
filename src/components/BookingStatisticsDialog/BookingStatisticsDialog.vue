@@ -3,7 +3,6 @@ import { getColor } from '~/helpers/colors'
 import { getBookingLoad } from '~/helpers/countings'
 
 const props = defineProps({
-  mapPopupClasses: String,
   booking: Object,
 })
 const emit = defineEmits(['close', 'goToBookingPage'])
@@ -34,7 +33,6 @@ const selectedBooking = ref(false)
     <BookingsMapPopup
       :booking="booking"
       class="w-full md:w-50 pt-8 !px-0 pb-1 static md:sticky top-0 block md:flex justify-between flex-col"
-      :class="[props.mapPopupClasses]"
     />
     <Divider
       vertical
@@ -127,7 +125,6 @@ const selectedBooking = ref(false)
 
 <style lang="scss">
 .styledDrawerActions {
-  background: linear-gradient(transparent, rgba(var(--v-theme-uiPrimary), 1));
   position: fixed;
   bottom: 16px;
   z-index: 2;

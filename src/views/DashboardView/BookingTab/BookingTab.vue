@@ -266,7 +266,6 @@ watch(searchValue, value => {
   >
     <template #text>
       <BookingStatisticsDialog
-        map-popup-classes="bg-transparent"
         :booking="bookingStatisticsDialog.data"
         @close="bookingStatisticsDialog.show(false)"
       />
