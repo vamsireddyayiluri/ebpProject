@@ -3,6 +3,7 @@ import { getColor } from '~/helpers/colors'
 import { getBookingLoad } from '~/helpers/countings'
 
 const props = defineProps({
+  mapPopupClasses: String,
   booking: Object,
 })
 const emit = defineEmits(['close', 'goToBookingPage'])
@@ -33,6 +34,7 @@ const selectedBooking = ref(false)
     <BookingsMapPopup
       :booking="booking"
       class="w-full md:w-50 pt-8 !px-0 pb-1 static md:sticky top-0 block md:flex justify-between flex-col"
+      :class="[props.mapPopupClasses]"
     />
     <Divider
       vertical
