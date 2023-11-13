@@ -126,7 +126,7 @@ const selectedBooking = ref(false)
 <style lang="scss">
 .styledDrawerActions {
   position: fixed;
-  bottom: 16px;
+  bottom: 30px;
   z-index: 2;
 }
 </style>
