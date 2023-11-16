@@ -11,7 +11,10 @@ const { show, alertList } = storeToRefs(alertStore)
     v-model="show"
     :timeout="-1"
   >
-    <template v-for="a in alertList" :key="a.id">
+    <template
+      v-for="a in alertList"
+      :key="a.id"
+    >
       <Alert
         :type="a.type"
         class="mb-2"

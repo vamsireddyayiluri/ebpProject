@@ -299,13 +299,22 @@ onMounted(() => {
           overflow: auto;
           .timeline {
             overflow: auto;
-            margin-top: 80px;
+            margin-top: 40px;
           }
         }
+
         & > div {
           border: 1px solid rgba(var(--v-theme-uiLine), 1);
           border-radius: 4px;
-          padding: 24px 32px 0;
+          padding: 24px 32px;
+        }
+      }
+      @media (max-width: 600px) {
+        .statisticsContent {
+          flex-wrap: wrap;
+          .statisticsProgress {
+            width: 100%;
+          }
         }
       }
     }

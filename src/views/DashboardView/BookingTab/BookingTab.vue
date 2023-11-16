@@ -289,6 +289,5 @@ watch(searchValue, value => {
 .splitpanes__pane {
   height: calc(100vh - 121px);
   position: relative;
-  transition: none !important;
 }
 </style>
