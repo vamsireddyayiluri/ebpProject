@@ -32,7 +32,7 @@ const selectedBooking = ref(false)
   <div class="block md:flex gap-7 relative max-h-[70vh] overflow-y-auto overflow-x-auto">
     <BookingsMapPopup
       :booking="booking"
-      class="w-full md:w-50 pt-8 !px-0 pb-1 static md:sticky top-0 block md:flex justify-between flex-col"
+      class="w-full md:w-50 pt-8 !px-0 pb-1 static md:sticky top-0 block md:flex justify-between flex-col bg-transparent"
     />
     <Divider
       vertical
@@ -104,6 +104,7 @@ const selectedBooking = ref(false)
             },
           ]"
           variant="vertical"
+          class="mb-10"
         />
         <div class="styledDrawerActions flex gap-6 pt-8">
           <Button @click="router.push({ path: `booking/${selectedBooking.id}`})">
@@ -112,7 +113,6 @@ const selectedBooking = ref(false)
           <Button
             variant="plain"
             class="p-0"
-            :style="{ background: 'rgba(var(--v-theme-uiPrimary), 1)' }"
             @click="selectedBooking = false"
           >
             Back to all bookings
@@ -125,9 +125,8 @@ const selectedBooking = ref(false)
 
 <style lang="scss">
 .styledDrawerActions {
-  background: linear-gradient(transparent, rgba(var(--v-theme-uiPrimary), 1));
   position: fixed;
-  bottom: 16px;
+  bottom: 30px;
   z-index: 2;
 }
 </style>

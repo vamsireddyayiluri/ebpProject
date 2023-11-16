@@ -33,6 +33,7 @@ declare module '@vue/runtime-core' {
     LoginView: typeof import('./views/LoginView.vue')['default']
     MenuActions: typeof import('./components/MenuActions/MenuActions.vue')['default']
     NewPasswordView: typeof import('./views/NewPasswordView.vue')['default']
+    NotFoundView: typeof import('./views/NotFoundView/NotFoundView.vue')['default']
     NotificationRadioButton: typeof import('./views/SettingsView/NotificationsTab/NotificationRadioButton.vue')['default']
     NotificationsTab: typeof import('./views/SettingsView/NotificationsTab/NotificationsTab.vue')['default']
     OverallStatisticsTab: typeof import('./views/StatisticsView/OverallStatisticsTab/OverallStatisticsTab.vue')['default']
