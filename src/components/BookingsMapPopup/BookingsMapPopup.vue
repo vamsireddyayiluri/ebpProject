@@ -12,6 +12,7 @@ const attrs = useAttrs()
   <div
     class="w-[316px] py-6 px-7 rounded-md"
     v-bind="{...attrs}"
+    :style="{background: getColor('uiPrimary')}"
   >
     <div class="flex justify-between gap-4">
       <Typography type="text-h3">
