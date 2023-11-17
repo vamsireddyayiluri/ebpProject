@@ -3,21 +3,6 @@ import { db } from '~/firebase'
 import { collection, getDocs, query, where } from 'firebase/firestore'
 import { uid } from 'uid'
 
-export const markersParser = entities => {
-  return entities.map(i => {
-    return {
-      name: i.container,
-      location: {
-        lat: i.location?.lat,
-        lng: i.location?.lng,
-      },
-      type: i.location.details?.isFlipYard ? 'flipLocation' : 'containersLocation',
-      count: i.containers?.length,
-      containers: i.containers,
-    }
-  })
-}
-
 export const groupedBookingLocations = bookings =>
   values(groupBy(bookings, ({ location: { geohash } }) => geohash)).map(group => ({
     id: group[0].location.geohash,
@@ -53,4 +38,11 @@ export const getOrgId = async (email = '') => {
   } else {
     return uid(28)
   }
+}
+
+export const getUserIdByEmail = async email => {
+  const userCollection = query(collection(db, 'users'), where('email', '==', email))
+  const users = await getDocs(userCollection)
+
+  return users.docs[0].id
 }

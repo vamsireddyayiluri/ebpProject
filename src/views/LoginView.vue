@@ -8,9 +8,12 @@ const form = ref({
   password: '',
   remember: false,
 })
+const loading = ref(false)
 
 const onSubmit = async () => {
+  loading.value = true
   await authStore.login({ email: form.value.email, password: form.value.password })
+  loading.value = false
 }
 </script>
 
@@ -60,6 +63,7 @@ const onSubmit = async () => {
     <Button
       type="submit"
       :disabled="!form.email || !form.password"
+      :loading="loading"
       class="w-full mt-10 mx-auto"
     >
       Log in

@@ -57,28 +57,7 @@ const userMenuItems = ref([{ name: 'Profile settings', path: 'profile' }])
       :user-menu-items="userMenuItems"
       sticky
       @logout="authStore.logout()"
-    >
-      <template
-        v-if="!currentUser"
-        #controls
-      >
-        <Button
-          variant="plain"
-          density="compact"
-          class="hidden sm:!block"
-          @click="router.push({ name: 'register' })"
-        >
-          Register
-        </Button>
-        <Button
-          variant="outlined"
-          density="compact"
-          @click="router.push({ name: 'login' })"
-        >
-          Log in
-        </Button>
-      </template>
-    </Header>
+    />
     <slot />
   </div>
 </template>

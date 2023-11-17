@@ -9,8 +9,7 @@ const authStore = useAuthStore()
 const { currentUser, userData } = storeToRefs(authStore)
 const formatDate = useDate()
 const accountInfo = ref({
-  firstName: userData.value.firstName,
-  lastName: userData.value.lastName,
+  fullName: userData.value.fullName,
   company: userData.value.company || 'Exporter company',
   phone: userData.value.cell,
   email: currentUser.value.email,
@@ -21,7 +20,6 @@ const accountInfo = ref({
 })
 const isPasswordVisible = ref(false)
 const router = useRouter()
-
 const rules = {
   email(value) {
     return emailRegex.test(value) || 'Invalid e-mail'
@@ -38,8 +36,7 @@ const addUserAvatar = async (_, file) => {
 }
 const validateName = computed(() => {
   return (
-    accountInfo.value.firstName !== userData.value.firstName ||
-    accountInfo.value.lastName !== userData.value.lastName
+    accountInfo.value.fullName !== userData.value.fullName
   )
 })
 const validateEmail = computed(() => {
@@ -66,8 +63,7 @@ const onSave = async () => {
 const cancelChanges = () => {
   if (validateEmail) accountInfo.value.email = currentUser.value.email
   if (validateName)
-    (accountInfo.value.firstName = userData.value.firstName),
-    (accountInfo.value.lastName = userData.value.lastName)
+    (accountInfo.value.fullName = userData.value.fullName)
 }
 </script>
 
@@ -100,22 +96,13 @@ const cancelChanges = () => {
       <VRow
         no-gutters
         class="mt-8"
-        :style="{ maxWidth: '950px' }"
+        :style="{ maxWidth: '750px' }"
       >
         <VCol cols="auto">
           <Textfield
-            v-model.trim="accountInfo.firstName"
+            v-model.trim="accountInfo.fullName"
             type="text"
-            label="First name *"
-            required
-            class="w-[300px] mx-2 mb-4"
-          />
-        </VCol>
-        <VCol cols="auto">
-          <Textfield
-            v-model.trim="accountInfo.lastName"
-            type="text"
-            label="Last name *"
+            label="Full name *"
             required
             class="w-[300px] mx-2 mb-4"
           />

@@ -6,7 +6,6 @@ import { applyActionCode, verifyPasswordResetCode } from 'firebase/auth'
 const authStore = useAuthStore()
 const alertStore = useAlertStore()
 const router = useRouter()
-const actionCode = null
 
 onMounted(() => {
   validateUserEmail()
