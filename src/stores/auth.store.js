@@ -62,6 +62,9 @@ export const useAuthStore = defineStore('auth', () => {
       case 'auth/wrong-password':
         alertStore.warning({ content: 'Wrong password' })
         break
+      case 'auth/invalid-login-credentials':
+        alertStore.warning({ content: 'Invalid credentials' })
+        break
       default:
         alertStore.warning({ content: 'Something went wrong' })
       }
@@ -75,23 +78,18 @@ export const useAuthStore = defineStore('auth', () => {
     router.push({ name: 'login' })
   }
 
-  const register = async ({ form, members, location }) => {
+  const register = async ({ form }) => {
     isLoading.value = true
     try {
       await createUserWithEmailAndPassword(auth, form.email, form.password)
       await signInWithEmailAndPassword(auth, form.email, form.password)
 
       await addDoc(collection(db, 'pending_verifications'), {
-        firstName: form.firstName,
-        lastName: form.lastName,
+        fullName: form.fullName,
         email: form.email,
-        cell: form.workPhone,
+        cell: form.cell,
         password: form.password,
         company: form.companyName,
-        scac: form.scacCode,
-        type: form.type,
-        invitations: members || [],
-        location: location || [],
       })
       router.push({ name: 'verify1' })
       isLoading.value = false
@@ -164,12 +162,9 @@ export const useAuthStore = defineStore('auth', () => {
       const { uid: userId } = user
       const orgId = await getOrgId(data.email)
       let newUser = {
-        firstName: data.firstName,
-        lastName: data.lastName,
+        fullName: data.fullName,
         email: data.email,
         cell: data.cell,
-        emptyContainerDataReport: false,
-        exporterFacilityDataReport: false,
         createdAt: getLocalTime().format(),
         updatedAt: getLocalTime().format(),
         userId: userId,
@@ -195,10 +190,6 @@ export const useAuthStore = defineStore('auth', () => {
         const orgData = {
           email: data.email,
           company: data.company,
-          yards: data.location,
-          orgId: orgId,
-          type: data.type,
-          scac: data.scac,
           createdAt: getLocalTime().format(),
           updatedAt: getLocalTime().format(),
         }

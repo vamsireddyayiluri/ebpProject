@@ -75,7 +75,7 @@ watch(searchValue, value => {
 </script>
 
 <template>
-  <div class="h-full pt-10 px-8 pb-8">
+  <div class="h-full pt-[37px] px-8 pb-8">
     <Typography
       type="text-h1"
       class="mb-8"
