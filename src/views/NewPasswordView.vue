@@ -1,6 +1,11 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
 import { useAuthStore } from '~/stores/auth.store'
+import { auth } from '~/firebase'
+import { confirmPasswordReset } from 'firebase/auth'
+import { useAlertStore } from '~/stores/alert.store'
+import { getUserIdByEmail } from "~/stores/helpers"
+
 const form = reactive({
   password: '',
   confirmPassword: '',
@@ -8,6 +13,10 @@ const form = reactive({
 
 const isPasswordVisible = ref(false)
 const authStore = useAuthStore()
+const alertStore = useAlertStore()
+const router = useRouter()
+const queryParams = router.currentRoute.value.query
+const loading = ref(false)
 
 const steps = {
   'new-password': {
@@ -21,21 +30,34 @@ const steps = {
 }
 const stepper = useStepper(steps)
 
-const onSubmit = () => {
-  if (stepper.isLast.value) {
-    authStore.login()
-
-    return
+const onSubmit = async () => {
+  loading.value = true
+  if (stepper.isCurrent('new-password')) {
+    await resetPassword({ newPassword: form.password })
+    loading.value = false
   }
-  console.log('send ', form)
-  stepper.goToNext()
+  if (stepper.isLast.value) {
+    await authStore.login({ email: queryParams.email, password: form.password })
+    loading.value = false
+  }
+}
+
+// updating password
+const resetPassword = async ({ newPassword }) => {
+  try {
+    await confirmPasswordReset(auth, queryParams.actionCode, newPassword)
+    const userId = await getUserIdByEmail(queryParams.email)
+    await authStore.updateUserPassword({ userId , password: newPassword})
+    alertStore.info({ content: 'Password updated succusfully' })
+    stepper.goToNext()
+  } catch ({ message }) {
+    alertStore.warning({ content: message })
+  }
 }
 </script>
 
 <template>
-  <Typography
-    type="text-h1 mt-[140px]"
-  >
+  <Typography type="text-h1 mt-[140px]">
     {{ stepper.current.value.title }}
   </Typography>
   <form
@@ -64,6 +86,7 @@ const onSubmit = () => {
       <Button
         type="submit"
         :disabled="!stepper.current.value.isValid()"
+        :loading="loading"
         class="w-full mx-auto"
       >
         Reset password
@@ -87,6 +110,3 @@ const onSubmit = () => {
     </template>
   </form>
 </template>
-
-<style lang="scss">
-</style>
