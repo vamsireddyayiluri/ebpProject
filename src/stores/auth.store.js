@@ -43,8 +43,6 @@ export const useAuthStore = defineStore('auth', () => {
   const invitedUsersData = ref(null)
   const isLoading = ref(null)
 
-  const yardList = ref([])
-
   const login = async ({ email, password }) => {
     isLoading.value = true
     try {
@@ -78,7 +76,7 @@ export const useAuthStore = defineStore('auth', () => {
     router.push({ name: 'login' })
   }
 
-  const register = async ({ form }) => {
+  const register = async ({ form, yards }) => {
     isLoading.value = true
     try {
       await createUserWithEmailAndPassword(auth, form.email, form.password)
@@ -90,6 +88,7 @@ export const useAuthStore = defineStore('auth', () => {
         cell: form.cell,
         password: form.password,
         company: form.companyName,
+        yards,
       })
       router.push({ name: 'verify1' })
       isLoading.value = false
@@ -125,7 +124,7 @@ export const useAuthStore = defineStore('auth', () => {
         await getUserData(user.uid)
         if (userData.value) {
           await getOrgData(userData.value.orgId)
-        }
+        } else isLoading.value = false
         if (router.currentRoute.value.name === 'login') {
           router.push({ name: 'dashboard' })
         }
@@ -188,10 +187,12 @@ export const useAuthStore = defineStore('auth', () => {
       const orgSnap = await getDoc(docRef)
       if (!orgSnap.exists()) {
         const orgData = {
+          orgId,
           email: data.email,
           company: data.company,
           createdAt: getLocalTime().format(),
           updatedAt: getLocalTime().format(),
+          workDetails: data.yards,
         }
         await setDoc(docRef, orgData)
       }
@@ -233,7 +234,6 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Getting current user organization data from the organization collection
   const getOrgData = async orgId => {
-    isLoading.value = true
     try {
       onSnapshot(doc(db, 'organizations', orgId), doc => {
         if (doc.data()) {
@@ -515,17 +515,6 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  const addYard = yard => {
-    yardList.value.push(yard)
-
-    return Promise.resolve()
-  }
-
-  const removeYard = yard => {
-    const index = yardList.value.findIndex(q => q === yard)
-    yardList.value.splice(index, 1)
-  }
-
   return {
     login,
     logout,
@@ -555,8 +544,6 @@ export const useAuthStore = defineStore('auth', () => {
     updateYardDetails,
     validateInviteUserEmail,
     saveUserDataReports,
-    yardList,
-    addYard,
-    removeYard,
+    getOrgData,
   }
 })

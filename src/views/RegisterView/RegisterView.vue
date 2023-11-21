@@ -18,6 +18,7 @@ const form = reactive({
   password: '',
   confirmPassword: '',
 })
+const yards = ref([])
 const rules = {
   cell(value) {
     return phoneRegex.test(value) || 'Invalid phone number format'
@@ -67,7 +68,7 @@ const goToStep = stepId => {
 
 const onSubmit = async () => {
   if (stepper.isLast.value) {
-    await authStore.register({ form })
+    await authStore.register({ form, yards: yards.value })
   }
   if (stepper.current.value.isValid()) {
     stepper.goToNext()
@@ -145,7 +146,7 @@ const onSubmit = async () => {
           </div>
         </template>
         <template v-if="stepper.isCurrent('work-details')">
-          <Yards class="mx-auto" />
+          <Yards :yards="yards" class="mx-auto" />
         </template>
         <div>
           <template v-if="stepper.isCurrent('invite-members')">

@@ -58,10 +58,10 @@ const tabs = [
       <template v-if="tab === 4">
         <PreferredTruckersTab />
       </template>
-      <template v-if="tab === 6">
+      <template v-if="tab === 5">
         <AppearanceTab />
       </template>
-      <template v-if="tab === 7">
+      <template v-if="tab === 6">
         <NotificationsTab />
       </template>
     </div>
