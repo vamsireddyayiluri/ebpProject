@@ -1,18 +1,21 @@
 <script setup>
-import {patterns} from '@qualle-admin/qutil'
-import {useAlertStore} from '~/stores/alert.store'
-import {useAuthStore} from '~/stores/auth.store'
-import {storeToRefs} from 'pinia'
-import {userTypes} from "~/constants/userTypes"
+import { patterns } from '@qualle-admin/qutil'
+import { useAlertStore } from '~/stores/alert.store'
+import { useAuthStore } from '~/stores/auth.store'
+import { storeToRefs } from 'pinia'
+import { userTypes } from '~/constants/userTypes'
+
+const props = defineProps({
+  teamMembers: Array,
+})
 
 const attrs = useAttrs()
 
 const authStore = useAuthStore()
 const alertStore = useAlertStore()
-const {userData, orgData, invitedUsersData = []} = storeToRefs(authStore)
+const { invitedUsersData = [] } = storeToRefs(authStore)
 const route = useRoute()
-const teamMembers = ref([])
-const invitedUsers = ref(invitedUsersData.value)
+const { teamMembers } = toRefs(props)
 const memberType = [userTypes.operator, userTypes.admin]
 const newMember = reactive({
   email: '',
@@ -20,20 +23,22 @@ const newMember = reactive({
 })
 const removeMemberDialog = ref(null)
 const removedMember = ref(null)
-const workerId = ref(null)
+const workerId = ref('')
 
 const sendInvitation = async () => {
-  /*const value = await authStore.validateInviteUserEmail(newMember.email)
+  const value = await authStore.validateInviteUserEmail(newMember.email)
   if (value) {
     alertStore.warning({ content: 'User already exists with this email!' })
   } else {
-    await authStore.inviteNewMember({ invitation: newMember, companyName: orgData.value.company, userId: userData.value.userId})
-}*/
-  // const item = { id: newMember.email, value: newMember.email, type: newMember.type }
-
-  teamMembers.value.push({id: newMember.email, value: newMember.email, workerId: `Worker ID: ${workerId.value}`})
-  newMember.email = ''
-  workerId.value = ''
+    teamMembers.value.push({
+      id: newMember.email,
+      value: newMember.email,
+      type: newMember.type,
+      workerId: `Worker ID: ${workerId.value}`,
+    })
+    newMember.email = ''
+    workerId.value = ''
+  }
 }
 const openRemoveMemberDialog = memberId => {
   removedMember.value = useArrayFind(teamMembers.value, m => m.id === memberId).value
@@ -44,12 +49,6 @@ const removeMember = () => {
   teamMembers.value = useArrayFilter(teamMembers.value, m => m.id !== removedMember.value.id).value
   removeMemberDialog.value.show(false)
 }
-onMounted(async () => {
-  if (userData.value) {
-    await authStore.getInvitedUsersData(userData.value.userId)
-    invitedUsers.value = [...invitedUsersData.value]
-  }
-})
 </script>
 
 <template>
@@ -78,7 +77,7 @@ onMounted(async () => {
         class="w-full sm:w-fit"
         @click="sendInvitation"
       >
-        send invitation
+        add member
       </Button>
     </div>
     <MemberItems

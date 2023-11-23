@@ -36,7 +36,10 @@ onMounted(() => {
   >
     Work details
   </Typography>
-  <Yards class="w-full md:w-11/12 lg:w-8/12" :yards="yards"/>
+  <Yards
+    class="w-full md:w-11/12 lg:w-8/12"
+    :yards="yards"
+  />
   <SaveCancelChanges
     class="mt-10"
     :disabled="!validateWorkDetail"

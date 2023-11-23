@@ -6,6 +6,7 @@ import { applyActionCode, verifyPasswordResetCode } from 'firebase/auth'
 const authStore = useAuthStore()
 const alertStore = useAlertStore()
 const router = useRouter()
+const createPassPage = ref(null)
 
 onMounted(() => {
   validateUserEmail()
@@ -41,6 +42,9 @@ const validateUserEmail = () => {
     // Display email verification handler and UI.
     handleVerifyEmail(actionCode, continueUrl, lang, email)
     break
+  case 'signIn':
+    createPassPage.value = true
+    break
   default:
 
     // Error: invalid mode.
@@ -73,3 +77,7 @@ const handleResetPassword = async (actionCode, continueUrl, lang) => {
   }
 }
 </script>
+
+<template>
+  <CreateInvitedUserView v-if="createPassPage" />
+</template>

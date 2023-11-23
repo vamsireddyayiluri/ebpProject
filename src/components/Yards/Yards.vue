@@ -46,7 +46,8 @@ const removeLocation = async () => {
 <template>
   <div
     class="w-full md:w-11/12"
-    v-bind="{ ...attrs }">
+    v-bind="{ ...attrs }"
+  >
     <VRow
       no-gutters
       class="[&>div]:mb-4 [&>div]:text-left"

@@ -21,6 +21,7 @@ declare module '@vue/runtime-core' {
     BookingView: typeof import('./views/BookingView/BookingView.vue')['default']
     CalendarView: typeof import('./views/CalendarView/CalendarView.vue')['default']
     CreateBookingDialog: typeof import('./components/CreateBookingDialog/CreateBookingDialog.vue')['default']
+    CreateInvitedUserView: typeof import('./views/CreateInvitedUserView.vue')['default']
     DashboardView: typeof import('./views/DashboardView/DashboardView.vue')['default']
     DocumentViewerDialog: typeof import('./views/SettingsView/TruckerManagementTab/DocumentViewerDialog.vue')['default']
     DraftMapPopup: typeof import('./views/DashboardView/DraftsTab/DraftMapPopup.vue')['default']
