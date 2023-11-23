@@ -139,7 +139,7 @@ export const useAuthStore = defineStore('auth', () => {
   const sendVerificationEmail = async () => {
     try {
       await sendEmailVerification(auth.currentUser, {
-        url: `${import.meta.env.VITE_APP_CANONICAL_URL}/dashboard`,
+        url: `${import.meta.env.VITE_APP_DOMAIN}/dashboard`,
       })
       alertStore.info({ content: 'Verification email sent!' })
     } catch (error) {
