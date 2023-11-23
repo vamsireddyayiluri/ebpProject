@@ -18,7 +18,7 @@ const onSubmit = async () => {
   } else {
     const user = await authStore.getInvitationDocData(form.id)
     if (user) {
-      await authStore.invitedUserRegistration({...user, fullName: form.fullName, password: form.password})
+      await authStore.invitedUserRegistration({...user, fullName: form.fullName, password: form.password, invitedBy: authStore.currentUser.uid})
     } else alertStore.warning({content: 'User not found'})
   }
 }

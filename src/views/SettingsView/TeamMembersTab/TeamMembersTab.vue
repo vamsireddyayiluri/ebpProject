@@ -6,10 +6,21 @@ const authStore = useAuthStore()
 const { userData, orgData, invitedUsersData = [] } = storeToRefs(authStore)
 const teamMembers = ref([])
 
+const validateMembers = computed(() => {
+  if (teamMembers.value.length !== invitedUsersData.value.length) return true
+  for (let i = 0; i < teamMembers.value.length; i++) {
+    if (teamMembers.value[i].id !== invitedUsersData.value[i].id) {
+      return true
+    }
+  }
+
+  return false
+})
 const onSave = async () => {
   await authStore.sendInvitationLink(teamMembers.value)
 }
 const cancelChanges = () => {
+  teamMembers.value = [...invitedUsersData.value]
 }
 onMounted(async () => {
   if (userData.value) {
@@ -32,6 +43,7 @@ onMounted(async () => {
   />
   <SaveCancelChanges
     class="mt-10"
+    :disabled="!validateMembers"
     @onSave="onSave"
     @onCancel="cancelChanges"
   />

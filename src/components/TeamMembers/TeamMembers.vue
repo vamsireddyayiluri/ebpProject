@@ -4,6 +4,7 @@ import { useAlertStore } from '~/stores/alert.store'
 import { useAuthStore } from '~/stores/auth.store'
 import { storeToRefs } from 'pinia'
 import { userTypes } from '~/constants/userTypes'
+import { uid } from "uid"
 
 const props = defineProps({
   teamMembers: Array,
@@ -31,7 +32,7 @@ const sendInvitation = async () => {
     alertStore.warning({ content: 'User already exists with this email!' })
   } else {
     teamMembers.value.push({
-      id: newMember.email,
+      id: uid(28),
       value: newMember.email,
       type: newMember.type,
       workerId: `Worker ID: ${workerId.value}`,
@@ -41,12 +42,14 @@ const sendInvitation = async () => {
   }
 }
 const openRemoveMemberDialog = memberId => {
-  removedMember.value = useArrayFind(teamMembers.value, m => m.id === memberId).value
   removeMemberDialog.value.show(true)
+  removeMemberDialog.value.data = useArrayFind(teamMembers.value, m => m.id === memberId).value
 }
 
-const removeMember = () => {
-  teamMembers.value = useArrayFilter(teamMembers.value, m => m.id !== removedMember.value.id).value
+const removeMember = async () => {
+  const index = teamMembers.value.findIndex(q => q.id === removeMemberDialog.value.data.id)
+  await authStore.removeInvitedUser(teamMembers.value[index])
+  teamMembers.value.splice(index, 1)
   removeMemberDialog.value.show(false)
 }
 </script>
@@ -99,7 +102,7 @@ const removeMember = () => {
         @onClickBtn="removeMember"
       >
         <Typography>
-          Are you sure you want to remove <b>Member {{ removedMember?.value }}</b>
+          Are you sure you want to remove <b>Member {{ removeMemberDialog?.data.value }}</b>
           from the team?
         </Typography>
       </RemoveCancelDialog>
