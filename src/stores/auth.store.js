@@ -11,8 +11,6 @@ import {
   getDoc,
   deleteDoc,
   updateDoc,
-  arrayUnion,
-  arrayRemove,
   onSnapshot,
 } from 'firebase/firestore'
 import moment from 'moment-timezone'
@@ -27,11 +25,14 @@ import {
   reload,
   EmailAuthProvider,
   reauthenticateWithCredential,
+  updatePassword,
+  sendSignInLinkToEmail, signInWithEmailLink,
 } from 'firebase/auth'
 import { useAlertStore } from '~/stores/alert.store'
 import { getLocalServerTime, getLocalTime } from '@qualle-admin/qutil/dist/date'
 import { getOrgId } from '~/stores/helpers'
-import { uid } from 'uid'
+import { userTypes } from "~/constants/userTypes"
+import firebase from 'firebase/compat/app'
 
 export const useAuthStore = defineStore('auth', () => {
   const router = useRouter()
@@ -40,10 +41,8 @@ export const useAuthStore = defineStore('auth', () => {
   const storage = getStorage()
   const userData = ref(null)
   const orgData = ref(null)
-  const invitedUsersData = ref(null)
+  const invitedUsersData = ref([])
   const isLoading = ref(null)
-
-  const yardList = ref([])
 
   const login = async ({ email, password }) => {
     isLoading.value = true
@@ -78,7 +77,7 @@ export const useAuthStore = defineStore('auth', () => {
     router.push({ name: 'login' })
   }
 
-  const register = async ({ form }) => {
+  const register = async ({ form, yards, invitations }) => {
     isLoading.value = true
     try {
       await createUserWithEmailAndPassword(auth, form.email, form.password)
@@ -90,6 +89,9 @@ export const useAuthStore = defineStore('auth', () => {
         cell: form.cell,
         password: form.password,
         company: form.companyName,
+        yards,
+        type: userTypes.admin,
+        invitations,
       })
       router.push({ name: 'verify1' })
       isLoading.value = false
@@ -125,7 +127,7 @@ export const useAuthStore = defineStore('auth', () => {
         await getUserData(user.uid)
         if (userData.value) {
           await getOrgData(userData.value.orgId)
-        }
+        } else isLoading.value = false
         if (router.currentRoute.value.name === 'login') {
           router.push({ name: 'dashboard' })
         }
@@ -170,6 +172,9 @@ export const useAuthStore = defineStore('auth', () => {
         userId: userId,
         orgId: orgId,
         password: data.password,
+        type: userTypes.admin,
+        company: data.company,
+        invitations: data.invitations,
       }
 
       const q = query(collection(db, 'invitations'), where('email', '==', data.email))
@@ -188,16 +193,18 @@ export const useAuthStore = defineStore('auth', () => {
       const orgSnap = await getDoc(docRef)
       if (!orgSnap.exists()) {
         const orgData = {
+          orgId,
           email: data.email,
           company: data.company,
           createdAt: getLocalTime().format(),
           updatedAt: getLocalTime().format(),
+          workDetails: data.yards,
         }
         await setDoc(docRef, orgData)
       }
 
       if (data.invitations) {
-        inviteNewMember({ invitations: data.invitations, companyName: data.company, userId })
+        await sendInvitationLink(data.invitations)
       }
 
       await deleteDoc(doc(db, 'pending_verifications', data.id))
@@ -233,7 +240,6 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Getting current user organization data from the organization collection
   const getOrgData = async orgId => {
-    isLoading.value = true
     try {
       onSnapshot(doc(db, 'organizations', orgId), doc => {
         if (doc.data()) {
@@ -318,24 +324,23 @@ export const useAuthStore = defineStore('auth', () => {
 
   // removing invited user
   const removeInvitedUser = async payload => {
-    const { docId, isLoggedIn } = payload
+    const { docId } = payload
     try {
-      if (isLoggedIn) {
-        // await deleteDoc(doc(db, 'users', docId))
-        // getAuth().
-        // deleteUser(docId)
-      } else {
-        await deleteDoc(doc(db, 'invitations', docId))
-      }
-      alertStore.info({ message: 'User removed!' })
-    } catch ({ message }) {
-      alertStore.warning({ message })
+      await deleteDoc(doc(db, 'users', docId))
+      alertStore.info({ content: 'User removed!' })
+    }
+    catch ({ message }) {
+    }
+    try {
+      await deleteDoc(doc(db, 'invitations', docId))
+      alertStore.info({ content: 'User removed!' })
+    }
+    catch (error) {
     }
   }
 
   // Getting invited users data from the users and invitations collection
   const getInvitedUsersData = async userId => {
-    invitedUsersData.value = []
     try {
       const q1 = query(collection(db, 'users'), where('invitedBy', '==', userId))
       const querySnapshot = await getDocs(q1)
@@ -379,52 +384,6 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // Sending invitation email to invited users
-  const inviteNewMember = async ({ invitation, companyName, userId }) => {
-    try {
-      const q = query(collection(db, 'invitations'), where('email', '==', invitation.email))
-
-      const querySnapshot = await getDocs(q)
-      let inviteId = uid(28)
-
-      if (!querySnapshot.empty) {
-        inviteId = querySnapshot.docs[0].id
-      }
-      await setDoc(
-        doc(db, 'invitations', `${inviteId}`),
-        {
-          email: invitation.email,
-          orgId: userData.value.orgId,
-          type: invitation.type,
-          createdAt: getLocalServerTime(moment(), 'America/Los_Angeles').format(),
-          expiredAt: getLocalServerTime(moment(), 'America/Los_Angeles').add(2, 'days').format(),
-          companyName,
-          invitedBy: userId,
-        },
-        { merge: true },
-      )
-
-      await addDoc(collection(db, 'mail'), {
-        to: invitation.email,
-        message: {
-          subject: 'Hello from Qualle!',
-          html:
-            userData.value.email +
-            ` invites you to organization` +
-            `${companyName}` +
-            `as a ${invitation.type}` +
-            `.<br /><br /> Use this <a href="${
-              import.meta.env.VITE_APP_CANONICAL_URL
-            }/invitation-verify?invite=${inviteId}">link</a> to sign up with ${invitation.email} ` +
-            ' to connect to the organization.<br />Have a good day',
-        },
-      })
-      alertStore.info({ content: 'Invitation email sent!' })
-    } catch ({ message }) {
-      alertStore.warning({ content: message })
-    }
-  }
-
   // validating invitation link wheater id is exists in collection or not
   const checkInvitation = async id => {
     try {
@@ -459,47 +418,84 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // removing yard location form the organization collection
-
-  const removeYardLocationFromOrg = async (location, orgId) => {
-    try {
-      await updateDoc(doc(db, 'organizations', orgId), {
-        yards: arrayRemove(location),
-      })
-      alertStore.info({ content: 'Regions removed!' })
-    } catch ({ message }) {
-      alertStore.warning({ content: message })
-    }
-  }
-
-  // Adding yard location to the organization collection
-
-  const updateYardDetails = async (locations, orgId) => {
-    try {
-      await updateDoc(doc(db, 'organizations', orgId), {
-        yards: arrayUnion(...locations),
-      })
-      alertStore.info({ content: 'Regions Added!' })
-    } catch ({ message }) {
-      alertStore.warning({ content: message })
-    }
-  }
-
   // validating email is exists in the user collection or not to invite
   const validateInviteUserEmail = async payload => {
     const q = query(collection(db, 'users'), where('email', '==', payload))
 
     const docData = await getDocs(q)
-    if (docData.empty) {
-      return false
-    } else {
-      return true
+
+    return !docData.empty
+  }
+
+  // create invitation collection and send invitation mail
+  const sendInvitationLink = async members => {
+    for (const m of members) {
+      const q = query(collection(db, 'invitations'), where('email', '==', m.value))
+
+      const querySnapshot = await getDocs(q)
+
+      if (!querySnapshot.empty) {
+        alertStore.warning({content: 'Invitation exist'})
+      }
+      await setDoc(
+        doc(db, 'invitations', m.id),
+        {
+          invitationId: m.id,
+          email: m.value,
+          orgId: userData.value.orgId,
+          type: m.type,
+          createdAt: getLocalServerTime(moment(), 'America/Los_Angeles').format(),
+          expiredAt: getLocalServerTime(moment(), 'America/Los_Angeles').add(2, 'days').format(),
+          company: userData.value.company,
+          invitedBy: userData.value.userId,
+        },
+        { merge: true },
+      )
+
+      try {
+        await sendSignInLinkToEmail(auth, m.value, {
+          url: `${import.meta.env.VITE_APP_CANONICAL_URL}/?email=${m.value}&id=${m.id}`,
+          handleCodeInApp: true,
+        })
+        alertStore.info({content: 'Invitations send!'})
+
+      } catch (e) {
+        isLoading.value = false
+        alertStore.warning({content: e.message})
+      }
     }
   }
 
-  // const updateInvitedUserType = async payload => {
-  //   console.log(' in vited user payload', payload)
-  // }
+  // Creating user collection after verification complete
+  const invitedUserRegistration = async form => {
+    isLoading.value = true
+    try {
+      const data = await signInWithEmailLink(auth, form.email, window.location.href)
+      router.push({ name: 'dashboard' })
+      currentUser.value = data.user
+      const newUser = {
+        fullName: form.fullName,
+        email: form.email,
+        createdAt: form.createdAt,
+        updatedAt: getLocalTime().format(),
+        userId: data.user.uid,
+        orgId: form.orgId,
+        password: form.password,
+        type: form.type,
+        company: form.company,
+        invitedBy: form.invitedBy,
+      }
+      await setDoc(doc(db, 'users', data.user.uid), newUser)
+      userData.value = newUser
+      await getOrgData(form.orgId)
+      await updatePassword(auth.currentUser, form.password)
+      await deleteDoc(doc(db, 'invitations', form.invitationId))
+      await router.push({name: 'dashboard'})
+      isLoading.value = false
+    } catch (e) {
+      alertStore.warning({content: e.message})
+    }
+  }
 
   const saveUserDataReports = async payload => {
     const { emptyContainerReport, exportFacilityReport } = payload
@@ -513,17 +509,6 @@ export const useAuthStore = defineStore('auth', () => {
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
-  }
-
-  const addYard = yard => {
-    yardList.value.push(yard)
-
-    return Promise.resolve()
-  }
-
-  const removeYard = yard => {
-    const index = yardList.value.findIndex(q => q === yard)
-    yardList.value.splice(index, 1)
   }
 
   return {
@@ -540,7 +525,6 @@ export const useAuthStore = defineStore('auth', () => {
     updateUserAvatar,
     checkInvitation,
     getInvitationDocData,
-    inviteNewMember,
     updateUserEmailAddress,
     updateUserPassword,
     userData,
@@ -551,12 +535,10 @@ export const useAuthStore = defineStore('auth', () => {
     removeInvitedUser,
     getInvitedUsersData,
     invitedUsersData,
-    removeYardLocationFromOrg,
-    updateYardDetails,
     validateInviteUserEmail,
     saveUserDataReports,
-    yardList,
-    addYard,
-    removeYard,
+    getOrgData,
+    invitedUserRegistration,
+    sendInvitationLink,
   }
 })

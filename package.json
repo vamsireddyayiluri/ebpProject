@@ -72,24 +72,6 @@
   "lint-staged": {
     "src/**/*.{vue,js,json,css,scss,md}": "prettier --write"
   },
-  "prettier": {
-    "printWidth": 100,
-    "singleQuote": true,
-    "trailingComma": "all",
-    "arrowParens": "avoid",
-    "semi": false,
-    "overrides": [
-      {
-        "files": [
-          "**/*.scss",
-          "**/*.html"
-        ],
-        "options": {
-          "singleQuote": false
-        }
-      }
-    ]
-  },
   "release": {
     "plugins": [
       "@semantic-release/commit-analyzer",
