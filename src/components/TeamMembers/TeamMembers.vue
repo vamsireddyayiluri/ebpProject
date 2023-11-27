@@ -2,7 +2,6 @@
 import { patterns } from '@qualle-admin/qutil'
 import { useAlertStore } from '~/stores/alert.store'
 import { useAuthStore } from '~/stores/auth.store'
-import { storeToRefs } from 'pinia'
 import { userTypes } from '~/constants/userTypes'
 import { uid } from "uid"
 
@@ -14,7 +13,6 @@ const attrs = useAttrs()
 
 const authStore = useAuthStore()
 const alertStore = useAlertStore()
-const { invitedUsersData = [] } = storeToRefs(authStore)
 const route = useRoute()
 const { teamMembers } = toRefs(props)
 const memberType = [userTypes.operator, userTypes.admin]
@@ -23,7 +21,6 @@ const newMember = reactive({
   type: memberType[0],
 })
 const removeMemberDialog = ref(null)
-const removedMember = ref(null)
 const workerId = ref('')
 
 const sendInvitation = async () => {

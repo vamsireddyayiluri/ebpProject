@@ -14,13 +14,13 @@ const { createBooking, createDraft } = useBookingsStore()
 const workDetailsStore = useWorkDetailsStore()
 const { getFormattedDate } = useDate()
 const booking = ref({
-  ref: 'null',
-  containers: 1,
+  ref: '',
+  containers: null,
   line: null,
   bookingExpiry: null,
   preferredDate: null,
   location: null,
-  equipmentType: '20hc',
+  equipmentType: null,
   scacList: { list: [] },
 })
 const confirmDraftsDialog = ref(null)
