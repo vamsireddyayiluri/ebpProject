@@ -35,7 +35,7 @@ const attrs = useAttrs()
     </ProgressCircular>
     <div class="flex justify-between flex-wrap">
       <Typography type="text-body-m-semibold mb-3">
-        You have {{ getYardBookingLoad(booking.entities).amount }} bookings
+        You have {{ getYardBookingLoad(booking.entities).containers }} bookings
       </Typography>
       <div>
         <div class="flex items-center gap-3">

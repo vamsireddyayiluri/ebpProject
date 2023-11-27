@@ -1,7 +1,7 @@
 [
   {
-    "amount": 10,
-    "booked": 5,
+    "containers": 10,
+    "committed": 5,
     "chassis": null,
     "chassisType": "private",
     "company": "Cognine",
@@ -40,8 +40,8 @@
     "status": ""
   },
   {
-    "amount": 7,
-    "booked": 5,
+    "containers": 7,
+    "committed": 5,
     "chassis": null,
     "chassisType": "private",
     "company": "Cognine",
@@ -80,8 +80,8 @@
     "status": ""
   },
   {
-    "amount": 15,
-    "booked": 5,
+    "containers": 15,
+    "committed": 5,
     "chassis": null,
     "chassisType": "private",
     "company": "Test Company 1",

@@ -7,8 +7,8 @@ export const getYardBookingLoad = items => {
     booked: 0,
   }
   items.forEach(i => {
-    obj.amount += i.amount
-    obj.booked += i.booked
+    obj.amount += i.containers
+    obj.booked += i.committed
   })
 
   return {

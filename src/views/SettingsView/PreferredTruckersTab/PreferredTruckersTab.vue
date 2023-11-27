@@ -20,7 +20,7 @@ const deleteTruckerDialog = ref(false)
 
 const { truckersListHeaders } = useHeaders()
 const { truckersListActions } = useActions()
-const formatDate = useDate()
+const { getFormattedDateTime } = useDate()
 const searchValue = ref(null)
 const loading = ref(false)
 const mutableEntities = ref(preferredTruckers)
@@ -174,7 +174,7 @@ onMounted(() => {
     </template>
     <template #lastBooking="{ item }">
       <Typography>
-        {{ item.lastBooking ? formatDate(item.lastBooking) : '--' }}
+        {{ item.lastBooking ? getFormattedDateTime(item.lastBooking) : '--' }}
       </Typography>
     </template>
 

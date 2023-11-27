@@ -19,7 +19,7 @@ const removeBookingDialog = ref(false)
 
 const { yardsHeaders, bookingsHeaders } = useHeaders()
 const { bookingsActions } = useActions()
-const formatDate = useDate()
+const { getFormattedDateTime } = useDate()
 
 const containerActionHandler = ({ action, e }) => {
   if (action === 'edit-booking') emit('editBooking', e[0].id)
@@ -130,15 +130,15 @@ onMounted(() => {
         </template>
         <template #expiry="{ item }">
           <Typography type="text-body-m-regular">
-            {{ formatDate(item.expiryDate) }}
+            {{ getFormattedDateTime(item.expiryDate) }}
           </Typography>
         </template>
         <template #location="{ item }">
           <LocationChip :location="item?.location" />
         </template>
         <template #progress="{ item }">
-          <ProgressLinear :value="getBookingLoad(item.booked, item.amount)">
-            {{ getBookingLoad(item.booked, item.amount) }}%
+          <ProgressLinear :value="getBookingLoad(item.committed, item.containers)">
+            {{ getBookingLoad(item.committed, item.containers) }}%
           </ProgressLinear>
         </template>
         <template #actions="{ item, selected }">

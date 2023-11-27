@@ -13,7 +13,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['closeMap', 'selectRow'])
 const bookingsStore = useBookingsStore()
-const { bookings } = storeToRefs(bookingsStore)
+const { loading } = storeToRefs(bookingsStore)
 const { smAndDown } = useDisplay()
 const router = useRouter()
 
@@ -32,10 +32,9 @@ const panes = ref(getPanes())
 const vuetifyTheme = useTheme()
 const theme = computed(() => vuetifyTheme.global.name.value)
 const panesRef = ref(null)
-const mutableSearchedEntities = ref(bookings.value)
-const mutableFilteredEntities = ref(bookings.value)
+const mutableSearchedEntities = ref(bookingsStore.bookings)
+const mutableFilteredEntities = ref(bookingsStore.bookings)
 const searchValue = ref(null)
-const loading = ref(false)
 const newId = ref(uid(8))
 const bookingStatisticsDialog = ref(null)
 const filters = ref({
@@ -122,7 +121,7 @@ const debouncedSearch = useDebounceFn(searchValue => {
     onClearSearch()
   } else {
     computedSearchedEntities.value = useArrayFilter(
-      bookings.value,
+      bookingsStore.bookings,
       ({ ref }) =>
         useArraySome(
           useArrayMap(Object.values({ ref }), value => String(value).toLowerCase()).value,
@@ -133,7 +132,7 @@ const debouncedSearch = useDebounceFn(searchValue => {
 }, 300)
 
 const applyFilter = () => {
-  let filteredData = bookings.value
+  let filteredData = bookingsStore.bookings
 
   if (filters.value.line) {
     filteredData = useArrayFilter(
@@ -151,6 +150,11 @@ const onClickOutsideDialog = () => {
   }, 1000)
 }
 
+onMounted(async () => {
+  await bookingsStore.getBookings({})
+  computedSearchedEntities.value = bookingsStore.bookings
+  computedFilteredEntities.value = bookingsStore.bookings
+})
 watch(mapToggled, () => {
   toggleMap()
   panes.value = getPanes()

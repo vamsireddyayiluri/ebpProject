@@ -6,7 +6,25 @@ import { useAlertStore } from "~/stores/alert.store"
 
 export const useWorkDetailsStore = defineStore('workDetails', () => {
   const alertStore = useAlertStore()
+  const authStore = useAuthStore()
+  const yards = ref([])
 
+  const getYards = () => {
+    yards.value = authStore.orgData.workDetails.map(i => {
+      return {
+        ...i,
+        text:
+        `Commodity: ${i.commodity}`,
+      }
+    })
+  }
+  const addYard = yard => {
+    yards.value.push(yard)
+  }
+  const removeYard = yardId => {
+    const index = yards.value.findIndex(q => q.id === yardId)
+    yards.value.splice(index, 1)
+  }
   const saveYards = async yards => {
     const { orgData } = useAuthStore()
     try {
@@ -21,6 +39,10 @@ export const useWorkDetailsStore = defineStore('workDetails', () => {
   }
 
   return {
+    yards,
+    getYards,
+    addYard,
+    removeYard,
     saveYards,
   }
 })

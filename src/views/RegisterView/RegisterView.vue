@@ -6,8 +6,10 @@ import { useAuthStore } from '~/stores/auth.store'
 import { storeToRefs } from 'pinia'
 import { patterns } from '@qualle-admin/qutil'
 import { phoneRegex, emailRegex } from '@qualle-admin/qutil/dist/patterns'
+import { useWorkDetailsStore } from "~/stores/workDetails.store"
 
 const authStore = useAuthStore()
+const workDetailsStore = useWorkDetailsStore()
 const { isLoading } = storeToRefs(authStore)
 
 const form = reactive({
@@ -18,7 +20,7 @@ const form = reactive({
   password: '',
   confirmPassword: '',
 })
-const yards = ref([])
+const { yards } = storeToRefs(workDetailsStore)
 const invitations = ref([])
 const rules = {
   cell(value) {
@@ -148,7 +150,6 @@ const onSubmit = async () => {
         </template>
         <template v-if="stepper.isCurrent('work-details')">
           <Yards
-            :yards="yards"
             class="mx-auto"
           />
         </template>

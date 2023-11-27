@@ -341,11 +341,12 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Getting invited users data from the users and invitations collection
   const getInvitedUsersData = async userId => {
+    const invitations = []
     try {
       const q1 = query(collection(db, 'users'), where('invitedBy', '==', userId))
       const querySnapshot = await getDocs(q1)
       querySnapshot.docs.map(val => {
-        invitedUsersData.value.push({
+        invitations.push({
           id: val.data().email,
           value: val.data().email,
           type: val.data().type,
@@ -356,7 +357,7 @@ export const useAuthStore = defineStore('auth', () => {
       const q2 = query(collection(db, 'invitations'), where('invitedBy', '==', userId))
       const querySnapshot2 = await getDocs(q2)
       querySnapshot2.docs.map(val => {
-        invitedUsersData.value.push({
+        invitations.push({
           id: val.data().email,
           value: val.data().email,
           type: val.data().type,
@@ -364,6 +365,7 @@ export const useAuthStore = defineStore('auth', () => {
           docId: val.id,
         })
       })
+      invitedUsersData.value = invitations
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
