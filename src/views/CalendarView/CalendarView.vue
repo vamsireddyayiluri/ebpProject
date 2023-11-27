@@ -4,8 +4,10 @@ import { getColor } from '~/helpers/colors'
 import bookingsData from '~/fixtures/bookings.json'
 import moment from 'moment-timezone'
 import { getBookingLoad, totalFulfilledBookings } from '~/helpers/countings'
+import { useDate } from "~/composables"
 
 const router = useRouter()
+const { getFormattedDate } = useDate()
 const options = ref({
   initialEvents: [],
 })
@@ -23,7 +25,7 @@ const getEvents = bookings => {
       metadata: {
         name: `event-${Math.floor(Math.random() * 9) + 1}`,
         ref: i.ref,
-        progress: getBookingLoad(i.booked, i.amount),
+        progress: getBookingLoad(i.committed, i.containers),
         carriers: i.carriers,
       },
     }
@@ -61,7 +63,7 @@ const nextExpiring = () => {
     moment(a.expiryDate).diff(moment(b.expiryDate)),
   )
 
-  return moment(datesArray[0]?.expiryDate).format('MM/DD/YYYY')
+  return getFormattedDate(datesArray[0]?.expiryDate)
 }
 const openCreateBookingDialog = () => {
   createBookingDialog.value.show(true)

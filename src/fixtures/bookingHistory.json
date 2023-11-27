@@ -1,7 +1,7 @@
 [
   {
-    "amount": 26,
-    "booked": 8,
+    "containers": 26,
+    "committed": 8,
     "ref": 1196,
     "id": "8748a4ef951cab59d4262a7a78907",
     "created": "2023-11-10T14:30:49+00:00",
@@ -28,8 +28,8 @@
   },
   {
     "id": "5bf48a4ef951cab59d4262a7a78908",
-    "amount": 15,
-    "booked": 5,
+    "containers": 15,
+    "committed": 5,
     "ref": 1179,
     "line": {
       "id": "9d8d49984308f116",

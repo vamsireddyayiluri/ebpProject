@@ -2,6 +2,8 @@
 import { getColor } from '~/helpers/colors'
 import { getAllLines } from '@qualle-admin/qutil/dist/ssl'
 import { useBookingsStore } from '~/stores/bookings.store'
+import { useDate } from "~/composables"
+import { useWorkDetailsStore } from "~/stores/workDetails.store"
 
 const props = defineProps({
   clickedOutside: Boolean,
@@ -9,14 +11,16 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 const { createBooking, createDraft } = useBookingsStore()
+const workDetailsStore = useWorkDetailsStore()
+const { getFormattedDate } = useDate()
 const booking = ref({
-  ref: null,
-  containers: null,
+  ref: 'null',
+  containers: 1,
   line: null,
   bookingExpiry: null,
   preferredDate: null,
   location: null,
-  equipmentType: null,
+  equipmentType: '20hc',
   scacList: { list: [] },
 })
 const confirmDraftsDialog = ref(null)
@@ -29,10 +33,10 @@ const rules = {
   },
 }
 const updateExpiryDate = value => {
-  booking.value.bookingExpiry = value
+  booking.value.bookingExpiry = getFormattedDate(value)
 }
 const updatePreferredDate = value => {
-  booking.value.preferredDate = value
+  booking.value.preferredDate = getFormattedDate(value)
 }
 const isDisabled = computed(() => {
   const values = Object.values(booking.value)

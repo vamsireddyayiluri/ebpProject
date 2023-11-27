@@ -152,7 +152,7 @@ onMounted(() => {
             required
           />
           <Textfield
-            v-model="booking.amount"
+            v-model="booking.containers"
             label="Number of containers*"
             type="number"
             required
@@ -219,11 +219,11 @@ onMounted(() => {
             </Typography>
             <ProgressCircular
               :size="260"
-              :value="getBookingLoad(booking.booked, booking.amount)"
+              :value="getBookingLoad(booking.committed, booking.containers)"
               text="fullfilled"
               class="flex my-1 mx-auto"
             >
-              {{ getBookingLoad(booking.booked, booking.amount) }}%
+              {{ getBookingLoad(booking.committed, booking.containers) }}%
             </ProgressCircular>
           </div>
           <div class="statisticsTimeline">

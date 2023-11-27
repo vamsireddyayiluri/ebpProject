@@ -7,7 +7,7 @@ import { emailRegex, phoneRegex } from '@qualle-admin/qutil/dist/patterns'
 
 const authStore = useAuthStore()
 const { currentUser, userData } = storeToRefs(authStore)
-const formatDate = useDate()
+const { getFormattedDateTime } = useDate()
 const accountInfo = ref({
   fullName: userData.value.fullName,
   company: userData.value.company || 'Exporter company',
@@ -15,7 +15,7 @@ const accountInfo = ref({
   email: currentUser.value.email,
   password: userData.value.password,
   passwordLastChanges:
-    'Last change ' + formatDate(currentUser.value.reloadUserInfo.passwordUpdatedAt),
+    'Last change ' + getFormattedDateTime(currentUser.value.reloadUserInfo.passwordUpdatedAt),
   imageUrl: currentUser.value.photoURL,
 })
 const isPasswordVisible = ref(false)

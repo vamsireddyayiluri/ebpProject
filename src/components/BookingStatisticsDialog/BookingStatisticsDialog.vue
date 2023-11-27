@@ -69,8 +69,8 @@ const selectedBooking = ref(false)
                 </Button>
               </div>
             </div>
-            <ProgressLinear :value="getBookingLoad(i.booked, i.amount)">
-              {{ getBookingLoad(i.booked, i.amount) }}%
+            <ProgressLinear :value="getBookingLoad(i.committed, i.containers)">
+              {{ getBookingLoad(i.committed, i.containers) }}%
             </ProgressLinear>
           </Card>
         </template>

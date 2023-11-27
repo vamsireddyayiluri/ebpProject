@@ -1,7 +1,7 @@
 [
   {
-    "amount": 40,
-    "booked": 33,
+    "containers": 40,
+    "committed": 33,
     "ref": 5488,
     "id": "AAAA0000007_bf48a4ef951cab59d4262a7a78907",
     "line": {
@@ -27,8 +27,8 @@
     "status": ""
   },
   {
-    "amount": 26,
-    "booked": 8,
+    "containers": 26,
+    "committed": 8,
     "ref": 10048,
     "id": "AAAA5555005_bf48a4ef951cab59d4262a7a78907",
     "created": "2023-11-10T14:30:49+00:00",
@@ -53,8 +53,8 @@
     "status": ""
   },
   {
-    "amount": 10,
-    "booked": 7,
+    "containers": 10,
+    "committed": 7,
     "ref": 1198,
     "id": "AAAA2000005_bf48a4ef951cab59d4262a7a78907",
     "line": {
@@ -79,8 +79,8 @@
     "status": ""
   },
   {
-    "amount": 23,
-    "booked": 22,
+    "containers": 23,
+    "committed": 22,
     "ref": 5548,
     "id": "AAAA0050002_bf48a4ef955cab59d4262a7a7890",
     "line": {
@@ -105,8 +105,8 @@
   },
   {
     "id": "AAAA0000005_bf48a4ef951cab59d4262a7a78908",
-    "amount": 10,
-    "booked": 5,
+    "containers": 10,
+    "committed": 5,
     "ref": 1148,
     "line": {
       "id": "0156d8f6819b2de4",
@@ -131,8 +131,8 @@
   },
   {
     "id": "AAAA0030005_bf48a4ef951cab59d4262a7a78908",
-    "amount": 70,
-    "booked": 55,
+    "containers": 70,
+    "committed": 55,
     "ref": 1149,
     "line": {
       "id": "0156d8f6819b2de4",
@@ -158,8 +158,8 @@
   },
   {
     "id": "AAAA1000005_bf48a4ef951cab59d4262a7a78908",
-    "amount": 130,
-    "booked": 59,
+    "containers": 130,
+    "committed": 59,
     "ref": 1150,
     "line": {
       "id": "0156d8f6819b2de4",

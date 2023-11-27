@@ -1,11 +1,14 @@
 <script setup>
 import { useDisplay } from 'vuetify'
+import { useWorkDetailsStore } from "~/stores/workDetails.store"
+import { useAuthStore } from "~/stores/auth.store"
+import { storeToRefs } from "pinia"
+import { uid } from "uid"
 
-const props = defineProps({
-  yards: Array,
-})
 const attrs = useAttrs()
-const { yards } = toRefs(props)
+const workDetailsStore = useWorkDetailsStore()
+const authStore = useAuthStore()
+const { yards } = storeToRefs(workDetailsStore)
 const { xs } = useDisplay()
 const newLocation = ref({
   address: null,
@@ -13,19 +16,21 @@ const newLocation = ref({
 })
 const commodity = ref(null)
 const removeLocationDialog = ref(null)
-const selectItems = [
-  { id: 10, value: 'item1', label: 'Menu item #1' },
-  { id: 1, value: 'item2', label: 'Menu item #2' },
-  { id: 2, value: 'item3', label: 'Menu item #3' },
-  { id: 3, value: 'item4', label: 'Menu item #4' },
-  { id: 4, value: 'item5', label: 'Menu item #5' },
-]
 
-const addLocation = () => {
-  yards.value.push({
-    id: new Date().valueOf(),
-    value: newLocation.value.address.value,
+const onSelectLocation = location => {
+  newLocation.value.address = location.fullAddress
+  newLocation.value.lat = location.lat
+  newLocation.value.lng = location.lng
+}
+const addYard = async () => {
+  await workDetailsStore.addYard({
+    id: uid(28),
+    value: newLocation.value.address,
     label: newLocation.value.label,
+    lat: newLocation.value.lat,
+    lng: newLocation.value.lng,
+    geohash: '',
+    commodity: commodity.value,
     text: `Commodity: ${commodity.value}`,
   })
   newLocation.value.address = null
@@ -36,9 +41,8 @@ const openRemoveLocationDialog = locationId => {
   removeLocationDialog.value.show(true)
   removeLocationDialog.value.data = yards.value.find(l => l.id === locationId)
 }
-const removeLocation = async () => {
-  const index = yards.value.findIndex(q => q.id === removeLocationDialog.value.data.id)
-  yards.value.splice(index, 1)
+const removeYard = async () => {
+  await workDetailsStore.removeYard(removeLocationDialog.value.data.id)
   removeLocationDialog.value.show(false)
 }
 </script>
@@ -56,16 +60,13 @@ const removeLocation = async () => {
         cols="12"
         sm="6"
       >
-        <Autocomplete
-          v-model="newLocation.address"
-          :items="selectItems"
+        <Location
           label="Address"
           hint="For e.g. 2972 Westheimer Santa Ana, Illinois"
           persistent-hint
-          item-title="label"
-          item-value="id"
-          return-object
+          :autofocus="false"
           :prepend-icon="xs ? '' : 'mdi-map'"
+          @onSelect="onSelectLocation"
         />
       </VCol>
       <VCol
@@ -99,7 +100,7 @@ const removeLocation = async () => {
         type="button"
         :disabled="!newLocation?.address || !newLocation?.label"
         class="w-full mx-0 sm:!ml-4 sm:!w-auto"
-        @click="addLocation"
+        @click="addYard"
       >
         Add
       </Button>
@@ -121,7 +122,7 @@ const removeLocation = async () => {
       <RemoveCancelDialog
         btn-name="Remove"
         @close="removeLocationDialog.show(false)"
-        @onClickBtn="removeLocation"
+        @onClickBtn="removeYard"
       >
         <Typography>
           Are you sure you want to remove

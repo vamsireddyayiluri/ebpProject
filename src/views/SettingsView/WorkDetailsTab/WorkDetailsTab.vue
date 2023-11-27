@@ -6,7 +6,7 @@ import { storeToRefs } from "pinia"
 const workDetailsStore = useWorkDetailsStore()
 const authStore = useAuthStore()
 const { orgData } = storeToRefs(authStore)
-const yards = ref([])
+const { yards } = storeToRefs(workDetailsStore)
 
 const validateWorkDetail = computed(() => {
   if (yards.value.length !== orgData.value.workDetails.length) return true
@@ -19,13 +19,16 @@ const validateWorkDetail = computed(() => {
   return false
 })
 const onSave = async () => {
-  await workDetailsStore.saveYards(yards.value)
+  const filteredYards = yards.value.map(({text, ...rest}) => {
+    return rest
+  })
+  await workDetailsStore.saveYards(filteredYards)
 }
 const cancelChanges = () => {
   yards.value = [...orgData.value.workDetails]
 }
 onMounted(() => {
-  yards.value = [...orgData.value.workDetails]
+  workDetailsStore.getYards()
 })
 </script>
 
@@ -38,7 +41,6 @@ onMounted(() => {
   </Typography>
   <Yards
     class="w-full md:w-11/12 lg:w-8/12"
-    :yards="yards"
   />
   <SaveCancelChanges
     class="mt-10"
