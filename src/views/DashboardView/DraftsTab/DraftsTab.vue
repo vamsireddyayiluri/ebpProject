@@ -210,7 +210,7 @@ watch(searchValue, value => {
           :search-value="searchValue"
           :loading="loading"
           @selectTableRow="selectTableRow"
-          @editDraft="id => router.push({ path: `booking/${id}`, state: { from: 'draft' } })"
+          @editDraft="id => router.push({ path: `booking/${id}`, query: {from: 'draft'} })"
         />
       </div>
     </template>

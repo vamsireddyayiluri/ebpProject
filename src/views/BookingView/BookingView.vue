@@ -9,10 +9,12 @@ import { getBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { storeToRefs } from 'pinia'
 import { statuses } from '~/constants/statuses'
-import {useBookingHistoryStore} from "~/stores/bookingHistory.store"
+import { useBookingHistoryStore } from "~/stores/bookingHistory.store"
+import { cloneDeep, isEqual } from "lodash"
 
 const authStore = useAuthStore()
-const { publishDraft, removeFromNetwork, deleteBooking } = useBookingsStore()
+const { getBookings, publishDraft, removeFromNetwork, deleteBooking, updateBooking } = useBookingsStore()
+const { getBookingHistory, deleteHistoryBooking } = useBookingHistoryStore()
 const { bookings, drafts } = storeToRefs(useBookingsStore())
 const { bookings: historyBookings } = storeToRefs(useBookingHistoryStore())
 const route = useRoute()
@@ -36,8 +38,9 @@ const toggleFlyoutPosition = () => {
     drawer.value = true
   }, 350)
 }
-const fromDraft = router.options.history.state.from === 'draft'
-const fromHistory = router.options.history.state.from === 'history'
+const queryParams = router.currentRoute.value.query
+const fromDraft = queryParams.from === 'draft'
+const fromHistory = queryParams.from === 'history'
 
 const handleBookingChanges = async () => {
   if (fromDraft) {
@@ -52,25 +55,39 @@ const handleBookingChanges = async () => {
     }
   }
 }
-
 const openRemoveDialog = () => {
   removeBookingDialog.value.show(true)
   removeBookingDialog.value.data = booking.value
 }
 const deleteFromPlatform = async () => {
-  deleteBooking(booking.value.id)
+  if (fromHistory) {
+    await deleteHistoryBooking(booking.value.id)
+  } else {
+    await deleteBooking(booking.value.id, fromDraft)
+  }
   router.push('/dashboard')
 }
-const cancelChanges = () => {}
+
+const validateBooking = computed(() => {
+  return isEqual(booking.value, bookings.value.find(i => i.id === booking.value.id))
+})
+const cancelChanges = () => {
+  booking.value = cloneDeep(useArrayFind(
+    fromDraft ? drafts.value : bookings.value,
+    i => i.id === route.params.id,
+  ).value)
+}
 const onSave = () => {
-  console.log('save ', booking.value)
+  updateBooking(booking.value, fromDraft? 'drafts': 'bookings')
 }
 
-onMounted(() => {
-  booking.value = useArrayFind(
+onMounted(async () => {
+  await getBookings(fromDraft? {draft: true}: {})
+  if (fromHistory) await getBookingHistory()
+  booking.value = cloneDeep(useArrayFind(
     fromDraft ? drafts.value : fromHistory? historyBookings.value: bookings.value,
     i => i.id === route.params.id,
-  ).value
+  ).value)
 })
 </script>
 
@@ -111,9 +128,15 @@ onMounted(() => {
         <div class="flex items-center gap-4 mb-1.5">
           <Typography type="text-h1">
             Booking <b>Ref#{{ booking.ref }}</b>
-            <span :style="{color: getColor('textSecondary')}">
+            <span :style="{ color: getColor('textSecondary') }">
               {{ fromDraft ? ' (Draft)' : '' }}
-              {{ booking.status? booking.status === statuses.completed ? '(Completed)' : '(Expired)' : '' }}
+              {{
+                booking.status
+                  ? booking.status === statuses.completed
+                    ? '(Completed)'
+                    : '(Expired)'
+                  : ''
+              }}
             </span>
           </Typography>
           <IconButton
@@ -143,8 +166,8 @@ onMounted(() => {
           created by Operator #23
         </Typography>
         <div
-          class="w-full md:w-3/4 grid sm:grid-cols-2 grid-cols-1 gap-6 mt-10 [&>div]:h-fit"
-          :class="{ 'md:w-full': drawer && !flyoutBottom }"
+          class="w-full md:w-3/4 grid sm:grid-cols-2 grid-cols-1 gap-6 mt-10 [&>div]:h-fit "
+          :class="{ 'md:w-full': drawer && !flyoutBottom, 'pointer-events-none': fromHistory }"
         >
           <Textfield
             v-model="booking.ref"
@@ -193,6 +216,7 @@ onMounted(() => {
         </div>
         <SaveCancelChanges
           v-if="!fromHistory"
+          :disabled="validateBooking"
           @onSave="onSave"
           @onCancel="cancelChanges"
         />

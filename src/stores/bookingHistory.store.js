@@ -1,23 +1,32 @@
-import { defineStore } from 'pinia'
-import bookingHistoryData from '~/fixtures/bookingHistory.json'
+import { defineStore, storeToRefs } from 'pinia'
 import { useAlertStore } from '~/stores/alert.store'
+import { collection, deleteDoc, doc, getDocs, query, where } from "firebase/firestore"
+import { db } from "~/firebase"
+import { useAuthStore } from "~/stores/auth.store"
 
 export const useBookingHistoryStore = defineStore('bookingHistory', () => {
   const alertStore = useAlertStore()
-  const bookings = ref(bookingHistoryData)
+  const authStore = useAuthStore()
+  const { userData } = storeToRefs(authStore)
+  const bookings = ref([])
+  const loading = ref(false)
 
-  const deleteBooking = async id => {
+  const getBookingHistory = async () => {
+    loading.value = true
+    const userId = userData.value.userId
+    const bookingsQuery = query(collection(db, 'booking_history'), where('owner', '==', userId))
+    const querySnapshot = await getDocs(bookingsQuery)
+    bookings.value = querySnapshot.docs.map(doc => doc.data())
+    loading.value = false
+  }
+  const deleteHistoryBooking = async id => {
     try {
       const index = bookings.value.findIndex(i => i.id === id)
-      await new Promise((resolve, reject) => {
-        setTimeout(() => {
-          if (index > -1) {
-            bookings.value.splice(index, 1)
-            resolve()
-            alertStore.info({ content: 'Bookings was deleted from history' })
-          }
-        }, 200)
-      })
+      if (index > -1) {
+        await deleteDoc(doc(db, 'booking_history', id))
+        bookings.value.splice(index, 1)
+        alertStore.info({ content: 'Bookings was deleted from history' })
+      }
     } catch (e) {
       alertStore.info({ content: e })
     }
@@ -25,6 +34,8 @@ export const useBookingHistoryStore = defineStore('bookingHistory', () => {
 
   return {
     bookings,
-    deleteBooking,
+    loading,
+    getBookingHistory,
+    deleteHistoryBooking,
   }
 })

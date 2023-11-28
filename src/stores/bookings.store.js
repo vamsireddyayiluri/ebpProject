@@ -1,10 +1,12 @@
 import { defineStore, storeToRefs } from 'pinia'
 import { useAlertStore } from '~/stores/alert.store'
 import { uid } from 'uid'
-import {collection, deleteDoc, doc, getDocs, query, setDoc, where} from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore'
 import { db } from '~/firebase'
 import { useAuthStore } from '~/stores/auth.store'
-import { getLocalTime } from '@qualle-admin/qutil/dist/date'
+import { getLocalServerTime, getLocalTime } from '@qualle-admin/qutil/dist/date'
+import { capitalize } from 'lodash'
+import moment from "moment-timezone"
 
 export const useBookingsStore = defineStore('bookings', () => {
   const alertStore = useAlertStore()
@@ -24,9 +26,28 @@ export const useBookingsStore = defineStore('bookings', () => {
     } else {
       const bookingsQuery = query(collection(db, 'bookings'), where('owner', '==', userId))
       const querySnapshot = await getDocs(bookingsQuery)
-      bookings.value = querySnapshot.docs.map(doc => doc.data())
+      const data = querySnapshot.docs.map(doc => doc.data())
+      validateBookingsExpiry(data)
+      bookings.value = data
     }
     loading.value = false
+  }
+  const validateBookingsExpiry = async bookings => {
+    const today = getLocalServerTime(moment(), 'America/Los_Angeles')
+    for (const b of bookings) {
+      if (moment(b.bookingExpiry).isBefore(moment(today))) {
+        await moveToHistory(b)
+      }
+    }
+  }
+  const moveToHistory = async booking => {
+    try {
+      await deleteDoc(doc(db, 'bookings', booking.id))
+      await setDoc(doc(collection(db, 'booking_history'), booking.id), {...booking, status: 'expired', updatedAt: getLocalTime().format() })
+    }
+    catch ({ message }) {
+      alertStore.warning({ content: 'Did not move to history' + message })
+    }
   }
   const createBookingObj = booking => {
     const userId = userData.value.userId
@@ -44,7 +65,7 @@ export const useBookingsStore = defineStore('bookings', () => {
   const createBooking = async booking => {
     const newBooking = createBookingObj(booking)
     try {
-      await setDoc(doc(collection(db, 'bookings'), newBooking.id), newBooking)
+      await setDoc(doc(collection(db, 'booking_history'), newBooking.id), newBooking)
       bookings.value.push(newBooking)
       alertStore.info({ content: 'Booking created' })
     } catch ({ message }) {
@@ -79,30 +100,40 @@ export const useBookingsStore = defineStore('bookings', () => {
           alertStore.info({content: 'Bookings removed!'})
         } else alertStore.warning({ content: 'Booking not found' })
       }
-    } catch (e) {
-      alertStore.warning({ content: e })
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
     }
   }
   const publishDraft = async booking => {
     try {
       await deleteBooking(booking.id, true)
+      await setDoc(doc(collection(db, 'bookings'), booking.id), booking)
       bookings.value.push(booking)
       alertStore.info({ content: `Booking Ref#${booking.id} was published` })
 
       return 'published'
-    } catch (e) {
-      alertStore.warning({ content: e })
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
     }
   }
   const removeFromNetwork = async booking => {
     try {
       await deleteBooking(booking.id)
+      await setDoc(doc(collection(db, 'drafts'), booking.id), booking)
       drafts.value.push(booking)
       alertStore.info({ content: `Booking Ref#${booking.id} moved to the draft` })
 
       return 'deleted'
-    } catch (e) {
-      alertStore.warning({ content: e })
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
+  const updateBooking = async (booking, collectionName) => {
+    try {
+      await updateDoc(doc(db, collectionName, booking.id), { ...booking })
+      alertStore.info({content: `${capitalize(collectionName).charAt(0) + collectionName.slice(1)} updated`})
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
     }
   }
 
@@ -116,5 +147,6 @@ export const useBookingsStore = defineStore('bookings', () => {
     createDraft,
     publishDraft,
     removeFromNetwork,
+    updateBooking,
   }
 })
