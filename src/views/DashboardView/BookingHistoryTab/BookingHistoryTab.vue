@@ -7,7 +7,7 @@ import {useBookingHistoryStore} from "~/stores/bookingHistory.store"
 import {storeToRefs} from "pinia"
 
 const bookingsStore = useBookingHistoryStore()
-const { bookings } = storeToRefs(bookingsStore)
+const { loading } = storeToRefs(bookingsStore)
 const { smAndDown } = useDisplay()
 const { bookingsHistoryHeaders } = useHeaders()
 const { bookingHistoryActions } = useActions()
@@ -16,15 +16,14 @@ const router = useRouter()
 const statistics = ref(truckersData)
 const tableHeight = ref(0)
 const searchValue = ref(null)
-const loading = ref(false)
-const computedSearchedEntities = ref(bookings.value)
+const computedSearchedEntities = ref(bookingsStore.bookings)
 const removeBookingDialog = ref(null)
 
 const onClearSearch = () => {
   loading.value = true
 
   setTimeout(() => {
-    computedSearchedEntities.value = bookings.value
+    computedSearchedEntities.value = bookingsStore.bookings
 
     loading.value = false
   }, 1000)
@@ -35,7 +34,7 @@ const debouncedSearch = useDebounceFn(searchValue => {
     onClearSearch()
   } else {
     computedSearchedEntities.value = useArrayFilter(
-      bookings.value,
+      bookingsStore.bookings,
       ({ ref, line: {label}, location: {label: address} }) =>
         useArraySome(
           useArrayMap(Object.values({ ref, label, address }), value => String(value).toLowerCase()).value,
@@ -52,14 +51,18 @@ const containerActionHandler = ({ action, e }) => {
   if (action === 'duplicate') {}
   if (action === 're-activate') {}
 }
-const removeBooking = id => {
-  bookingsStore.deleteBooking(id)
+const removeBooking = async id => {
+  await bookingsStore.deleteHistoryBooking(id)
   removeBookingDialog.value.show(false)
 }
 const onSelectRow = e => {
-  router.push({ path: `booking/${e.id}`, state: { from: 'history' }})
+  router.push({ path: `booking/${e.id}`, query: { from: 'history' }})
 }
 
+onMounted(async () => {
+  await bookingsStore.getBookingHistory()
+  computedSearchedEntities.value = bookingsStore.bookings
+})
 const tableId = 'bookingsHistoryTable'
 onMounted(() => {
   setTimeout(() => {

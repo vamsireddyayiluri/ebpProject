@@ -43,7 +43,10 @@ watch(tab, () => mapToggled.value = true)
           class="mr-[90px]"
         />
       </template>
-      <template #actions>
+      <template
+        v-if="tab !== 3"
+        #actions
+      >
         <Button
           prepend-icon="mdi-map-marker"
           variant="plain"
