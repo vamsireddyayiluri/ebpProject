@@ -1,17 +1,19 @@
 <script setup>
 import { Main } from '@layouts'
 import { getColor } from '~/helpers/colors'
-import bookingsData from '~/fixtures/bookings.json'
 import moment from 'moment-timezone'
 import { getBookingLoad, totalFulfilledBookings } from '~/helpers/countings'
 import { useDate } from "~/composables"
+import { storeToRefs } from "pinia"
+import { useBookingsStore } from "~/stores/bookings.store"
 
 const router = useRouter()
 const { getFormattedDate } = useDate()
+const bookingsStore = useBookingsStore()
+const { loading, bookings } = storeToRefs(bookingsStore)
 const options = ref({
   initialEvents: [],
 })
-const bookings = ref(bookingsData)
 const removeBookingDialog = ref(null)
 const createBookingDialog = ref(null)
 
@@ -20,8 +22,8 @@ const getEvents = bookings => {
     return {
       id: i.id,
       title: `Ref# ${i.ref}`,
-      start: i.created,
-      end: i.expiryDate,
+      start: i.createdAt,
+      end: i.bookingExpiry,
       metadata: {
         name: `event-${Math.floor(Math.random() * 9) + 1}`,
         ref: i.ref,
@@ -31,7 +33,7 @@ const getEvents = bookings => {
     }
   })
 }
-const events = ref(getEvents(bookings.value))
+const events = computed(() => getEvents(bookingsStore.bookings))
 
 const onEventClick = e => console.log(e.event)
 const onEvents = e => console.log(e)
@@ -45,9 +47,8 @@ const onRemove = e => {
   removeBookingDialog.value.data = e
 }
 
-const removeBooking = id => {
-  const index = bookings.value.findIndex(i => i.id === id)
-  bookings.value.splice(index, 1)
+const removeBooking = async id => {
+  await bookingsStore.deleteBooking(id)
   removeBookingDialog.value.show(false)
 
   // remove in calendar
@@ -55,19 +56,19 @@ const removeBooking = id => {
 }
 const today = moment()
 
-const activeBookings = computed(() => {
-  return bookings.value.filter(b => moment(b.expiryDate).isSameOrAfter(today, 'day'))
-})
-const nextExpiring = () => {
-  const datesArray = activeBookings.value.sort((a, b) =>
-    moment(a.expiryDate).diff(moment(b.expiryDate)),
+const nextExpiring = computed(() => {
+  const datesArray = bookings.value.filter(b => b).sort((a, b) =>
+    moment(a.bookingExpiry).diff(moment(b.bookingExpiry)),
   )
 
-  return getFormattedDate(datesArray[0]?.expiryDate)
-}
+  return getFormattedDate(datesArray[0]?.bookingExpiry)
+})
 const openCreateBookingDialog = () => {
   createBookingDialog.value.show(true)
 }
+onMounted(async () => {
+  await bookingsStore.getBookings({})
+})
 </script>
 
 <template>
@@ -80,7 +81,7 @@ const openCreateBookingDialog = () => {
       <template #controls>
         <div class="flex items-center py-1 sm:!py-5">
           <Typography class="flex justify-center flex-wrap gap-2">
-            <b>{{ nextExpiring() }}</b>
+            <b>{{ nextExpiring }}</b>
             <div
               class="text-center"
               :style="{ color: getColor('textSecondary') }"
@@ -106,7 +107,7 @@ const openCreateBookingDialog = () => {
             class="mx-4"
           />
           <Typography class="flex justify-center flex-wrap gap-2">
-            <b>{{ totalFulfilledBookings(activeBookings) }}</b>
+            <b>{{ totalFulfilledBookings(bookings) }}</b>
             <div
               class="text-center"
               :style="{ color: getColor('textSecondary') }"
@@ -117,7 +118,10 @@ const openCreateBookingDialog = () => {
         </div>
       </template>
     </SubHeader>
-    <div class="h-[calc(100vh-196px)] mt-10 mx-8 mb-8">
+    <div
+      v-if="!loading"
+      class="h-[calc(100vh-196px)] mt-10 mx-8 mb-8"
+    >
       <Calendar
         :events="events"
         :options="options"
@@ -153,7 +157,7 @@ const openCreateBookingDialog = () => {
       <RemoveCancelDialog
         btn-name="Remove"
         @close="removeBookingDialog.show(false)"
-        @onClickBtn="removeBooking(removeBookingDialog.data.extendedProps.metadata.ref)"
+        @onClickBtn="removeBooking(removeBookingDialog.data.id)"
       >
         <Typography>
           Are you sure you want to remove booking

@@ -60,12 +60,13 @@ export const useBookingsStore = defineStore('bookings', () => {
       committed: 0,
       createdAt: getLocalTime().format(),
       updatedAt: getLocalTime().format(),
+      carriers: [],
     }
   }
   const createBooking = async booking => {
     const newBooking = createBookingObj(booking)
     try {
-      await setDoc(doc(collection(db, 'booking_history'), newBooking.id), newBooking)
+      await setDoc(doc(collection(db, 'bookings'), newBooking.id), newBooking)
       bookings.value.push(newBooking)
       alertStore.info({ content: 'Booking created' })
     } catch ({ message }) {
