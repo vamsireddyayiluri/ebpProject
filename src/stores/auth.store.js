@@ -3,45 +3,43 @@ import { auth, db } from '~/firebase'
 import {
   addDoc,
   collection,
-  getDocs,
-  query,
-  setDoc,
-  where,
+  deleteDoc,
   doc,
   getDoc,
-  deleteDoc,
-  updateDoc,
+  getDocs,
   onSnapshot,
+  query,
+  setDoc,
+  updateDoc,
+  where,
 } from 'firebase/firestore'
-import moment from 'moment-timezone'
 import { getDownloadURL, getStorage, ref as sref, uploadBytes } from 'firebase/storage'
 import {
   createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  sendEmailVerification,
-  updateProfile,
-  updateEmail,
-  reload,
   EmailAuthProvider,
   reauthenticateWithCredential,
-  updatePassword,
-  sendSignInLinkToEmail, signInWithEmailLink,
+  reload,
+  sendEmailVerification,
+  signInWithEmailAndPassword,
+  signOut,
+  updateEmail,
+  updateProfile,
 } from 'firebase/auth'
 import { useAlertStore } from '~/stores/alert.store'
-import { getLocalServerTime, getLocalTime } from '@qualle-admin/qutil/dist/date'
+import { getLocalTime } from '@qualle-admin/qutil/dist/date'
 import { getOrgId } from '~/stores/helpers'
-import { userTypes } from "~/constants/userTypes"
+import { userTypes } from '~/constants/userTypes'
 import firebase from 'firebase/compat/app'
+import {useInvitationStore} from "~/stores/invitation.store";
 
 export const useAuthStore = defineStore('auth', () => {
   const router = useRouter()
   const alertStore = useAlertStore()
+  const invitationStore = useInvitationStore()
   const currentUser = ref(null)
   const storage = getStorage()
   const userData = ref(null)
   const orgData = ref(null)
-  const invitedUsersData = ref([])
   const isLoading = ref(null)
 
   const login = async ({ email, password }) => {
@@ -174,7 +172,6 @@ export const useAuthStore = defineStore('auth', () => {
         password: data.password,
         type: userTypes.admin,
         company: data.company,
-        invitations: data.invitations,
       }
 
       const q = query(collection(db, 'invitations'), where('email', '==', data.email))
@@ -204,7 +201,7 @@ export const useAuthStore = defineStore('auth', () => {
       }
 
       if (data.invitations) {
-        await sendInvitationLink(data.invitations)
+        await invitationStore.sendInvitationLink(data.invitations)
       }
 
       await deleteDoc(doc(db, 'pending_verifications', data.id))
@@ -322,55 +319,6 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // removing invited user
-  const removeInvitedUser = async payload => {
-    const { docId } = payload
-    try {
-      await deleteDoc(doc(db, 'users', docId))
-      alertStore.info({ content: 'User removed!' })
-    }
-    catch ({ message }) {
-    }
-    try {
-      await deleteDoc(doc(db, 'invitations', docId))
-      alertStore.info({ content: 'User removed!' })
-    }
-    catch (error) {
-    }
-  }
-
-  // Getting invited users data from the users and invitations collection
-  const getInvitedUsersData = async userId => {
-    const invitations = []
-    try {
-      const q1 = query(collection(db, 'users'), where('invitedBy', '==', userId))
-      const querySnapshot = await getDocs(q1)
-      querySnapshot.docs.map(val => {
-        invitations.push({
-          id: val.data().email,
-          value: val.data().email,
-          type: val.data().type,
-          isLoggedIn: true,
-          docId: val.id,
-        })
-      })
-      const q2 = query(collection(db, 'invitations'), where('invitedBy', '==', userId))
-      const querySnapshot2 = await getDocs(q2)
-      querySnapshot2.docs.map(val => {
-        invitations.push({
-          id: val.data().email,
-          value: val.data().email,
-          type: val.data().type,
-          isLoggedIn: false,
-          docId: val.id,
-        })
-      })
-      invitedUsersData.value = invitations
-    } catch ({ message }) {
-      alertStore.warning({ content: message })
-    }
-  }
-
   // Uploading user profile image into firebase storage
   const updateUserAvatar = async file => {
     try {
@@ -383,119 +331,6 @@ export const useAuthStore = defineStore('auth', () => {
       alertStore.info({ content: 'Image updated!' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
-    }
-  }
-
-  // validating invitation link wheater id is exists in collection or not
-  const checkInvitation = async id => {
-    try {
-      const docSnap = await getDoc(doc(db, 'invitations', `${id}`))
-      if (docSnap.exists()) {
-        const expiry = docSnap.data().expiredAt
-        const today = getLocalServerTime(moment(), 'America/Los_Angeles')
-        if (moment(expiry).isSameOrAfter(moment(today))) {
-          return true
-        } else {
-          router.push({ name: 'invitation-expired' })
-        }
-      } else {
-        router.push({ name: 'invitation-revoked' })
-      }
-    } catch ({ message }) {
-      alertStore.warning({ content: message })
-    }
-  }
-
-  // getting invitation data based on the doc id
-  const getInvitationDocData = async id => {
-    try {
-      const docSnap = await getDoc(doc(db, 'invitations', `${id}`))
-      if (docSnap.exists()) {
-        return docSnap.data()
-      } else {
-        return null
-      }
-    } catch ({ message }) {
-      alertStore.warning({ content: message })
-    }
-  }
-
-  // validating email is exists in the user collection or not to invite
-  const validateInviteUserEmail = async payload => {
-    const q = query(collection(db, 'users'), where('email', '==', payload))
-
-    const docData = await getDocs(q)
-
-    return !docData.empty
-  }
-
-  // create invitation collection and send invitation mail
-  const sendInvitationLink = async members => {
-    for (const m of members) {
-      const q = query(collection(db, 'invitations'), where('email', '==', m.value))
-
-      const querySnapshot = await getDocs(q)
-
-      if (!querySnapshot.empty) {
-        alertStore.warning({content: 'Invitation exist'})
-      }
-      await setDoc(
-        doc(db, 'invitations', m.id),
-        {
-          invitationId: m.id,
-          email: m.value,
-          orgId: userData.value.orgId,
-          type: m.type,
-          createdAt: getLocalServerTime(moment(), 'America/Los_Angeles').format(),
-          expiredAt: getLocalServerTime(moment(), 'America/Los_Angeles').add(2, 'days').format(),
-          company: userData.value.company,
-          invitedBy: userData.value.userId,
-        },
-        { merge: true },
-      )
-
-      try {
-        await sendSignInLinkToEmail(auth, m.value, {
-          url: `${import.meta.env.VITE_APP_CANONICAL_URL}/?email=${m.value}&id=${m.id}`,
-          handleCodeInApp: true,
-        })
-        alertStore.info({content: 'Invitations send!'})
-
-      } catch (e) {
-        isLoading.value = false
-        alertStore.warning({content: e.message})
-      }
-    }
-  }
-
-  // Creating user collection after verification complete
-  const invitedUserRegistration = async form => {
-    isLoading.value = true
-    try {
-      const data = await signInWithEmailLink(auth, form.email, window.location.href)
-      router.push({ name: 'dashboard' })
-      currentUser.value = data.user
-      const newUser = {
-        fullName: form.fullName,
-        email: form.email,
-        createdAt: form.createdAt,
-        updatedAt: getLocalTime().format(),
-        userId: data.user.uid,
-        orgId: form.orgId,
-        password: form.password,
-        type: form.type,
-        company: form.company,
-        invitedBy: form.invitedBy,
-      }
-      await setDoc(doc(db, 'users', data.user.uid), newUser)
-      userData.value = newUser
-      await getOrgData(form.orgId)
-      await updatePassword(auth.currentUser, form.password)
-      await deleteDoc(doc(db, 'invitations', form.invitationId))
-      await router.push({name: 'dashboard'})
-      isLoading.value = false
-    } catch (e) {
-      alertStore.warning({content: e.message})
     }
   }
 
@@ -525,8 +360,6 @@ export const useAuthStore = defineStore('auth', () => {
     getVerificationData,
     getUserData,
     updateUserAvatar,
-    checkInvitation,
-    getInvitationDocData,
     updateUserEmailAddress,
     updateUserPassword,
     userData,
@@ -534,13 +367,7 @@ export const useAuthStore = defineStore('auth', () => {
     updateUserData,
     updateOrgData,
     updateCompanyNameInOrg,
-    removeInvitedUser,
-    getInvitedUsersData,
-    invitedUsersData,
-    validateInviteUserEmail,
     saveUserDataReports,
     getOrgData,
-    invitedUserRegistration,
-    sendInvitationLink,
   }
 })

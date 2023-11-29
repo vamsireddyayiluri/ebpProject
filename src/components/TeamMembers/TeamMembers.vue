@@ -4,6 +4,7 @@ import { useAlertStore } from '~/stores/alert.store'
 import { useAuthStore } from '~/stores/auth.store'
 import { userTypes } from '~/constants/userTypes'
 import { uid } from "uid"
+import {useInvitationStore} from "~/stores/invitation.store";
 
 const props = defineProps({
   teamMembers: Array,
@@ -12,6 +13,7 @@ const props = defineProps({
 const attrs = useAttrs()
 
 const authStore = useAuthStore()
+const invitationStore = useInvitationStore()
 const alertStore = useAlertStore()
 const route = useRoute()
 const { teamMembers } = toRefs(props)
@@ -24,7 +26,7 @@ const removeMemberDialog = ref(null)
 const workerId = ref('')
 
 const sendInvitation = async () => {
-  const value = await authStore.validateInviteUserEmail(newMember.email)
+  const value = await invitationStore.validateInviteUserEmail(newMember.email)
   if (value) {
     alertStore.warning({ content: 'User already exists with this email!' })
   } else {
@@ -43,10 +45,12 @@ const openRemoveMemberDialog = memberId => {
   removeMemberDialog.value.data = useArrayFind(teamMembers.value, m => m.id === memberId).value
 }
 
-const removeMember = async () => {
-  const index = teamMembers.value.findIndex(q => q.id === removeMemberDialog.value.data.id)
-  await authStore.removeInvitedUser(teamMembers.value[index])
-  teamMembers.value.splice(index, 1)
+const removeMember = async id => {
+  const res = await invitationStore.removeInvitedUser(id)
+  if (res === 'deleted') {
+    const index = teamMembers.value.findIndex(q => q.id === removeMemberDialog.value.data.id)
+    teamMembers.value.splice(index, 1)
+  }
   removeMemberDialog.value.show(false)
 }
 </script>
@@ -96,7 +100,7 @@ const removeMember = async () => {
       <RemoveCancelDialog
         btn-name="Remove"
         @close="removeMemberDialog.show(false)"
-        @onClickBtn="removeMember"
+        @onClickBtn="removeMember(removeMemberDialog.data.docId || removeMemberDialog.data.id)"
       >
         <Typography>
           Are you sure you want to remove <b>Member {{ removeMemberDialog?.data.value }}</b>
