@@ -33,10 +33,10 @@ const rules = {
   },
 }
 const updateExpiryDate = value => {
-  booking.value.bookingExpiry = getFormattedDate(value)
+  booking.value.bookingExpiry = value
 }
 const updatePreferredDate = value => {
-  booking.value.preferredDate = getFormattedDate(value)
+  booking.value.preferredDate = value
 }
 const isDisabled = computed(() => {
   const values = Object.values(booking.value)

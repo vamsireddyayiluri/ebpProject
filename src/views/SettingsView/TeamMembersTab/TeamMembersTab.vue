@@ -1,9 +1,12 @@
 <script setup>
-import {useAuthStore} from "~/stores/auth.store"
-import {storeToRefs} from "pinia"
+import { useAuthStore } from '~/stores/auth.store'
+import { storeToRefs } from 'pinia'
+import { useInvitationStore } from "~/stores/invitation.store"
 
 const authStore = useAuthStore()
-const { userData, orgData, invitedUsersData = [] } = storeToRefs(authStore)
+const invitationStore = useInvitationStore()
+const { userData } = storeToRefs(authStore)
+const { invitedUsersData = [] } = storeToRefs(invitationStore)
 const teamMembers = ref([])
 
 const validateMembers = computed(() => {
@@ -17,14 +20,14 @@ const validateMembers = computed(() => {
   return false
 })
 const onSave = async () => {
-  await authStore.sendInvitationLink(teamMembers.value)
+  await invitationStore.sendInvitationLink(teamMembers.value)
 }
 const cancelChanges = () => {
   teamMembers.value = [...invitedUsersData.value]
 }
 onMounted(async () => {
   if (userData.value) {
-    await authStore.getInvitedUsersData(userData.value.userId)
+    await invitationStore.getInvitedUsersData(userData.value.userId)
     teamMembers.value = [...invitedUsersData.value]
   }
 })
@@ -49,6 +52,4 @@ onMounted(async () => {
   />
 </template>
 
-<style lang="scss" scoped>
-
-</style>
+<style lang="scss" scoped></style>
