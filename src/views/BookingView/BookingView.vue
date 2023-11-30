@@ -9,14 +9,19 @@ import { getBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { storeToRefs } from 'pinia'
 import { statuses } from '~/constants/statuses'
-import { useBookingHistoryStore } from "~/stores/bookingHistory.store"
-import { cloneDeep, isEqual } from "lodash"
+import { useBookingHistoryStore } from '~/stores/bookingHistory.store'
+import { cloneDeep, isEqual } from 'lodash'
 
 const authStore = useAuthStore()
-const { getBookings, publishDraft, removeFromNetwork, deleteBooking, updateBooking } = useBookingsStore()
-const { getBookingHistory, deleteHistoryBooking } = useBookingHistoryStore()
-const { bookings, drafts } = storeToRefs(useBookingsStore())
-const { bookings: historyBookings } = storeToRefs(useBookingHistoryStore())
+const { getBookings, getBooking, publishDraft, removeFromNetwork, deleteBooking, updateBooking } =
+  useBookingsStore()
+const {
+  getBooking: getBookingInHistory,
+  deleteHistoryBooking,
+  reactivateBooking,
+  duplicateBooking,
+} = useBookingHistoryStore()
+const { bookings, drafts, loading } = storeToRefs(useBookingsStore())
 const route = useRoute()
 const router = useRouter()
 const { smAndDown } = useDisplay()
@@ -24,12 +29,14 @@ const drawer = ref(true)
 const flyoutBottom = ref(false)
 const booking = ref(null)
 const removeBookingDialog = ref(null)
+const activated = ref(null)
+const hideChip = ref(null)
 
 const updateExpiryDate = value => {
   booking.value.bookingExpiry = value
 }
 const updatePreferredDate = value => {
-  booking.value.bookingExpiry = value
+  booking.value.preferredDate = value
 }
 const toggleFlyoutPosition = () => {
   drawer.value = false
@@ -41,6 +48,8 @@ const toggleFlyoutPosition = () => {
 const queryParams = router.currentRoute.value.query
 const fromDraft = queryParams.from === 'draft'
 const fromHistory = queryParams.from === 'history'
+const completed = computed(() => booking.value?.status === statuses.completed)
+const expired = computed(() => booking.value?.status === statuses.expired)
 
 const handleBookingChanges = async () => {
   if (fromDraft) {
@@ -67,27 +76,67 @@ const deleteFromPlatform = async () => {
   }
   router.push('/dashboard')
 }
-
+const handleAction = async e => {
+  if (e) {
+    animate()
+    if (completed) {
+      booking.value.ref = null
+    }
+  }
+}
+const animate = async () => {
+  activated.value = true
+  setTimeout(async () => {
+    hideChip.value = true
+  }, 2000)
+}
 const validateBooking = computed(() => {
   return isEqual(booking.value, bookings.value.find(i => i.id === booking.value.id))
 })
-const cancelChanges = () => {
-  booking.value = cloneDeep(useArrayFind(
-    fromDraft ? drafts.value : bookings.value,
-    i => i.id === route.params.id,
-  ).value)
+const cancelChanges = async () => {
+  if (expired || completed) {
+    activated.value = false
+    hideChip.value = false
+    booking.value = await getBookingInHistory(route.params.id)
+
+    return
+  }
+  booking.value = cloneDeep(
+    useArrayFind(fromDraft ? drafts.value : bookings.value, i => i.id === route.params.id).value,
+  )
 }
-const onSave = () => {
-  updateBooking(booking.value, fromDraft? 'drafts': 'bookings')
+const onSave = async () => {
+  if (activated) {
+    if (expired.value) {
+      await reactivateBooking(booking.value)
+      await router.push({ name: 'dashboard' })
+      activated.value = false
+
+      return
+    }
+    if (completed.value) {
+      await duplicateBooking(booking.value)
+      await router.push({ name: 'dashboard' })
+      activated.value = false
+
+      return
+    }
+  }
+  await updateBooking(booking.value, fromDraft ? 'drafts' : 'bookings')
+  await getBookings(fromDraft? {draft: true}: {})
+  booking.value = await getBooking({ id: route.params.id })
 }
 
 onMounted(async () => {
+  if (fromHistory) {
+    booking.value = await getBookingInHistory(route.params.id)
+  } else if (fromDraft) {
+    booking.value = await getBooking({ id: route.params.id, draft: true })
+  } else {
+    const data = await getBooking({id: route.params.id})
+    booking.value = data
+  }
   await getBookings(fromDraft? {draft: true}: {})
-  if (fromHistory) await getBookingHistory()
-  booking.value = cloneDeep(useArrayFind(
-    fromDraft ? drafts.value : fromHistory? historyBookings.value: bookings.value,
-    i => i.id === route.params.id,
-  ).value)
 })
 </script>
 
@@ -125,18 +174,12 @@ onMounted(async () => {
       :class="{ 'flex-col': flyoutBottom || smAndDown, 'overflow-hidden': !drawer }"
     >
       <div class="w-full p-8 relative">
-        <div class="flex items-center gap-4 mb-1.5">
+        <div class="min-h-[48px] flex items-center gap-4 mb-1.5">
           <Typography type="text-h1">
             Booking <b>Ref#{{ booking.ref }}</b>
             <span :style="{ color: getColor('textSecondary') }">
               {{ fromDraft ? ' (Draft)' : '' }}
-              {{
-                booking.status
-                  ? booking.status === statuses.completed
-                    ? '(Completed)'
-                    : '(Expired)'
-                  : ''
-              }}
+              {{ booking.status ? (completed ? '(Completed)' : '(Expired)') : '' }}
             </span>
           </Typography>
           <IconButton
@@ -153,7 +196,7 @@ onMounted(async () => {
             @click="openRemoveDialog"
           />
           <Button
-            v-if="!fromHistory"
+            v-if="!(expired || completed)"
             variant="outlined"
             data="secondary1"
             class="ml-auto px-12"
@@ -166,22 +209,58 @@ onMounted(async () => {
           created by Operator #23
         </Typography>
         <div
-          class="w-full md:w-3/4 grid sm:grid-cols-2 grid-cols-1 gap-6 mt-10 [&>div]:h-fit "
-          :class="{ 'md:w-full': drawer && !flyoutBottom, 'pointer-events-none': fromHistory }"
+          v-if="expired || completed"
+          class="mt-6 -mb-2"
+          :class="{'hidden': hideChip}"
+        >
+          <div
+            v-if="activated"
+            class="h-14 flex items-center gap-4"
+            :class="{ 'animate-slideUp': activated }"
+          >
+            <div
+              class="w-11 h-6 flex justify-center items-center rounded-full"
+              :style="{ background: getColor('uiLineInteractiveActive') }"
+            >
+              <Icon
+                icon="mdi-check"
+                size="16"
+                :color="getColor('uiPrimary')"
+              />
+            </div>
+            <Typography>
+              {{ completed ? 'You have duplicated booking' : 'You have re-activated booking' }}
+            </Typography>
+          </div>
+          <Switch
+            v-else
+            :label="completed ? 'Duplicate booking' : 'Re-activate booking'"
+            class="h-fit"
+            @update:modelValue="handleAction"
+          />
+        </div>
+        <div
+          class="w-full md:w-3/4 grid sm:grid-cols-2 grid-cols-1 gap-6 mt-10 [&>div]:h-fit"
+          :class="{
+            'md:w-full': drawer && !flyoutBottom,
+            'pointer-events-none': !activated && (expired || completed),
+          }"
         >
           <Textfield
             v-model="booking.ref"
             label="Booking ref*"
             required
+            :disabled="!activated && expired"
           />
           <Textfield
             v-model="booking.containers"
             label="Number of containers*"
             type="number"
             required
+            :disabled="!activated && (expired || completed)"
           />
           <Datepicker
-            :picked="moment(booking.expiryDate).toDate()"
+            :picked="moment(booking.bookingExpiry).toDate()"
             label="Booking expiry *"
             required
             @onUpdate="updateExpiryDate"
@@ -198,24 +277,30 @@ onMounted(async () => {
             required
             item-title="label"
             item-value="type"
+            :disabled="!activated && (expired || completed)"
           />
           <Select
             v-model="booking.location.label"
             :items="['Good yard', 'Work yard', 'Farm yard']"
             label="Yard label *"
             required
+            :disabled="!activated && (expired || completed)"
           />
-          <AutocompleteScac :scac-list="booking.scacList" />
+          <AutocompleteScac
+            :scac-list="booking.scacList"
+            :class="{ 'pointer-events-none': activated && (expired || completed) }"
+          />
           <Textfield
             v-model="booking.size"
             type="text"
             label="Equipment type*"
             hint="For e.g. 40 HC"
             persistent-hint
+            :disabled="!activated && (expired || completed)"
           />
         </div>
         <SaveCancelChanges
-          v-if="!fromHistory"
+          v-if="!(expired || completed) || activated"
           :disabled="validateBooking"
           @onSave="onSave"
           @onCancel="cancelChanges"
@@ -374,5 +459,20 @@ onMounted(async () => {
       }
     }
   }
+}
+
+@keyframes slideUp {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}
+
+.animate-slideUp {
+  animation: slideUp 1s ease-out 1s;
 }
 </style>

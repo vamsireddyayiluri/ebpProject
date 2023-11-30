@@ -30,7 +30,7 @@ import { getLocalTime } from '@qualle-admin/qutil/dist/date'
 import { getOrgId } from '~/stores/helpers'
 import { userTypes } from '~/constants/userTypes'
 import firebase from 'firebase/compat/app'
-import {useInvitationStore} from "~/stores/invitation.store";
+import { useInvitationStore } from "~/stores/invitation.store"
 
 export const useAuthStore = defineStore('auth', () => {
   const router = useRouter()

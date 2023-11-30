@@ -5,6 +5,7 @@ import {useActions, useDate, useHeaders} from '~/composables'
 import { getColor } from '~/helpers/colors'
 import {useBookingHistoryStore} from "~/stores/bookingHistory.store"
 import {storeToRefs} from "pinia"
+import { statuses } from '~/constants/statuses'
 
 const bookingsStore = useBookingHistoryStore()
 const { loading } = storeToRefs(bookingsStore)
@@ -174,7 +175,7 @@ watch(searchValue, value => {
       <template #status="{ item }">
         <Classification
           type="status"
-          :value="item.status === 'expired'? 'incomplete': item.status"
+          :value="item.status === statuses.expired? 'incomplete': item.status"
         />
       </template>
       <template #truckers="{ item }">
@@ -188,7 +189,20 @@ watch(searchValue, value => {
         </div>
       </template>
       <template #actions="{ item, selected }">
+        <template v-if="item.status === statuses.completed">
+          <IconButton
+            icon="mdi-delete"
+            size="24"
+            class="-mr-1.5"
+            @click.stop="removeBookingDialog.show(true), removeBookingDialog.data = item"
+          >
+            <Tooltip :attach="false">
+              Remove booking
+            </Tooltip>
+          </IconButton>
+        </template>
         <MenuActions
+          v-else
           :actions="() => bookingHistoryActions(item)"
           :selected="selected"
           :container="item"

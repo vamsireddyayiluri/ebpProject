@@ -4,7 +4,7 @@ import { useAlertStore } from '~/stores/alert.store'
 import { useAuthStore } from '~/stores/auth.store'
 import { userTypes } from '~/constants/userTypes'
 import { uid } from "uid"
-import {useInvitationStore} from "~/stores/invitation.store";
+import { useInvitationStore } from "~/stores/invitation.store"
 
 const props = defineProps({
   teamMembers: Array,
