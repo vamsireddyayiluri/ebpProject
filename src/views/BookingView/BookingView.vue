@@ -79,7 +79,7 @@ const deleteFromPlatform = async () => {
 const handleAction = async e => {
   if (e) {
     animate()
-    if (completed) {
+    if (completed.value) {
       booking.value.ref = null
     }
   }
@@ -133,8 +133,7 @@ onMounted(async () => {
   } else if (fromDraft) {
     booking.value = await getBooking({ id: route.params.id, draft: true })
   } else {
-    const data = await getBooking({id: route.params.id})
-    booking.value = data
+    booking.value = await getBooking({id: route.params.id})
   }
   await getBookings(fromDraft? {draft: true}: {})
 })
@@ -243,31 +242,33 @@ onMounted(async () => {
           class="w-full md:w-3/4 grid sm:grid-cols-2 grid-cols-1 gap-6 mt-10 [&>div]:h-fit"
           :class="{
             'md:w-full': drawer && !flyoutBottom,
-            'pointer-events-none': !activated && (expired || completed),
           }"
         >
           <Textfield
             v-model="booking.ref"
             label="Booking ref*"
             required
-            :disabled="!activated && expired"
+            :disabled="expired || (completed && !activated)"
           />
           <Textfield
             v-model="booking.containers"
             label="Number of containers*"
             type="number"
             required
-            :disabled="!activated && (expired || completed)"
+            :disabled="expired || completed"
           />
           <Datepicker
             :picked="moment(booking.bookingExpiry).toDate()"
             label="Booking expiry *"
-            required
+            :disabled="!activated && (expired || completed)"
+            :class="{'pointer-events-none': !activated && (expired || completed)}"
             @onUpdate="updateExpiryDate"
           />
           <Datepicker
             :picked="moment(booking.preferredDate).toDate()"
             label="Preferred carrier window"
+            :disabled="!activated && (expired || completed)"
+            :class="{'pointer-events-none': !activated && (expired || completed)}"
             @onUpdate="updatePreferredDate"
           />
           <Select
@@ -277,18 +278,18 @@ onMounted(async () => {
             required
             item-title="label"
             item-value="type"
-            :disabled="!activated && (expired || completed)"
+            :disabled="expired || completed"
           />
           <Select
             v-model="booking.location.label"
             :items="['Good yard', 'Work yard', 'Farm yard']"
             label="Yard label *"
             required
-            :disabled="!activated && (expired || completed)"
+            :disabled="expired || completed"
           />
           <AutocompleteScac
             :scac-list="booking.scacList"
-            :class="{ 'pointer-events-none': activated && (expired || completed) }"
+            :class="{ 'pointer-events-none': expired || completed }"
           />
           <Textfield
             v-model="booking.size"
@@ -296,7 +297,7 @@ onMounted(async () => {
             label="Equipment type*"
             hint="For e.g. 40 HC"
             persistent-hint
-            :disabled="!activated && (expired || completed)"
+            :disabled="expired || completed"
           />
         </div>
         <SaveCancelChanges

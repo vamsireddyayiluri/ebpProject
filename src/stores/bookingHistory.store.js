@@ -53,7 +53,6 @@ export const useBookingHistoryStore = defineStore('bookingHistory', () => {
           ...booking,
           committed: 0,
           updatedAt: getLocalTime().format(),
-          bookingExpiry: null,
           carriers: [],
           status: '',
         })
@@ -67,11 +66,8 @@ export const useBookingHistoryStore = defineStore('bookingHistory', () => {
       await setDoc(doc(collection(db, 'bookings'), booking.id),
         {
           ...booking,
-          ref: '',
           committed: 0,
           updatedAt: getLocalTime().format(),
-          bookingExpiry: null,
-          preferredDate: null,
           carriers: [],
           status: '',
         })
