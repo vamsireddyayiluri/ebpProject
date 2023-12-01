@@ -1,7 +1,10 @@
 <script setup>
 import { useAuthStore } from '~/stores/auth.store'
+import { useInvitationStore } from '~/stores/invitation.store'
+
 const isPasswordVisible = ref(false)
 const authStore = useAuthStore()
+const invitationStore = useInvitationStore()
 const router = useRouter()
 const form = reactive({
   id: '',
@@ -12,14 +15,19 @@ const form = reactive({
 })
 
 const onSubmit = async () => {
-  const exist = await authStore.validateInviteUserEmail(form.id)
+  const exist = await invitationStore.validateInviteUserEmail(form.id)
   if (exist) {
-    alertStore.warning({content: 'User exist!'})
+    alertStore.warning({ content: 'User exist!' })
   } else {
-    const user = await authStore.getInvitationDocData(form.id)
+    const user = await invitationStore.getInvitationDocData(form.id)
     if (user) {
-      await authStore.invitedUserRegistration({...user, fullName: form.fullName, password: form.password, invitedBy: authStore.currentUser.uid})
-    } else alertStore.warning({content: 'User not found'})
+      await invitationStore.invitedUserRegistration({
+        ...user,
+        fullName: form.fullName,
+        password: form.password,
+        invitedBy: authStore.currentUser.uid,
+      })
+    } else alertStore.warning({ content: 'User not found' })
   }
 }
 const isFormValid = () => {
@@ -31,7 +39,7 @@ onMounted(async () => {
   const continueUrl = queryParams.continueUrl
   const urlParams = new URL(continueUrl).searchParams
   form.email = urlParams.get('email')
-  form.id =  urlParams.get('id')
+  form.id = urlParams.get('id')
 })
 </script>
 
@@ -46,9 +54,7 @@ onMounted(async () => {
     class="max-w-[730px] mx-auto"
     @submit.prevent="onSubmit"
   >
-    <div
-      class="mt-10 grid sm:grid-cols-2 grid-cols-1 gap-4 text-left [&>div]:h-fit"
-    >
+    <div class="mt-10 grid sm:grid-cols-2 grid-cols-1 gap-4 text-left [&>div]:h-fit">
       <Textfield
         v-model.trim="form.fullName"
         type="text"

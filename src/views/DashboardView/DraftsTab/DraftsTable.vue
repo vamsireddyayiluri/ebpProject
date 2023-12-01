@@ -76,8 +76,8 @@ onMounted(() => {
     </template>
     <template #ssl="{ item }">
       <img
-        :src="getLineAvatar(item.line.id)"
-        :alt="item.line.label"
+        :src="getLineAvatar(item.line?.id)"
+        :alt="item.line?.label"
         class="h-8"
       >
     </template>
@@ -86,10 +86,10 @@ onMounted(() => {
         v-if="searchValue"
         :query="searchValue"
       >
-        {{ item.location.label }}
+        {{ item.location?.label }}
       </Highlighter>
       <template v-else>
-        {{ item.location.label }}
+        {{ item.location?.label }}
       </template>
     </template>
     <template #expiry="{ item }">

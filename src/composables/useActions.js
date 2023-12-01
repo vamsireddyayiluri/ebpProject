@@ -56,16 +56,6 @@ export const bookingHistoryActions = item => {
       ...defaultAction,
     ]
   }
-  if (item.status === statuses.completed) {
-    return [
-      {
-        icon: 'mdi-content-copy',
-        label: 'Duplicate',
-        action: 'duplicate',
-      },
-      ...defaultAction,
-    ]
-  }
 }
 export default () => ({
   bookingsActions,
