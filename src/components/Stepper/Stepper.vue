@@ -92,7 +92,7 @@ const emit = defineEmits(['goTo'])
   width: max-content;
   transform: translateX(calc(-50% + 16px));
   z-index: 2000;
-  @media screen and (max-width: 600px) {
+  @media screen and (max-width: 960px) {
     width: 100px;
   }
 }

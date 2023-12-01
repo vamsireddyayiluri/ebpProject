@@ -1,0 +1,44 @@
+[
+  {
+    "id": "ANRN",
+    "scac": "ANRN",
+    "email": "tim.jennings@example.com",
+    "company": "Gillette"
+  },
+  {
+    "id": "ADEW",
+    "scac": "ADEW",
+    "email": "willie.jennings@example.com",
+    "company": "Louis Vuitton"
+  },
+  {
+    "id": "BLJU ",
+    "scac": "BLJU ",
+    "email": "tom.johnson@example.com",
+    "company": "Johnson & Johnson"
+  },
+  {
+    "id": "PORF",
+    "scac": "PORF",
+    "email": "nintendo12@example.com",
+    "company": "Nintendo"
+  },
+  {
+    "id": "NUSB",
+    "scac": "NUSB",
+    "email": "disney.jennings@example.com",
+    "company": "The Walt Disney Company"
+  },
+  {
+    "id": "LIPH",
+    "scac": "LIPH",
+    "email": "el.phill@example.com",
+    "company": "General Electric"
+  },
+  {
+    "id": "YUJG",
+    "scac": "YUJG",
+    "email": "philips.admin@example.com",
+    "company": "Philips"
+  }
+]

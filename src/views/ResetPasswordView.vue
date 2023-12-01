@@ -2,6 +2,8 @@
 import { patterns } from '@qualle-admin/qutil'
 import { getColor } from '~/helpers/colors'
 import { useAlertStore } from '~/stores/alert.store'
+import { sendPasswordResetEmail } from 'firebase/auth'
+import { auth } from '~/firebase'
 
 const alertStore = useAlertStore()
 const form = ref({
@@ -18,17 +20,28 @@ const steps = {
 }
 const stepper = useStepper(steps)
 
-const onSubmit = () => {
-  console.log('send ', form.value)
+const onSubmit = async () => {
+  if (stepper.isCurrent('reset-pass')) {
+    sendResetPasswordEmail({ email: form.value.email })
+  }
   stepper.goToNext()
 }
 const resendLink = () => {
-  alertStore.info({
-    message: 'The link has been resent. Check your mailbox again, please.',
-  })
+  sendResetPasswordEmail({ email: form.value.email })
 }
 const openMail = () => {
   console.log('openMail')
+}
+
+// Sending password reset verification email
+const sendResetPasswordEmail = ({ email }) => {
+  try {
+    sendPasswordResetEmail(auth, email).then(() => {
+      alertStore.info({ content: 'The link has been sent. Check your mailbox again, please.' })
+    })
+  } catch (error) {
+    alertStore.warning({ content: error })
+  }
 }
 </script>
 
@@ -39,7 +52,7 @@ const openMail = () => {
     {{ stepper.current.value.title }}
   </Typography>
   <form
-    class="mx-auto  max-w-[360px]"
+    class="mx-auto max-w-[360px]"
     @submit.prevent="onSubmit"
   >
     <template v-if="stepper.isCurrent('reset-pass')">

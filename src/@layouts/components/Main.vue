@@ -1,51 +1,58 @@
 <script setup>
 import { useAuthStore } from '~/stores/auth.store'
+import { storeToRefs } from 'pinia'
+import { useNotificationStore } from '~/stores/notification.store'
+import { useDisplay } from 'vuetify'
 
 const authStore = useAuthStore()
+const notificationStore = useNotificationStore()
 const attrs = useAttrs()
+const { width } = useDisplay()
 const route = useRoute()
-const items = ref([])
+const router = useRouter()
 
-const data = [
-  { title: 'Trucker ABCD registered on the platform', label: 'Info [Notification]', type: 'info' },
+const getActiveRoute = name => {
+  return route.name === name
+}
+const { currentUser } = storeToRefs(authStore)
+
+const items = ref([
   {
-    title: 'Trucker ABCD registered on the platform',
-    content: '02/20/2022 5:23:17 am',
-    type: 'info',
-    button: true,
+    name: 'dashboard',
+    icon: 'home',
+    tooltip: 'Dashboard',
   },
   {
-    title: 'Trucker ABCD registered on the platform',
-    content: '02/20/2022 5:23:17 am',
-    type: 'warning',
+    name: 'calendar',
+    icon: getActiveRoute('calendar') ? 'calendarFill' : 'calendar',
   },
   {
-    title: 'Trucker ABCD registered on the platform',
-    content: '02/20/2022 5:23:17 am[Notification]',
-    type: 'avatar',
+    name: 'statistics',
+    icon: getActiveRoute('statistics') ? 'statFill' : 'stat',
   },
   {
-    title: 'Trucker ABCD registered on the platform',
-    content: '02/20/2022 5:23:17 am',
-    type: 'avatar',
+    name: 'settings',
+    icon: getActiveRoute('settings') ? 'settingFill' : 'setting',
   },
-  {
-    title: 'Trucker ABCD registered on the platform',
-    content: '02/20/2022 5:23:17 am',
-    type: 'avatar',
-    button: true,
-  },
+])
+
+const mobileMenuItems = [
+  { name: 'Dashboard', path: 'dashboard', icon: 'home' },
+  { name: 'Calendar', path: 'calendar', icon: 'calendar' },
+  { name: 'Statistics', path: 'statistics', icon: 'stat'},
+  { name: 'Settings', path: 'settings', icon: 'setting'},
+  { name: 'Profile settings', path: 'profile', icon: 'user' },
 ]
-
+const { notifications } = storeToRefs(notificationStore)
 const userMenuItems = ref([{ name: 'Profile settings', path: 'profile' }])
 </script>
 
 <template>
   <div v-bind="{ ...attrs }">
     <Header
-      class="default"
-      :items="items"
-      :notifications="data"
+      class="default z-10 top-0"
+      :items="width < 760 ? mobileMenuItems : items"
+      :notifications="notifications"
       :route="route"
       :user-menu-items="userMenuItems"
       sticky

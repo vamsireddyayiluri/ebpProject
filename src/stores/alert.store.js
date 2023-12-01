@@ -1,23 +1,40 @@
 import { defineStore } from 'pinia'
 
 export const useAlertStore = defineStore('alert', () => {
-  const alert = ref({ show: false })
+  const alertList = ref([])
+  const show = ref(false)
+  const defaultTimeout = 5000
 
-  const text = ({ title, message, timeout }) => {
-    alert.value = { show: true, title, message, type: 'text', timeout }
+  const text = ({ title, content, timeout = defaultTimeout }) => {
+    const id = title + content
+    alertList.value.push({id, title, content, type: 'text', timeout, close })
+    show.value = true
+    close(id, timeout)
   }
 
-  const info = ({ title, message, timeout }) => {
-    alert.value = { show: true, title, message, type: 'info', timeout }
+  const info = ({ title, content, timeout = defaultTimeout }) => {
+    const id = title + content
+    alertList.value.push({ id, title, content, type: 'info', timeout, close })
+    show.value = true
+    close(id, timeout)
   }
 
-  const warning = ({ title, message, timeout }) => {
-    alert.value = { show: true, title, message, type: 'warning', timeout }
+  const warning = ({ title, content, timeout = defaultTimeout}) => {
+    const id = title + content
+    alertList.value.push({ id, title, content, type: 'warning', timeout, close })
+    show.value = true
+    close(id, timeout)
   }
 
-  const close = () => {
-    alert.value = { show: false }
+  const close = (id, timeout) => {
+    setTimeout(() => {
+      const index = alertList.value.findIndex(i => i.id === id)
+      alertList.value.splice(index, 1)
+      if (!alertList.value.length) {
+        show.value = false
+      }
+    }, timeout)
   }
 
-  return { alert, close, text, info, warning }
+  return { show, alertList, text, info, warning }
 })

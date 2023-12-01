@@ -1,0 +1,30 @@
+[
+  {
+    "label": "Tax Document EIN",
+    "status": false
+  },
+  {
+    "label": "Brokerage",
+    "status": false
+  },
+  {
+    "label": "DOT Number",
+    "status": false
+  },
+  {
+    "label": "MC Authority",
+    "status": false
+  },
+  {
+    "label": "Proof of Insurance",
+    "status": false
+  },
+  {
+    "label": "Number of Trucks",
+    "status": false
+  },
+  {
+    "label": "SCAC Code",
+    "status": false
+  }
+]

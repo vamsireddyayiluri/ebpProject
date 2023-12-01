@@ -1,0 +1,224 @@
+[
+  {
+    "id": "00",
+    "location": {
+      "address": "7737 Hampton Blvd, Norfolk, VA 23505, USA",
+      "geohash": "dq9dp88bu",
+      "label": "7737 Hampton Blvd, Norfolk, VA 23505",
+      "lat": 36.9169609,
+      "lng": -76.3098145
+    },
+    "entities": [
+      {
+        "id": "AAAA0000005_bf48a4ef951cab59d4262a7a78908",
+        "containers": 10,
+        "committed": 5,
+        "ref": 1148,
+        "line": {
+          "id": "0156d8f6819b2de4",
+          "label": "CS Leasing"
+        },
+        "created": "2023-10-30T14:30:49+00:00",
+        "preferredDate": "2023-11-01T23:59:59+05:30",
+        "expiryDate": "2023-11-07T23:59:59+05:30",
+        "scacList": { "list": ["ABCD"] },
+        "location": {
+          "address": "7737 Hampton Blvd, Norfolk, VA 23505, USA",
+          "geohash": "dq9dp88bu",
+          "label": "7737 Hampton Blvd, Norfolk, VA 23505",
+          "lat": 36.9169609,
+          "lng": -76.3098145
+          },
+        "carriers": [
+          { "scac": "ABCD", "fulfilled": 7, "total": 10 }
+        ],
+        "size": "20 FR"
+      },
+      {
+        "id": "AAAA0030005_bf48a4ef951cab59d4262a7a78908",
+        "containers": 70,
+        "committed": 55,
+        "ref": 1149,
+        "line": {
+          "id": "0156d8f6819b2de4",
+          "label": "CS Leasing"
+        },
+        "created": "2023-11-30T14:30:49+00:00",
+        "preferredDate": "2023-11-11T23:59:59+05:30",
+        "expiryDate": "2023-11-27T23:59:59+05:30",
+        "scacList": { "list": ["ABCD", "OTRH"] },
+        "location": {
+          "address": "7737 Hampton Blvd, Norfolk, VA 23505, USA",
+          "geohash": "dq9dp88bu",
+          "label": "7737 Hampton Blvd, Norfolk, VA 23505",
+          "lat": 36.9169609,
+          "lng": -76.3098145
+        },
+        "carriers": [
+          { "scac": "OTRH", "fulfilled": 27, "total": 33 },
+          { "scac": "ARYE", "fulfilled": 23, "total": 37 }
+        ],
+        "size": "20 ST"
+      },
+      {
+        "id": "AAAA1000005_bf48a4ef951cab59d4262a7a78908",
+        "containers": 130,
+        "committed": 59,
+        "ref": 1150,
+        "line": {
+          "id": "0156d8f6819b2de4",
+          "label": "CS Leasing"
+        },
+        "created": "2023-10-31T14:30:49+00:00",
+        "preferredDate": "2023-11-08T23:59:59+05:30",
+        "expiryDate": "2023-11-09T23:59:59+05:30",
+        "scacList": { "list": ["ABOR", "WNER", "LORE"] },
+        "location": {
+          "address": "7737 Hampton Blvd, Norfolk, VA 23505, USA",
+          "geohash": "dq9dp88bu",
+          "label": "7737 Hampton Blvd, Norfolk, VA 23505",
+          "lat": 36.9169609,
+          "lng": -76.3098145
+        },
+        "carriers": [
+          { "scac": "LORE", "fulfilled": 12, "total": 14 },
+          { "scac": "WNER", "fulfilled": 3, "total": 10 },
+          { "scac": "ABOR", "fulfilled": 2, "total": 5 }
+        ],
+        "size": "40 FR"
+      }
+    ]
+  },
+  {
+    "id": "155",
+    "location": {
+      "address": "875 Blake Wilbur Dr Palo Alto  CA US 94304 2205",
+      "geohash": "9q9hgycyy",
+      "lat": 37.4357319,
+      "lng": -122.1762866
+    },
+    "entities": [
+      {
+        "containers": 23,
+        "committed": 22,
+        "ref": 5548,
+        "id": "AAAA0050002_bf48a4ef955cab59d4262a7a7890",
+        "line": {
+          "id": "9d8d49984308f116",
+          "label": "Alianca"
+        },
+        "location": {
+          "address": "875 Blake Wilbur Dr, Palo Alto, CA 94304, USA"
+        },
+        "created": "2023-11-03T14:30:49+00:00",
+        "preferredDate": "2023-11-11T23:59:59+05:30",
+        "expiryDate": "2023-11-22T23:59:59+05:30",
+        "scacList": { "list": ["LORE"] },
+        "carriers": [
+          { "scac": "LORE", "fulfilled": 12, "total": 14 }
+        ],
+        "size": "40 ST"
+      }
+    ]
+  },
+  {
+    "id": "12523",
+    "location": {
+      "address": "911 Sigsbee Ave, Wilmington, CA 90744, USA",
+      "geohash": "9q5bjw01b",
+      "label": "RoadEx Sigsbee Yard",
+      "lat": 33.7832625,
+      "lng": -118.2348517
+    },
+    "entities": [
+      {
+        "containers": 10,
+        "committed": 7,
+        "ref": 1198,
+        "id": "AAAA2000005_bf48a4ef951cab59d4262a7a78907",
+        "line": {
+          "id": "0156d8f6819b2de4",
+          "label": "CS Leasing"
+        },
+        "location": {
+          "address": "911 Sigsbee Ave, Wilmington, CA 90744, USA"
+        },
+        "created": "2023-12-02T14:30:49+00:00",
+        "preferredDate": "2023-12-03T23:59:59+05:30",
+        "expiryDate": "2023-12-07T23:59:59+05:30",
+        "scacList": { "list": ["WNER"] },
+        "carriers": [
+          { "scac": "WNER", "fulfilled": 0, "total": 10 }
+        ],
+        "size": "40 FR"
+      }
+    ]
+  },
+  {
+    "id": "qw1a2",
+    "location": {
+      "address": "4741 Durfee Ave, Pico Rivera, CA 90660, USA",
+      "geohash": "9qh13n0vm",
+      "label": "RoadEx Pico Rivera Yard",
+      "lat": 34.0036191,
+      "lng": -118.0798038
+    },
+    "entities": [
+      {
+        "containers": 26,
+        "committed": 8,
+        "ref": 10048,
+        "id": "AAAA5555005_bf48a4ef951cab59d4262a7a78907",
+        "created": "2023-11-10T14:30:49+00:00",
+        "preferredDate": "2023-12-01T23:59:59+05:30",
+        "expiryDate": "2023-12-07T23:59:59+05:30",
+        "line": {
+          "id": "0156d8f6819b2de4",
+          "label": "CS Leasing"
+        },
+        "location": {
+          "address": "911 Sigsbee Ave, Wilmington, CA 90744, USA",
+          "scacList": { "list": ["OTRH"] }
+        },
+        "carriers": [
+          { "scac": "OTRH", "fulfilled": 7, "total": 13 }
+        ],
+        "size": "20 ST"
+      }
+    ]
+  },
+  {
+    "id": "123a2a",
+    "location": {
+      "address": "E Sitcum Plaza, Tacoma, WA 98421, USA",
+      "geohash": "c22uykmdd",
+      "label": "One Sitcum Plaza, Tacoma, WA 98421",
+      "lat": 47.2649925,
+      "lng": -122.4129934
+    },
+    "entities": [
+      {
+        "containers": 40,
+        "committed": 33,
+        "ref": 5488,
+        "id": "AAAA0000007_bf48a4ef951cab59d4262a7a78907",
+        "line": {
+          "id": "0156d8f6819b2de4",
+          "label": "CS Leasing"
+        },
+        "location": {
+          "address": "911 Sigsbee Ave, Wilmington, CA 90744, USA"
+        },
+        "created": "2023-11-30T14:30:49+00:00",
+        "preferredDate": "2023-12-01T23:59:59+05:30",
+        "expiryDate": "2023-12-07T23:59:59+05:30",
+        "scacList": { "list": ["ABCD", "OTRH"] },
+        "carriers": [
+          { "scac": "OTRH", "fulfilled": 7, "total": 13 },
+          { "scac": "ABCD", "fulfilled": 2, "total": 5 }
+        ],
+        "size": "40 HC"
+      }
+    ]
+  }
+]

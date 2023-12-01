@@ -11,7 +11,14 @@ module.exports = {
       'lg': '1280px',
       'xl': '1920px',
     },
-    extend: {},
+    extend: {
+      width: {
+        fill: '-webkit-fill-available',
+      },
+      height: {
+        fill: '-webkit-fill-available',
+      },
+    },
   },
   plugins: [],
 }

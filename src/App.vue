@@ -1,11 +1,15 @@
 <script setup>
 import { useTheme } from 'vuetify'
 import { useAuthStore } from './stores/auth.store'
+import { useAlertStore } from '~/stores/alert.store'
+import { storeToRefs } from "pinia"
 
 const authStore = useAuthStore()
-
+const { isLoading } = storeToRefs(authStore)
+const alertStore = useAlertStore()
 const vuetifyTheme = useTheme()
 const storage = useStorage('theme', '')
+const route = useRoute()
 
 onMounted(() => {
   if (storage.value === 'undefined') {
@@ -24,7 +28,16 @@ onBeforeMount(() => {
 <template>
   <ThemeProvider>
     <AppAlert />
-    <RouterView />
+    <RouterView v-if="!isLoading" />
+    <ProgressCircular
+      v-else
+      :size="350"
+      value="15"
+      text="Loading..."
+      class="absolute top-[calc(50vh-125px)] left-[calc(50%-125px)]"
+    >
+      15%
+    </ProgressCircular>
   </ThemeProvider>
 </template>
 
