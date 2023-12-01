@@ -12,7 +12,7 @@ const storage = useStorage('theme', '')
 const route = useRoute()
 
 onMounted(() => {
-  if (!storage.value) {
+  if (storage.value === 'undefined') {
     vuetifyTheme.global.name.value = 'light'
     storage.value = 'light'
   } else {
