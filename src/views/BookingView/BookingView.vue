@@ -90,8 +90,12 @@ const animate = async () => {
     hideChip.value = true
   }, 2000)
 }
+const isDisabledPublish = computed(() => {
+  return !(booking.value.ref && booking.value.containers && booking.value.bookingExpiry
+    && booking.value.preferredDate && booking.value.scacList.list.length && booking.value.size)
+})
 const validateBooking = computed(() => {
-  return isEqual(booking.value, bookings.value.find(i => i.id === booking.value.id))
+  return isEqual(booking.value, fromDraft? drafts.value.find(i => i.id === booking.value.id): bookings.value.find(i => i.id === booking.value.id))
 })
 const cancelChanges = async () => {
   if (expired || completed) {
@@ -123,8 +127,7 @@ const onSave = async () => {
     }
   }
   await updateBooking(booking.value, fromDraft ? 'drafts' : 'bookings')
-  await getBookings(fromDraft? {draft: true}: {})
-  booking.value = await getBooking({ id: route.params.id })
+  await router.push({ name: 'dashboard' })
 }
 
 onMounted(async () => {
@@ -199,6 +202,7 @@ onMounted(async () => {
             variant="outlined"
             data="secondary1"
             class="ml-auto px-12"
+            :disabled="fromDraft? isDisabledPublish: false"
             @click="handleBookingChanges"
           >
             {{ fromDraft ? 'publish' : 'Remove from network' }}
@@ -258,38 +262,64 @@ onMounted(async () => {
             :disabled="expired || completed"
           />
           <Datepicker
-            :picked="moment(booking.bookingExpiry).toDate()"
+            :picked="booking.bookingExpiry? moment(booking.bookingExpiry).toDate(): null"
             label="Booking expiry *"
             :disabled="!activated && (expired || completed)"
             :class="{'pointer-events-none': !activated && (expired || completed)}"
             @onUpdate="updateExpiryDate"
           />
           <Datepicker
-            :picked="moment(booking.preferredDate).toDate()"
+            :picked="booking.preferredDate? moment(booking.preferredDate).toDate(): null"
             label="Preferred carrier window"
             :disabled="!activated && (expired || completed)"
             :class="{'pointer-events-none': !activated && (expired || completed)}"
             @onUpdate="updatePreferredDate"
           />
           <Select
-            v-model="booking.line.label"
+            v-model="booking.line"
             :items="getAllLines()"
             label="SSL"
             required
             item-title="label"
-            item-value="type"
+            item-value="id"
+            return-object
             :disabled="expired || completed"
           />
           <Select
-            v-model="booking.location.label"
-            :items="['Good yard', 'Work yard', 'Farm yard']"
+            v-model="booking.location"
+            :items="[
+              {
+                address: '875 Blake Wilbur Dr, Palo Alto, CA 94304, USA',
+                geohash: '9q9hgycyy',
+                label: 'california',
+                lat: 37.4357319,
+                lng: -122.1762866,
+              },
+              {
+                address: '3400 Bainbridge Ave, The Bronx, NY 10467, USA',
+                geohash: 'dr72wcgnz',
+                label: 'test2',
+                lat: 40.8799534,
+                lng: -73.878608,
+              },
+              {
+                address: '11200 Iberia St, Mira Loma, CA 91752, USA',
+                geohash: '9qh3t96uz',
+                label: 'Mira Loma Yard',
+                lat: 34.0213706,
+                lng: -117.5276535,
+              },
+            ]"
             label="Yard label *"
+            item-title="label"
+            item-value="address"
+            return-object
             required
             :disabled="expired || completed"
           />
           <AutocompleteScac
             :scac-list="booking.scacList"
-            :class="{ 'pointer-events-none': expired || completed }"
+            :disabled="expired || completed"
           />
           <Textfield
             v-model="booking.size"

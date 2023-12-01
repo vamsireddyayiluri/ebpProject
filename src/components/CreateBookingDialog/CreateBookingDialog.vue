@@ -20,14 +20,14 @@ const booking = ref({
   bookingExpiry: null,
   preferredDate: null,
   location: null,
-  equipmentType: null,
+  size: null,
   scacList: { list: [] },
 })
 const confirmDraftsDialog = ref(null)
 const { clickedOutside } = toRefs(props)
 
 const rules = {
-  equipmentType: value => {
+  size: value => {
     if (value.length >= 2) return true
     else return 'Min length 2'
   },
@@ -110,7 +110,7 @@ watch(clickedOutside, () => {
         label="SSL *"
         required
         item-title="label"
-        item-value="type"
+        item-value="id"
         return-object
       />
       <Datepicker
@@ -156,12 +156,12 @@ watch(clickedOutside, () => {
         class="h-fit"
       />
       <Textfield
-        v-model="booking.equipmentType"
+        v-model="booking.size"
         type="text"
         label="Equipment type*"
         hint="For e.g. 40 HC"
         persistent-hint
-        :rules="[rules.equipmentType]"
+        :rules="[rules.size]"
       />
     </div>
     <AutocompleteScac :scac-list="booking.scacList" />
