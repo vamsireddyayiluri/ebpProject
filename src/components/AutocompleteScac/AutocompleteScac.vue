@@ -60,6 +60,7 @@ onUpdated(() => {
       placeholder="Choose truckers by SCAС *"
       multiple
       with-btn
+      :disabled="attrs.disabled"
       :value="autocompleteValue"
       @update:menu="updateMenu"
       @update:modelValue="updateModelValue"

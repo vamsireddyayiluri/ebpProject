@@ -47,7 +47,6 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const { user } = await signInWithEmailAndPassword(auth, email, password)
       currentUser.value = user
-
       router.push({ name: 'dashboard' })
       isLoading.value = false
     } catch (error) {

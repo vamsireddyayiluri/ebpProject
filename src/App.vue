@@ -5,18 +5,21 @@ import { useAlertStore } from '~/stores/alert.store'
 import { storeToRefs } from "pinia"
 
 const authStore = useAuthStore()
-const { isLoading } = storeToRefs(authStore)
+const { isLoading, userData } = storeToRefs(authStore)
 const alertStore = useAlertStore()
 const vuetifyTheme = useTheme()
 const storage = useStorage('theme', '')
 const route = useRoute()
 
-onMounted(() => {
+onMounted(async () => {
   if (storage.value === 'undefined') {
     vuetifyTheme.global.name.value = 'light'
     storage.value = 'light'
   } else {
     vuetifyTheme.global.name.value = storage.value
+  }
+  if (!userData.value) {
+    await authStore.getUser()
   }
 })
 
