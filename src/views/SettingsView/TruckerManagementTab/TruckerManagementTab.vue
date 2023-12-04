@@ -1,10 +1,11 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
-import { useTruckerManagementStore } from "~/stores/truckerManagement.store"
-import { storeToRefs } from "pinia"
-import { useAlertStore } from "~/stores/alert.store"
-import { useHeaders, useDocumentsChip } from "~/composables"
-import truckers from "~/fixtures/preferredTruckers.json"
+import { useTruckerManagementStore } from '~/stores/truckerManagement.store'
+import { storeToRefs } from 'pinia'
+import { useAlertStore } from '~/stores/alert.store'
+import { useHeaders, useDocumentsChip } from '~/composables'
+import truckers from '~/fixtures/preferredTruckers.json'
+import { isEqual } from 'lodash'
 
 const alertStore = useAlertStore()
 const truckerManagement = useTruckerManagementStore()
@@ -13,15 +14,33 @@ const { requiresForTruckers, questionList } = storeToRefs(truckerManagement)
 const openedPanel = ref([2])
 const loading = ref(false)
 const documentsDialog = ref(null)
+const truckerManagementDB = ref({requiresForTruckers: null, questionList: null})
 
-const saveTruckerRequirements = () => {
-  console.log('save ', requiresForTruckers.value, questionList.value)
-  alertStore.info({ content: 'Trucker requirements saved!' })
+const validateRequirements = computed(() => {
+  return isEqual({requiresForTruckers: requiresForTruckers.value, questionList: questionList.value},
+    {requiresForTruckers: truckerManagementDB.value.requiresForTruckers, questionList: truckerManagementDB.value.questionList})
+})
+
+const saveTruckerRequirements = async () => {
+  const data = await truckerManagement.saveTruckerRequirements({
+    requiresForTruckers: requiresForTruckers.value,
+    questionList: questionList.value,
+  })
+  truckerManagementDB.value = data
+}
+const cancelChanges = async () => {
+  const data = await truckerManagement.getTruckerRequirements()
+  requiresForTruckers.value = data.requiresForTruckers
+  questionList.value = data.questionList
 }
 const openDocuments = doc => {
   documentsDialog.value.show(true)
   documentsDialog.value.data = doc
 }
+onMounted(async () => {
+  const data = await truckerManagement.getTruckerRequirements()
+  truckerManagementDB.value = data
+})
 </script>
 
 <template>
@@ -35,9 +54,7 @@ const openDocuments = doc => {
     v-model="openedPanel"
     multiple
   >
-    <ExpansionPanel
-      elevation="0"
-    >
+    <ExpansionPanel elevation="0">
       <ExpansionPanelTitle :color="getColor('uiSecondary-02')">
         <Typography type="text-h4">
           Trucker requirements
@@ -48,14 +65,14 @@ const openDocuments = doc => {
           <TruckerRequirements :scac-section="false" />
           <SaveCancelChanges
             class="mt-10"
+            :disabled="validateRequirements"
             @onSave="saveTruckerRequirements"
+            @onCancel="cancelChanges"
           />
         </div>
       </ExpansionPanelText>
     </ExpansionPanel>
-    <ExpansionPanel
-      elevation="0"
-    >
+    <ExpansionPanel elevation="0">
       <ExpansionPanelTitle :color="getColor('uiSecondary-02')">
         <Typography type="text-h4">
           Required onboarding documents
@@ -66,7 +83,6 @@ const openDocuments = doc => {
           <FileUpload />
           <SaveCancelChanges
             class="mt-10"
-            @onSave="saveTruckerRequirements"
           />
         </div>
       </ExpansionPanelText>

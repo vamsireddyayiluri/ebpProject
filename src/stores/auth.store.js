@@ -74,7 +74,7 @@ export const useAuthStore = defineStore('auth', () => {
     router.push({ name: 'login' })
   }
 
-  const register = async ({ form, yards, invitations }) => {
+  const register = async ({ form, yards, invitations, requiresForTruckers, questionList }) => {
     isLoading.value = true
     try {
       await createUserWithEmailAndPassword(auth, form.email, form.password)
@@ -89,6 +89,8 @@ export const useAuthStore = defineStore('auth', () => {
         yards,
         type: userTypes.admin,
         invitations,
+        requiresForTruckers,
+        questionList,
       })
       router.push({ name: 'verify1' })
       isLoading.value = false
@@ -202,7 +204,10 @@ export const useAuthStore = defineStore('auth', () => {
       if (data.invitations) {
         await invitationStore.sendInvitationLink(data.invitations)
       }
-
+      await setDoc(doc(db, 'trucker_requirements', orgId), {
+        requiresForTruckers: data.requiresForTruckers,
+        questionList: data.questionList,
+      })
       await deleteDoc(doc(db, 'pending_verifications', data.id))
 
       router.push({ name: 'dashboard' })

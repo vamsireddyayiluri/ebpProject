@@ -5,11 +5,13 @@ import { getColor } from '~/helpers/colors'
 import { useAuthStore } from '~/stores/auth.store'
 import { storeToRefs } from 'pinia'
 import { patterns } from '@qualle-admin/qutil'
-import { phoneRegex, emailRegex } from '@qualle-admin/qutil/dist/patterns'
-import { useWorkDetailsStore } from "~/stores/workDetails.store"
+import { emailRegex, phoneRegex } from '@qualle-admin/qutil/dist/patterns'
+import { useWorkDetailsStore } from '~/stores/workDetails.store'
+import { useTruckerManagementStore } from '~/stores/truckerManagement.store'
 
 const authStore = useAuthStore()
 const workDetailsStore = useWorkDetailsStore()
+const truckerManagement = useTruckerManagementStore()
 const { isLoading } = storeToRefs(authStore)
 
 const form = reactive({
@@ -21,6 +23,7 @@ const form = reactive({
   confirmPassword: '',
 })
 const { yards } = storeToRefs(workDetailsStore)
+const { requiresForTruckers, preferredTruckersList, questionList } = storeToRefs(truckerManagement)
 const invitations = ref([])
 const rules = {
   cell(value) {
@@ -71,7 +74,13 @@ const goToStep = stepId => {
 
 const onSubmit = async () => {
   if (stepper.isLast.value) {
-    await authStore.register({ form, yards: yards.value, invitations: invitations.value })
+    await authStore.register({
+      form,
+      yards: yards.value,
+      invitations: invitations.value,
+      requiresForTruckers: requiresForTruckers.value,
+      questionList: questionList.value,
+    })
   }
   if (stepper.current.value.isValid()) {
     stepper.goToNext()
@@ -149,9 +158,7 @@ const onSubmit = async () => {
           </div>
         </template>
         <template v-if="stepper.isCurrent('work-details')">
-          <Yards
-            class="mx-auto"
-          />
+          <Yards class="mx-auto" />
         </template>
         <div>
           <template v-if="stepper.isCurrent('invite-members')">
