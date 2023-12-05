@@ -10,8 +10,8 @@ import { isEqual } from 'lodash'
 const alertStore = useAlertStore()
 const truckerManagement = useTruckerManagementStore()
 const { truckersDocumentsHeaders } = useHeaders()
-const { requiresForTruckers, questionList } = storeToRefs(truckerManagement)
-const openedPanel = ref([2])
+const { requiresForTruckers, questionList, onboardingDocuments, isUpdatedDoc } = storeToRefs(truckerManagement)
+const openedPanel = ref([1])
 const loading = ref(false)
 const documentsDialog = ref(null)
 const truckerManagementDB = ref({requiresForTruckers: null, questionList: null})
@@ -20,7 +20,10 @@ const validateRequirements = computed(() => {
   return isEqual({requiresForTruckers: requiresForTruckers.value, questionList: questionList.value},
     {requiresForTruckers: truckerManagementDB.value.requiresForTruckers, questionList: truckerManagementDB.value.questionList})
 })
-
+const openDocuments = doc => {
+  documentsDialog.value.show(true)
+  documentsDialog.value.data = doc
+}
 const saveTruckerRequirements = async () => {
   const data = await truckerManagement.saveTruckerRequirements({
     requiresForTruckers: requiresForTruckers.value,
@@ -33,13 +36,11 @@ const cancelChanges = async () => {
   requiresForTruckers.value = data.requiresForTruckers
   questionList.value = data.questionList
 }
-const openDocuments = doc => {
-  documentsDialog.value.show(true)
-  documentsDialog.value.data = doc
-}
+
 onMounted(async () => {
   const data = await truckerManagement.getTruckerRequirements()
   truckerManagementDB.value = data
+  await truckerManagement.getOnboardingDocuments()
 })
 </script>
 
@@ -81,9 +82,6 @@ onMounted(async () => {
       <ExpansionPanelText class="w-full md:w-2/3 lg:w-4/3 pt-4">
         <div>
           <FileUpload />
-          <SaveCancelChanges
-            class="mt-10"
-          />
         </div>
       </ExpansionPanelText>
     </ExpansionPanel>
