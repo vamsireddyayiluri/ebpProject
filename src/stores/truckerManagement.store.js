@@ -12,9 +12,9 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
   const questionList = ref([])
   const onboardingDocuments = ref([])
   const preferredTruckersList = ref([])
+  const { userData } = useAuthStore()
 
   const getTruckerRequirements = async () => {
-    const { userData } = useAuthStore()
     const docData = await getDoc(doc(db, 'trucker_requirements', userData.orgId))
     if (!docData.data()) {
       return {}
@@ -35,7 +35,6 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
     questionList.value.splice(index, 1)
   }
   const saveTruckerRequirements = async requirements => {
-    const { userData } = useAuthStore()
     const updatedData = {
       requiresForTruckers: requirements.requiresForTruckers,
       questionList: requirements.questionList,
@@ -50,7 +49,6 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
     }
   }
   const getOnboardingDocuments = async () => {
-    const { userData } = useAuthStore()
     const folderPath = `uploads/${userData.orgId}/`
     try {
       const folderRef = firebaseRef(storage, folderPath)
@@ -61,7 +59,6 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
     }
   }
   const addDoc = async file => {
-    const { userData } = useAuthStore()
 
     // for register page
     if (!userData) {
@@ -84,8 +81,6 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
     }
   }
   const removeDoc = async fileName => {
-    const { userData } = useAuthStore()
-
     // for register page
     if (!userData) {
       const index = onboardingDocuments.value.findIndex(f => f.name === fileName)

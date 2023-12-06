@@ -11,15 +11,14 @@ import { statuses } from '~/constants/statuses'
 
 export const useBookingsStore = defineStore('bookings', () => {
   const alertStore = useAlertStore()
-  const authStore = useAuthStore()
-  const { userData } = storeToRefs(authStore)
+  const { userData } = useAuthStore()
   const bookings = ref([])
   const drafts = ref([])
   const loading = ref(false)
 
   const getBookings = async ({ draft = false }) => {
     loading.value = true
-    const { orgId } = userData.value
+    const { orgId } = userData
     if (draft) {
       const draftsQuery = query(collection(db, 'drafts'), where('orgId', '==', orgId))
       const querySnapshot = await getDocs(draftsQuery)
@@ -70,7 +69,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     }
   }
   const createBookingObj = booking => {
-    const { userId, orgId } = userData.value
+    const { userId, orgId } = userData
     const bookingId = uid(28)
 
     return {
