@@ -10,7 +10,7 @@ import { isEqual } from 'lodash'
 const alertStore = useAlertStore()
 const truckerManagement = useTruckerManagementStore()
 const { truckersDocumentsHeaders } = useHeaders()
-const { requiresForTruckers, questionList, onboardingDocuments, isUpdatedDoc } = storeToRefs(truckerManagement)
+const { requiresForTruckers, questionList } = storeToRefs(truckerManagement)
 const openedPanel = ref([1])
 const loading = ref(false)
 const documentsDialog = ref(null)

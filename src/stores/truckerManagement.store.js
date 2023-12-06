@@ -8,7 +8,6 @@ import { db, storage } from '~/firebase'
 
 export const useTruckerManagementStore = defineStore('truckerManagement', () => {
   const alertStore = useAlertStore()
-  const { userData } = useAuthStore()
   const requiresForTruckers = ref(listRequiresForTruckers)
   const questionList = ref([])
   const onboardingDocuments = ref([])
@@ -51,6 +50,7 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
     }
   }
   const getOnboardingDocuments = async () => {
+    const { userData } = useAuthStore()
     const folderPath = `uploads/${userData.orgId}/`
     try {
       const folderRef = firebaseRef(storage, folderPath)
@@ -61,11 +61,19 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
     }
   }
   const addDoc = async file => {
+    const { userData } = useAuthStore()
+
+    // for register page
+    if (!userData) {
+      onboardingDocuments.value.push(file)
+
+      return
+    }
     try {
       const fileRef = firebaseRef(storage, `uploads/${userData.orgId}/${file.name}`)
       const exist = await isFileExists(fileRef)
       if (exist) {
-        alertStore.warning({ content: `File with name ${file.name} uploaded` })
+        alertStore.warning({ content: `File with name ${file.name} exist` })
       } else {
         await uploadBytes(fileRef, file)
         onboardingDocuments.value.push(file)
@@ -76,6 +84,15 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
     }
   }
   const removeDoc = async fileName => {
+    const { userData } = useAuthStore()
+
+    // for register page
+    if (!userData) {
+      const index = onboardingDocuments.value.findIndex(f => f.name === fileName)
+      onboardingDocuments.value.splice(index, 1)
+
+      return
+    }
     const filePath = `uploads/${userData.orgId}/${fileName}`
     try {
       const fileRef = firebaseRef(storage, filePath)
