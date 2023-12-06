@@ -1,5 +1,5 @@
-import { defineStore } from 'pinia'
-import { auth, db } from '~/firebase'
+import {defineStore, storeToRefs} from 'pinia'
+import {auth, db, storage} from '~/firebase'
 import {
   addDoc,
   collection,
@@ -13,7 +13,7 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore'
-import { getDownloadURL, getStorage, ref as sref, uploadBytes } from 'firebase/storage'
+import {getDownloadURL, getStorage, ref as firebaseRef, uploadBytes} from 'firebase/storage'
 import {
   createUserWithEmailAndPassword,
   EmailAuthProvider,
@@ -47,8 +47,8 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const { user } = await signInWithEmailAndPassword(auth, email, password)
       currentUser.value = user
+      await getUser()
       router.push({ name: 'dashboard' })
-      isLoading.value = false
     } catch (error) {
       isLoading.value = false
       switch (error.code) {
@@ -74,22 +74,34 @@ export const useAuthStore = defineStore('auth', () => {
     router.push({ name: 'login' })
   }
 
-  const register = async ({ form, yards, invitations }) => {
+  const register = async ({ form, yards, invitations, requiresForTruckers, questionList, onboardingDocuments }) => {
     isLoading.value = true
     try {
       await createUserWithEmailAndPassword(auth, form.email, form.password)
       await signInWithEmailAndPassword(auth, form.email, form.password)
-
+      const orgId = await getOrgId(form.email)
       await addDoc(collection(db, 'pending_verifications'), {
         fullName: form.fullName,
         email: form.email,
+        orgId,
         cell: form.cell,
         password: form.password,
         company: form.companyName,
         yards,
         type: userTypes.admin,
         invitations,
+        requiresForTruckers,
+        questionList,
       })
+      for (const file of onboardingDocuments) {
+        try {
+          const fileRef = firebaseRef(storage, `uploads/${orgId}/${file.name}`)
+          await uploadBytes(fileRef, file)
+        }
+        catch ({message}) {
+          alertStore.warning({ content: 'File wasn\'t uploaded '+ message })
+        }
+      }
       router.push({ name: 'verify1' })
       isLoading.value = false
     } catch (error) {
@@ -159,7 +171,6 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       auth.currentUser.emailVerified = true
       const { uid: userId } = user
-      const orgId = await getOrgId(data.email)
       let newUser = {
         fullName: data.fullName,
         email: data.email,
@@ -167,7 +178,7 @@ export const useAuthStore = defineStore('auth', () => {
         createdAt: getLocalTime().format(),
         updatedAt: getLocalTime().format(),
         userId: userId,
-        orgId: orgId,
+        orgId: data.orgId,
         password: data.password,
         type: userTypes.admin,
         company: data.company,
@@ -185,11 +196,11 @@ export const useAuthStore = defineStore('auth', () => {
       await setDoc(doc(db, 'users', userId), newUser)
       userData.value = newUser
 
-      const docRef = doc(db, 'organizations', orgId)
+      const docRef = doc(db, 'organizations', data.orgId)
       const orgSnap = await getDoc(docRef)
       if (!orgSnap.exists()) {
         const orgData = {
-          orgId,
+          orgId: data.orgId,
           email: data.email,
           company: data.company,
           createdAt: getLocalTime().format(),
@@ -202,8 +213,12 @@ export const useAuthStore = defineStore('auth', () => {
       if (data.invitations) {
         await invitationStore.sendInvitationLink(data.invitations)
       }
-
+      await setDoc(doc(db, 'trucker_requirements', data.orgId), {
+        requiresForTruckers: data.requiresForTruckers,
+        questionList: data.questionList,
+      })
       await deleteDoc(doc(db, 'pending_verifications', data.id))
+      await getUser()
 
       router.push({ name: 'dashboard' })
     } catch ({ message }) {
@@ -321,7 +336,7 @@ export const useAuthStore = defineStore('auth', () => {
   // Uploading user profile image into firebase storage
   const updateUserAvatar = async file => {
     try {
-      const storageRef = sref(storage, 'avatar')
+      const storageRef = firebaseRef(storage, 'avatar')
 
       const url = await uploadBytes(storageRef, file).then(async snapshot => {
         return await getDownloadURL(snapshot.ref)

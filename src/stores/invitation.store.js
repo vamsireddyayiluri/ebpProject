@@ -107,7 +107,6 @@ export const useInvitationStore = defineStore('invitation', () => {
       const exist = await validateInviteUserEmail(m.value)
 
       if (!querySnapshot.empty || exist) {
-        console.log(!querySnapshot.empty, exist)
         continue
       }
       const newInvitation = {
