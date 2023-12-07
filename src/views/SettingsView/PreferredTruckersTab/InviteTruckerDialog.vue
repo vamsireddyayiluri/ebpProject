@@ -30,7 +30,7 @@ const sendInvitation = async () => {
   }
 }
 const addTruckerToPreferred = () => {
-  addTrucker(trucker)
+  addTrucker(trucker.value)
   addTruckerDialog.value = false
   emit('close')
 }
@@ -101,11 +101,5 @@ const addTruckerToPreferred = () => {
     >
       Save
     </Button>
-    <Typography
-      type="text-body-xs-regular mt-2"
-      :color="getColor('textInteractive-01')"
-    >
-      for example existing trucker with email <b>nintendo12@example.com</b>
-    </Typography>
   </template>
 </template>

@@ -66,7 +66,7 @@ export const draftsHeaders = [
 ]
 export const truckersListHeaders = [
   {
-    text: 'SCAC ad email',
+    text: 'SCAC and email',
     value: 'scacEmail',
     align: 'start',
   },
