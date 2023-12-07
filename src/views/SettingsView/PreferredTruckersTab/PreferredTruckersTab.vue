@@ -15,7 +15,8 @@ const { smAndDown } = useDisplay()
 const showActions = ref(true)
 const tableHeight = ref(0)
 const inviteTruckerDialog = ref(false)
-const confirmInviteTruckerDialog = ref(false)
+
+// const confirmInviteTruckerDialog = ref(false)
 const deleteTruckerDialog = ref(false)
 
 const { truckersListHeaders } = useHeaders()
@@ -34,8 +35,8 @@ const computedEntities = computed({
 })
 
 const confirmSendInvitation = trucker => {
-  confirmInviteTruckerDialog.value.show(true)
-  confirmInviteTruckerDialog.value.data = trucker
+  inviteTruckerDialog.value.show(true)
+  inviteTruckerDialog.value.data = trucker
 }
 const containerActionHandler = ({ action, e }) => {
   if (action === 'to-message') {
@@ -46,10 +47,11 @@ const containerActionHandler = ({ action, e }) => {
   }
 }
 const deleteTrucker = () => {
-  preferredTruckersStore.deleteTrucker(deleteTruckerDialog.value.data.email)
+  preferredTruckersStore.deleteTrucker(deleteTruckerDialog.value.data)
   deleteTruckerDialog.value.show(false)
 }
-const sendInvitation = async () => {
+
+/*const sendInvitation = async () => {
   try {
     const result = await preferredTruckersStore.inviteTrucker('testEmail@test.com')
     if (result === 'sentInvitation') {
@@ -61,7 +63,7 @@ const sendInvitation = async () => {
   } catch (e) {
     console.error(e)
   }
-}
+}*/
 
 const tableId = 'truckersListTable'
 onMounted(() => {
@@ -195,29 +197,31 @@ onMounted(() => {
       <InviteTruckerDialog @close="inviteTruckerDialog.show(false)" />
     </template>
   </Dialog>
-  <Dialog
+  <!--
+    <Dialog
     ref="confirmInviteTruckerDialog"
     max-width="480"
-  >
+    >
     <template #text>
-      <div class="flex justify-between">
-        <Typography>
-          Are you sure you want to send an invitation to trucker <b>{{ confirmInviteTruckerDialog.data.email }}</b>?
-        </Typography>
-        <IconButton
-          icon="mdi-close"
-          class="-mt-1"
-          @click="confirmInviteTruckerDialog.show(false)"
-        />
-      </div>
-      <Button
-        class="w-full mt-10"
-        @click="sendInvitation"
-      >
-        Save
-      </Button>
+    <div class="flex justify-between">
+    <Typography>
+    Are you sure you want to send an invitation to trucker <b>{{ confirmInviteTruckerDialog.data.email }}</b>?
+    </Typography>
+    <IconButton
+    icon="mdi-close"
+    class="-mt-1"
+    @click="confirmInviteTruckerDialog.show(false)"
+    />
+    </div>
+    <Button
+    class="w-full mt-10"
+    @click="sendInvitation"
+    >
+    Save
+    </Button>
     </template>
-  </Dialog>
+    </Dialog>
+  -->
   <Dialog
     ref="deleteTruckerDialog"
     max-width="480"
