@@ -1,6 +1,6 @@
 <script setup>
-import {useDocumentsChip} from "~/composables"
-import {capitalize} from 'lodash'
+import { useDocumentsChip } from '~/composables'
+import { capitalize } from 'lodash'
 
 const props = defineProps({
   doc: Object,
@@ -8,6 +8,21 @@ const props = defineProps({
 const emit = defineEmits(['close'])
 const comment = ref(null)
 const leaveCommentDialog = ref(null)
+const docxFileUrl = ref(null)
+
+onMounted(async () => {
+  if (props.doc.type !== 'pdf' && props.doc.type !== 'txt') {
+    try {
+      const timestamp = new Date().getTime()
+      const url = await encodeURIComponent(props.doc.url)
+      setTimeout(() => {
+        docxFileUrl.value = `https://docs.google.com/viewer?embedded=true&url=${url}&timestamp=${timestamp}`
+      }, 10)
+    } catch (error) {
+      console.log('error ->', error)
+    }
+  }
+})
 </script>
 
 <template>
@@ -22,30 +37,20 @@ const leaveCommentDialog = ref(null)
       @click="emit('close')"
     />
   </div>
-  <Typography type="text-h3 text-center -mt-3 mb-6">
-    Main document
-  </Typography>
+  <Typography type="text-h3 text-center -mt-3 mb-6">{{doc.label}}</Typography>
   <Typography class="max-h-[520px] overflow-auto">
-    Protecting your private information is our priority. This Statement of Privacy applies to the www.heytutor.com and
-    HeyTutor LLC. and governs data collection and usage. For the purposes of this Privacy Policy, unless otherwise
-    noted, all references to HeyTutor LLC. include www.heytutor.com and HeyTutor. The HeyTutor website is a online
-    marketplace site. By using the HeyTutor website, you consent to the data practices described in this statement.
-    Protecting your private information is our priority. This Statement of Privacy applies to the www.heytutor.com and
-    HeyTutor LLC. and governs data collection and usage. For the purposes of this Privacy Policy, unless otherwise
-    noted, all references to HeyTutor LLC. include www.heytutor.com and HeyTutor. The HeyTutor website is a online
-    marketplace site. By using the HeyTutor website, you consent to the data practices described in this statement.
-    Protecting your private information is our priority. This Statement of Privacy applies to the www.heytutor.com and
-    HeyTutor LLC. and governs data collection and usage. For the purposes of this Privacy Policy, unless otherwise
-    noted, all references to HeyTutor LLC. include www.heytutor.com and HeyTutor. The HeyTutor website is a online
-    marketplace site. By using the HeyTutor website, you consent to the data practices described in this statement.
-    Protecting your private information is our priority. This Statement of Privacy applies to the www.heytutor.com and
-    HeyTutor LLC. and governs data collection and usage. For the purposes of this Privacy Policy, unless otherwise
-    noted, all references to HeyTutor LLC. include www.heytutor.com and HeyTutor. The HeyTutor website is a online
-    marketplace site. By using the HeyTutor website, you consent to the data practices described in this statement.
-    Protecting your private information is our priority. This Statement of Privacy applies to the www.heytutor.com and
-    HeyTutor LLC. and governs data collection and usage. For the purposes of this Privacy Policy, unless otherwise
-    noted, all references to HeyTutor LLC. include www.heytutor.com and HeyTutor. The HeyTutor website is a online
-    marketplace site. By using the HeyTutor website, you consent to the data practices described in this statement.
+    <iframe
+      v-if="doc.type === 'pdf' || doc.type === 'txt'"
+      :src="doc.url"
+      width="100%"
+      height="380px"
+    ></iframe>
+    <iframe
+      v-else
+      :src="docxFileUrl"
+      width="100%"
+      height="380px"
+    ></iframe>
   </Typography>
   <div class="flex gap-5 mt-4">
     <Chip
@@ -62,11 +67,7 @@ const leaveCommentDialog = ref(null)
     >
       decline
     </Button>
-    <Button
-      @click="emit('close')"
-    >
-      accept
-    </Button>
+    <Button @click="emit('close')"> accept</Button>
   </div>
   <Dialog
     ref="leaveCommentDialog"
@@ -74,9 +75,7 @@ const leaveCommentDialog = ref(null)
   >
     <template #text>
       <div class="flex justify-between mb-3">
-        <Typography type="text-h3">
-          Leave comment
-        </Typography>
+        <Typography type="text-h3"> Leave comment</Typography>
         <IconButton
           icon="mdi-close"
           class="-mt-1"
