@@ -15,23 +15,29 @@ const fillAccountDetails = data => {
 // filling work detials step
 const fillWorkdetails = data => {
   cy.getInputByLabel('Address').type(data.address).as('adressref')
-  cy.wait(2000)
-  cy.get('@adressref').type('{downArrow}')
+  cy.wait(1000)
+  cy.get('@adressref').type('{downArrow}{downArrow}')
 
   cy.getInputByLabel('Location label').type(data.addressLabel)
   if (data.commodity) {
     cy.getInputByLabel('Commodities that you export').type(data.commodity)
   }
-  cy.get('button[type=button]').should('be.enabled').click()
+  cy.contains('button', ' Add ').should('be.enabled').click()
+  cy.getInputByLabel('Address').clear()
+
   cy.get('.styleChip').contains(data.addressLabel)
 }
 
 // filling invite team step
 const fillInviteTeam = data => {
   cy.getInputByLabel('Email').type(data.email)
+  cy.get('.v-field__append-inner > .mdi-chevron-down').type('{downArrow}{enter}')
+
   cy.getInputByLabel('Worker ID').type(data.workerId)
 
   cy.contains('button', 'add member').should('be.enabled').click()
+  cy.wait(1000)
+  cy.get('.styledMemberItems').contains(data.workerId)
 }
 
 // filling trucker requirments
@@ -128,88 +134,39 @@ describe('new user registration', () => {
           cy.getInputByLabel('Commodities that you export').type(val.commodity)
         }
         cy.contains('button', 'Add').should('be.disabled')
+
+        cy.getInputByLabel('Address').clear()
       })
       cy.getInputByLabel('Address').clear()
-      data.workDetails?.forEach(val => {
-        cy.getInputByLabel('Address').type(val.address).as('adressref')
-        cy.wait(2000)
-        cy.get('@adressref').type('{downArrow}{downArrow}')
-        cy.getInputByLabel('Location label').type(val.addressLabel)
-        if (data.commodity) {
-          cy.getInputByLabel('Commodities that you export').type(val.commodity)
-        }
-        cy.contains('button', ' Add ').should('be.enabled').click()
-      })
-      // cy.xpath(
-      //   '//*[@id="app"]/div/div/div[2]/form/div[2]/div[1]/div[2]/div/div[1]/div[4]/button',
-      // ).click()
-      // cy.get('.v-dialog').contains('button', 'Remove').should('be.visible').click()
-
-      cy.get('@next').click()
-      data.inviteTeam?.forEach(val => {
-        cy.getInputByLabel('Worker ID').type(val.workerId)
-        cy.contains('button', ' add member ').should('be.disabled')
-      })
-      cy.getInputByLabel('Worker ID').clear()
-      data.inviteTeam?.forEach(val => {
-        cy.getInputByLabel('Email').type(val.email)
-        cy.contains('button', ' add member ').should('be.disabled')
-      })
-      cy.getInputByLabel('Email').clear()
-      data.inviteTeam?.forEach(val => {
-        cy.getInputByLabel('Email').type(val.email)
-        cy.getInputByLabel('Worker ID').type(val.workerId)
-        cy.contains('button', ' add member ').should('be.enabled').click()
-      })
-
-      // cy.xpath('//*[@id="app"]/div/div/div[2]/form/div[2]/div[1]/div/div/div[2]/div/button').click()
-      // cy.get('.v-dialog').contains('button', 'Remove').should('be.visible').click()
-      cy.get('@next').click()
-    })
-  })
-
-  it.skip('removingOptionalDataChipsAfterAdding', () => {
-    validData.forEach(data => {
-      cy.xpath('//*[@id="app"]/div/div/div[2]/form/div[1]')
-        .contains('Account information')
-        .should('be.visible')
-      cy.get('button[type=submit]').as('next').should('be.disabled')
-
-      fillAccountDetails(data)
-
-      cy.get('button[type=submit]').as('next').should('be.enabled')
-
-      cy.get('@next').click()
-
-      cy.xpath('//*[@id="app"]/div/div/div[2]/form/div[1]')
-        .contains('Work details')
-        .should('be.visible')
-      cy.get('@next').should('be.enabled')
-
-      // filling work details
       data.workDetails?.forEach(val => {
         fillWorkdetails(val)
       })
 
-      cy.xpath(
-        '//*[@id="app"]/div/div/div[2]/form/div[2]/div[1]/div[2]/div/div[1]/div[4]/button',
-      ).click()
+      cy.get('.mdi-close').first().click()
       cy.get('.v-dialog').contains('button', 'Remove').should('be.visible').click()
 
       cy.get('@next').click()
-
-      cy.get('@next').should('be.enabled')
-
-      cy.xpath('//*[@id="app"]/div/div/div[2]/form/div[1]')
-        .contains('Invite team members')
-        .should('be.visible')
-
-      data?.inviteTeam?.forEach(val => {
+      data.inviteTeam?.forEach(val => {
+        cy.getInputByLabel('Worker ID').type(val.workerId)
+        cy.contains('button', ' add member ').should('be.disabled')
+        cy.getInputByLabel('Worker ID').clear()
+      })
+      data.inviteTeam?.forEach(val => {
+        cy.getInputByLabel('Email').type(val.email)
+        cy.contains('button', ' add member ').should('be.disabled')
+        cy.getInputByLabel('Email').clear()
+      })
+      cy.getInputByLabel('Email').clear()
+      data.inviteTeam?.forEach(val => {
         fillInviteTeam(val)
+        cy.getInputByLabel('Email').clear()
+        cy.getInputByLabel('Worker ID').clear()
       })
 
-      cy.xpath('//*[@id="app"]/div/div/div[2]/form/div[2]/div[1]/div/div/div[2]/div/button').click()
+      cy.get('.mdi-close').first().click()
       cy.get('.v-dialog').contains('button', 'Remove').should('be.visible').click()
+
+      cy.get('@next').click()
     })
   })
 
