@@ -6,8 +6,11 @@ describe('My First Test', () => {
     //   cy.log('document user', doc)
     // })
     cy.getUsersData('sravanthi.gorantla@cognine.com').then(doc => {
-      cy.log('user document', doc[0].data())
+      cy.log('user document', doc)
     })
+    // cy.verifyEmailAddress('sravanthi.gorantla@cognine.com', '123456789').then(val => {
+    //   cy.log('var', val)
+    // })
     // cy.contains('h1', 'You did it!')
   })
 })

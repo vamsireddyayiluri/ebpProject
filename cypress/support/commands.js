@@ -33,67 +33,29 @@ Cypress.Commands.add('getInputByLabel', label => {
     })
 })
 
-// import {initializeApp} from 'firebase/app'
-// import 'firebase/compat/auth'
-// import 'firebase/database'
-// import 'firebase/firestore'
-// import { attachCustomCommands } from 'cypress-firebase'
+Cypress.Commands.add('userLogin', (email, password) => {
+  cy.contains('button', 'Log in').should('be.disabled')
+  cy.getInputByLabel('Email').type(email)
+  cy.getInputByLabel('Password').type(password)
+  cy.contains('button', 'Log in').should('be.enabled').click()
+})
 
-// const fbConfig = {
-//   // Your config from Firebase Console
-//   apiKey: process.env.VITE_APP_GOOGLE_API_KEY,
-//   authDomain: process.env.VITE_APP_AUTH_DOMAIN,
-//   projectId: process.env.VITE_APP_PROJECT_ID,
-//   storageBucket: process.env.VITE_APP_STORAGE_URL,
-//   appId: process.env.VITE_APP_APP_ID,
-// }
+Cypress.Commands.add('logout', () => {
+  cy.xpath('//*[@id="userMenu"]').click()
+  cy.get('.logoutBtn').click()
+})
 
-// const app=initializeApp(fbConfig)
-
-// attachCustomCommands({ Cypress, cy, app })
-
-// import firebase from 'firebase/compat/app';
-// import 'firebase/compat/auth';
-// import 'firebase/compat/database';
-// import 'firebase/compat/firestore';
-// import { attachCustomCommands } from 'cypress-firebase';
-
-// const fbConfig = {
-//   // Your config from Firebase Console
-//   apiKey: process.env.VITE_APP_GOOGLE_API_KEY,
-//   authDomain: process.env.VITE_APP_AUTH_DOMAIN,
-//   projectId: process.env.VITE_APP_PROJECT_ID,
-//   databaseURL: 'https://ebpv3-69501.firebaseio.com',
-//   storageBucket: process.env.VITE_APP_STORAGE_URL,
-//   appId: process.env.VITE_APP_APP_ID,
-// };
-
-// firebase.initializeApp(fbConfig);
-
-// attachCustomCommands({ Cypress, cy, firebase });
-
-import { initializeApp } from 'firebase/app'
-import { getAuth, signInWithEmailAndPassword, updateCurrentUser } from 'firebase/auth'
-import { getDoc, getFirestore, query, where } from 'firebase/firestore'
-import { collection, getDocs, doc } from 'firebase/firestore'
-
-const firebaseConfig = {
-  apiKey: 'AIzaSyDpBg2kbRRTtACaKJ6g4Q3hmgYRwNmGtbs',
-  authDomain: 'ebpv3-69501.firebaseapp.com',
-  projectId: 'ebpv3-69501',
-  storageBucket: 'qualle-development.appspot.com',
-  appId: '1:924145667892:web:91a78cab537d5102991f61',
-}
-const app = initializeApp(firebaseConfig)
-console.log('testing', Cypress.env('apiKey'))
-
-const auth = getAuth(app)
-const db = getFirestore(app)
-
-export { auth, db }
+import { auth, db } from './firebase'
+import { deleteDoc, getDoc, query, where, collection, getDocs, doc } from 'firebase/firestore'
 
 Cypress.Commands.add('getUsersData', async email => {
   const q = query(collection(db, 'users'), where('email', '==', email))
+  const docData = await getDocs(q)
+  return docData.docs
+})
+
+Cypress.Commands.add('searchDocData', async (coll, label, value) => {
+  const q = query(collection(db, coll), where(label, '==', value))
   const docData = await getDocs(q)
   return docData.docs
 })
@@ -104,18 +66,54 @@ Cypress.Commands.add('getDocData', async (coll, document) => {
   return docData.data()
 })
 
-Cypress.Commands.add('verifyEmailAddress', async () => {
-  const { user } = await signInWithEmailAndPassword(auth, email, password)
-  const userId = user.uid
+Cypress.Commands.add('verifyEmail', async email => {
+  const userName = email.split('@')[0]
+  const domain = email.split('@')[1]
+  try {
+    const response = await fetch(
+      'https://www.1secmail.com/api/v1/?action=getMessages&login=' + userName + '&domain=' + domain,
+    )
 
-  updateCurrentUser(userId, {
-    emailVerified: true,
-    displayName: 'sravnthi test',
-  }).then(record => {
-    console.log('user rrecord', record)
-  })
+    const allEmails = await response.json()
+    const latestEmail = await allEmails[0]
+    const data = await fetch(
+      'https://www.1secmail.com/api/v1/?action=readMessage&login=' +
+        userName +
+        '&domain=' +
+        domain +
+        '&id=' +
+        latestEmail.id,
+    )
+    const message = await data.json()
+    const parser = new DOMParser()
+    const parsedHTML = parser.parseFromString(message.htmlBody, 'text/html')
+    const anchorElement = parsedHTML.querySelector('a')
+    const hrefValue = anchorElement.getAttribute('href')
+    return hrefValue
+  } catch (error) {
+    console.log('error', error)
+  }
 })
 
-// https://firebase.google.com/docs/auth/admin/manage-users#update_a_user
+// Removing user from the firebase
 
-auth.updateCurrentUser()
+Cypress.Commands.add('removeUser', email => {
+  const user = auth.currentUser
+  const userId = user.uid
+  user
+    .delete()
+    .then(async () => {
+      const q = query(doc(db, 'users', userId))
+      const docData = await getDoc(q)
+      await deleteDoc(q)
+      const orgId = docData.data().orgId
+      const oq = query(doc(db, 'organizations', orgId))
+      const organizationDoc = await getDoc(oq)
+      if (organizationDoc.data().email === email) {
+        await deleteDoc(oq)
+      }
+    })
+    .catch(error => {
+      console.log('error', error)
+    })
+})
