@@ -18,7 +18,7 @@ const onSave = () => {
   >
     Booking rules
   </Typography>
-  <div class="grid sm:grid-cols-2 grid-cols-1 gap-6 [&>div]:h-fit">
+  <div class="w-full md:w-11/12 lg:w-8/12 grid sm:grid-cols-2 grid-cols-1 gap-6 [&>div]:h-fit">
     <Select
       v-model="rules.label"
       :items="bookingRulesStore.yardList"
