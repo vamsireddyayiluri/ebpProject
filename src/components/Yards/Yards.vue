@@ -61,6 +61,7 @@ const removeYard = async () => {
         sm="6"
       >
         <Location
+          v-model="newLocation.address"
           label="Address"
           hint="For e.g. 2972 Westheimer Santa Ana, Illinois"
           persistent-hint
