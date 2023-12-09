@@ -11,6 +11,7 @@ import { storeToRefs } from 'pinia'
 import { statuses } from '~/constants/statuses'
 import { useBookingHistoryStore } from '~/stores/bookingHistory.store'
 import { cloneDeep, isEqual } from 'lodash'
+import container from '~/assets/images/container.png'
 
 const authStore = useAuthStore()
 const { getBookings, getBooking, publishDraft, removeFromNetwork, deleteBooking, updateBooking } =
@@ -398,6 +399,22 @@ onMounted(async () => {
           </div>
         </div>
       </div>
+    </div>
+    <div
+      v-else
+      class="w-full h-[calc(100vh-120px)] flex flex-col gap-2 justify-center items-center"
+    >
+      <img
+        :src="container"
+        class="container-img"
+        alt="qualle container"
+      >
+      <Typography
+        type="text-h1"
+        class="!text-7xl mb-4 text-center"
+      >
+        Booking not exist!
+      </Typography>
     </div>
   </Main>
   <Dialog
