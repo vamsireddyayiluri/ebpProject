@@ -79,6 +79,7 @@ const removeTrucker = item => {
       height="48"
       variant="outlined"
       :color="getColor('uiLine')"
+      :disabled="!question"
       @click="truckerManagement.addAdditionalQuestion(question), question = null"
     >
       <Icon
