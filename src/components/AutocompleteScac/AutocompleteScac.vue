@@ -1,6 +1,5 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
-import {usePreferredTruckersStore} from "~/stores/preferredTruckers.store"
 
 const props = defineProps({
   scacList: {
@@ -12,6 +11,8 @@ const props = defineProps({
     default: () => true,
   },
 })
+
+const emit = defineEmits(['onChange'])
 
 const attrs = useAttrs()
 const scacList = toRef(props.scacList, 'list')
@@ -27,9 +28,10 @@ const sendToMarketplace = () => {
   sendDialog.value.show(false)
   autocompleteValue.value = 'Truckers from marketplace'
 }
-
-const updateModelValue = () => {
+const updateModelValue = updatedScacList => {
   if (autocompleteValue.value) autocompleteValue.value = null
+
+  emit('onChange', updatedScacList)
 }
 const updateMenu = e => {
   if (!e && scacList.value?.length) {

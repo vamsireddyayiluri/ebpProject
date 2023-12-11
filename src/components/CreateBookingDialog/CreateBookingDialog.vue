@@ -78,9 +78,10 @@ watch(clickedOutside, () => {
 onMounted(async () => {
   workDetailsStore.getYards()
 
-  booking.value.location = (
-    await bookingRulesStore.getRules(userData.orgId)
-  ).value.defaultYard
+  const bookingRules = await bookingRulesStore.getRules(userData.orgId)
+
+  booking.value.location = bookingRules.value.defaultYard
+  booking.value.scacList = bookingRules.value.preferredTruckersList.scacList
 })
 </script>
 
@@ -163,7 +164,10 @@ onMounted(async () => {
         :rules="[rules.size]"
       />
     </div>
-    <AutocompleteScac :scac-list="booking.scacList" />
+    <AutocompleteScac
+      :scac-list="booking.scacList"
+      :menu-btn="false"
+    />
     <Button
       type="submit"
       class="w-full"

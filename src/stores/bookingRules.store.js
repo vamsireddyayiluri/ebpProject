@@ -40,7 +40,7 @@ export const useBookingRulesStore = defineStore('bookingRules', () => {
       await updateDoc(doc(db, 'organizations', orgId), {
         bookingRules: newBookingRules,
       })
-      bookingRules.value = newBookingRules
+      rules.value = newBookingRules
       alertStore.info({ content: 'Booking rules updated' })
     } catch ({ message }) {
       alertStore.warning({ content: message })

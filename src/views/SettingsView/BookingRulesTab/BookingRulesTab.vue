@@ -54,6 +54,7 @@ onMounted(async () => {
       :scac-list="rules.preferredTruckersList"
       :menu-btn="false"
       class="order-4 sm:!order-3 !-mb-4"
+      @onChange="scacList => rules.preferredTruckersList.scacList.list = scacList"
     />
     <Textfield
       v-model="rules.timeForNotificationBeforeCutoff"
