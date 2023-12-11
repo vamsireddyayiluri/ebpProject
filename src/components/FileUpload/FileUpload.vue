@@ -67,7 +67,7 @@ const renameFile = () => {
     name="userDoc"
     class="input"
     @change="onChangeFile"
-  >
+  />
   <label
     for="fileUpload"
     @dragover.prevent="handleDragOver"
@@ -138,9 +138,7 @@ const renameFile = () => {
     max-width="480"
   >
     <template #text>
-      <Typography type="text-h3">
-        Rename file
-      </Typography>
+      <Typography type="text-h3"> Rename file </Typography>
       <form @submit.prevent="renameFile">
         <div class="flex gap-6 mt-10">
           <Textfield

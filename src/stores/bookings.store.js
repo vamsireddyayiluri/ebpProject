@@ -18,10 +18,12 @@ import { getLocalServerTime, getLocalTime } from '@qualle-admin/qutil/dist/date'
 import { capitalize } from 'lodash'
 import moment from 'moment-timezone'
 import { statuses } from '~/constants/statuses'
+import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
 
 export const useBookingsStore = defineStore('bookings', () => {
   const alertStore = useAlertStore()
   const { userData } = useAuthStore()
+  const { preferredTruckers } = usePreferredTruckersStore()
   const bookings = ref([])
   const drafts = ref([])
   const loading = ref(false)
@@ -93,6 +95,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       createdAt: getLocalTime().format(),
       updatedAt: getLocalTime().format(),
       carriers: [],
+      preferredTruckers: preferredTruckers,
     }
   }
   const createBooking = async booking => {
