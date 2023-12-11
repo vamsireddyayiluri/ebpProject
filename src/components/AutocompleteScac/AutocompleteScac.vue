@@ -1,11 +1,13 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
-import {usePreferredTruckersStore} from "~/stores/preferredTruckers.store"
+import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
 
 const props = defineProps({
   scacList: {
     type: Object,
-    default: () => {list: []},
+    default: () => {
+      list: []
+    },
   },
   menuBtn: {
     type: Boolean,

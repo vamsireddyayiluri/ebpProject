@@ -1,7 +1,7 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
-import { storeToRefs } from "pinia"
-import { useTruckerManagementStore } from "~/stores/truckerManagement.store"
+import { storeToRefs } from 'pinia'
+import { useTruckerManagementStore } from '~/stores/truckerManagement.store'
 
 const props = defineProps({
   scacSection: {
@@ -23,9 +23,10 @@ const removeTrucker = item => {
 </script>
 
 <template>
-  <template v-if="scacSection ">
+  <template v-if="scacSection">
     <Typography type="text-body-m-semibold mb-6 text-left">
-      Search truckers you already work with by SCAC code and add them to your Preferred truckers list
+      Search truckers you already work with by SCAC code and add them to your Preferred truckers
+      list
     </Typography>
     <Autocomplete
       v-model="items"
@@ -51,9 +52,10 @@ const removeTrucker = item => {
     </div>
   </template>
   <Typography type="text-body-m-semibold mb-6 text-left">
-    We will automatically collect the following information from each trucker as part of the onboarding process,
-    what other additional information will be required to onboard trucking companies wanting to move export loads for you?
-    (You’ll have a chance to add your own documents and PDFs/onboarding documents on the next screen)
+    We will automatically collect the following information from each trucker as part of the
+    onboarding process, what other additional information will be required to onboard trucking
+    companies wanting to move export loads for you? (You’ll have a chance to add your own documents
+    and PDFs/onboarding documents on the next screen)
   </Typography>
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-5">
     <template
@@ -79,7 +81,7 @@ const removeTrucker = item => {
       height="48"
       variant="outlined"
       :color="getColor('uiLine')"
-      @click="truckerManagement.addAdditionalQuestion(question), question = null"
+      @click="truckerManagement.addAdditionalQuestion(question), (question = null)"
     >
       <Icon
         icon="mdi-plus"

@@ -2,8 +2,8 @@
 import { getColor } from '~/helpers/colors'
 import { getAllLines } from '@qualle-admin/qutil/dist/ssl'
 import { useBookingsStore } from '~/stores/bookings.store'
-import { useDate } from "~/composables"
-import { useWorkDetailsStore } from "~/stores/workDetails.store"
+import { useDate } from '~/composables'
+import { useWorkDetailsStore } from '~/stores/workDetails.store'
 
 const props = defineProps({
   clickedOutside: Boolean,

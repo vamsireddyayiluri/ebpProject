@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { doc, updateDoc } from 'firebase/firestore'
 import { db } from '~/firebase'
 import { useAuthStore } from '~/stores/auth.store'
-import { useAlertStore } from "~/stores/alert.store"
+import { useAlertStore } from '~/stores/alert.store'
 
 export const useWorkDetailsStore = defineStore('workDetails', () => {
   const alertStore = useAlertStore()
@@ -13,8 +13,7 @@ export const useWorkDetailsStore = defineStore('workDetails', () => {
     yards.value = authStore.orgData.workDetails.map(i => {
       return {
         ...i,
-        text:
-        `Commodity: ${i.commodity}`,
+        text: `Commodity: ${i.commodity}`,
       }
     })
   }
@@ -32,8 +31,7 @@ export const useWorkDetailsStore = defineStore('workDetails', () => {
         workDetails: yards,
       })
       alertStore.info({ content: 'Work details saved!' })
-    }
-    catch ({ message }) {
+    } catch ({ message }) {
       alertStore.warning({ content: message })
     }
   }

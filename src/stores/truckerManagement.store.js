@@ -59,7 +59,6 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
     }
   }
   const addDoc = async file => {
-
     // for register page
     if (!userData) {
       onboardingDocuments.value.push(file)
@@ -116,4 +115,3 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
     removeDoc,
   }
 })
-

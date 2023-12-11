@@ -46,9 +46,7 @@
       "lng": -118.0798038
     },
     "scacList": { "list": ["OTRH"] },
-    "carriers": [
-      { "scac": "OTRH", "fulfilled": 7, "total": 13 }
-    ],
+    "carriers": [{ "scac": "OTRH", "fulfilled": 7, "total": 13 }],
     "size": "20 ST",
     "status": ""
   },
@@ -72,9 +70,7 @@
     "preferredDate": "2023-12-03T23:59:59+05:30",
     "expiryDate": "2023-12-07T23:59:59+05:30",
     "scacList": { "list": ["WNER"] },
-    "carriers": [
-      { "scac": "WNER", "fulfilled": 0, "total": 10 }
-    ],
+    "carriers": [{ "scac": "WNER", "fulfilled": 0, "total": 10 }],
     "size": "40 FR",
     "status": ""
   },
@@ -97,9 +93,7 @@
     "preferredDate": "2023-11-11T23:59:59+05:30",
     "expiryDate": "2024-11-22T23:59:59+05:30",
     "scacList": { "list": ["LORE"] },
-    "carriers": [
-      { "scac": "LORE", "fulfilled": 12, "total": 14 }
-    ],
+    "carriers": [{ "scac": "LORE", "fulfilled": 12, "total": 14 }],
     "size": "40 ST",
     "status": ""
   },
@@ -123,9 +117,7 @@
       "lat": 36.9169609,
       "lng": -76.3098145
     },
-    "carriers": [
-      { "scac": "ABCD", "fulfilled": 7, "total": 10 }
-    ],
+    "carriers": [{ "scac": "ABCD", "fulfilled": 7, "total": 10 }],
     "size": "20 FR",
     "status": ""
   },

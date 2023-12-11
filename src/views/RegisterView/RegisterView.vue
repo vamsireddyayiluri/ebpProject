@@ -23,7 +23,8 @@ const form = reactive({
   confirmPassword: '',
 })
 const { yards } = storeToRefs(workDetailsStore)
-const { requiresForTruckers, preferredTruckersList, questionList, onboardingDocuments } = storeToRefs(truckerManagement)
+const { requiresForTruckers, preferredTruckersList, questionList, onboardingDocuments } =
+  storeToRefs(truckerManagement)
 const invitations = ref([])
 const rules = {
   cell(value) {

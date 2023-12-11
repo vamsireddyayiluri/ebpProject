@@ -4,7 +4,7 @@
     "scac": "ANRN",
     "email": "tim.jennings@example.com",
     "company": "Gillette",
-    "lastBooking" : "",
+    "lastBooking": "",
     "documents": [
       {
         "label": "Agreement_1",
@@ -13,31 +13,33 @@
       {
         "label": "Agreement_2",
         "status": "waiting"
-      }]
+      }
+    ]
   },
   {
     "id": "ADEW",
     "scac": "ADEW",
     "email": "willie.jennings@example.com",
     "company": "Louis Vuitton",
-    "lastBooking" : "2023-03-09T14:30:49+00:00",
+    "lastBooking": "2023-03-09T14:30:49+00:00",
     "documents": [
       {
         "label": "Agreement_4",
         "status": "waiting"
-    },
+      },
       {
         "label": "Agreement",
         "status": "notConsider"
-    },
+      },
       {
         "label": "new_Agreement",
         "status": "checked"
-    },
+      },
       {
         "label": "Agreement_update",
         "status": "pending"
-    }]
+      }
+    ]
   },
   {
     "id": "BLJU ",

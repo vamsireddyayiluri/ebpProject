@@ -1,6 +1,6 @@
 <script setup>
 import { Main } from '@layouts'
-import { getColor } from "~/helpers/colors"
+import { getColor } from '~/helpers/colors'
 import container from '~/assets/images/container.png'
 
 const router = useRouter()

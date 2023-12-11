@@ -39,8 +39,8 @@ const items = ref([
 const mobileMenuItems = [
   { name: 'Dashboard', path: 'dashboard', icon: 'home' },
   { name: 'Calendar', path: 'calendar', icon: 'calendar' },
-  { name: 'Statistics', path: 'statistics', icon: 'stat'},
-  { name: 'Settings', path: 'settings', icon: 'setting'},
+  { name: 'Statistics', path: 'statistics', icon: 'stat' },
+  { name: 'Settings', path: 'settings', icon: 'setting' },
   { name: 'Profile settings', path: 'profile', icon: 'user' },
 ]
 const { notifications } = storeToRefs(notificationStore)

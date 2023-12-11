@@ -25,8 +25,7 @@ import alert from '~/assets/images/alert.svg'
   </div>
 </template>
 
-<style lang="scss">
-</style>
+<style lang="scss"></style>
 
 <route lang="yaml">
 meta:

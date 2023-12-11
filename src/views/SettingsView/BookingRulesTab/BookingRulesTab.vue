@@ -1,6 +1,6 @@
 <script setup>
-import {useBookingRulesStore} from "~/stores/bookingRules.store"
-import {storeToRefs} from "pinia"
+import { useBookingRulesStore } from '~/stores/bookingRules.store'
+import { storeToRefs } from 'pinia'
 
 const bookingRulesStore = useBookingRulesStore()
 

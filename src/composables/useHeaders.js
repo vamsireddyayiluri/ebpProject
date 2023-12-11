@@ -1,4 +1,4 @@
-import moment from "moment-timezone"
+import moment from 'moment-timezone'
 
 export const bookingsHeaders = [
   {
@@ -114,8 +114,8 @@ export const statisticsTruckersHeaders = [
     value: 'takenFulfilled',
   },
   {
-    text: 'Ranging',
-    value: 'ranging',
+    text: 'Performance',
+    value: 'performance',
     width: 3,
   },
 ]

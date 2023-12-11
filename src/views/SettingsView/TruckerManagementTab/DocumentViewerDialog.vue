@@ -1,6 +1,6 @@
 <script setup>
-import {useDocumentsChip} from "~/composables"
-import {capitalize} from 'lodash'
+import { useDocumentsChip } from '~/composables'
+import { capitalize } from 'lodash'
 
 const props = defineProps({
   doc: Object,
@@ -26,26 +26,31 @@ const leaveCommentDialog = ref(null)
     Main document
   </Typography>
   <Typography class="max-h-[520px] overflow-auto">
-    Protecting your private information is our priority. This Statement of Privacy applies to the www.heytutor.com and
-    HeyTutor LLC. and governs data collection and usage. For the purposes of this Privacy Policy, unless otherwise
-    noted, all references to HeyTutor LLC. include www.heytutor.com and HeyTutor. The HeyTutor website is a online
-    marketplace site. By using the HeyTutor website, you consent to the data practices described in this statement.
-    Protecting your private information is our priority. This Statement of Privacy applies to the www.heytutor.com and
-    HeyTutor LLC. and governs data collection and usage. For the purposes of this Privacy Policy, unless otherwise
-    noted, all references to HeyTutor LLC. include www.heytutor.com and HeyTutor. The HeyTutor website is a online
-    marketplace site. By using the HeyTutor website, you consent to the data practices described in this statement.
-    Protecting your private information is our priority. This Statement of Privacy applies to the www.heytutor.com and
-    HeyTutor LLC. and governs data collection and usage. For the purposes of this Privacy Policy, unless otherwise
-    noted, all references to HeyTutor LLC. include www.heytutor.com and HeyTutor. The HeyTutor website is a online
-    marketplace site. By using the HeyTutor website, you consent to the data practices described in this statement.
-    Protecting your private information is our priority. This Statement of Privacy applies to the www.heytutor.com and
-    HeyTutor LLC. and governs data collection and usage. For the purposes of this Privacy Policy, unless otherwise
-    noted, all references to HeyTutor LLC. include www.heytutor.com and HeyTutor. The HeyTutor website is a online
-    marketplace site. By using the HeyTutor website, you consent to the data practices described in this statement.
-    Protecting your private information is our priority. This Statement of Privacy applies to the www.heytutor.com and
-    HeyTutor LLC. and governs data collection and usage. For the purposes of this Privacy Policy, unless otherwise
-    noted, all references to HeyTutor LLC. include www.heytutor.com and HeyTutor. The HeyTutor website is a online
-    marketplace site. By using the HeyTutor website, you consent to the data practices described in this statement.
+    Protecting your private information is our priority. This Statement of Privacy applies to the
+    www.heytutor.com and HeyTutor LLC. and governs data collection and usage. For the purposes of
+    this Privacy Policy, unless otherwise noted, all references to HeyTutor LLC. include
+    www.heytutor.com and HeyTutor. The HeyTutor website is a online marketplace site. By using the
+    HeyTutor website, you consent to the data practices described in this statement. Protecting your
+    private information is our priority. This Statement of Privacy applies to the www.heytutor.com
+    and HeyTutor LLC. and governs data collection and usage. For the purposes of this Privacy
+    Policy, unless otherwise noted, all references to HeyTutor LLC. include www.heytutor.com and
+    HeyTutor. The HeyTutor website is a online marketplace site. By using the HeyTutor website, you
+    consent to the data practices described in this statement. Protecting your private information
+    is our priority. This Statement of Privacy applies to the www.heytutor.com and HeyTutor LLC. and
+    governs data collection and usage. For the purposes of this Privacy Policy, unless otherwise
+    noted, all references to HeyTutor LLC. include www.heytutor.com and HeyTutor. The HeyTutor
+    website is a online marketplace site. By using the HeyTutor website, you consent to the data
+    practices described in this statement. Protecting your private information is our priority. This
+    Statement of Privacy applies to the www.heytutor.com and HeyTutor LLC. and governs data
+    collection and usage. For the purposes of this Privacy Policy, unless otherwise noted, all
+    references to HeyTutor LLC. include www.heytutor.com and HeyTutor. The HeyTutor website is a
+    online marketplace site. By using the HeyTutor website, you consent to the data practices
+    described in this statement. Protecting your private information is our priority. This Statement
+    of Privacy applies to the www.heytutor.com and HeyTutor LLC. and governs data collection and
+    usage. For the purposes of this Privacy Policy, unless otherwise noted, all references to
+    HeyTutor LLC. include www.heytutor.com and HeyTutor. The HeyTutor website is a online
+    marketplace site. By using the HeyTutor website, you consent to the data practices described in
+    this statement.
   </Typography>
   <div class="flex gap-5 mt-4">
     <Chip
@@ -62,9 +67,7 @@ const leaveCommentDialog = ref(null)
     >
       decline
     </Button>
-    <Button
-      @click="emit('close')"
-    >
+    <Button @click="emit('close')">
       accept
     </Button>
   </div>

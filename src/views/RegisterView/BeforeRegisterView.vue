@@ -1,13 +1,14 @@
 <script setup>
-import {getColor} from '~/helpers/colors'
-import {capitalize} from 'lodash'
+import { getColor } from '~/helpers/colors'
+import { capitalize } from 'lodash'
 
 const router = useRouter()
 const type = ref('exporter')
 const userTypes = ref([
   {
     name: 'trucker',
-    description: 'Provide an essential service to industrialized societies by transporting finished goods',
+    description:
+      'Provide an essential service to industrialized societies by transporting finished goods',
   },
   {
     name: 'exporter',
@@ -16,9 +17,9 @@ const userTypes = ref([
 ])
 
 const onSubmit = () => {
-  if (type.value === 'trucker') window.location.href = "https://qualle-stpv2.web.app/street-turns"
+  if (type.value === 'trucker') window.location.href = 'https://qualle-stpv2.web.app/street-turns'
   else {
-    router.push({name: 'register'})
+    router.push({ name: 'register' })
   }
 }
 </script>
@@ -48,7 +49,7 @@ const onSubmit = () => {
           border
           class="p-6 text-left cursor-pointer"
           tab-index="1"
-          :style="{ border: `1px solid ${getColor(type === i.name? 'uiInteractive': 'uiLine')}`}"
+          :style="{ border: `1px solid ${getColor(type === i.name ? 'uiInteractive' : 'uiLine')}` }"
           @click="type = i.name"
         >
           <Typography type="text-h2">

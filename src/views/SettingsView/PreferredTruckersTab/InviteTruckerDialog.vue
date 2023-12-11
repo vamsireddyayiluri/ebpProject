@@ -2,7 +2,7 @@
 import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
 import { getColor } from '~/helpers/colors'
 import { emailRegex } from '@qualle-admin/qutil/dist/patterns'
-import { useAlertStore } from "~/stores/alert.store"
+import { useAlertStore } from '~/stores/alert.store'
 
 const emit = defineEmits(['close'])
 const alertStore = useAlertStore()
@@ -18,14 +18,13 @@ const sendInvitation = async () => {
       trucker.value = null
       emit('close')
       setTimeout(() => {
-        alertStore.info({content: 'The invitation has been sent!'})
+        alertStore.info({ content: 'The invitation has been sent!' })
       }, 500)
     } else {
       addTruckerDialog.value = true
       trucker.value = result
     }
-  }
-  catch (e) {
+  } catch (e) {
     console.error(e)
   }
 }
@@ -49,7 +48,8 @@ const addTruckerToPreferred = () => {
       />
     </div>
     <Typography class="mb-7">
-      This trucker already exists on the platform. You can add him to your list of preferred truckers.
+      This trucker already exists on the platform. You can add him to your list of preferred
+      truckers.
     </Typography>
     <Textfield
       v-model="trucker.email"
@@ -85,8 +85,8 @@ const addTruckerToPreferred = () => {
       />
     </div>
     <Typography class="mb-7">
-      Send an invitation via email. If the trucker accepts the invitation, he will be added to your preferred truckers
-      list.
+      Send an invitation via email. If the trucker accepts the invitation, he will be added to your
+      preferred truckers list.
     </Typography>
     <Textfield
       v-model="email"

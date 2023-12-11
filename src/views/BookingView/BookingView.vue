@@ -91,11 +91,22 @@ const animate = async () => {
   }, 2000)
 }
 const isDisabledPublish = computed(() => {
-  return !(booking.value.ref && booking.value.containers && booking.value.bookingExpiry
-    && booking.value.preferredDate && booking.value.scacList.list.length && booking.value.size)
+  return !(
+    booking.value.ref &&
+    booking.value.containers &&
+    booking.value.bookingExpiry &&
+    booking.value.preferredDate &&
+    booking.value.scacList.list.length &&
+    booking.value.size
+  )
 })
 const validateBooking = computed(() => {
-  return isEqual(booking.value, fromDraft? drafts.value.find(i => i.id === booking.value.id): bookings.value.find(i => i.id === booking.value.id))
+  return isEqual(
+    booking.value,
+    fromDraft
+      ? drafts.value.find(i => i.id === booking.value.id)
+      : bookings.value.find(i => i.id === booking.value.id),
+  )
 })
 const cancelChanges = async () => {
   if (expired || completed) {
@@ -136,9 +147,9 @@ onMounted(async () => {
   } else if (fromDraft) {
     booking.value = await getBooking({ id: route.params.id, draft: true })
   } else {
-    booking.value = await getBooking({id: route.params.id})
+    booking.value = await getBooking({ id: route.params.id })
   }
-  await getBookings(fromDraft? {draft: true}: {})
+  await getBookings(fromDraft ? { draft: true } : {})
 })
 </script>
 
@@ -202,7 +213,7 @@ onMounted(async () => {
             variant="outlined"
             data="secondary1"
             class="ml-auto px-12"
-            :disabled="fromDraft? isDisabledPublish: false"
+            :disabled="fromDraft ? isDisabledPublish : false"
             @click="handleBookingChanges"
           >
             {{ fromDraft ? 'publish' : 'Remove from network' }}
@@ -214,7 +225,7 @@ onMounted(async () => {
         <div
           v-if="expired || completed"
           class="mt-6 -mb-2"
-          :class="{'hidden': hideChip}"
+          :class="{ hidden: hideChip }"
         >
           <div
             v-if="activated"
@@ -262,17 +273,17 @@ onMounted(async () => {
             :disabled="expired || completed"
           />
           <Datepicker
-            :picked="booking.bookingExpiry? moment(booking.bookingExpiry).toDate(): null"
+            :picked="booking.bookingExpiry ? moment(booking.bookingExpiry).toDate() : null"
             label="Booking expiry *"
             :disabled="!activated && (expired || completed)"
-            :class="{'pointer-events-none': !activated && (expired || completed)}"
+            :class="{ 'pointer-events-none': !activated && (expired || completed) }"
             @onUpdate="updateExpiryDate"
           />
           <Datepicker
-            :picked="booking.preferredDate? moment(booking.preferredDate).toDate(): null"
+            :picked="booking.preferredDate ? moment(booking.preferredDate).toDate() : null"
             label="Preferred carrier window"
             :disabled="!activated && (expired || completed)"
-            :class="{'pointer-events-none': !activated && (expired || completed)}"
+            :class="{ 'pointer-events-none': !activated && (expired || completed) }"
             @onUpdate="updatePreferredDate"
           />
           <Select

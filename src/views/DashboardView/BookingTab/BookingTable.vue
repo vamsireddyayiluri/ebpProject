@@ -3,7 +3,7 @@ import { useActions, useDate, useHeaders } from '~/composables'
 import { getLineAvatar } from '~/firebase/getLineAvatar'
 import { useDisplay } from 'vuetify'
 import { getBookingLoad } from '~/helpers/countings'
-import { useBookingsStore } from "~/stores/bookings.store"
+import { useBookingsStore } from '~/stores/bookings.store'
 
 const props = defineProps({
   computedEntities: Array,

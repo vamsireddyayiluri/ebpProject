@@ -1,5 +1,4 @@
 export const filterMatchingObjects = (searchedData, filteredData, key = 'id') => {
-
   const map = new Map()
 
   for (const obj of searchedData) {

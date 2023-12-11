@@ -4,7 +4,7 @@ import { useAuthStore } from '~/stores/auth.store'
 import { auth } from '~/firebase'
 import { confirmPasswordReset } from 'firebase/auth'
 import { useAlertStore } from '~/stores/alert.store'
-import { getUserIdByEmail } from "~/stores/helpers"
+import { getUserIdByEmail } from '~/stores/helpers'
 
 const form = reactive({
   password: '',
@@ -47,7 +47,7 @@ const resetPassword = async ({ newPassword }) => {
   try {
     await confirmPasswordReset(auth, queryParams.actionCode, newPassword)
     const userId = await getUserIdByEmail(queryParams.email)
-    await authStore.updateUserPassword({ userId , password: newPassword})
+    await authStore.updateUserPassword({ userId, password: newPassword })
     alertStore.info({ content: 'Password updated succusfully' })
     stepper.goToNext()
   } catch ({ message }) {

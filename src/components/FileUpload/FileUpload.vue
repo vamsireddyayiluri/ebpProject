@@ -1,12 +1,12 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
-import { useTruckerManagementStore } from "~/stores/truckerManagement.store"
-import {storeToRefs} from "pinia";
+import { useTruckerManagementStore } from '~/stores/truckerManagement.store'
+import { storeToRefs } from 'pinia'
 
 const truckerManagement = useTruckerManagementStore()
 const fileLoading = ref(false)
 const file = ref(null)
-const {onboardingDocuments: files} = storeToRefs(truckerManagement)
+const { onboardingDocuments: files } = storeToRefs(truckerManagement)
 const count = ref(0)
 const renameFileDialog = ref(null)
 const fileName = ref(null)
@@ -53,7 +53,7 @@ const getFilenameAndExtension = fullName => {
   return [fileName, ext]
 }
 const renameFile = () => {
-  const newFile = new File([file.value], fileName.value, {type: file.value.type})
+  const newFile = new File([file.value], fileName.value, { type: file.value.type })
   truckerManagement.addDoc(newFile)
   renameFileDialog.value.show(false)
 }
@@ -101,7 +101,9 @@ const renameFile = () => {
           icon="mdi-file-upload"
           :color="getColor('iconButton-2')"
         />
-        <Typography type="text-h4 mt-6"> Select file to upload (docx, pdf, excel, or others ) </Typography>
+        <Typography type="text-h4 mt-6">
+          Select file to upload (docx, pdf, excel, or others )
+        </Typography>
         <Typography
           type="mt-2"
           :color="getColor('textSecondary')"

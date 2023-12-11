@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import preferredTruckersData from '~/fixtures/preferredTruckers.json'
 import allTruckers from '~/fixtures/truckers.json'
-import { useAlertStore } from "~/stores/alert.store"
+import { useAlertStore } from '~/stores/alert.store'
 
 export const usePreferredTruckersStore = defineStore('preferredTruckers', () => {
   const preferredTruckers = ref(preferredTruckersData)

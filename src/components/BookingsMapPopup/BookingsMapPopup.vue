@@ -11,8 +11,8 @@ const attrs = useAttrs()
 <template>
   <div
     class="w-[316px] py-6 px-7 rounded-md"
-    v-bind="{...attrs}"
-    :style="{background: getColor('uiPrimary')}"
+    v-bind="{ ...attrs }"
+    :style="{ background: getColor('uiPrimary') }"
   >
     <div class="flex justify-between gap-4">
       <Typography type="text-h3">
@@ -41,7 +41,7 @@ const attrs = useAttrs()
         <div class="flex items-center gap-3">
           <div
             class="dot"
-            :style="{background: getColor('uiLineInteractiveActive')}"
+            :style="{ background: getColor('uiLineInteractiveActive') }"
           />
           <Typography type="text-body-m-semibold">
             {{ getYardBookingLoad(booking.entities).rate }}%
@@ -53,7 +53,7 @@ const attrs = useAttrs()
         <div class="flex items-center gap-3 mt-1">
           <div
             class="dot"
-            :style="{background: getColor('uiLine')}"
+            :style="{ background: getColor('uiLine') }"
           />
           <Typography type="text-body-m-semibold">
             {{ (100 - getYardBookingLoad(booking.entities).rate).toFixed(2) }}%

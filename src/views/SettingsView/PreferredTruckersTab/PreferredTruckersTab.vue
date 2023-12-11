@@ -202,7 +202,8 @@ onMounted(() => {
     <template #text>
       <div class="flex justify-between">
         <Typography>
-          Are you sure you want to send an invitation to trucker <b>{{ confirmInviteTruckerDialog.data.email }}</b>?
+          Are you sure you want to send an invitation to trucker
+          <b>{{ confirmInviteTruckerDialog.data.email }}</b>?
         </Typography>
         <IconButton
           icon="mdi-close"

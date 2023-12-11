@@ -57,14 +57,10 @@ onMounted(() => {
       </Typography>
     </template>
     <template #takenBookings>
-      <Typography>
-        12%
-      </Typography>
+      <Typography> 12% </Typography>
     </template>
     <template #takenFulfilled>
-      <Typography>
-        15 / 12
-      </Typography>
+      <Typography> 15 / 12 </Typography>
     </template>
     <template #ranging="{ item }">
       <div class="flex gap-1.5">
