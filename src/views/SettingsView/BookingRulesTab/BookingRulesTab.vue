@@ -1,14 +1,23 @@
 <script setup>
-import {useBookingRulesStore} from "~/stores/bookingRules.store"
-import {storeToRefs} from "pinia"
+import { storeToRefs } from 'pinia'
+import { useAuthStore } from '~/stores/auth.store'
+import { useWorkDetailsStore } from '~/stores/workDetails.store'
+import { useBookingRulesStore } from '~/stores/bookingRules.store'
 
+const { userData } = useAuthStore()
+const workDetailsStore = useWorkDetailsStore()
 const bookingRulesStore = useBookingRulesStore()
 
 const { rules } = storeToRefs(bookingRulesStore)
+const { yards } = storeToRefs(workDetailsStore)
 
 const onSave = () => {
-  bookingRulesStore.updateRules(rules.value)
+  bookingRulesStore.updateRules(rules.value, userData.orgId)
 }
+
+onMounted(async () => {
+  await bookingRulesStore.getRules(userData.orgId)
+})
 </script>
 
 <template>
@@ -20,9 +29,18 @@ const onSave = () => {
   </Typography>
   <div class="w-full md:w-11/12 lg:w-8/12 grid sm:grid-cols-2 grid-cols-1 gap-6 [&>div]:h-fit">
     <Select
-      v-model="rules.label"
-      :items="bookingRulesStore.yardList"
+      v-model="rules.defaultYard"
+      :items="yards.map(yard => ({
+        address: yard.value,
+        geohash: yard.geohash,
+        label: yard.label,
+        lat: yard.lat,
+        lng: yard.lng,
+      }))"
       label="Set yard by default"
+      item-title="label"
+      item-value="address"
+      return-object
     />
     <Textfield
       v-model="rules.timeForTruckersFromMarketplace"

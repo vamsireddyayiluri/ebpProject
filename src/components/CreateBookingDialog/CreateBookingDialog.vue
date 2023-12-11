@@ -2,17 +2,24 @@
 import { getColor } from '~/helpers/colors'
 import { getAllLines } from '@qualle-admin/qutil/dist/ssl'
 import { useBookingsStore } from '~/stores/bookings.store'
-import { useDate } from "~/composables"
-import { useWorkDetailsStore } from "~/stores/workDetails.store"
+import { useWorkDetailsStore } from '~/stores/workDetails.store'
+import { storeToRefs } from 'pinia'
+import { useBookingRulesStore } from '~/stores/bookingRules.store'
+import { useAuthStore } from '~/stores/auth.store'
 
 const props = defineProps({
   clickedOutside: Boolean,
 })
 
 const emit = defineEmits(['close'])
+
+const { userData } = useAuthStore()
 const { createBooking, createDraft } = useBookingsStore()
 const workDetailsStore = useWorkDetailsStore()
-const { getFormattedDate } = useDate()
+const bookingRulesStore = useBookingRulesStore()
+
+const { yards } = storeToRefs(workDetailsStore)
+
 const booking = ref({
   ref: '',
   containers: null,
@@ -23,6 +30,7 @@ const booking = ref({
   size: null,
   scacList: { list: [] },
 })
+
 const confirmDraftsDialog = ref(null)
 const { clickedOutside } = toRefs(props)
 
@@ -66,6 +74,13 @@ const saveBooking = async () => {
 }
 watch(clickedOutside, () => {
   confirmDraftsDialog.value.show(true)
+})
+onMounted(async () => {
+  workDetailsStore.getYards()
+
+  booking.value.location = (
+    await bookingRulesStore.getRules(userData.orgId)
+  ).value.defaultYard
 })
 </script>
 
@@ -125,29 +140,13 @@ watch(clickedOutside, () => {
       />
       <Select
         v-model="booking.location"
-        :items="[
-          {
-            address: '875 Blake Wilbur Dr, Palo Alto, CA 94304, USA',
-            geohash: '9q9hgycyy',
-            label: 'california',
-            lat: 37.4357319,
-            lng: -122.1762866,
-          },
-          {
-            address: '3400 Bainbridge Ave, The Bronx, NY 10467, USA',
-            geohash: 'dr72wcgnz',
-            label: 'test2',
-            lat: 40.8799534,
-            lng: -73.878608,
-          },
-          {
-            address: '11200 Iberia St, Mira Loma, CA 91752, USA',
-            geohash: '9qh3t96uz',
-            label: 'Mira Loma Yard',
-            lat: 34.0213706,
-            lng: -117.5276535,
-          },
-        ]"
+        :items="yards.map(yard => ({
+          address: yard.value,
+          geohash: yard.geohash,
+          label: yard.label,
+          lat: yard.lat,
+          lng: yard.lng,
+        }))"
         label="Yard label *"
         required
         item-title="label"
