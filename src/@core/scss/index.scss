@@ -20,7 +20,7 @@ p {
   margin-block-end: 1rem;
 }
 
-.styledSubHeader>.v-toolbar__content {
+.styledSubHeader > .v-toolbar__content {
   height: auto !important;
 }
 
@@ -38,7 +38,8 @@ p {
   display: flex;
   justify-content: center;
   align-items: center;
-  i, button {
+  i,
+  button {
     margin: 0 !important;
   }
   .viewDetailsBtn {
@@ -59,6 +60,6 @@ input::-webkit-inner-spin-button {
 }
 
 /* Firefox */
-input[type='number'] {
+input[type="number"] {
   -moz-appearance: textfield;
 }

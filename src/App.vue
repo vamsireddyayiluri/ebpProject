@@ -2,7 +2,7 @@
 import { useTheme } from 'vuetify'
 import { useAuthStore } from './stores/auth.store'
 import { useAlertStore } from '~/stores/alert.store'
-import { storeToRefs } from "pinia"
+import { storeToRefs } from 'pinia'
 
 const authStore = useAuthStore()
 const { isLoading, userData } = storeToRefs(authStore)

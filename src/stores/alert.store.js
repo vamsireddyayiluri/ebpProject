@@ -7,7 +7,7 @@ export const useAlertStore = defineStore('alert', () => {
 
   const text = ({ title, content, timeout = defaultTimeout }) => {
     const id = title + content
-    alertList.value.push({id, title, content, type: 'text', timeout, close })
+    alertList.value.push({ id, title, content, type: 'text', timeout, close })
     show.value = true
     close(id, timeout)
   }
@@ -19,7 +19,7 @@ export const useAlertStore = defineStore('alert', () => {
     close(id, timeout)
   }
 
-  const warning = ({ title, content, timeout = defaultTimeout}) => {
+  const warning = ({ title, content, timeout = defaultTimeout }) => {
     const id = title + content
     alertList.value.push({ id, title, content, type: 'warning', timeout, close })
     show.value = true

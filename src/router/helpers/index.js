@@ -2,13 +2,10 @@ import { auth } from '~/firebase'
 
 const getValidatedUser = () => {
   return new Promise((resolve, reject) => {
-    const unsubscribe = auth.onAuthStateChanged(
-      user => {
-        unsubscribe()
-        resolve(user)
-      },
-      reject,
-    )
+    const unsubscribe = auth.onAuthStateChanged(user => {
+      unsubscribe()
+      resolve(user)
+    }, reject)
   })
 }
 export const onBeforeRoute = async (to, from, next) => {

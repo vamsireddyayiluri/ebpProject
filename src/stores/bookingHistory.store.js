@@ -1,9 +1,18 @@
 import { defineStore, storeToRefs } from 'pinia'
 import { useAlertStore } from '~/stores/alert.store'
-import { collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, where } from "firebase/firestore"
-import { db } from "~/firebase"
-import { useAuthStore } from "~/stores/auth.store"
-import { getLocalTime } from "@qualle-admin/qutil/dist/date"
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  setDoc,
+  where,
+} from 'firebase/firestore'
+import { db } from '~/firebase'
+import { useAuthStore } from '~/stores/auth.store'
+import { getLocalTime } from '@qualle-admin/qutil/dist/date'
 
 export const useBookingHistoryStore = defineStore('bookingHistory', () => {
   const alertStore = useAlertStore()
@@ -27,8 +36,7 @@ export const useBookingHistoryStore = defineStore('bookingHistory', () => {
       loading.value = false
 
       return docData.data()
-    }
-    catch (e) {
+    } catch (e) {
       alertStore.info({ content: 'Booking not found' })
     }
   }
@@ -48,31 +56,29 @@ export const useBookingHistoryStore = defineStore('bookingHistory', () => {
   const reactivateBooking = async booking => {
     try {
       await deleteDoc(doc(db, 'booking_history', booking.id))
-      await setDoc(doc(collection(db, 'bookings'), booking.id),
-        {
-          ...booking,
-          committed: 0,
-          updatedAt: getLocalTime().format(),
-          carriers: [],
-          status: '',
-        })
-      alertStore.info({ content: 'Reactivated booking' })}
-    catch ({ message }) {
+      await setDoc(doc(collection(db, 'bookings'), booking.id), {
+        ...booking,
+        committed: 0,
+        updatedAt: getLocalTime().format(),
+        carriers: [],
+        status: '',
+      })
+      alertStore.info({ content: 'Reactivated booking' })
+    } catch ({ message }) {
       alertStore.warning({ content: message })
     }
   }
   const duplicateBooking = async booking => {
     try {
-      await setDoc(doc(collection(db, 'bookings'), booking.id),
-        {
-          ...booking,
-          committed: 0,
-          updatedAt: getLocalTime().format(),
-          carriers: [],
-          status: '',
-        })
-      alertStore.info({ content: 'Duplicated booking' })}
-    catch ({ message }) {
+      await setDoc(doc(collection(db, 'bookings'), booking.id), {
+        ...booking,
+        committed: 0,
+        updatedAt: getLocalTime().format(),
+        carriers: [],
+        status: '',
+      })
+      alertStore.info({ content: 'Duplicated booking' })
+    } catch ({ message }) {
       alertStore.warning({ content: message })
     }
   }

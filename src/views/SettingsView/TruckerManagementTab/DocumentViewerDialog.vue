@@ -37,20 +37,22 @@ onMounted(async () => {
       @click="emit('close')"
     />
   </div>
-  <Typography type="text-h3 text-center -mt-3 mb-6">{{doc.label}}</Typography>
+  <Typography type="text-h3 text-center -mt-3 mb-6">
+    {{ doc.label }}
+  </Typography>
   <Typography class="max-h-[520px] overflow-auto">
     <iframe
       v-if="doc.type === 'pdf' || doc.type === 'txt'"
       :src="doc.url"
       width="100%"
       height="380px"
-    ></iframe>
+    />
     <iframe
       v-else
       :src="docxFileUrl"
       width="100%"
       height="380px"
-    ></iframe>
+    />
   </Typography>
   <div class="flex gap-5 mt-4">
     <Chip
@@ -67,7 +69,9 @@ onMounted(async () => {
     >
       decline
     </Button>
-    <Button @click="emit('close')"> accept</Button>
+    <Button @click="emit('close')">
+      accept
+    </Button>
   </div>
   <Dialog
     ref="leaveCommentDialog"
@@ -75,7 +79,9 @@ onMounted(async () => {
   >
     <template #text>
       <div class="flex justify-between mb-3">
-        <Typography type="text-h3"> Leave comment</Typography>
+        <Typography type="text-h3">
+          Leave comment
+        </Typography>
         <IconButton
           icon="mdi-close"
           class="-mt-1"

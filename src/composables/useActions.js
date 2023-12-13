@@ -40,12 +40,14 @@ export const truckersListActions = () => [
   },
 ]
 export const bookingHistoryActions = item => {
-  const defaultAction = [{
-    icon: 'mdi-delete',
-    label: 'Delete',
-    action: 'delete-booking',
-    color: 'functionalError',
-  }]
+  const defaultAction = [
+    {
+      icon: 'mdi-delete',
+      label: 'Delete',
+      action: 'delete-booking',
+      color: 'functionalError',
+    },
+  ]
   if (item.status === statuses.expired) {
     return [
       {

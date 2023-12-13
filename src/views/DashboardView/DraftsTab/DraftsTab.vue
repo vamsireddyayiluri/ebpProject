@@ -144,7 +144,7 @@ const onClickOutsideDialog = () => {
 }
 
 onMounted(async () => {
-  await bookingsStore.getBookings({draft: true})
+  await bookingsStore.getBookings({ draft: true })
   computedSearchedEntities.value = bookingsStore.drafts
   computedFilteredEntities.value = bookingsStore.drafts
 })
@@ -210,7 +210,7 @@ watch(searchValue, value => {
           :search-value="searchValue"
           :loading="loading"
           @selectTableRow="selectTableRow"
-          @editDraft="id => router.push({ path: `booking/${id}`, query: {from: 'draft'} })"
+          @editDraft="id => router.push({ path: `booking/${id}`, query: { from: 'draft' } })"
         />
       </div>
     </template>

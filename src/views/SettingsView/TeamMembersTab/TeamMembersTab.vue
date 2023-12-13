@@ -1,7 +1,7 @@
 <script setup>
 import { useAuthStore } from '~/stores/auth.store'
 import { storeToRefs } from 'pinia'
-import { useInvitationStore } from "~/stores/invitation.store"
+import { useInvitationStore } from '~/stores/invitation.store'
 
 const authStore = useAuthStore()
 const invitationStore = useInvitationStore()

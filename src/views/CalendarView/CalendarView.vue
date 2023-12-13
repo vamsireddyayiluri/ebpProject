@@ -3,9 +3,9 @@ import { Main } from '@layouts'
 import { getColor } from '~/helpers/colors'
 import moment from 'moment-timezone'
 import { getBookingLoad, totalFulfilledBookings } from '~/helpers/countings'
-import { useDate } from "~/composables"
-import { storeToRefs } from "pinia"
-import { useBookingsStore } from "~/stores/bookings.store"
+import { useDate } from '~/composables'
+import { storeToRefs } from 'pinia'
+import { useBookingsStore } from '~/stores/bookings.store'
 
 const router = useRouter()
 const { getFormattedDate } = useDate()
@@ -57,9 +57,9 @@ const removeBooking = async id => {
 const today = moment()
 
 const nextExpiring = computed(() => {
-  const datesArray = bookings.value.filter(b => b).sort((a, b) =>
-    moment(a.bookingExpiry).diff(moment(b.bookingExpiry)),
-  )
+  const datesArray = bookings.value
+    .filter(b => b)
+    .sort((a, b) => moment(a.bookingExpiry).diff(moment(b.bookingExpiry)))
 
   return getFormattedDate(datesArray[0]?.bookingExpiry)
 })

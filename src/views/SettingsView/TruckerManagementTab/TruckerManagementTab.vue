@@ -14,11 +14,16 @@ const { requiresForTruckers, questionList } = storeToRefs(truckerManagement)
 const openedPanel = ref([2])
 const loading = ref(false)
 const documentsDialog = ref(null)
-const truckerManagementDB = ref({requiresForTruckers: null, questionList: null})
+const truckerManagementDB = ref({ requiresForTruckers: null, questionList: null })
 
 const validateRequirements = computed(() => {
-  return isEqual({requiresForTruckers: requiresForTruckers.value, questionList: questionList.value},
-    {requiresForTruckers: truckerManagementDB.value.requiresForTruckers, questionList: truckerManagementDB.value.questionList})
+  return isEqual(
+    { requiresForTruckers: requiresForTruckers.value, questionList: questionList.value },
+    {
+      requiresForTruckers: truckerManagementDB.value.requiresForTruckers,
+      questionList: truckerManagementDB.value.questionList,
+    },
+  )
 })
 const openDocuments = doc => {
   documentsDialog.value.show(true)

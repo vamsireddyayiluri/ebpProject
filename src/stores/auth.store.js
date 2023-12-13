@@ -1,5 +1,5 @@
-import {defineStore, storeToRefs} from 'pinia'
-import {auth, db, storage} from '~/firebase'
+import { defineStore, storeToRefs } from 'pinia'
+import { auth, db, storage } from '~/firebase'
 import {
   addDoc,
   collection,
@@ -13,7 +13,7 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore'
-import {getDownloadURL, getStorage, ref as firebaseRef, uploadBytes} from 'firebase/storage'
+import { getDownloadURL, getStorage, ref as firebaseRef, uploadBytes } from 'firebase/storage'
 import {
   createUserWithEmailAndPassword,
   EmailAuthProvider,
@@ -30,7 +30,7 @@ import { getLocalTime } from '@qualle-admin/qutil/dist/date'
 import { getOrgId } from '~/stores/helpers'
 import { userTypes } from '~/constants/userTypes'
 import firebase from 'firebase/compat/app'
-import { useInvitationStore } from "~/stores/invitation.store"
+import { useInvitationStore } from '~/stores/invitation.store'
 
 export const useAuthStore = defineStore('auth', () => {
   const router = useRouter()
@@ -74,7 +74,14 @@ export const useAuthStore = defineStore('auth', () => {
     router.push({ name: 'login' })
   }
 
-  const register = async ({ form, yards, invitations, requiresForTruckers, questionList, onboardingDocuments }) => {
+  const register = async ({
+    form,
+    yards,
+    invitations,
+    requiresForTruckers,
+    questionList,
+    onboardingDocuments,
+  }) => {
     isLoading.value = true
     try {
       await createUserWithEmailAndPassword(auth, form.email, form.password)
@@ -97,9 +104,8 @@ export const useAuthStore = defineStore('auth', () => {
         try {
           const fileRef = firebaseRef(storage, `uploads/${orgId}/${file.name}`)
           await uploadBytes(fileRef, file)
-        }
-        catch ({message}) {
-          alertStore.warning({ content: 'File wasn\'t uploaded '+ message })
+        } catch ({ message }) {
+          alertStore.warning({ content: "File wasn't uploaded " + message })
         }
       }
       router.push({ name: 'verify1' })
@@ -148,7 +154,7 @@ export const useAuthStore = defineStore('auth', () => {
   const sendVerificationEmail = async () => {
     try {
       await sendEmailVerification(auth.currentUser, {
-        url: `${import.meta.env.VITE_APP_DOMAIN}/dashboard`,
+        url: `${import.meta.env.VITE_APP_CANONICAL_URL}/dashboard`,
       })
       alertStore.info({ content: 'Verification email sent!' })
     } catch (error) {

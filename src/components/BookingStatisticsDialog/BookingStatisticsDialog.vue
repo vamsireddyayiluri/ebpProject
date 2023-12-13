@@ -40,7 +40,7 @@ const selectedBooking = ref(false)
     />
     <div
       class="w-full md:w-50 pt-8 pb-1 overflow-y-visible"
-      :class="{'mb-10': selectedBooking}"
+      :class="{ 'mb-10': selectedBooking }"
     >
       <template v-if="!selectedBooking">
         <Typography
@@ -107,7 +107,7 @@ const selectedBooking = ref(false)
           class="mb-10"
         />
         <div class="styledDrawerActions flex gap-6 pt-8">
-          <Button @click="router.push({ path: `booking/${selectedBooking.id}`})">
+          <Button @click="router.push({ path: `booking/${selectedBooking.id}` })">
             Go to booking page
           </Button>
           <Button
