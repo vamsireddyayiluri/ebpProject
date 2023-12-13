@@ -11,6 +11,7 @@ import { storeToRefs } from 'pinia'
 import { statuses } from '~/constants/statuses'
 import { useBookingHistoryStore } from '~/stores/bookingHistory.store'
 import { cloneDeep, isEqual } from 'lodash'
+import container from '~/assets/images/container.png'
 
 const authStore = useAuthStore()
 const { getBookings, getBooking, publishDraft, removeFromNetwork, deleteBooking, updateBooking } =
@@ -21,7 +22,7 @@ const {
   reactivateBooking,
   duplicateBooking,
 } = useBookingHistoryStore()
-const { bookings, drafts, loading } = storeToRefs(useBookingsStore())
+const { bookings, drafts } = storeToRefs(useBookingsStore())
 const route = useRoute()
 const router = useRouter()
 const { smAndDown } = useDisplay()
@@ -31,6 +32,7 @@ const booking = ref(null)
 const removeBookingDialog = ref(null)
 const activated = ref(null)
 const hideChip = ref(null)
+const loading = ref(null)
 
 const updateExpiryDate = value => {
   booking.value.bookingExpiry = value
@@ -91,22 +93,11 @@ const animate = async () => {
   }, 2000)
 }
 const isDisabledPublish = computed(() => {
-  return !(
-    booking.value.ref &&
-    booking.value.containers &&
-    booking.value.bookingExpiry &&
-    booking.value.preferredDate &&
-    booking.value.scacList.list.length &&
-    booking.value.size
-  )
+  return !(booking.value.ref && booking.value.containers && booking.value.bookingExpiry
+    && booking.value.preferredDate && booking.value.scacList.list.length && booking.value.size)
 })
 const validateBooking = computed(() => {
-  return isEqual(
-    booking.value,
-    fromDraft
-      ? drafts.value.find(i => i.id === booking.value.id)
-      : bookings.value.find(i => i.id === booking.value.id),
-  )
+  return isEqual(booking.value, fromDraft? drafts.value.find(i => i.id === booking.value.id): bookings.value.find(i => i.id === booking.value.id))
 })
 const cancelChanges = async () => {
   if (expired || completed) {
@@ -142,14 +133,16 @@ const onSave = async () => {
 }
 
 onMounted(async () => {
+  loading.value = true
   if (fromHistory) {
     booking.value = await getBookingInHistory(route.params.id)
   } else if (fromDraft) {
     booking.value = await getBooking({ id: route.params.id, draft: true })
   } else {
-    booking.value = await getBooking({ id: route.params.id })
+    booking.value = await getBooking({id: route.params.id})
   }
-  await getBookings(fromDraft ? { draft: true } : {})
+  await getBookings(fromDraft? {draft: true}: {})
+  loading.value = false
 })
 </script>
 
@@ -213,7 +206,7 @@ onMounted(async () => {
             variant="outlined"
             data="secondary1"
             class="ml-auto px-12"
-            :disabled="fromDraft ? isDisabledPublish : false"
+            :disabled="fromDraft? isDisabledPublish: false"
             @click="handleBookingChanges"
           >
             {{ fromDraft ? 'publish' : 'Remove from network' }}
@@ -225,7 +218,7 @@ onMounted(async () => {
         <div
           v-if="expired || completed"
           class="mt-6 -mb-2"
-          :class="{ hidden: hideChip }"
+          :class="{'hidden': hideChip}"
         >
           <div
             v-if="activated"
@@ -273,17 +266,17 @@ onMounted(async () => {
             :disabled="expired || completed"
           />
           <Datepicker
-            :picked="booking.bookingExpiry ? moment(booking.bookingExpiry).toDate() : null"
+            :picked="booking.bookingExpiry? moment(booking.bookingExpiry).toDate(): null"
             label="Booking expiry *"
             :disabled="!activated && (expired || completed)"
-            :class="{ 'pointer-events-none': !activated && (expired || completed) }"
+            :class="{'pointer-events-none': !activated && (expired || completed)}"
             @onUpdate="updateExpiryDate"
           />
           <Datepicker
-            :picked="booking.preferredDate ? moment(booking.preferredDate).toDate() : null"
+            :picked="booking.preferredDate? moment(booking.preferredDate).toDate(): null"
             label="Preferred carrier window"
             :disabled="!activated && (expired || completed)"
-            :class="{ 'pointer-events-none': !activated && (expired || completed) }"
+            :class="{'pointer-events-none': !activated && (expired || completed)}"
             @onUpdate="updatePreferredDate"
           />
           <Select
@@ -409,6 +402,23 @@ onMounted(async () => {
           </div>
         </div>
       </div>
+    </div>
+    <div v-else-if="loading" />
+    <div
+      v-else
+      class="w-full h-[calc(100vh-120px)] flex flex-col gap-2 justify-center items-center"
+    >
+      <img
+        :src="container"
+        class="container-img"
+        alt="qualle container"
+      >
+      <Typography
+        type="text-h1"
+        class="!text-7xl mb-4 text-center"
+      >
+        Booking does not exist!
+      </Typography>
     </div>
   </Main>
   <Dialog

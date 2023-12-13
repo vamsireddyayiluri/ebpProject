@@ -1,13 +1,11 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
-import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
+import truckers from '~/fixtures/truckers.json'
 
 const props = defineProps({
   scacList: {
     type: Object,
-    default: () => {
-      list: []
-    },
+    default: () => {list: []},
   },
   menuBtn: {
     type: Boolean,
@@ -15,9 +13,10 @@ const props = defineProps({
   },
 })
 
+const emit = defineEmits(['onChange'])
+
 const attrs = useAttrs()
 const scacList = toRef(props.scacList, 'list')
-const preferredTruckersList = ref(['qqww', 'ggtr', 'asty'])
 const sendDialog = ref(null)
 const autocompleteValue = ref(null)
 const marginBottom = ref('')
@@ -29,9 +28,10 @@ const sendToMarketplace = () => {
   sendDialog.value.show(false)
   autocompleteValue.value = 'Truckers from marketplace'
 }
-
-const updateModelValue = () => {
+const updateModelValue = updatedScacList => {
   if (autocompleteValue.value) autocompleteValue.value = null
+
+  emit('onChange', updatedScacList)
 }
 const updateMenu = e => {
   if (!e && scacList.value?.length) {
@@ -47,7 +47,7 @@ onMounted(() => {
 onUpdated(() => {
   if (!scacList.value?.length) {
     marginBottom.value = ''
-  }
+  } else marginBottom.value = 'mb-10'
 })
 </script>
 
@@ -58,7 +58,7 @@ onUpdated(() => {
   >
     <Autocomplete
       v-model="scacList"
-      :items="preferredTruckersList"
+      :items="truckers.map(i => i.id)"
       placeholder="Choose truckers by SCAС *"
       multiple
       with-btn

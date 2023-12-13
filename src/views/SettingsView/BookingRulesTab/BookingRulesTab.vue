@@ -1,13 +1,33 @@
 <script setup>
-import { useBookingRulesStore } from '~/stores/bookingRules.store'
 import { storeToRefs } from 'pinia'
+import { useAuthStore } from '~/stores/auth.store'
+import { useWorkDetailsStore } from '~/stores/workDetails.store'
+import { useBookingRulesStore } from '~/stores/bookingRules.store'
+import { isEqual } from 'lodash'
 
+const { userData } = useAuthStore()
+const workDetailsStore = useWorkDetailsStore()
 const bookingRulesStore = useBookingRulesStore()
-
+const { orgData } = storeToRefs(useAuthStore())
 const { rules } = storeToRefs(bookingRulesStore)
+const { yards } = storeToRefs(workDetailsStore)
 
-const onSave = () => {
-  bookingRulesStore.updateRules(rules.value)
+const validateRules = computed(() => {
+  if (
+    !rules.value.yard &&
+    !rules.value.truckers?.list?.length &&
+    !rules.value.timeForTruckersFromMarketplace &&
+    !rules.value.timeForNotificationBeforeCutoff
+  )
+    return true
+
+  return isEqual(rules.value, orgData.value.bookingRules)
+})
+const onSave = async () => {
+  await bookingRulesStore.updateRules(rules.value, userData.orgId)
+}
+const cancelChanges = () => {
+  rules.value = { ...orgData.value.bookingRules }
 }
 </script>
 
@@ -18,11 +38,22 @@ const onSave = () => {
   >
     Booking rules
   </Typography>
-  <div class="grid sm:grid-cols-2 grid-cols-1 gap-6 [&>div]:h-fit">
+  <div class="w-full md:w-11/12 lg:w-8/12 grid sm:grid-cols-2 grid-cols-1 gap-6 [&>div]:h-fit">
     <Select
-      v-model="rules.label"
-      :items="bookingRulesStore.yardList"
+      v-model="rules.yard"
+      :items="
+        yards.map(yard => ({
+          address: yard.value,
+          geohash: yard.geohash,
+          label: yard.label,
+          lat: yard.lat,
+          lng: yard.lng,
+        }))
+      "
       label="Set yard by default"
+      item-title="label"
+      item-value="address"
+      return-object
     />
     <Textfield
       v-model="rules.timeForTruckersFromMarketplace"
@@ -33,7 +64,7 @@ const onSave = () => {
       class="bookingRules"
     />
     <AutocompleteScac
-      :scac-list="rules.preferredTruckersList"
+      :scac-list="rules.truckers"
       :menu-btn="false"
       class="order-4 sm:!order-3 !-mb-4"
     />
@@ -48,7 +79,9 @@ const onSave = () => {
   </div>
   <SaveCancelChanges
     class="mt-10"
+    :disabled="validateRules"
     @onSave="onSave"
+    @onCancel="cancelChanges"
   />
 </template>
 
@@ -58,8 +91,10 @@ const onSave = () => {
     min-width: auto;
     max-width: fit-content;
     width: calc(100% - 24px);
+
     .v-label {
       white-space: unset;
+
       &.v-label.v-field-label--floating {
         transform: translateY(-60%);
       }
