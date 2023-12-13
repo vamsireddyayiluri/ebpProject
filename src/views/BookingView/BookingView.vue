@@ -22,7 +22,7 @@ const {
   reactivateBooking,
   duplicateBooking,
 } = useBookingHistoryStore()
-const { bookings, drafts, loading } = storeToRefs(useBookingsStore())
+const { bookings, drafts } = storeToRefs(useBookingsStore())
 const route = useRoute()
 const router = useRouter()
 const { smAndDown } = useDisplay()
@@ -32,6 +32,7 @@ const booking = ref(null)
 const removeBookingDialog = ref(null)
 const activated = ref(null)
 const hideChip = ref(null)
+const loading = ref(null)
 
 const updateExpiryDate = value => {
   booking.value.bookingExpiry = value
@@ -132,6 +133,7 @@ const onSave = async () => {
 }
 
 onMounted(async () => {
+  loading.value = true
   if (fromHistory) {
     booking.value = await getBookingInHistory(route.params.id)
   } else if (fromDraft) {
@@ -140,6 +142,7 @@ onMounted(async () => {
     booking.value = await getBooking({id: route.params.id})
   }
   await getBookings(fromDraft? {draft: true}: {})
+  loading.value = false
 })
 </script>
 
@@ -400,6 +403,7 @@ onMounted(async () => {
         </div>
       </div>
     </div>
+    <div v-else-if="loading" />
     <div
       v-else
       class="w-full h-[calc(100vh-120px)] flex flex-col gap-2 justify-center items-center"
@@ -413,7 +417,7 @@ onMounted(async () => {
         type="text-h1"
         class="!text-7xl mb-4 text-center"
       >
-        Booking not exist!
+        Booking does not exist!
       </Typography>
     </div>
   </Main>

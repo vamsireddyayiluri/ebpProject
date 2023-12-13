@@ -206,6 +206,7 @@ export const useAuthStore = defineStore('auth', () => {
           createdAt: getLocalTime().format(),
           updatedAt: getLocalTime().format(),
           workDetails: data.yards,
+          bookingRules: {},
         }
         await setDoc(docRef, orgData)
       }

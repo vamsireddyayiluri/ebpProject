@@ -1,5 +1,6 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
+import truckers from '~/fixtures/truckers.json'
 
 const props = defineProps({
   scacList: {
@@ -16,7 +17,6 @@ const emit = defineEmits(['onChange'])
 
 const attrs = useAttrs()
 const scacList = toRef(props.scacList, 'list')
-const preferredTruckersList = ref(['qqww', 'ggtr', 'asty'])
 const sendDialog = ref(null)
 const autocompleteValue = ref(null)
 const marginBottom = ref('')
@@ -47,7 +47,7 @@ onMounted(() => {
 onUpdated(() => {
   if (!scacList.value?.length) {
     marginBottom.value = ''
-  }
+  } else marginBottom.value = 'mb-10'
 })
 </script>
 
@@ -58,7 +58,7 @@ onUpdated(() => {
   >
     <Autocomplete
       v-model="scacList"
-      :items="preferredTruckersList"
+      :items="truckers.map(i => i.id)"
       placeholder="Choose truckers by SCAС *"
       multiple
       with-btn

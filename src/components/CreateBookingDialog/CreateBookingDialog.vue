@@ -5,7 +5,6 @@ import { useBookingsStore } from '~/stores/bookings.store'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { storeToRefs } from 'pinia'
 import { useBookingRulesStore } from '~/stores/bookingRules.store'
-import { useAuthStore } from '~/stores/auth.store'
 
 const props = defineProps({
   clickedOutside: Boolean,
@@ -13,7 +12,6 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 
-const { userData } = useAuthStore()
 const { createBooking, createDraft } = useBookingsStore()
 const workDetailsStore = useWorkDetailsStore()
 const bookingRulesStore = useBookingRulesStore()
@@ -26,9 +24,9 @@ const booking = ref({
   line: null,
   bookingExpiry: null,
   preferredDate: null,
-  location: null,
+  location: bookingRulesStore.rules.yard,
   size: null,
-  scacList: { list: [] },
+  scacList: bookingRulesStore.rules.truckers,
 })
 
 const confirmDraftsDialog = ref(null)
@@ -77,11 +75,6 @@ watch(clickedOutside, () => {
 })
 onMounted(async () => {
   workDetailsStore.getYards()
-
-  const bookingRules = await bookingRulesStore.getRules(userData.orgId)
-
-  booking.value.location = bookingRules.value.defaultYard
-  booking.value.scacList = bookingRules.value.preferredTruckersList.scacList
 })
 </script>
 

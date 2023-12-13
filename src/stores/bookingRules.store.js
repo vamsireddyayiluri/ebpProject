@@ -1,46 +1,27 @@
 import { defineStore } from 'pinia'
-import { doc, getDoc, updateDoc } from 'firebase/firestore'
+import { doc, updateDoc } from 'firebase/firestore'
 import { db } from '~/firebase'
 import { useAlertStore } from '~/stores/alert.store'
+import { useAuthStore } from '~/stores/auth.store'
 
 export const useBookingRulesStore = defineStore('bookingRules', () => {
+  const {
+    orgData: { bookingRules },
+  } = useAuthStore()
   const alertStore = useAlertStore()
-
-  const loading = ref(false)
-
-  const createBookingRulesObj = (bookingRules = {}) => {
-    return {
-      defaultYard: null,
-      timeForTruckersFromMarketplace: 5,
-      preferredTruckersList: { scacList: { list: [] } },
-      timeForNotificationBeforeCutoff: 1,
-      ...bookingRules,
-    }
-  }
-
-  const rules = ref(createBookingRulesObj())
-
-  const getRules = async orgId => {
-    loading.value = true
-    const docData = await getDoc(doc(db, 'organizations', orgId))
-    const bookingRules = docData.data().bookingRules
-
-    if (bookingRules) {
-      rules.value = bookingRules
-    }
-    loading.value = false
-
-    return rules
-  }
+  const rules = ref({
+    yard: bookingRules.yard || null,
+    truckers: bookingRules.truckers || { list: [] },
+    timeForTruckersFromMarketplace: bookingRules.timeForTruckersFromMarketplace || null,
+    timeForNotificationBeforeCutoff: bookingRules.timeForNotificationBeforeCutoff || null,
+  })
 
   const updateRules = async (bookingRules, orgId) => {
-    const newBookingRules = createBookingRulesObj(bookingRules)
-
     try {
       await updateDoc(doc(db, 'organizations', orgId), {
-        bookingRules: newBookingRules,
+        bookingRules: bookingRules,
       })
-      rules.value = newBookingRules
+      rules.value = bookingRules
       alertStore.info({ content: 'Booking rules updated' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
@@ -49,8 +30,6 @@ export const useBookingRulesStore = defineStore('bookingRules', () => {
 
   return {
     rules,
-    getRules,
     updateRules,
-    createBookingRulesObj,
   }
 })
