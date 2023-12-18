@@ -271,7 +271,6 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   // updating user email address
-
   const updateUserEmailAddress = async payload => {
     const { email, password, newEmail } = payload
 

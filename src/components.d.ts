@@ -31,6 +31,7 @@ declare module '@vue/runtime-core' {
     FileUpload: typeof import('./components/FileUpload/FileUpload.vue')['default']
     FulfillmentRateChart: typeof import('./views/StatisticsView/StatisticsSSLTab/FulfillmentRateChart.vue')['default']
     InviteTruckerDialog: typeof import('./views/SettingsView/PreferredTruckersTab/InviteTruckerDialog.vue')['default']
+    Loader: typeof import('./components/Loader/Loader.vue')['default']
     LoginView: typeof import('./views/LoginView.vue')['default']
     MenuActions: typeof import('./components/MenuActions/MenuActions.vue')['default']
     NewPasswordView: typeof import('./views/NewPasswordView.vue')['default']

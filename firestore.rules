@@ -24,11 +24,11 @@ service cloud.firestore {
     match /bookings/{document=**} {
       allow read, write: if isVerifiedUser();
     }
-    
+
     // Drafts collection
     match /drafts/{document=**} {
       allow read, write: if isVerifiedUser();
-    }    
+    }
 
     // Organizations collection
     match /organizations/{document=**} {
@@ -50,5 +50,9 @@ service cloud.firestore {
       allow read, write: if isVerifiedUser();
     }
 
+		// Invitations collection
+    match /invitations/{document=**} {
+      allow read, write: if isVerifiedUser();
+    }
   }
 }

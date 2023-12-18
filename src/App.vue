@@ -23,24 +23,16 @@ onMounted(async () => {
   }
 })
 
-onBeforeMount(() => {
-  authStore.getUser()
+onBeforeMount(async () => {
+  await authStore.getUser()
 })
 </script>
 
 <template>
   <ThemeProvider>
     <AppAlert />
+    <Loader :loading="isLoading" />
     <RouterView v-if="!isLoading" />
-    <ProgressCircular
-      v-else
-      :size="350"
-      value="15"
-      text="Loading..."
-      class="absolute top-[calc(50vh-125px)] left-[calc(50%-125px)]"
-    >
-      15%
-    </ProgressCircular>
   </ThemeProvider>
 </template>
 
