@@ -74,7 +74,7 @@ export const useInvitationStore = defineStore('invitation', () => {
       const querySnapshot = await getDocs(q1)
       querySnapshot.docs.map(val => {
         invitations.push({
-          id: val.data().id,
+          id: val.data().userId,
           value: val.data().email,
           type: val.data().type,
           isLoggedIn: true,

@@ -47,12 +47,14 @@ service cloud.firestore {
 
     // Users collection
     match /users/{document=**} {
-      allow read, write: if isVerifiedUser();
+      allow read;
+      allow write: if isVerifiedUser();
     }
 
 		// Invitations collection
     match /invitations/{document=**} {
-      allow read, write: if isVerifiedUser();
+      allow read;
+      allow write: if isVerifiedUser();
     }
   }
 }
