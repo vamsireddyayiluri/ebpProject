@@ -40,6 +40,7 @@ onMounted(async () => {
   const urlParams = new URL(continueUrl).searchParams
   form.email = urlParams.get('email')
   form.id = urlParams.get('id')
+  await invitationStore.checkInvitation(form.id)
 })
 </script>
 

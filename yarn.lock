@@ -1489,10 +1489,10 @@
   resolved "https://registry.yarnpkg.com/@protobufjs/utf8/-/utf8-1.1.0.tgz#a777360b5b39a1a2e5106f8e858f2fd2d060c570"
   integrity sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==
 
-"@qualle-admin/qui@latest":
-  version "1.180.0"
-  resolved "https://npm.pkg.github.com/download/@qualle-admin/qui/1.180.0/54018164883ddf0d1842cbd0c9b63b6072e3ed82#54018164883ddf0d1842cbd0c9b63b6072e3ed82"
-  integrity sha512-loPqOrUCVLtJf8IyVYVfF6Dn03MQM+JgFMe5L8/GK6353Jkaoy1Afs42Nw48ug3MbWwzrXXVo18lb3Zwe7nMHQ==
+"@qualle-admin/qui@^1.182.0":
+  version "1.182.0"
+  resolved "https://npm.pkg.github.com/download/@qualle-admin/qui/1.182.0/eaf57f3c4deab49cc92c72ec547e27ebfaa283f4#eaf57f3c4deab49cc92c72ec547e27ebfaa283f4"
+  integrity sha512-5vnRyf3Dnm4PYLxnNGz8MK96cX4TlAqpeLRjokk+h1RG67umMqmE8I/DeYzLUhSB8ecvpHezFe72G5v9HfIaxg==
   dependencies:
     uid "^2.0.1"
     "@fullcalendar/core" "^6.0.3"
