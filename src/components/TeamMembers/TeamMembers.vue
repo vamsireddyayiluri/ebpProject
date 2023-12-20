@@ -11,8 +11,7 @@ const props = defineProps({
 })
 
 const attrs = useAttrs()
-
-const authStore = useAuthStore()
+const { userData } = useAuthStore()
 const invitationStore = useInvitationStore()
 const alertStore = useAlertStore()
 const route = useRoute()
@@ -24,22 +23,35 @@ const newMember = reactive({
 })
 const removeMemberDialog = ref(null)
 const workerId = ref('')
+const isAdmin = (userData.type === userTypes.admin) || !userData
 
-const sendInvitation = async () => {
-  const value = await invitationStore.validateInviteUserEmail(newMember.email)
-  if (value) {
+const addInvitation = async () => {
+  const userExist = await invitationStore.validateInviteUserEmail('users', newMember.email)
+  const invitationExist = await invitationStore.validateInviteUserEmail('invitations', newMember.email)
+  if (userExist || invitationExist) {
     alertStore.warning({ content: 'User already exists with this email!' })
   } else {
     teamMembers.value.push({
       id: uid(28),
       value: newMember.email,
       type: newMember.type,
-      workerId: `Worker ID: ${workerId.value}`,
+      workerId: workerId.value,
+      selected: newMember.type,
     })
     newMember.email = ''
     workerId.value = ''
   }
 }
+const changeMemberType = async (type, member) => {
+  if (type !== member.type) {
+    const res = await invitationStore.changeInvitedUserType({...member, type})
+    if (res !== 'changed') {
+      const m = teamMembers.value.findIndex(i => i.id === member.id)
+      teamMembers.value[m] = {...member, type}
+    }
+  }
+}
+const handleMemberType = e => newMember.type = e
 const openRemoveMemberDialog = memberId => {
   removeMemberDialog.value.show(true)
   removeMemberDialog.value.data = useArrayFind(teamMembers.value, m => m.id === memberId).value
@@ -66,7 +78,9 @@ const removeMember = async id => {
           :items="memberType"
           item-title="label"
           item-value="id"
+          :selectDisabled="!isAdmin"
           return-object="true"
+          @onSelect="handleMemberType"
         />
       </div>
       <Textfield
@@ -79,7 +93,7 @@ const removeMember = async id => {
         variant="outlined"
         :disabled="!newMember.email.match(patterns.emailRegex) || !workerId"
         class="w-full sm:w-fit"
-        @click="sendInvitation"
+        @click="addInvitation"
       >
         add member
       </Button>
@@ -89,6 +103,7 @@ const removeMember = async id => {
       is-select
       :selector-data="memberType"
       class="mt-4"
+      @onSelect="changeMemberType"
       @onRemove="openRemoveMemberDialog"
     />
   </div>
