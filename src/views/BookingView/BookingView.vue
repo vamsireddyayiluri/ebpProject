@@ -12,6 +12,7 @@ import { statuses } from '~/constants/statuses'
 import { useBookingHistoryStore } from '~/stores/bookingHistory.store'
 import { cloneDeep, isEqual } from 'lodash'
 import container from '~/assets/images/container.png'
+import containersSizes from '~/fixtures/containersSizes.json'
 
 const authStore = useAuthStore()
 const { getBookings, getBooking, publishDraft, removeFromNetwork, deleteBooking, updateBooking } =
@@ -325,12 +326,12 @@ onMounted(async () => {
             :scac-list="booking.scacList"
             :disabled="expired || completed"
           />
-          <Textfield
+          <Select
             v-model="booking.size"
-            type="text"
+            :items="containersSizes"
             label="Equipment type*"
-            hint="For e.g. 40 HC"
-            persistent-hint
+            item-title="label"
+            item-value="size"
             :disabled="expired || completed"
           />
         </div>

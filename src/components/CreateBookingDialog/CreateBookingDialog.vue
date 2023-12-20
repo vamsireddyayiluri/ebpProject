@@ -5,6 +5,7 @@ import { useBookingsStore } from '~/stores/bookings.store'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { storeToRefs } from 'pinia'
 import { useBookingRulesStore } from '~/stores/bookingRules.store'
+import containersSizes from '~/fixtures/containersSizes.json'
 
 const props = defineProps({
   clickedOutside: Boolean,
@@ -106,7 +107,7 @@ onMounted(async () => {
       required
       class="mb-6"
     />
-    <div class="grid sm:grid-cols-2 grid-cols-1 gap-6 mb-1">
+    <div class="grid sm:grid-cols-2 grid-cols-1 gap-6 mb-6">
       <Textfield
         v-model="booking.containers"
         label="Number of containers*"
@@ -148,13 +149,12 @@ onMounted(async () => {
         return-object
         class="h-fit"
       />
-      <Textfield
+      <Select
         v-model="booking.size"
-        type="text"
+        :items="containersSizes"
         label="Equipment type*"
-        hint="For e.g. 40 HC"
-        persistent-hint
-        :rules="[rules.size]"
+        item-title="label"
+        item-value="size"
       />
     </div>
     <AutocompleteScac

@@ -130,7 +130,7 @@ onMounted(() => {
         </template>
         <template #expiry="{ item }">
           <Typography type="text-body-m-regular">
-            {{ getFormattedDateTime(item.expiryDate) }}
+            {{ getFormattedDateTime(item.bookingExpiry) }}
           </Typography>
         </template>
         <template #location="{ item }">
