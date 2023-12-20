@@ -4,6 +4,7 @@ import { getLineAvatar } from '~/firebase/getLineAvatar'
 import { useDisplay } from 'vuetify'
 import { getYardBookingLoad, getBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
+import { useAuthStore } from "~/stores/auth.store"
 
 const props = defineProps({
   computedEntities: Array,
@@ -11,6 +12,7 @@ const props = defineProps({
   loading: Boolean,
 })
 const emit = defineEmits(['selectTableRow', 'editBooking'])
+const { userData } = useAuthStore()
 const { deleteBooking } = useBookingsStore()
 const { smAndDown, width } = useDisplay()
 const showActions = ref(true)
@@ -94,7 +96,7 @@ onMounted(() => {
     <template #expansion="{ item }">
       <VirtualTable
         :entities="item.entities"
-        :headers="bookingsHeaders"
+        :headers="bookingsHeaders(userData.type)"
         :options="{
           rowHeight: 64,
           showActions,
@@ -135,6 +137,11 @@ onMounted(() => {
         </template>
         <template #location="{ item }">
           <LocationChip :location="item?.location" />
+        </template>
+        <template #worker="{ item }">
+          <Typography>
+            {{ item.createdBy?.type }} {{ item.createdBy?.workerId ?? '' }}
+          </Typography>
         </template>
         <template #progress="{ item }">
           <ProgressLinear :value="getBookingLoad(item.committed, item.containers)">

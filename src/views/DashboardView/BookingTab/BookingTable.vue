@@ -4,6 +4,7 @@ import { getLineAvatar } from '~/firebase/getLineAvatar'
 import { useDisplay } from 'vuetify'
 import { getBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
+import { useAuthStore } from "~/stores/auth.store"
 
 const props = defineProps({
   computedEntities: Array,
@@ -12,6 +13,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['selectTableRow', 'editBooking'])
 const { deleteBooking } = useBookingsStore()
+const { userData } = useAuthStore()
 const { smAndDown } = useDisplay()
 const showActions = ref(true)
 const tableHeight = ref(0)
@@ -51,7 +53,7 @@ onMounted(() => {
     :id="tableId"
     key="bookings"
     :entities="computedEntities"
-    :headers="bookingsHeaders"
+    :headers="bookingsHeaders(userData.type)"
     :loading="loading"
     :options="{
       rowHeight: 64,
@@ -93,6 +95,11 @@ onMounted(() => {
     </template>
     <template #location="{ item }">
       <LocationChip :location="item?.location" />
+    </template>
+    <template #worker="{ item }">
+      <Typography>
+        {{ item.createdBy?.type }} {{ item.createdBy?.workerId ?? '' }}
+      </Typography>
     </template>
     <template #progress="{ item }">
       <ProgressLinear :value="getBookingLoad(item.committed, item.containers)">
