@@ -29,7 +29,7 @@ const selectedBooking = ref(false)
     />
   </VRow>
   <Divider class="-mx-7" />
-  <div class="block md:flex gap-7 relative max-h-[70vh] overflow-y-auto overflow-x-auto">
+  <div class="block md:flex gap-7 relative max-h-[70vh] overflow-y-auto overflow-x-auto scrollbar">
     <BookingsMapPopup
       :booking="booking"
       class="w-full md:w-50 pt-8 !px-0 pb-1 static md:sticky top-0 block md:flex justify-between flex-col bg-transparent"

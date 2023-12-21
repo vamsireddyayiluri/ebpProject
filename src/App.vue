@@ -29,11 +29,13 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <ThemeProvider>
+  <ThemeProvider class="scrollbar">
     <AppAlert />
     <Loader :loading="isLoading" />
     <RouterView v-if="!isLoading" />
   </ThemeProvider>
 </template>
 
-<style scoped></style>
+<style lang="scss">
+@import '~/@core/scss/mixins.scss';
+</style>

@@ -376,7 +376,7 @@ onMounted(async () => {
             <Typography type="text-h4">
               Booking timeline
             </Typography>
-            <div class="timeline">
+            <div class="timeline scrollbar">
               <Timeline
                 :items="[
                   {
