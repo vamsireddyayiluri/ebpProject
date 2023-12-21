@@ -3,6 +3,7 @@ import { useActions, useDate, useHeaders } from '~/composables'
 import { getLineAvatar } from '~/firebase/getLineAvatar'
 import { useDisplay } from 'vuetify'
 import { useBookingsStore } from '~/stores/bookings.store'
+import { useAuthStore } from "~/stores/auth.store"
 
 const props = defineProps({
   computedEntities: Array,
@@ -10,6 +11,7 @@ const props = defineProps({
   loading: Boolean,
 })
 const emit = defineEmits(['selectTableRow', 'editDraft'])
+const { userData } = useAuthStore()
 const { deleteBooking } = useBookingsStore()
 const { smAndDown, width } = useDisplay()
 const showActions = ref(true)
@@ -50,7 +52,7 @@ onMounted(() => {
   <VirtualTable
     :id="tableId"
     :entities="computedEntities"
-    :headers="draftsHeaders"
+    :headers="draftsHeaders(userData.type)"
     :loading="loading"
     :options="{
       rowHeight: 64,
@@ -92,9 +94,14 @@ onMounted(() => {
         {{ item.location?.label }}
       </template>
     </template>
+    <template #worker="{ item }">
+      <Typography>
+        {{ item.createdBy?.type }} {{ item.createdBy?.workerId ?? '' }}
+      </Typography>
+    </template>
     <template #expiry="{ item }">
       <Typography type="text-body-m-regular">
-        {{ getFormattedDateTime(item.expiryDate) }}
+        {{ getFormattedDateTime(item.bookingExpiry) }}
       </Typography>
     </template>
     <template #location="{ item }">

@@ -12,8 +12,10 @@ import { statuses } from '~/constants/statuses'
 import { useBookingHistoryStore } from '~/stores/bookingHistory.store'
 import { cloneDeep, isEqual } from 'lodash'
 import container from '~/assets/images/container.png'
+import containersSizes from '~/fixtures/containersSizes.json'
 
 const authStore = useAuthStore()
+const { userData } = authStore
 const { getBookings, getBooking, publishDraft, removeFromNetwork, deleteBooking, updateBooking } =
   useBookingsStore()
 const {
@@ -182,7 +184,7 @@ onMounted(async () => {
       <div class="w-full p-8 relative">
         <div class="min-h-[48px] flex items-center gap-4 mb-1.5">
           <Typography type="text-h1">
-            Booking <b>Ref#{{ booking.ref }}</b>
+            Booking <b>Ref #{{ booking.ref }}</b>
             <span :style="{ color: getColor('textSecondary') }">
               {{ fromDraft ? ' (Draft)' : '' }}
               {{ booking.status ? (completed ? '(Completed)' : '(Expired)') : '' }}
@@ -213,7 +215,7 @@ onMounted(async () => {
           </Button>
         </div>
         <Typography :color="getColor('textSecondary')">
-          created by Operator #23
+          created by {{ userData.type }} {{ userData?.workerId? '#' + userData.workerId: null }}
         </Typography>
         <div
           v-if="expired || completed"
@@ -325,12 +327,12 @@ onMounted(async () => {
             :scac-list="booking.scacList"
             :disabled="expired || completed"
           />
-          <Textfield
+          <Select
             v-model="booking.size"
-            type="text"
+            :items="containersSizes"
             label="Equipment type*"
-            hint="For e.g. 40 HC"
-            persistent-hint
+            item-title="label"
+            item-value="size"
             :disabled="expired || completed"
           />
         </div>
@@ -374,7 +376,7 @@ onMounted(async () => {
             <Typography type="text-h4">
               Booking timeline
             </Typography>
-            <div class="timeline">
+            <div class="timeline scrollbar">
               <Timeline
                 :items="[
                   {

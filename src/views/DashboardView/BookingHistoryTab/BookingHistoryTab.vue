@@ -172,7 +172,7 @@ watch(searchValue, value => {
       </template>
       <template #expiry="{ item }">
         <Typography>
-          {{ getFormattedDateTime(item.expiryDate) }}
+          {{ getFormattedDateTime(item.bookingExpiry) }}
         </Typography>
       </template>
       <template #status="{ item }">

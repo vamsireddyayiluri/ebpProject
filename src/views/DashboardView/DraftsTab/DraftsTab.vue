@@ -168,7 +168,7 @@ watch(searchValue, value => {
   >
     <template #content>
       <div
-        class="pt-8 pl-8 pr-5 pb-8 flex flex-column h-full"
+        class="pt-8 pl-8 pr-5 pb-8 flex flex-column"
         :class="{ 'pr-8': !mapToggled || smAndDown }"
       >
         <div class="flex flex-wrap items-center gap-4 mb-7">

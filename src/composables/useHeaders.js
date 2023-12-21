@@ -1,31 +1,44 @@
 import moment from 'moment-timezone'
+import { userTypes } from '~/constants/userTypes'
 
-export const bookingsHeaders = [
-  {
-    text: 'Ref #',
-    value: 'ref',
-    align: 'start',
-    width: 2,
-  },
-  {
-    text: 'Yard label',
-    value: 'yardLabel',
-  },
-  {
-    text: 'SSL',
-    value: 'ssl',
-  },
-  {
-    text: 'Expiry',
-    value: 'expiry',
-    sortable: true,
-    sorter: (a, b) => moment(a).diff(moment(b)),
-  },
-  {
-    text: 'Progress',
-    value: 'progress',
-  },
-]
+export const bookingsHeaders = userType => {
+  const headers = [
+    {
+      text: 'Ref #',
+      value: 'ref',
+      align: 'start',
+      width: 2,
+    },
+    {
+      text: 'Yard label',
+      value: 'yardLabel',
+    },
+    {
+      text: 'SSL',
+      value: 'ssl',
+    },
+    {
+      text: 'Expiry',
+      value: 'expiry',
+      sortable: true,
+      sorter: (a, b) => moment(a).diff(moment(b)),
+    },
+    {
+      text: 'Progress',
+      value: 'progress',
+    },
+  ]
+  if (userType === userTypes.admin) {
+    const workerColumn = {
+      text: 'Worker',
+      value: 'worker',
+    }
+    const secondToLastIndex = headers.length - 1
+    headers.splice(secondToLastIndex, 0, workerColumn)
+  }
+
+  return headers
+}
 export const yardsHeaders = [
   {
     text: 'Yard label',
@@ -42,28 +55,40 @@ export const yardsHeaders = [
     value: 'progress',
   },
 ]
-export const draftsHeaders = [
-  {
-    text: 'Ref #',
-    value: 'ref',
-    align: 'start',
-    width: 2,
-  },
-  {
-    text: 'SSL',
-    value: 'ssl',
-  },
-  {
-    text: 'Yard label',
-    value: 'yardLabel',
-  },
-  {
-    text: 'Expiry',
-    value: 'expiry',
-    sortable: true,
-    sorter: (a, b) => moment(a).diff(moment(b)),
-  },
-]
+export const draftsHeaders = userType => {
+  const headers = [
+    {
+      text: 'Ref #',
+      value: 'ref',
+      align: 'start',
+      width: 2,
+    },
+    {
+      text: 'SSL',
+      value: 'ssl',
+    },
+    {
+      text: 'Yard label',
+      value: 'yardLabel',
+    },
+    {
+      text: 'Expiry',
+      value: 'expiry',
+      sortable: true,
+      sorter: (a, b) => moment(a).diff(moment(b)),
+    },
+  ]
+  if (userType === userTypes.admin) {
+    const workerColumn = {
+      text: 'Worker',
+      value: 'worker',
+    }
+    const secondToLastIndex = headers.length - 1
+    headers.splice(secondToLastIndex, 0, workerColumn)
+  }
+
+  return headers
+}
 export const truckersListHeaders = [
   {
     text: 'SCAC and email',
