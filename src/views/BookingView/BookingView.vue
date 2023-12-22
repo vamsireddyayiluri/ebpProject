@@ -12,6 +12,7 @@ import { statuses } from '~/constants/statuses'
 import { useBookingHistoryStore } from '~/stores/bookingHistory.store'
 import { cloneDeep, isEqual } from 'lodash'
 import container from '~/assets/images/container.png'
+import { useWorkDetailsStore } from "~/stores/workDetails.store";
 
 const authStore = useAuthStore()
 const { getBookings, getBooking, publishDraft, removeFromNetwork, deleteBooking, updateBooking } =
@@ -22,6 +23,8 @@ const {
   reactivateBooking,
   duplicateBooking,
 } = useBookingHistoryStore()
+const workDetailsStore = useWorkDetailsStore()
+const { yards } = storeToRefs(workDetailsStore)
 const { bookings, drafts } = storeToRefs(useBookingsStore())
 const route = useRoute()
 const router = useRouter()
@@ -134,6 +137,7 @@ const onSave = async () => {
 
 onMounted(async () => {
   loading.value = true
+  await workDetailsStore.getYards()
   if (fromHistory) {
     booking.value = await getBookingInHistory(route.params.id)
   } else if (fromDraft) {
@@ -291,29 +295,7 @@ onMounted(async () => {
           />
           <Select
             v-model="booking.location"
-            :items="[
-              {
-                address: '875 Blake Wilbur Dr, Palo Alto, CA 94304, USA',
-                geohash: '9q9hgycyy',
-                label: 'california',
-                lat: 37.4357319,
-                lng: -122.1762866,
-              },
-              {
-                address: '3400 Bainbridge Ave, The Bronx, NY 10467, USA',
-                geohash: 'dr72wcgnz',
-                label: 'test2',
-                lat: 40.8799534,
-                lng: -73.878608,
-              },
-              {
-                address: '11200 Iberia St, Mira Loma, CA 91752, USA',
-                geohash: '9qh3t96uz',
-                label: 'Mira Loma Yard',
-                lat: 34.0213706,
-                lng: -117.5276535,
-              },
-            ]"
+            :items="yards"
             label="Yard label *"
             item-title="label"
             item-value="address"

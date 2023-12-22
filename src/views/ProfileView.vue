@@ -2,61 +2,58 @@
 import { Main } from '@layouts'
 import { useAuthStore } from '~/stores/auth.store'
 import { storeToRefs } from 'pinia'
-import { useDate } from '~/composables'
 import { emailRegex, phoneRegex } from '@qualle-admin/qutil/dist/patterns'
+import { useProfileStore } from '~/stores/profile.store'
+import { useAlertStore } from '~/stores/alert.store'
 
 const authStore = useAuthStore()
+const alertStore = useAlertStore()
+const profileStore = useProfileStore()
 const { currentUser, userData } = storeToRefs(authStore)
-const { getFormattedDateTime } = useDate()
-const accountInfo = ref({
-  fullName: userData.value.fullName,
-  company: userData.value.company || 'Exporter company',
-  phone: userData.value.cell,
-  email: currentUser.value.email,
-  password: userData.value.password,
-  passwordLastChanges:
-    'Last change ' + getFormattedDateTime(currentUser.value.reloadUserInfo.passwordUpdatedAt),
-  imageUrl: currentUser.value.photoURL,
-})
+const { accountInfo } = storeToRefs(profileStore)
+
 const isPasswordVisible = ref(false)
 const router = useRouter()
 const rules = {
   email(value) {
     return emailRegex.test(value) || 'Invalid e-mail'
   },
-  phone(value) {
+  cell(value) {
     return phoneRegex.test(value) || 'Invalid phone number'
   },
   password(value) {
     return value > 8 || 'Min length 8'
   },
 }
-const addUserAvatar = async (_, file) => {
-  await authStore.updateUserAvatar(file)
+const updateUserAvatar = async (_, file) => {
+  await profileStore.updateUserAvatar(file)
 }
 const validateName = computed(() => {
-  return accountInfo.value.fullName !== userData.value.fullName
+  return (
+    accountInfo.value.fullName !== userData.value.fullName ||
+    accountInfo.value.company !== userData.value.company
+  )
 })
 const validateEmail = computed(() => {
   return accountInfo.value.email !== userData.value.email
 })
-
 const onSave = async () => {
   const userId = currentUser.value.uid
 
-  if (validateName.value) {
-    await authStore.updateUserData({ userId, ...accountInfo.value })
-    await authStore.getUserData(userId)
-  }
-  if (validateEmail.value) {
-    await authStore.updateUserEmailAddress({
-      email: currentUser.value.email,
-      password: accountInfo.value.password,
-      newEmail: accountInfo.value.email,
-    })
-    await authStore.getUser()
-    await authStore.getUserData(userId)
-  }
+  try {
+    if (validateName.value) {
+      await profileStore.updateUserData({ userId, ...accountInfo.value })
+    }
+    if (validateEmail.value) {
+      await profileStore.updateUserEmailAddress({
+        email: currentUser.value.email,
+        password: accountInfo.value.password,
+        newEmail: accountInfo.value.email,
+      })
+    }
+    alertStore.info({ content: 'Profile updated!' })
+  } catch (e) {}
+  await authStore.getUserData(userId)
 }
 const cancelChanges = () => {
   if (validateEmail) accountInfo.value.email = currentUser.value.email
@@ -78,7 +75,7 @@ const cancelChanges = () => {
           v-model="accountInfo.imageUrl"
           type="changeAvatar"
           :image="accountInfo.imageUrl"
-          @update:modelValue="addUserAvatar"
+          @update:modelValue="updateUserAvatar"
         />
         <VCol class="ml-5">
           <Typography
@@ -125,11 +122,11 @@ const cancelChanges = () => {
         </VCol>
         <VCol cols="auto">
           <Textfield
-            v-model.trim="accountInfo.phone"
+            v-model.trim="accountInfo.cell"
             type="number"
             label="Work phone"
             required
-            :rules="[rules.phone]"
+            :rules="[rules.cell]"
             class="w-[300px] mx-2 mb-4"
           />
         </VCol>
