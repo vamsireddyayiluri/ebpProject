@@ -13,8 +13,10 @@ import { useBookingHistoryStore } from '~/stores/bookingHistory.store'
 import { cloneDeep, isEqual } from 'lodash'
 import container from '~/assets/images/container.png'
 import { useWorkDetailsStore } from "~/stores/workDetails.store";
+import containersSizes from '~/fixtures/containersSizes.json'
 
 const authStore = useAuthStore()
+const { userData } = authStore
 const { getBookings, getBooking, publishDraft, removeFromNetwork, deleteBooking, updateBooking } =
   useBookingsStore()
 const {
@@ -137,7 +139,6 @@ const onSave = async () => {
 
 onMounted(async () => {
   loading.value = true
-  await workDetailsStore.getYards()
   if (fromHistory) {
     booking.value = await getBookingInHistory(route.params.id)
   } else if (fromDraft) {
@@ -186,7 +187,7 @@ onMounted(async () => {
       <div class="w-full p-8 relative">
         <div class="min-h-[48px] flex items-center gap-4 mb-1.5">
           <Typography type="text-h1">
-            Booking <b>Ref#{{ booking.ref }}</b>
+            Booking <b>Ref #{{ booking.ref }}</b>
             <span :style="{ color: getColor('textSecondary') }">
               {{ fromDraft ? ' (Draft)' : '' }}
               {{ booking.status ? (completed ? '(Completed)' : '(Expired)') : '' }}
@@ -217,7 +218,7 @@ onMounted(async () => {
           </Button>
         </div>
         <Typography :color="getColor('textSecondary')">
-          created by Operator #23
+          created by {{ userData.type }} {{ userData?.workerId? '#' + userData.workerId: null }}
         </Typography>
         <div
           v-if="expired || completed"
@@ -295,7 +296,29 @@ onMounted(async () => {
           />
           <Select
             v-model="booking.location"
-            :items="yards"
+            :items="[
+              {
+                address: '875 Blake Wilbur Dr, Palo Alto, CA 94304, USA',
+                geohash: '9q9hgycyy',
+                label: 'california',
+                lat: 37.4357319,
+                lng: -122.1762866,
+              },
+              {
+                address: '3400 Bainbridge Ave, The Bronx, NY 10467, USA',
+                geohash: 'dr72wcgnz',
+                label: 'test2',
+                lat: 40.8799534,
+                lng: -73.878608,
+              },
+              {
+                address: '11200 Iberia St, Mira Loma, CA 91752, USA',
+                geohash: '9qh3t96uz',
+                label: 'Mira Loma Yard',
+                lat: 34.0213706,
+                lng: -117.5276535,
+              },
+            ]"
             label="Yard label *"
             item-title="label"
             item-value="address"
@@ -307,12 +330,12 @@ onMounted(async () => {
             :scac-list="booking.scacList"
             :disabled="expired || completed"
           />
-          <Textfield
+          <Select
             v-model="booking.size"
-            type="text"
+            :items="containersSizes"
             label="Equipment type*"
-            hint="For e.g. 40 HC"
-            persistent-hint
+            item-title="label"
+            item-value="size"
             :disabled="expired || completed"
           />
         </div>
@@ -356,7 +379,7 @@ onMounted(async () => {
             <Typography type="text-h4">
               Booking timeline
             </Typography>
-            <div class="timeline">
+            <div class="timeline scrollbar">
               <Timeline
                 :items="[
                   {

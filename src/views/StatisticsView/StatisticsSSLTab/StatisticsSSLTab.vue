@@ -13,7 +13,7 @@ const statistics = ref(truckersData)
   >
     Statistic by SSL
   </Typography>
-  <div class="w-full flex flex-nowrap gap-5 overflow-x-auto pb-4">
+  <div class="w-full flex flex-nowrap gap-5 overflow-x-auto pb-4 scrollbar">
     <template
       v-for="item in statistics.lines"
       :key="item.id"
