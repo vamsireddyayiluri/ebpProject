@@ -1,12 +1,12 @@
 [
   {
-    "ref": "ref45",
+    "ref": "ref36",
     "noOfContainers": 23,
     "ssl": "APL",
-    "expiry": { "date": 20 },
+    "expiry": { "date": 23 },
     "pcw": { "date": 10 },
     "yard": "test",
-    "equipmentType": "44 HC",
+    "equipmentType": "20 Foot Flat Rack",
     "TruckersScac": "NUSB"
   }
 ]

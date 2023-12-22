@@ -60,6 +60,12 @@ Cypress.Commands.add('searchDocData', async (coll, label, value) => {
   return docData.docs
 })
 
+Cypress.Commands.add('searchDataWithAnd', async (coll, label1, value1, label2, value2) => {
+  const q = query(collection(db, coll), where(label1, '==', value1), where(label2, '==', value2))
+  const docData = await getDocs(q)
+  return docData.docs
+})
+
 Cypress.Commands.add('getDocData', async (coll, document) => {
   const q = query(doc(db, coll, document))
   const docData = await getDoc(q)
