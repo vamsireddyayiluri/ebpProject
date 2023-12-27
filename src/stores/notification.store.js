@@ -37,9 +37,9 @@ export const useNotificationStore = defineStore('notification', () => {
   }
   const settings = ref(defaultSettings)
   const loading = ref(false)
-  const createNotificationCollection = async userId => {
+  const createNotificationCollection = async orgId => {
     try {
-      await setDoc(doc(db, 'notifications', userId), { settings: defaultSettings })
+      await setDoc(doc(db, 'notifications', orgId), { settings: defaultSettings })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
@@ -48,9 +48,9 @@ export const useNotificationStore = defineStore('notification', () => {
   const getNotificationSettings = async () => {
     loading.value = true
     try {
-      const settingsDoc = await getDoc(doc(db, 'notifications', userData.userId))
+      const settingsDoc = await getDoc(doc(db, 'notifications', userData.orgId))
       if (!settingsDoc.exists()) {
-        await createNotificationCollection(userData.userId)
+        await createNotificationCollection(userData.orgId)
         settings.value = defaultSettings
         loading.value = false
       } else {
@@ -65,7 +65,7 @@ export const useNotificationStore = defineStore('notification', () => {
 
   const updateSettings = async data => {
     try {
-      await updateDoc(doc(db, 'notifications', userData.userId), {
+      await updateDoc(doc(db, 'notifications', userData.orgId), {
         settings: data,
       })
       settings.value = data
