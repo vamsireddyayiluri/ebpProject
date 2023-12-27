@@ -12,7 +12,7 @@ import { statuses } from '~/constants/statuses'
 import { useBookingHistoryStore } from '~/stores/bookingHistory.store'
 import { cloneDeep, isEqual } from 'lodash'
 import container from '~/assets/images/container.png'
-import { useWorkDetailsStore } from "~/stores/workDetails.store";
+import { useWorkDetailsStore } from "~/stores/workDetails.store"
 import containersSizes from '~/fixtures/containersSizes.json'
 
 const authStore = useAuthStore()

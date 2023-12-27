@@ -1,29 +1,45 @@
 <script setup>
-const newsSwitch = ref(false)
-const newsNotification = ref('both notifications')
+import { useNotificationStore } from '~/stores/notification.store'
+import { storeToRefs } from 'pinia'
+import { cloneDeep, isEqual } from 'lodash'
+
+const notificationStore = useNotificationStore()
+const { settings, loading } = storeToRefs(useNotificationStore())
+const newsSwitch = ref(settings.value.newsAndUpdates.active)
+const bookingsSwitch = ref(settings.value.bookingsNotification.active)
 const showNewsNotification = ref(false)
-const bookingsSwitch = ref(false)
-const bookingsNotification = ref('both notifications')
 const showBookingsNotification = ref(false)
+let comparativeObject = null
+const isDisabled = ref(null)
 
 const showNews = e => {
   showNewsNotification.value = e
 }
-
 const showBookings = e => {
   showBookingsNotification.value = e
 }
+const validate = () => {
+  if (!settings.value || !comparativeObject) return false
 
-const onSave = () => {
-  const data = {}
-  if (newsSwitch.value) {
-    data.news = newsNotification.value
-  }
-  if (bookingsSwitch.value) {
-    data.bookings = bookingsNotification.value
-  }
-  console.log('onSave ', data)
+  return !isEqual(settings.value, comparativeObject)
 }
+const onSave = async () => {
+  await notificationStore.updateSettings(settings.value)
+  comparativeObject = cloneDeep(settings.value)
+  isDisabled.value = true
+}
+const cancelChanges = async () => {
+  await notificationStore.getNotificationSettings()
+}
+onMounted(async () => {
+  await notificationStore.getNotificationSettings()
+  comparativeObject = cloneDeep(settings.value)
+  newsSwitch.value = settings.value.newsAndUpdates.active
+  bookingsSwitch.value = settings.value.bookingsNotification.active
+})
+onUpdated(() => {
+  isDisabled.value = !validate()
+})
 </script>
 
 <template>
@@ -32,10 +48,10 @@ const onSave = () => {
       Notifications
     </Typography>
 
-    <div>
+    <div v-if="!loading">
       <div class="w-fit flex items-center relative">
         <Switch
-          v-model="newsSwitch"
+          v-model="settings.newsAndUpdates.active"
           @update:modelValue="showNews"
         >
           <Typography class="flex items-center gap-2">
@@ -43,7 +59,6 @@ const onSave = () => {
           </Typography>
         </Switch>
         <div
-          v-if="newsSwitch"
           :class="{ 'rotate-180': showNewsNotification }"
           class="w-fit transition duration-300 absolute top-3.5 -right-9"
         >
@@ -65,15 +80,18 @@ const onSave = () => {
         :style="{ maxHeight: !showNewsNotification ? 0 : '1000px' }"
       >
         <NotificationRadioButton
-          v-model="newsNotification"
+          v-model="settings.newsAndUpdates.value"
           class="mt-9 ml-13"
         />
       </div>
     </div>
-    <div class="my-6 mb-14">
+    <div
+      v-if="!loading"
+      class="my-6 mb-14"
+    >
       <div class="w-fit flex items-center relative">
         <Switch
-          v-model="bookingsSwitch"
+          v-model="settings.bookingsNotification.active"
           @update:modelValue="showBookings"
         >
           <Typography class="flex items-center gap-2">
@@ -81,7 +99,6 @@ const onSave = () => {
           </Typography>
         </Switch>
         <div
-          v-if="bookingsSwitch"
           :class="{ 'rotate-180': showBookingsNotification }"
           class="w-fit transition duration-300 absolute top-3.5 -right-9"
         >
@@ -102,13 +119,17 @@ const onSave = () => {
         :style="{ maxHeight: !showBookingsNotification ? 0 : '1000px' }"
       >
         <NotificationRadioButton
-          v-model="bookingsNotification"
+          v-model="settings.bookingsNotification.value"
           class="mt-9 ml-13"
         />
       </div>
     </div>
   </div>
-  <SaveCancelChanges @onSave="onSave" />
+  <SaveCancelChanges
+    :disabled="isDisabled"
+    @onSave="onSave"
+    @onCancel="cancelChanges"
+  />
 </template>
 
 <style lang="scss">
