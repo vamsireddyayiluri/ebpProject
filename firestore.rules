@@ -56,5 +56,10 @@ service cloud.firestore {
       allow read;
       allow write: if isVerifiedUser();
     }
+
+    // Notifications collection
+    match /notifications/{document=**} {
+      allow read, write: if isVerifiedUser();
+    }
   }
 }

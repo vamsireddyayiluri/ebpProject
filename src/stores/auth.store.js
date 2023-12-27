@@ -270,7 +270,7 @@ export const useAuthStore = defineStore('auth', () => {
     const { orgId, companyName } = payload
     try {
       await updateDoc(doc(db, 'organizations', orgId), { company: companyName })
-      alertStore.info({ message: 'Company Name updated!' })
+      alertStore.info({ content: 'Company Name updated!' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }

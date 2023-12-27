@@ -1,6 +1,12 @@
 import { defineStore } from 'pinia'
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore'
+import { db } from '~/firebase'
+import { useAlertStore } from '~/stores/alert.store'
+import { useAuthStore } from '~/stores/auth.store'
 
 export const useNotificationStore = defineStore('notification', () => {
+  const alertStore = useAlertStore()
+  const { userData } = useAuthStore()
   const notifications = ref([
     {
       title: 'Trucker ABCD registered on the platform',
@@ -19,7 +25,55 @@ export const useNotificationStore = defineStore('notification', () => {
       type: 'success',
     },
   ])
+  const defaultSettings = {
+    newsAndUpdates: {
+      value: 'both notifications',
+      active: true,
+    },
+    bookingsNotification: {
+      value: 'both notifications',
+      active: true,
+    },
+  }
+  const settings = ref(defaultSettings)
+  const loading = ref(false)
+  const createNotificationCollection = async userId => {
+    try {
+      await setDoc(doc(db, 'notifications', userId), { settings: defaultSettings })
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
 
+  const getNotificationSettings = async () => {
+    loading.value = true
+    try {
+      const settingsDoc = await getDoc(doc(db, 'notifications', userData.userId))
+      if (!settingsDoc.exists()) {
+        await createNotificationCollection(userData.userId)
+        settings.value = defaultSettings
+        loading.value = false
+      } else {
+        settings.value = settingsDoc.data().settings
+        loading.value = false
+      }
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+      loading.value = false
+    }
+  }
+
+  const updateSettings = async data => {
+    try {
+      await updateDoc(doc(db, 'notifications', userData.userId), {
+        settings: data,
+      })
+      settings.value = data
+      alertStore.info({ content: 'Notifications settings updated!' })
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
   const addNewNotification = {
     info: toasty => {
       notifications.value.unshift({
@@ -44,5 +98,14 @@ export const useNotificationStore = defineStore('notification', () => {
     },
   }
 
-  return { notifications, addNewNotification }
+  return {
+    notifications,
+    addNewNotification,
+    defaultSettings,
+    settings,
+    loading,
+    createNotificationCollection,
+    getNotificationSettings,
+    updateSettings,
+  }
 })
