@@ -1,11 +1,11 @@
 [
   {
-    "ref": "ref36",
+    "ref": "ref12",
     "noOfContainers": 23,
     "ssl": "APL",
-    "expiry": { "date": 23 },
-    "pcw": { "date": 10 },
-    "yard": "test",
+    "expiry": { "date": 28 },
+    "pcw": { "date": 12 },
+    "yard": "newyork",
     "equipmentType": "20 Foot Flat Rack",
     "TruckersScac": "NUSB"
   }

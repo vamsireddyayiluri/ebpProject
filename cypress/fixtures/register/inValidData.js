@@ -26,7 +26,7 @@ export const optionalDetailsWithNull = [
     ],
     inviteTeam: [
       {
-        email: 'sravanthi@gmail.com',
+        email: 'sravanthi54@gmail.com',
         workerId: '13245',
         type: 'Operator',
       },

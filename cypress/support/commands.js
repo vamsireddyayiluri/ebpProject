@@ -47,6 +47,7 @@ Cypress.Commands.add('logout', () => {
 
 import { auth, db } from './firebase'
 import { deleteDoc, getDoc, query, where, collection, getDocs, doc } from 'firebase/firestore'
+import moment from 'moment-timezone'
 
 Cypress.Commands.add('getUsersData', async email => {
   const q = query(collection(db, 'users'), where('email', '==', email))
@@ -60,7 +61,10 @@ Cypress.Commands.add('searchDocData', async (coll, label, value) => {
   return docData.docs
 })
 
-Cypress.Commands.add('searchDataWithAnd', async (coll, label1, value1, label2, value2) => {
+Cypress.Commands.add('searchDataWithTwoLables', async (coll, label1, value1, label2, value2) => {
+  if (label2 === 'bookingExpiry') {
+    value2 = moment(value2).format()
+  }
   const q = query(collection(db, coll), where(label1, '==', value1), where(label2, '==', value2))
   const docData = await getDocs(q)
   return docData.docs
