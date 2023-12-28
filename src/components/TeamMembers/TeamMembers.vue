@@ -44,11 +44,9 @@ const addInvitation = async () => {
 }
 const changeMemberType = async (type, member) => {
   if (type !== member.type) {
-    const res = await invitationStore.changeInvitedUserType({...member, type})
-    if (res !== 'changed') {
-      const m = teamMembers.value.findIndex(i => i.id === member.id)
-      teamMembers.value[m] = {...member, type}
-    }
+    await invitationStore.changeInvitedUserType({...member, type})
+    const m = teamMembers.value.findIndex(i => i.id === member.id)
+    teamMembers.value[m] = {...member, type}
   }
 }
 const handleMemberType = e => newMember.type = e
