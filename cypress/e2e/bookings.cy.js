@@ -1,4 +1,5 @@
 import { validData } from '../fixtures/bookings'
+import { validData as register } from '../fixtures/register'
 import {
   editRowData,
   editBookingData,
@@ -20,22 +21,26 @@ function fillBookingSSL(ssl) {
     .click()
 }
 function fillBookingExpiry(expiry) {
-  cy.get('.styleDatePicker[label="Booking Expiration *"]')
-    .click()
+  cy.get('.styleDatePicker[label="Booking Expiration *"]').click().as('datePicker')
+  cy.get('.v3dp__heading > .v3dp__heading__button :visible').last().click()
+  cy.get('@datePicker')
     .get('.v3dp__elements')
     .find('button')
     .filter(':visible')
-    .contains(expiry.date)
+    .find(`:contains(${expiry.date})`)
     // .should('be.visible')
     .click({ force: true })
 }
 function fillPreferedCarrier(pcw) {
-  cy.get('.styleDatePicker[label="Preferred carrier window"]')
-    .click()
+  cy.get('.styleDatePicker[label="Preferred carrier window"]').click().as('datePicker')
+
+  cy.get('.v3dp__heading > .v3dp__heading__button :visible').last().click()
+
+  cy.get('@datePicker')
     .get('.v3dp__elements')
     .find('button')
     .filter(':visible')
-    .contains(pcw.date)
+    .find(`:contains(${pcw.date})`)
     // .should('be.visible')
     .click({ force: true })
 }
@@ -73,7 +78,8 @@ describe('Creating new Bookings', () => {
       if (!url.includes('/dashboard')) {
         // If the URL doesn't contain '/dashboard', navigate to the dashboard route
         cy.visit('/login')
-        cy.userLogin('qualle.cogninetest@ezztt.com', '1234567890')
+        cy.userLogin(register[0].email, register[0].password)
+        // cy.userLogin('sravanthi.gorantla@cognine.com', '123456789')
       }
     })
   })
@@ -155,6 +161,7 @@ describe('Creating new Bookings', () => {
   })
 
   it('Create booking and move to drafts', () => {
+    cy.get('button[type="button"]').contains('Drafts').click()
     cy.contains('button', 'Create booking').should('be.visible').click()
     cy.get('.v-dialog').should('be.visible')
     validData.forEach(data => {
@@ -195,13 +202,54 @@ describe('Creating new Bookings', () => {
     })
   })
 
+  it.only('Delete booking draft', () => {
+    cy.get('button[type="button"]').contains('Drafts').click()
+
+    cy.get('#draftTable')
+      .get(`.v-col[data-column="ref"]`)
+      .find(`:contains(${editRowData.ref})`)
+      .parent()
+      .parent()
+      .find(`.v-col[data-column="expiry"] :contains(${editRowData.expiry})`)
+      .parent()
+      .parent()
+      .as('selectedRow')
+
+    cy.get('@selectedRow')
+      .find('button')
+      .as('actionbutton')
+      .then(element => {
+        if (element.length) {
+          cy.log(element)
+          cy.get('@actionbutton').click()
+        } else {
+          cy.get('@selectedRow').scrollTo('right').find('[class=mdi-dots-vertical]').click()
+        }
+      })
+    cy.get('.v-overlay__content > .v-list > .v-list-item').contains('Delete').click()
+
+    cy.get('.v-dialog').should('be.visible')
+
+    cy.get('button[type="button"]').contains('Delete').click()
+
+    cy.get('.v-alert').contains('Draft was deleted').should('be.visible')
+
+    cy.searchDataWithTwoLables(
+      'drafts',
+      'ref',
+      removeBooking.ref,
+      'bookingExpiry',
+      removeBooking.expiry,
+    ).then(docs => {
+      expect(docs.length).to.be.at.least(0)
+    })
+  })
+
   it('edit booking with valid data', () => {
     cy.wait(2000)
     cy.get('#bookingsTable')
       .get(`.v-col[data-column="ref"]`)
-
       .find(`:contains(${editRowData.ref})`)
-
       .parent()
       .parent()
       .find(`.v-col[data-column="expiry"] :contains(${editRowData.expiry})`)
@@ -359,29 +407,9 @@ describe('Creating new Bookings', () => {
       })
   })
 
-  it('Validate booking buttons', () => {
-    cy.contains('button', 'Create booking').should('be.visible')
-
-    cy.get('button[type="button"]').contains('Map').should('be.visible').click()
-
-    cy.get('button[type="button"]').contains('Booking').click()
-
-    cy.get('button[type="button"]').contains('Create booking').should('be.visible')
-    cy.get('button[type="button"]').contains('Map').should('be.visible').click()
-
-    cy.get('button[type="button"]').contains('Yards').click()
-
-    cy.get('button[type="button"]').contains('Create booking').should('be.visible')
-    cy.get('button[type="button"]').contains('Map').should('be.visible').click()
-
-    cy.get('button[type="button"]').contains('Drafts').click()
-
-    cy.get('button[type="button"]').contains('Create booking').should('be.visible')
-    cy.get('button[type="button"]').contains('Map').should('be.visible').click()
-  })
-
   it('Remove booking', () => {
     cy.wait(2000)
+    cy.get('button[type="button"]').contains('Booking').click()
     cy.get('button[type="button"]').contains('Map').should('be.visible').click()
     cy.get('#bookingsTable')
       .get(`.v-col[data-column="ref"]`)

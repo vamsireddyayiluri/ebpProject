@@ -1,5 +1,5 @@
 export const editRowData = {
-  ref: 'ref07',
+  ref: 'ref05',
   expiry: '12/28/2023 12:00:00 am',
 }
 
@@ -9,16 +9,16 @@ export const editBookingData = {
 }
 
 export const removeBooking = {
-  ref: 'ref08',
-  expiry: '12/28/2023 12:00:00 am',
+  ref: 'ref03',
+  expiry: '01/18/2024 12:00:00 am',
 }
 
 export const draftRowData = {
-  ref: 'ref08',
-  expiry: '12/28/2023 12:00:00 am',
+  ref: 'ref03',
+  expiry: '01/18/2024 12:00:00 am',
 }
 
 export const filterData = {
   search: 'test',
-  ssl: 'APL',
+  ssl: 'ANL',
 }
