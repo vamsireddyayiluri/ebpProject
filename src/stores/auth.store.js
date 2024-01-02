@@ -1,4 +1,4 @@
-import { defineStore, storeToRefs } from 'pinia'
+import { defineStore } from 'pinia'
 import { auth, db, storage } from '~/firebase'
 import {
   addDoc,
@@ -13,17 +13,12 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore'
-import { getDownloadURL, getStorage, ref as firebaseRef, uploadBytes } from 'firebase/storage'
+import { getStorage, ref as firebaseRef, uploadBytes } from 'firebase/storage'
 import {
   createUserWithEmailAndPassword,
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-  reload,
   sendEmailVerification,
   signInWithEmailAndPassword,
   signOut,
-  updateEmail,
-  updateProfile,
 } from 'firebase/auth'
 import { useAlertStore } from '~/stores/alert.store'
 import { getLocalTime } from '@qualle-admin/qutil/dist/date'
@@ -270,85 +265,12 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // updating user email address
-  const updateUserEmailAddress = async payload => {
-    const { email, password, newEmail } = payload
-
-    const user = auth.currentUser
-    const credential = EmailAuthProvider.credential(email, password)
-    try {
-      await reauthenticateWithCredential(user, credential)
-      try {
-        await updateEmail(user, newEmail)
-        await updateDoc(doc(db, 'users', user.uid), { email: newEmail })
-        await reload(user)
-        alertStore.info({ content: 'Email updated!' })
-      } catch ({ message: content }) {
-        alertStore.warning({ content })
-      }
-    } catch ({ message }) {
-      alertStore.warning({ content: message })
-    }
-  }
-
-  // update user data in users collection
-  const updateUserData = async payload => {
-    const { userId, firstName, lastName } = payload
-    try {
-      await updateDoc(doc(db, 'users', userId), { firstName, lastName })
-      alertStore.info({ content: 'Profile updated!' })
-    } catch ({ message }) {
-      alertStore.warning({ content: message })
-    }
-  }
-
-  // update org data in organizations collection
-  const updateOrgData = async payload => {
-    const { company, cell, type, scac, scacList, orgId } = payload
-    try {
-      if (cell !== userData.value.cell) {
-        await updateDoc(doc(db, 'users', userData.value.userId), { cell })
-      }
-      await updateDoc(doc(db, 'organizations', orgId), { company, type, scac, scacList })
-      setTimeout(() => {
-        alertStore.info({ content: 'Organization updated!' })
-      }, 1000)
-    } catch ({ message }) {
-      alertStore.warning({ content: message })
-    }
-  }
-
-  const updateUserPassword = async payload => {
-    const { userId, password } = payload
-    try {
-      await updateDoc(doc(db, 'users', userId), { password })
-      alertStore.info({ content: 'Password updated!' })
-    } catch ({ message }) {
-      alertStore.warning({ content: message })
-    }
-  }
-
   // update company name in organization collection
   const updateCompanyNameInOrg = async payload => {
     const { orgId, companyName } = payload
     try {
       await updateDoc(doc(db, 'organizations', orgId), { company: companyName })
-      alertStore.info({ message: 'Company Name updated!' })
-    } catch ({ message }) {
-      alertStore.warning({ content: message })
-    }
-  }
-
-  // Uploading user profile image into firebase storage
-  const updateUserAvatar = async file => {
-    try {
-      const storageRef = firebaseRef(storage, 'avatar')
-
-      const url = await uploadBytes(storageRef, file).then(async snapshot => {
-        return await getDownloadURL(snapshot.ref)
-      })
-      await updateProfile(auth.currentUser, { photoURL: url })
-      alertStore.info({ content: 'Image updated!' })
+      alertStore.info({ content: 'Company Name updated!' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
@@ -379,13 +301,8 @@ export const useAuthStore = defineStore('auth', () => {
     registerCompleteAction,
     getVerificationData,
     getUserData,
-    updateUserAvatar,
-    updateUserEmailAddress,
-    updateUserPassword,
     userData,
     orgData,
-    updateUserData,
-    updateOrgData,
     updateCompanyNameInOrg,
     saveUserDataReports,
     getOrgData,

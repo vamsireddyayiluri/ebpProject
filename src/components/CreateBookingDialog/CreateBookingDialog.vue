@@ -179,7 +179,7 @@ onMounted(async () => {
       />
       <Datepicker
         :picked="booking.bookingExpiry"
-        label="Booking expiry *"
+        label="Booking Expiration *"
         @onUpdate="updateExpiryDate"
         :error-messages="validateExpiryDate()"
       />
