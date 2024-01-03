@@ -144,7 +144,7 @@ const validateRequiredFields = () => {
 }
 
 const isDisabledPublish = computed(() => {
-  let condition = validateRequiredFields() && !validateExpiryDate()
+  let condition = !validateRequiredFields() || !validateExpiryDate()
   return condition
 })
 
