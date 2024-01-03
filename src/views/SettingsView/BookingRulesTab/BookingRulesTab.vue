@@ -3,7 +3,7 @@ import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth.store'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { useBookingRulesStore } from '~/stores/bookingRules.store'
-import { isEqual } from 'lodash'
+import { isEqual, cloneDeep } from 'lodash'
 
 const { userData } = useAuthStore()
 const workDetailsStore = useWorkDetailsStore()
@@ -35,8 +35,11 @@ const onSave = async () => {
   await bookingRulesStore.updateRules(rules.value, userData.orgId)
 }
 const cancelChanges = () => {
-  rules.value = { ...orgData.value.bookingRules }
+  rules.value = cloneDeep(orgData.value.bookingRules)
 }
+onMounted(() => {
+  cancelChanges()
+})
 </script>
 
 <template>
