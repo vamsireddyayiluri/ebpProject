@@ -31,7 +31,7 @@ export const useNotificationStore = defineStore('notification', () => {
   const loading = ref(false)
   const createNotificationCollection = async orgId => {
     try {
-      await setDoc(doc(db, 'notifications', orgId), { settings: defaultSettings })
+      await setDoc(doc(db, 'notifications', orgId), { settings: defaultSettings, list: [], orgId })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
@@ -102,7 +102,7 @@ export const useNotificationStore = defineStore('notification', () => {
             showAlert(change.doc.data().list.at(-1))
           }
         })
-        notifications.value = snapshot.docs[0].data().list
+        notifications.value = snapshot.docs[0]?.data()?.list || []
       })
     } catch ({ message }) {
       alertStore.warning({ content: message })

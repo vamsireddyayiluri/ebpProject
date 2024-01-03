@@ -4,8 +4,8 @@ const { FieldValue } = require('firebase-admin/firestore');
 import { uid } from "uid";
 import moment from "moment-timezone";
 
+const collectionPath = 'notifications';
 export const bookingCreatedNotifier = async data => {
-  const collectionPath = 'notifications';
   const notification = {
     title: `Booking ${data.ref} has been created`,
     content: moment(data.createdAt).format('MM/DD/YYYY hh:mm:ss a'),
@@ -15,17 +15,23 @@ export const bookingCreatedNotifier = async data => {
     ref: data.ref,
   };
   const docRef = db.collection(collectionPath).doc(data.orgId);
-
-  const snapshot = await docRef.get()
-  if (snapshot.data()?.list) {
+  await docRef.update({
+    list: FieldValue.arrayUnion(notification),
+  });
+}
+export const bookingFulfilledNotifier = async (currentData, previousData) => {
+  if (currentData.committed !== previousData.committed && currentData.committed === currentData.containers) {
+    const notification = {
+      title: `Booking ${currentData.ref} fulfilled`,
+      content: moment().format('MM/DD/YYYY hh:mm:ss a'),
+      type: 'info',
+      isUnread: true,
+      id: uid(16),
+      ref: currentData.ref,
+    };
+    const docRef = db.collection(collectionPath).doc(currentData.orgId);
     await docRef.update({
       list: FieldValue.arrayUnion(notification),
     });
-  } else {
-    await docRef.set({
-      ...snapshot.data(),
-      list: [notification],
-      id: data.orgId,
-    })
   }
 }

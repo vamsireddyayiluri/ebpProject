@@ -62,7 +62,7 @@ onMounted(() => {
     <template #takenFulfilled>
       <Typography> 15 / 12 </Typography>
     </template>
-    <template #ranging="{ item }">
+    <template #ranging>
       <div class="flex gap-1.5">
         <Icon
           icon="mdi-timer"

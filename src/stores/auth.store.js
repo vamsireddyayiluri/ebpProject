@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { auth, db, storage } from '~/firebase'
+import { auth, db } from '~/firebase'
 import {
   addDoc,
   collection,
@@ -218,6 +218,11 @@ export const useAuthStore = defineStore('auth', () => {
       await setDoc(doc(db, 'trucker_requirements', data.orgId), {
         requiresForTruckers: data.requiresForTruckers,
         questionList: data.questionList,
+      })
+      await setDoc(doc(db, 'notifications', data.orgId), {
+        orgId: data.orgId,
+        settings: {},
+        list: [],
       })
       await deleteDoc(doc(db, 'pending_verifications', data.id))
       await getUser()
