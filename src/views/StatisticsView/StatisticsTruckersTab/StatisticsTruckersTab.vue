@@ -71,7 +71,7 @@ onMounted(() => {
         <Typography class="flex-shrink-0">
           3 days
         </Typography>
-        <Tooltip :attach="!!item.index">
+        <Tooltip>
           Average fulfillment time
         </Tooltip>
       </div>
@@ -80,7 +80,7 @@ onMounted(() => {
         <Typography class="flex-shrink-0">
           25%
         </Typography>
-        <Tooltip :attach="!!item.index">
+        <Tooltip>
           Cancellation rate
         </Tooltip>
       </div>
@@ -89,7 +89,7 @@ onMounted(() => {
         <Typography class="flex-shrink-0">
           20 min
         </Typography>
-        <Tooltip :attach="!!item.index">
+        <Tooltip>
           Average acceptance time
         </Tooltip>
       </div>
