@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia'
-import { FieldValue, deleteField, doc, updateDoc } from 'firebase/firestore'
+import { doc, updateDoc } from 'firebase/firestore'
 import { db } from '~/firebase'
 import { useAuthStore } from '~/stores/auth.store'
 import { useAlertStore } from '~/stores/alert.store'
+import { useBookingRulesStore } from '~/stores/bookingRules.store'
 
 export const useWorkDetailsStore = defineStore('workDetails', () => {
   const alertStore = useAlertStore()
@@ -26,11 +27,17 @@ export const useWorkDetailsStore = defineStore('workDetails', () => {
   }
   const saveYards = async yards => {
     const { orgData } = useAuthStore()
+    const { rules } = useBookingRulesStore()
+
+    let data = {
+      workDetails: yards,
+    }
+    if (!yards.find(val => val.label === rules?.yard?.label)) {
+      delete rules?.yard
+      data.bookingRules = rules
+    }
     try {
-      await updateDoc(doc(db, 'organizations', orgData.orgId), {
-        workDetails: yards,
-        bookingRules: { yard: !yards.find(val => val.label === FieldValue.label) && deleteField() },
-      })
+      await updateDoc(doc(db, 'organizations', orgData.orgId), data)
       alertStore.info({ content: 'Work details saved!' })
     } catch ({ message }) {
       alertStore.warning({ content: message })

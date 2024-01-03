@@ -50,8 +50,11 @@ const rules = {
     else return 'Min length 2'
   },
   containers: value => {
-    if (value > 0) return true
-    else return 'Value should be positive integer'
+    if (value <= 0 || !Number.isInteger(value)) {
+      return 'Value should be positive integer'
+    } else {
+      return true
+    }
   },
 }
 const updateExpiryDate = value => {
@@ -71,6 +74,7 @@ const isDisabled = computed(() => {
   values.pop()
   let condition = values.some(i => !i) || !booking.value.scacList.list.length
 
+  condition = condition || !(rules.containers(booking.value.containers) === true)
   if (!condition) {
     condition = condition || !validateExpiryDate()
   }
@@ -79,7 +83,11 @@ const isDisabled = computed(() => {
 const isDirty = computed(() => {
   const values = Object.values(booking.value)
   values.pop()
-  return !values.some(i => !i) || !booking.value.scacList.list.length
+  let condition = !values.some(i => !i)
+  if (condition) {
+    condition = condition && booking.value.scacList.list.length > 0
+  }
+  return condition
 })
 
 // Checking expiry date with ref is already exists or not
@@ -156,7 +164,7 @@ onMounted(async () => {
     />
     <div class="grid sm:grid-cols-2 grid-cols-1 gap-6 mb-6">
       <Textfield
-        v-model="booking.containers"
+        v-model.number="booking.containers"
         label="Number of containers*"
         :rules="[rules.containers]"
         type="number"

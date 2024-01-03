@@ -46,8 +46,11 @@ const currentDate = ref(new Date())
 
 const rules = {
   containers: value => {
-    if (value > 0) return true
-    else return 'Value should be positive integer'
+    if (value <= 0 || !Number.isInteger(value)) {
+      return 'Value should be positive integer'
+    } else {
+      return true
+    }
   },
 }
 const validateExpiryDate = () => {
@@ -132,7 +135,7 @@ const animate = async () => {
 const validateRequiredFields = () => {
   return (
     booking.value.ref &&
-    booking.value.containers > 0 &&
+    rules.containers(booking.value.containers) === true &&
     booking.value.bookingExpiry &&
     booking.value.preferredDate &&
     booking.value.scacList.list.length &&
@@ -318,7 +321,7 @@ onMounted(async () => {
             :disabled="expired || (completed && !activated)"
           />
           <Textfield
-            v-model="booking.containers"
+            v-model.number="booking.containers"
             label="Number of containers*"
             type="number"
             :rules="[rules.containers]"

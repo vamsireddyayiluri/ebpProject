@@ -13,17 +13,19 @@ const { rules } = storeToRefs(bookingRulesStore)
 const { yards } = storeToRefs(workDetailsStore)
 const errorRules = {
   days: value => {
-    if (value > 0) return true
-    else return 'Value should be positive integer'
+    if (value && (value < 0 || !Number.isInteger(value))) {
+      return 'Value should be positive integer'
+    } else {
+      return true
+    }
   },
 }
 
 const validateRules = computed(() => {
   if (
-    !rules.value.yard &&
-    !rules.value.truckers?.list?.length &&
-    !rules.value.timeForTruckersFromMarketplace &&
-    !rules.value.timeForNotificationBeforeCutoff
+    !rules.value.truckers?.list?.length ||
+    errorRules.days(rules.value.timeForTruckersFromMarketplace) !== true ||
+    errorRules.days(rules.value.timeForNotificationBeforeCutoff) !== true
   )
     return true
 
@@ -62,7 +64,7 @@ const cancelChanges = () => {
       return-object
     />
     <Textfield
-      v-model="rules.timeForTruckersFromMarketplace"
+      v-model.number="rules.timeForTruckersFromMarketplace"
       type="number"
       label="Set the time between the preferred carrier window and time before cutoff by default"
       required
@@ -76,7 +78,7 @@ const cancelChanges = () => {
       class="order-4 sm:!order-3 !-mb-4"
     />
     <Textfield
-      v-model="rules.timeForNotificationBeforeCutoff"
+      v-model.number="rules.timeForNotificationBeforeCutoff"
       type="number"
       label="Set the time for notification before cutoff date by default"
       required
