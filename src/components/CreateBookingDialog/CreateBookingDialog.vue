@@ -42,8 +42,7 @@ const booking = ref({
 const confirmDraftsDialog = ref(null)
 const { clickedOutside } = toRefs(props)
 
-const validExpiryDate = ref(false)
-const validPreferredDate = ref(false)
+const currentDate = ref(new Date())
 
 const rules = {
   size: value => {
@@ -57,26 +56,31 @@ const rules = {
 }
 const updateExpiryDate = value => {
   booking.value.bookingExpiry = value
+  if (bookingRulesStore?.rules?.timeForTruckersFromMarketplace) {
+    booking.value.preferredDate = moment(value)
+      .subtract(bookingRulesStore?.rules?.timeForTruckersFromMarketplace, 'day')
+      .format()
+  }
 }
 const updatePreferredDate = value => {
   booking.value.preferredDate = value
 }
+
 const isDisabled = computed(() => {
   const values = Object.values(booking.value)
   values.pop()
   let condition = values.some(i => !i) || !booking.value.scacList.list.length
 
   if (!condition) {
-    condition = condition || !validExpiryDate.value || !validPreferredDate.value
+    condition = condition || !validateExpiryDate()
   }
   return condition
 })
-const isDirty = () => {
+const isDirty = computed(() => {
   const values = Object.values(booking.value)
   values.pop()
-
-  return values.some(i => i) || booking.value.scacList.list.length
-}
+  return !values.some(i => !i) || !booking.value.scacList.list.length
+})
 
 // Checking expiry date with ref is already exists or not
 const validateExpiryDate = () => {
@@ -84,32 +88,22 @@ const validateExpiryDate = () => {
     computedEntities.value.find(
       val =>
         moment(val?.bookingExpiry).startOf('day').isSame(booking.value.bookingExpiry) &&
-        val?.ref?.trim() === booking.value.ref?.trim(),
+        val?.ref?.trim() === booking.value.ref?.trim() &&
+        val.id !== booking.value.id,
     )
   ) {
-    validExpiryDate.value = false
     alertStore.warning({
       content:
         'Booking expiry date with booking number already exists. Update booking expiry date to new date.',
     })
+    return false
   } else {
-    validExpiryDate.value = true
-  }
-}
-// Valdating prefered carrier window
-const validatePreferredDate = () => {
-  if (booking.value.preferredDate > booking.value.bookingExpiry) {
-    validPreferredDate.value = false
-
-    alertStore.warning({ content: 'Preferred date should not be more than booking expiry' })
-    return 'Preferred date should not be more than booking expiry'
-  } else {
-    validPreferredDate.value = true
+    return true
   }
 }
 
 const closeBookingDialog = () => {
-  if (!isDisabled.value) {
+  if (isDirty.value) {
     confirmDraftsDialog.value.show(true)
   } else emit('close')
 }
@@ -123,7 +117,7 @@ const saveBooking = async () => {
   emit('close')
 }
 watch(clickedOutside, () => {
-  if (!isDisabled.value) {
+  if (isDirty.value) {
     confirmDraftsDialog.value.show(true)
   } else emit('close')
 })
@@ -181,13 +175,15 @@ onMounted(async () => {
         :picked="booking.bookingExpiry"
         label="Booking Expiration *"
         @onUpdate="updateExpiryDate"
-        :error-messages="validateExpiryDate()"
+        :lowerLimit="(booking.preferredDate && new Date(booking.preferredDate)) || currentDate"
       />
       <Datepicker
         :picked="booking.preferredDate"
         label="Preferred carrier window"
+        :key="booking.preferredDate"
         @onUpdate="updatePreferredDate"
-        :error-messages="validatePreferredDate()"
+        :upperLimit="booking.bookingExpiry && new Date(booking.bookingExpiry)"
+        :lowerLimit="currentDate"
       />
       <Select
         v-model="booking.location"

@@ -11,6 +11,12 @@ const bookingRulesStore = useBookingRulesStore()
 const { orgData } = storeToRefs(useAuthStore())
 const { rules } = storeToRefs(bookingRulesStore)
 const { yards } = storeToRefs(workDetailsStore)
+const errorRules = {
+  days: value => {
+    if (value > 0) return true
+    else return 'Value should be positive integer'
+  },
+}
 
 const validateRules = computed(() => {
   if (
@@ -62,6 +68,7 @@ const cancelChanges = () => {
       required
       suffix="days"
       class="bookingRules"
+      :rules="[errorRules.days(rules.timeForTruckersFromMarketplace)]"
     />
     <AutocompleteScac
       :scac-list="rules.truckers"
@@ -75,6 +82,7 @@ const cancelChanges = () => {
       required
       suffix="days"
       class="bookingRules order-3 sm:!order-4"
+      :rules="[errorRules.days(rules.timeForNotificationBeforeCutoff)]"
     />
   </div>
   <SaveCancelChanges

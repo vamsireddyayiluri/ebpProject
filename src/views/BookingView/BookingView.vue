@@ -12,7 +12,7 @@ import { statuses } from '~/constants/statuses'
 import { useBookingHistoryStore } from '~/stores/bookingHistory.store'
 import { cloneDeep, isEqual } from 'lodash'
 import container from '~/assets/images/container.png'
-import { useWorkDetailsStore } from "~/stores/workDetails.store"
+import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import containersSizes from '~/fixtures/containersSizes.json'
 import { useAlertStore } from '~/stores/alert.store'
 
@@ -42,7 +42,7 @@ const activated = ref(null)
 const hideChip = ref(null)
 const loading = ref(null)
 const validExpiryDate = ref(false)
-const validPreferredDate = ref(false)
+const currentDate = ref(new Date())
 
 const rules = {
   containers: value => {
@@ -52,32 +52,27 @@ const rules = {
 }
 const validateExpiryDate = () => {
   if (
-    bookings.value.find(
+    bookings?.value.find(
       val =>
         moment(val?.bookingExpiry).startOf('day').isSame(booking.value.bookingExpiry) &&
-        val?.ref?.trim() === booking.value.ref?.trim(),
+        val?.ref?.trim() === booking.value.ref?.trim() &&
+        val.id !== booking.value.id,
     )
   ) {
-    validExpiryDate.value = false
+    // validExpiryDate.value = false
     alertStore.warning({
       content:
         'Booking expiry date with booking number already exists. Update booking expiry date to new date.',
     })
+    return false
   } else {
-    validExpiryDate.value = true
+    // validExpiryDate.value = true
+    return true
   }
 }
-const validatePreferredDate = () => {
-  if (booking.value.preferredDate > booking.value.bookingExpiry) {
-    validPreferredDate.value = false
-    alertStore.warning({ content: 'Preferred date should not be more than booking expiry' })
-  } else {
-    validPreferredDate.value = true
-  }
-}
+
 const updateExpiryDate = value => {
   booking.value.bookingExpiry = value
-  validateExpiryDate()
 }
 const updatePreferredDate = value => {
   booking.value.preferredDate = value
@@ -134,16 +129,22 @@ const animate = async () => {
     hideChip.value = true
   }, 2000)
 }
-const isDisabledPublish = computed(() => {
-  return !(
+const validateRequiredFields = () => {
+  return (
     booking.value.ref &&
-    booking.value.containers &&
+    booking.value.containers > 0 &&
     booking.value.bookingExpiry &&
     booking.value.preferredDate &&
     booking.value.scacList.list.length &&
     booking.value.size
   )
+}
+
+const isDisabledPublish = computed(() => {
+  let condition = validateRequiredFields() && !validateExpiryDate()
+  return condition
 })
+
 const validateBooking = computed(() => {
   let condition = isEqual(
     booking.value,
@@ -151,13 +152,14 @@ const validateBooking = computed(() => {
       ? drafts.value.find(i => i.id === booking.value.id)
       : bookings.value.find(i => i.id === booking.value.id),
   )
-  if (!condition) {
-    condition = condition || !validExpiryDate.value || !validPreferredDate.value
+  condition = condition || !validateRequiredFields()
+  if (!fromDraft) {
+    condition = condition || !validateExpiryDate()
   }
   return condition
 })
 const cancelChanges = async () => {
-  if (expired || completed) {
+  if (expired.value || completed.value) {
     activated.value = false
     hideChip.value = false
     booking.value = await getBookingInHistory(route.params.id)
@@ -312,7 +314,6 @@ onMounted(async () => {
           <Textfield
             v-model="booking.ref"
             label="Booking ref*"
-            @input="validateExpiryDate()"
             required
             :disabled="expired || (completed && !activated)"
           />
@@ -329,14 +330,16 @@ onMounted(async () => {
             label="Booking expiry *"
             :disabled="!activated && (expired || completed)"
             :class="{ 'pointer-events-none': !activated && (expired || completed) }"
+            :lowerLimit="(booking.preferredDate && new Date(booking.preferredDate)) || currentDate"
             @onUpdate="updateExpiryDate"
           />
           <Datepicker
             :picked="booking.preferredDate ? moment(booking.preferredDate).toDate() : null"
             label="Preferred carrier window"
             :disabled="!activated && (expired || completed)"
-            :error-messages="validatePreferredDate()"
             :class="{ 'pointer-events-none': !activated && (expired || completed) }"
+            :upperLimit="booking.bookingExpiry && new Date(booking.bookingExpiry)"
+            :lowerLimit="currentDate"
             @onUpdate="updatePreferredDate"
           />
           <Select
