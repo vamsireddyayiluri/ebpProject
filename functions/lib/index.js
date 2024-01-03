@@ -9,7 +9,9 @@ if (runtimeConfig.runtime.env === 'development' && !process.env.CI) {
 }
 
 admin.initializeApp()
+export const db = admin.firestore();
 
 export default {
+  db,
   bookingCreated,
 }
