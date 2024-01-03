@@ -77,6 +77,7 @@ onMounted(() => {
     />
     <AutocompleteScac
       :scac-list="rules.truckers"
+      :key="rules.truckers"
       :menu-btn="false"
       class="order-4 sm:!order-3 !-mb-4"
     />
