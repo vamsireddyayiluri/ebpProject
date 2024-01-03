@@ -111,7 +111,7 @@ watch(searchValue, value => {
           size="24"
           :color="getColor('iconButton-1')"
         />
-        <Tooltip location="top">
+        <Tooltip>
           Download datatable
         </Tooltip>
       </IconButton>
@@ -199,7 +199,7 @@ watch(searchValue, value => {
             class="-mr-1.5"
             @click.stop="removeBookingDialog.show(true), (removeBookingDialog.data = item)"
           >
-            <Tooltip :attach="false">
+            <Tooltip>
               Remove booking
             </Tooltip>
           </IconButton>
