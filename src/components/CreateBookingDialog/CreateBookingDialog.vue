@@ -6,6 +6,10 @@ import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { storeToRefs } from 'pinia'
 import { useBookingRulesStore } from '~/stores/bookingRules.store'
 import containersSizes from '~/fixtures/containersSizes.json'
+import { getLocalTime } from '@qualle-admin/qutil/dist/date'
+import moment from 'moment'
+import { useAlertStore } from '~/stores/alert.store'
+import { filterMatchingObjects } from '~/helpers/filters'
 
 const props = defineProps({
   clickedOutside: Boolean,
@@ -16,8 +20,13 @@ const emit = defineEmits(['close'])
 const { createBooking, createDraft } = useBookingsStore()
 const workDetailsStore = useWorkDetailsStore()
 const bookingRulesStore = useBookingRulesStore()
+const bookingsStore = useBookingsStore()
+const alertStore = useAlertStore()
 
 const { yards } = storeToRefs(workDetailsStore)
+const { bookings } = storeToRefs(bookingsStore)
+
+const computedEntities = computed(() => bookings.value)
 
 const booking = ref({
   ref: '',
@@ -33,10 +42,17 @@ const booking = ref({
 const confirmDraftsDialog = ref(null)
 const { clickedOutside } = toRefs(props)
 
+const validExpiryDate = ref(false)
+const validPreferredDate = ref(false)
+
 const rules = {
   size: value => {
     if (value.length >= 2) return true
     else return 'Min length 2'
+  },
+  containers: value => {
+    if (value > 0) return true
+    else return 'Value should be positive integer'
   },
 }
 const updateExpiryDate = value => {
@@ -48,8 +64,12 @@ const updatePreferredDate = value => {
 const isDisabled = computed(() => {
   const values = Object.values(booking.value)
   values.pop()
+  let condition = values.some(i => !i) || !booking.value.scacList.list.length
 
-  return values.some(i => !i) || !booking.value.scacList.list.length
+  if (!condition) {
+    condition = condition || !validExpiryDate.value || !validPreferredDate.value
+  }
+  return condition
 })
 const isDirty = () => {
   const values = Object.values(booking.value)
@@ -57,8 +77,39 @@ const isDirty = () => {
 
   return values.some(i => i) || booking.value.scacList.list.length
 }
+
+// Checking expiry date with ref is already exists or not
+const validateExpiryDate = () => {
+  if (
+    computedEntities.value.find(
+      val =>
+        moment(val?.bookingExpiry).startOf('day').isSame(booking.value.bookingExpiry) &&
+        val?.ref?.trim() === booking.value.ref?.trim(),
+    )
+  ) {
+    validExpiryDate.value = false
+    alertStore.warning({
+      content:
+        'Booking expiry date with booking number already exists. Update booking expiry date to new date.',
+    })
+  } else {
+    validExpiryDate.value = true
+  }
+}
+// Valdating prefered carrier window
+const validatePreferredDate = () => {
+  if (booking.value.preferredDate > booking.value.bookingExpiry) {
+    validPreferredDate.value = false
+
+    alertStore.warning({ content: 'Preferred date should not be more than booking expiry' })
+    return 'Preferred date should not be more than booking expiry'
+  } else {
+    validPreferredDate.value = true
+  }
+}
+
 const closeBookingDialog = () => {
-  if (isDirty()) {
+  if (!isDisabled.value) {
     confirmDraftsDialog.value.show(true)
   } else emit('close')
 }
@@ -72,7 +123,9 @@ const saveBooking = async () => {
   emit('close')
 }
 watch(clickedOutside, () => {
-  confirmDraftsDialog.value.show(true)
+  if (!isDisabled.value) {
+    confirmDraftsDialog.value.show(true)
+  } else emit('close')
 })
 onMounted(async () => {
   workDetailsStore.getYards()
@@ -111,6 +164,7 @@ onMounted(async () => {
       <Textfield
         v-model="booking.containers"
         label="Number of containers*"
+        :rules="[rules.containers]"
         type="number"
         required
       />
@@ -127,21 +181,25 @@ onMounted(async () => {
         :picked="booking.bookingExpiry"
         label="Booking Expiration *"
         @onUpdate="updateExpiryDate"
+        :error-messages="validateExpiryDate()"
       />
       <Datepicker
         :picked="booking.preferredDate"
         label="Preferred carrier window"
         @onUpdate="updatePreferredDate"
+        :error-messages="validatePreferredDate()"
       />
       <Select
         v-model="booking.location"
-        :items="yards.map(yard => ({
-          address: yard.value,
-          geohash: yard.geohash,
-          label: yard.label,
-          lat: yard.lat,
-          lng: yard.lng,
-        }))"
+        :items="
+          yards.map(yard => ({
+            address: yard.value,
+            geohash: yard.geohash,
+            label: yard.label,
+            lat: yard.lat,
+            lng: yard.lng,
+          }))
+        "
         label="Yard label *"
         required
         item-title="label"
