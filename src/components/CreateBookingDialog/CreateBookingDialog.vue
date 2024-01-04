@@ -6,10 +6,9 @@ import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { storeToRefs } from 'pinia'
 import { useBookingRulesStore } from '~/stores/bookingRules.store'
 import containersSizes from '~/fixtures/containersSizes.json'
-import { getLocalTime } from '@qualle-admin/qutil/dist/date'
 import moment from 'moment'
 import { useAlertStore } from '~/stores/alert.store'
-import { filterMatchingObjects } from '~/helpers/filters'
+import { checkPositiveInteger, validateExpiryDate } from '~/helpers/validations-functions'
 
 const props = defineProps({
   clickedOutside: Boolean,
@@ -25,6 +24,7 @@ const alertStore = useAlertStore()
 
 const { yards } = storeToRefs(workDetailsStore)
 const { bookings } = storeToRefs(bookingsStore)
+const form = ref(null)
 
 const computedEntities = computed(() => bookings.value)
 
@@ -45,17 +45,7 @@ const { clickedOutside } = toRefs(props)
 const currentDate = ref(new Date())
 
 const rules = {
-  size: value => {
-    if (value.length >= 2) return true
-    else return 'Min length 2'
-  },
-  containers: value => {
-    if (value <= 0 || !Number.isInteger(value)) {
-      return 'Value should be positive integer'
-    } else {
-      return true
-    }
-  },
+  containers: value => checkPositiveInteger(value),
 }
 const updateExpiryDate = value => {
   booking.value.bookingExpiry = value
@@ -73,42 +63,18 @@ const isDisabled = computed(() => {
   const values = Object.values(booking.value)
   values.pop()
   let condition = values.some(i => !i) || !booking.value.scacList.list.length
-
-  condition = condition || !(rules.containers(booking.value.containers) === true)
   if (!condition) {
-    condition = condition || !validateExpiryDate()
+    condition = form.value?.errors.length || !validateExpiryDate(computedEntities?.value, booking.value)
   }
+
   return condition
 })
 const isDirty = computed(() => {
   const values = Object.values(booking.value)
   values.pop()
-  let condition = !values.some(i => !i)
-  if (condition) {
-    condition = condition && booking.value.scacList.list.length > 0
-  }
-  return condition
-})
 
-// Checking expiry date with ref is already exists or not
-const validateExpiryDate = () => {
-  if (
-    computedEntities.value.find(
-      val =>
-        moment(val?.bookingExpiry).startOf('day').isSame(booking.value.bookingExpiry) &&
-        val?.ref?.trim() === booking.value.ref?.trim() &&
-        val.id !== booking.value.id,
-    )
-  ) {
-    alertStore.warning({
-      content:
-        'Booking expiry date with booking number already exists. Update booking expiry date to new date.',
-    })
-    return false
-  } else {
-    return true
-  }
-}
+  return !values.some(i => !i) || !booking.value.scacList.list.length
+})
 
 const closeBookingDialog = () => {
   if (isDirty.value) {
@@ -152,7 +118,8 @@ onMounted(async () => {
       @click="closeBookingDialog"
     />
   </VRow>
-  <form
+  <VForm
+    ref="form"
     class="w-mt-10 mx-auto"
     @submit.prevent="saveBooking"
   >
@@ -178,20 +145,21 @@ onMounted(async () => {
         item-title="label"
         item-value="id"
         return-object
+        class="h-fit"
       />
       <Datepicker
         :picked="booking.bookingExpiry"
         label="Booking Expiration *"
+        :lower-limit="(booking.preferredDate && new Date(booking.preferredDate)) || currentDate"
         @onUpdate="updateExpiryDate"
-        :lowerLimit="(booking.preferredDate && new Date(booking.preferredDate)) || currentDate"
       />
       <Datepicker
+        :key="booking.preferredDate"
         :picked="booking.preferredDate"
         label="Preferred carrier window"
-        :key="booking.preferredDate"
+        :upper-limit="booking.bookingExpiry && new Date(booking.bookingExpiry)"
+        :lower-limit="currentDate"
         @onUpdate="updatePreferredDate"
-        :upperLimit="booking.bookingExpiry && new Date(booking.bookingExpiry)"
-        :lowerLimit="currentDate"
       />
       <Select
         v-model="booking.location"
@@ -230,7 +198,7 @@ onMounted(async () => {
     >
       Create
     </Button>
-  </form>
+  </VForm>
   <Dialog
     ref="confirmDraftsDialog"
     class="max-w-[450px] md:max-w-[560px]"

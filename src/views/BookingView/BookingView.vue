@@ -15,6 +15,7 @@ import container from '~/assets/images/container.png'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import containersSizes from '~/fixtures/containersSizes.json'
 import { useAlertStore } from '~/stores/alert.store'
+import { checkPositiveInteger, validateExpiryDate } from '~/helpers/validations-functions'
 
 const authStore = useAuthStore()
 const alertStore = useAlertStore()
@@ -41,37 +42,11 @@ const removeBookingDialog = ref(null)
 const activated = ref(null)
 const hideChip = ref(null)
 const loading = ref(null)
-const validExpiryDate = ref(false)
 const currentDate = ref(new Date())
+const form = ref(null)
 
 const rules = {
-  containers: value => {
-    if (value <= 0 || !Number.isInteger(value)) {
-      return 'Value should be positive integer'
-    } else {
-      return true
-    }
-  },
-}
-const validateExpiryDate = () => {
-  if (
-    bookings?.value.find(
-      val =>
-        moment(val?.bookingExpiry).startOf('day').isSame(booking.value.bookingExpiry) &&
-        val?.ref?.trim() === booking.value.ref?.trim() &&
-        val.id !== booking.value.id,
-    )
-  ) {
-    // validExpiryDate.value = false
-    alertStore.warning({
-      content:
-        'Booking expiry date with booking number already exists. Update booking expiry date to new date.',
-    })
-    return false
-  } else {
-    // validExpiryDate.value = true
-    return true
-  }
+  containers: value => checkPositiveInteger(value),
 }
 
 const updateExpiryDate = value => {
@@ -133,19 +108,11 @@ const animate = async () => {
   }, 2000)
 }
 const validateRequiredFields = () => {
-  return (
-    booking.value.ref &&
-    rules.containers(booking.value.containers) === true &&
-    booking.value.bookingExpiry &&
-    booking.value.preferredDate &&
-    booking.value.scacList.list.length &&
-    booking.value.size
-  )
+  return !form.value?.errors.length
 }
 
 const isDisabledPublish = computed(() => {
-  let condition = !validateRequiredFields() || !validateExpiryDate()
-  return condition
+  return validateRequiredFields() && !validateExpiryDate(bookings?.value, booking.value)
 })
 
 const validateBooking = computed(() => {
@@ -157,8 +124,9 @@ const validateBooking = computed(() => {
   )
   condition = condition || !validateRequiredFields()
   if (!fromDraft) {
-    condition = condition || !validateExpiryDate()
+    condition = condition || !validateExpiryDate(bookings?.value, booking.value)
   }
+
   return condition
 })
 const cancelChanges = async () => {
@@ -308,11 +276,13 @@ onMounted(async () => {
             @update:modelValue="handleAction"
           />
         </div>
-        <div
+        <VForm
+          ref="form"
           class="w-full md:w-3/4 grid sm:grid-cols-2 grid-cols-1 gap-6 mt-10 [&>div]:h-fit"
           :class="{
             'md:w-full': drawer && !flyoutBottom,
           }"
+          @submit.prevent
         >
           <Textfield
             v-model="booking.ref"
@@ -333,7 +303,7 @@ onMounted(async () => {
             label="Booking expiry *"
             :disabled="!activated && (expired || completed)"
             :class="{ 'pointer-events-none': !activated && (expired || completed) }"
-            :lowerLimit="(booking.preferredDate && new Date(booking.preferredDate)) || currentDate"
+            :lower-limit="(booking.preferredDate && new Date(booking.preferredDate)) || currentDate"
             @onUpdate="updateExpiryDate"
           />
           <Datepicker
@@ -341,8 +311,8 @@ onMounted(async () => {
             label="Preferred carrier window"
             :disabled="!activated && (expired || completed)"
             :class="{ 'pointer-events-none': !activated && (expired || completed) }"
-            :upperLimit="booking.bookingExpiry && new Date(booking.bookingExpiry)"
-            :lowerLimit="currentDate"
+            :upper-limit="booking.bookingExpiry && new Date(booking.bookingExpiry)"
+            :lower-limit="currentDate"
             @onUpdate="updatePreferredDate"
           />
           <Select
@@ -399,7 +369,7 @@ onMounted(async () => {
             item-value="size"
             :disabled="expired || completed"
           />
-        </div>
+        </VForm>
         <SaveCancelChanges
           v-if="!(expired || completed) || activated"
           :disabled="validateBooking"
@@ -412,7 +382,9 @@ onMounted(async () => {
         :class="[flyoutBottom || smAndDown ? 'bottom' : 'right', drawer ? 'active' : '']"
       >
         <div class="flex justify-between items-center">
-          <Typography type="text-h1"> Statistics </Typography>
+          <Typography type="text-h1">
+            Statistics
+          </Typography>
           <IconButton
             v-if="!smAndDown"
             :icon="!flyoutBottom ? 'mdi-dock-bottom' : 'mdi-dock-right'"
@@ -422,7 +394,9 @@ onMounted(async () => {
         </div>
         <div class="statisticsContent">
           <div class="statisticsProgress">
-            <Typography type="text-h4"> Fulfillment progress </Typography>
+            <Typography type="text-h4">
+              Fulfillment progress
+            </Typography>
             <ProgressCircular
               :size="260"
               :value="getBookingLoad(booking.committed, booking.containers)"
@@ -433,7 +407,9 @@ onMounted(async () => {
             </ProgressCircular>
           </div>
           <div class="statisticsTimeline">
-            <Typography type="text-h4"> Booking timeline </Typography>
+            <Typography type="text-h4">
+              Booking timeline
+            </Typography>
             <div class="timeline scrollbar">
               <Timeline
                 :items="[
@@ -472,7 +448,7 @@ onMounted(async () => {
         :src="container"
         class="container-img"
         alt="qualle container"
-      />
+      >
       <Typography
         type="text-h1"
         class="!text-7xl mb-4 text-center"
