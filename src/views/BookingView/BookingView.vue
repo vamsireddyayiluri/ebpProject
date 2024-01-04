@@ -289,6 +289,7 @@ onMounted(async () => {
             label="Booking ref*"
             required
             :disabled="expired || (completed && !activated)"
+            @input="validateExpiryDate"
           />
           <Textfield
             v-model.number="booking.containers"

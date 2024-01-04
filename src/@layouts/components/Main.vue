@@ -45,6 +45,9 @@ const mobileMenuItems = [
 ]
 const { notifications } = storeToRefs(notificationStore)
 const userMenuItems = ref([{ name: 'Profile settings', path: 'profile' }])
+onMounted(async () => {
+  await notificationStore.getNotifications()
+})
 </script>
 
 <template>
