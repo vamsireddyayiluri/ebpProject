@@ -6,10 +6,9 @@ import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { storeToRefs } from 'pinia'
 import { useBookingRulesStore } from '~/stores/bookingRules.store'
 import containersSizes from '~/fixtures/containersSizes.json'
-import { getLocalTime } from '@qualle-admin/qutil/dist/date'
 import moment from 'moment'
 import { useAlertStore } from '~/stores/alert.store'
-import { filterMatchingObjects } from '~/helpers/filters'
+import { checkPositiveInteger, validateExpiryDate } from '~/helpers/validations-functions'
 
 const props = defineProps({
   clickedOutside: Boolean,
@@ -25,6 +24,7 @@ const alertStore = useAlertStore()
 
 const { yards } = storeToRefs(workDetailsStore)
 const { bookings } = storeToRefs(bookingsStore)
+const form = ref(null)
 
 const computedEntities = computed(() => bookings.value)
 
@@ -42,74 +42,45 @@ const booking = ref({
 const confirmDraftsDialog = ref(null)
 const { clickedOutside } = toRefs(props)
 
-const validExpiryDate = ref(false)
-const validPreferredDate = ref(false)
+const currentDate = ref(new Date())
 
 const rules = {
-  size: value => {
-    if (value.length >= 2) return true
-    else return 'Min length 2'
-  },
-  containers: value => {
-    if (value > 0) return true
-    else return 'Value should be positive integer'
-  },
+  containers: value => checkPositiveInteger(value),
 }
 const updateExpiryDate = value => {
   booking.value.bookingExpiry = value
+  if (bookingRulesStore?.rules?.timeForTruckersFromMarketplace) {
+    booking.value.preferredDate = moment(value)
+      .subtract(bookingRulesStore?.rules?.timeForTruckersFromMarketplace, 'day')
+      .format()
+    if (moment(booking.value.preferredDate).endOf('day').isBefore(currentDate.value)) {
+      booking.value.preferredDate = currentDate.value
+    }
+  }
 }
 const updatePreferredDate = value => {
   booking.value.preferredDate = value
 }
+
 const isDisabled = computed(() => {
   const values = Object.values(booking.value)
   values.pop()
   let condition = values.some(i => !i) || !booking.value.scacList.list.length
-
   if (!condition) {
-    condition = condition || !validExpiryDate.value || !validPreferredDate.value
+    condition = form.value?.errors.length || !validateExpiryDate(computedEntities?.value, booking.value)
   }
+
   return condition
 })
-const isDirty = () => {
+const isDirty = computed(() => {
   const values = Object.values(booking.value)
   values.pop()
 
-  return values.some(i => i) || booking.value.scacList.list.length
-}
-
-// Checking expiry date with ref is already exists or not
-const validateExpiryDate = () => {
-  if (
-    computedEntities.value.find(
-      val =>
-        moment(val?.bookingExpiry).startOf('day').isSame(booking.value.bookingExpiry) &&
-        val?.ref?.trim() === booking.value.ref?.trim(),
-    )
-  ) {
-    validExpiryDate.value = false
-    alertStore.warning({
-      content:
-        'Booking expiry date with booking number already exists. Update booking expiry date to new date.',
-    })
-  } else {
-    validExpiryDate.value = true
-  }
-}
-// Valdating prefered carrier window
-const validatePreferredDate = () => {
-  if (booking.value.preferredDate > booking.value.bookingExpiry) {
-    validPreferredDate.value = false
-
-    alertStore.warning({ content: 'Preferred date should not be more than booking expiry' })
-    return 'Preferred date should not be more than booking expiry'
-  } else {
-    validPreferredDate.value = true
-  }
-}
+  return !values.some(i => !i) || !booking.value.scacList.list.length
+})
 
 const closeBookingDialog = () => {
-  if (!isDisabled.value) {
+  if (isDirty.value) {
     confirmDraftsDialog.value.show(true)
   } else emit('close')
 }
@@ -123,7 +94,7 @@ const saveBooking = async () => {
   emit('close')
 }
 watch(clickedOutside, () => {
-  if (!isDisabled.value) {
+  if (isDirty.value) {
     confirmDraftsDialog.value.show(true)
   } else emit('close')
 })
@@ -150,7 +121,8 @@ onMounted(async () => {
       @click="closeBookingDialog"
     />
   </VRow>
-  <form
+  <VForm
+    ref="form"
     class="w-mt-10 mx-auto"
     @submit.prevent="saveBooking"
   >
@@ -162,7 +134,7 @@ onMounted(async () => {
     />
     <div class="grid sm:grid-cols-2 grid-cols-1 gap-6 mb-6">
       <Textfield
-        v-model="booking.containers"
+        v-model.number="booking.containers"
         label="Number of containers*"
         :rules="[rules.containers]"
         type="number"
@@ -176,18 +148,21 @@ onMounted(async () => {
         item-title="label"
         item-value="id"
         return-object
+        class="h-fit"
       />
       <Datepicker
         :picked="booking.bookingExpiry"
         label="Booking Expiration *"
+        :lower-limit="(booking.preferredDate && new Date(booking.preferredDate)) || currentDate"
         @onUpdate="updateExpiryDate"
-        :error-messages="validateExpiryDate()"
       />
       <Datepicker
+        :key="booking.preferredDate"
         :picked="booking.preferredDate"
         label="Preferred carrier window"
+        :upper-limit="booking.bookingExpiry && new Date(booking.bookingExpiry)"
+        :lower-limit="currentDate"
         @onUpdate="updatePreferredDate"
-        :error-messages="validatePreferredDate()"
       />
       <Select
         v-model="booking.location"
@@ -226,7 +201,7 @@ onMounted(async () => {
     >
       Create
     </Button>
-  </form>
+  </VForm>
   <Dialog
     ref="confirmDraftsDialog"
     class="max-w-[450px] md:max-w-[560px]"
