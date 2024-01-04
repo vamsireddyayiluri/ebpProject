@@ -4,7 +4,7 @@ import { useAuthStore } from '~/stores/auth.store'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { useBookingRulesStore } from '~/stores/bookingRules.store'
 import { cloneDeep, isEqual } from 'lodash'
-import { checkPositiveInteger } from "~/helpers/validations-functions"
+import { checkPositiveInteger } from '~/helpers/validations-functions'
 
 const { userData } = useAuthStore()
 const workDetailsStore = useWorkDetailsStore()
@@ -29,6 +29,9 @@ const cancelChanges = () => {
   rules.value = cloneDeep(orgData.value.bookingRules)
 }
 onMounted(() => {
+  cancelChanges()
+})
+tryOnUnmounted(() => {
   cancelChanges()
 })
 </script>

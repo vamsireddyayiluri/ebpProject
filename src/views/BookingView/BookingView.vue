@@ -306,6 +306,7 @@ onMounted(async () => {
             :class="{ 'pointer-events-none': !activated && (expired || completed) }"
             :lower-limit="(booking.preferredDate && new Date(booking.preferredDate)) || currentDate"
             @onUpdate="updateExpiryDate"
+            :key="booking.bookingExpiry"
           />
           <Datepicker
             :picked="booking.preferredDate ? moment(booking.preferredDate).toDate() : null"
@@ -315,6 +316,7 @@ onMounted(async () => {
             :upper-limit="booking.bookingExpiry && new Date(booking.bookingExpiry)"
             :lower-limit="currentDate"
             @onUpdate="updatePreferredDate"
+            :key="booking.preferredDate"
           />
           <Select
             v-model="booking.line"
@@ -361,6 +363,7 @@ onMounted(async () => {
           <AutocompleteScac
             :scac-list="booking.scacList"
             :disabled="expired || completed"
+            :key="booking.scacList"
           />
           <Select
             v-model="booking.size"
@@ -449,7 +452,7 @@ onMounted(async () => {
         :src="container"
         class="container-img"
         alt="qualle container"
-      >
+      />
       <Typography
         type="text-h1"
         class="!text-7xl mb-4 text-center"

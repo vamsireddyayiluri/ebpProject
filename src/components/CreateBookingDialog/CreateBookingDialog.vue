@@ -53,6 +53,9 @@ const updateExpiryDate = value => {
     booking.value.preferredDate = moment(value)
       .subtract(bookingRulesStore?.rules?.timeForTruckersFromMarketplace, 'day')
       .format()
+    if (moment(booking.value.preferredDate).endOf('day').isBefore(currentDate.value)) {
+      booking.value.preferredDate = currentDate.value
+    }
   }
 }
 const updatePreferredDate = value => {
