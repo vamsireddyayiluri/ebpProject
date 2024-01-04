@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/named
 import { db } from '../index'
 import { FieldValue } from 'firebase-admin/firestore'
 import { uid } from 'uid'
