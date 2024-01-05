@@ -44,6 +44,7 @@ const hideChip = ref(null)
 const loading = ref(null)
 const currentDate = ref(new Date())
 const form = ref(null)
+const validExpiryDate = ref(false)
 
 const rules = {
   containers: value => checkPositiveInteger(value),
@@ -112,7 +113,7 @@ const validateRequiredFields = () => {
 }
 
 const isDisabledPublish = computed(() => {
-  return validateRequiredFields() && !validateExpiryDate(bookings?.value, booking.value)
+  return validateRequiredFields() && !validExpiryDate.value
 })
 
 const validateBooking = computed(() => {
@@ -123,8 +124,14 @@ const validateBooking = computed(() => {
       : bookings.value.find(i => i.id === booking.value.id),
   )
   condition = condition || !validateRequiredFields()
+
+  condition =
+    condition ||
+    moment(booking.value.bookingExpiry).isBefore(currentDate.value) ||
+    moment(booking.value.preferredDate).isBefore(currentDate.value)
+
   if (!fromDraft) {
-    condition = condition || !validateExpiryDate(bookings?.value, booking.value)
+    condition = condition || !validExpiryDate.value
   }
 
   return condition
@@ -161,11 +168,17 @@ const onSave = async () => {
   await updateBooking(booking.value, fromDraft ? 'drafts' : 'bookings')
   await router.push({ name: 'dashboard' })
 }
+const validateExpiryDates = () => {
+  validExpiryDate.value = validateExpiryDate(bookings?.value, booking.value)
+}
 
 onMounted(async () => {
   loading.value = true
   if (fromHistory) {
     booking.value = await getBookingInHistory(route.params.id)
+    if (queryParams.activated) {
+      animate()
+    }
   } else if (fromDraft) {
     booking.value = await getBooking({ id: route.params.id, draft: true })
   } else {
@@ -285,11 +298,10 @@ onMounted(async () => {
           @submit.prevent
         >
           <Textfield
-            v-model="booking.ref"
+            v-model.trim="booking.ref"
             label="Booking ref*"
             required
             :disabled="expired || (completed && !activated)"
-            @input="validateExpiryDate"
           />
           <Textfield
             v-model.number="booking.containers"
@@ -307,6 +319,8 @@ onMounted(async () => {
             :class="{ 'pointer-events-none': !activated && (expired || completed) }"
             :lower-limit="(booking.preferredDate && new Date(booking.preferredDate)) || currentDate"
             @onUpdate="updateExpiryDate"
+            :key="booking.bookingExpiry"
+            :error-messages="validateExpiryDates()"
           />
           <Datepicker
             :key="booking.preferredDate"
@@ -330,29 +344,15 @@ onMounted(async () => {
           />
           <Select
             v-model="booking.location"
-            :items="[
-              {
-                address: '875 Blake Wilbur Dr, Palo Alto, CA 94304, USA',
-                geohash: '9q9hgycyy',
-                label: 'california',
-                lat: 37.4357319,
-                lng: -122.1762866,
-              },
-              {
-                address: '3400 Bainbridge Ave, The Bronx, NY 10467, USA',
-                geohash: 'dr72wcgnz',
-                label: 'test2',
-                lat: 40.8799534,
-                lng: -73.878608,
-              },
-              {
-                address: '11200 Iberia St, Mira Loma, CA 91752, USA',
-                geohash: '9qh3t96uz',
-                label: 'Mira Loma Yard',
-                lat: 34.0213706,
-                lng: -117.5276535,
-              },
-            ]"
+            :items="
+              yards.map(yard => ({
+                address: yard.value,
+                geohash: yard.geohash,
+                label: yard.label,
+                lat: yard.lat,
+                lng: yard.lng,
+              }))
+            "
             label="Yard label *"
             item-title="label"
             item-value="address"
@@ -386,9 +386,7 @@ onMounted(async () => {
         :class="[flyoutBottom || smAndDown ? 'bottom' : 'right', drawer ? 'active' : '']"
       >
         <div class="flex justify-between items-center">
-          <Typography type="text-h1">
-            Statistics
-          </Typography>
+          <Typography type="text-h1"> Statistics </Typography>
           <IconButton
             v-if="!smAndDown"
             :icon="!flyoutBottom ? 'mdi-dock-bottom' : 'mdi-dock-right'"
@@ -398,9 +396,7 @@ onMounted(async () => {
         </div>
         <div class="statisticsContent">
           <div class="statisticsProgress">
-            <Typography type="text-h4">
-              Fulfillment progress
-            </Typography>
+            <Typography type="text-h4"> Fulfillment progress </Typography>
             <ProgressCircular
               :size="260"
               :value="getBookingLoad(booking.committed, booking.containers)"
@@ -411,9 +407,7 @@ onMounted(async () => {
             </ProgressCircular>
           </div>
           <div class="statisticsTimeline">
-            <Typography type="text-h4">
-              Booking timeline
-            </Typography>
+            <Typography type="text-h4"> Booking timeline </Typography>
             <div class="timeline scrollbar">
               <Timeline
                 :items="[

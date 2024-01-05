@@ -127,7 +127,7 @@ onMounted(async () => {
     @submit.prevent="saveBooking"
   >
     <Textfield
-      v-model="booking.ref"
+      v-model.trim="booking.ref"
       label="Booking ref*"
       required
       class="mb-6"
