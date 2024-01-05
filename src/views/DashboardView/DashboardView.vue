@@ -1,7 +1,7 @@
 <script setup>
 import { Main } from '@layouts'
 import { useAuthStore } from '~/stores/auth.store'
-import { storeToRefs } from "pinia"
+import { storeToRefs } from 'pinia'
 
 const authStore = useAuthStore()
 const { currentUser } = storeToRefs(authStore)
@@ -25,7 +25,7 @@ const mapToggled = ref(true)
 const toggleMap = () => {
   mapToggled.value = !mapToggled.value
 }
-watch(tab, () => mapToggled.value = true)
+watch(tab, () => (mapToggled.value = true))
 </script>
 
 <template>

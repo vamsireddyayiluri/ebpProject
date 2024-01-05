@@ -2,7 +2,8 @@ import { defineStore } from 'pinia'
 import { doc, updateDoc } from 'firebase/firestore'
 import { db } from '~/firebase'
 import { useAuthStore } from '~/stores/auth.store'
-import { useAlertStore } from "~/stores/alert.store"
+import { useAlertStore } from '~/stores/alert.store'
+import { useBookingRulesStore } from '~/stores/bookingRules.store'
 
 export const useWorkDetailsStore = defineStore('workDetails', () => {
   const alertStore = useAlertStore()
@@ -13,8 +14,7 @@ export const useWorkDetailsStore = defineStore('workDetails', () => {
     yards.value = authStore.orgData.workDetails.map(i => {
       return {
         ...i,
-        text:
-        `Commodity: ${i.commodity}`,
+        text: `Commodity: ${i.commodity}`,
       }
     })
   }
@@ -27,13 +27,19 @@ export const useWorkDetailsStore = defineStore('workDetails', () => {
   }
   const saveYards = async yards => {
     const { orgData } = useAuthStore()
-    try {
-      await updateDoc(doc(db, 'organizations', orgData.orgId), {
-        workDetails: yards,
-      })
-      alertStore.info({ content: 'Work details saved!' })
+    const { rules } = useBookingRulesStore()
+
+    let data = {
+      workDetails: yards,
     }
-    catch ({ message }) {
+    if (!yards.find(val => val.label === rules?.yard?.label)) {
+      delete rules?.yard
+      data.bookingRules = rules
+    }
+    try {
+      await updateDoc(doc(db, 'organizations', orgData.orgId), data)
+      alertStore.info({ content: 'Work details saved!' })
+    } catch ({ message }) {
       alertStore.warning({ content: message })
     }
   }

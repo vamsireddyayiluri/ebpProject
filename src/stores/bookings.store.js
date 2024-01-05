@@ -1,25 +1,36 @@
-import { defineStore, storeToRefs } from 'pinia'
+import { defineStore } from 'pinia'
 import { useAlertStore } from '~/stores/alert.store'
 import { uid } from 'uid'
-import { collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore'
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  setDoc,
+  updateDoc,
+  where,
+} from 'firebase/firestore'
 import { db } from '~/firebase'
 import { useAuthStore } from '~/stores/auth.store'
 import { getLocalServerTime, getLocalTime } from '@qualle-admin/qutil/dist/date'
 import { capitalize } from 'lodash'
-import moment from "moment-timezone"
+import moment from 'moment-timezone'
 import { statuses } from '~/constants/statuses'
+import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
 
 export const useBookingsStore = defineStore('bookings', () => {
   const alertStore = useAlertStore()
-  const authStore = useAuthStore()
-  const { userData } = storeToRefs(authStore)
+  const { userData } = useAuthStore()
+  const { preferredTruckers } = usePreferredTruckersStore()
   const bookings = ref([])
   const drafts = ref([])
   const loading = ref(false)
 
   const getBookings = async ({ draft = false }) => {
     loading.value = true
-    const { orgId } = userData.value
+    const { orgId } = userData
     if (draft) {
       const draftsQuery = query(collection(db, 'drafts'), where('orgId', '==', orgId))
       const querySnapshot = await getDocs(draftsQuery)
@@ -44,13 +55,16 @@ export const useBookingsStore = defineStore('bookings', () => {
   const moveToHistory = async booking => {
     try {
       await deleteDoc(doc(db, 'bookings', booking.id))
-      await setDoc(doc(collection(db, 'booking_history'), booking.id), {...booking, status: statuses.expired, updatedAt: getLocalTime().format() })
-    }
-    catch ({ message }) {
+      await setDoc(doc(collection(db, 'booking_history'), booking.id), {
+        ...booking,
+        status: statuses.expired,
+        updatedAt: getLocalTime().format(),
+      })
+    } catch ({ message }) {
       alertStore.warning({ content: 'Did not move to history' + message })
     }
   }
-  const getBooking = async ({id, draft = false }) => {
+  const getBooking = async ({ id, draft = false }) => {
     loading.value = true
     try {
       if (draft) {
@@ -64,13 +78,12 @@ export const useBookingsStore = defineStore('bookings', () => {
 
         return docData.data()
       }
-    }
-    catch (e) {
+    } catch (e) {
       alertStore.info({ content: 'Booking not found' })
     }
   }
   const createBookingObj = booking => {
-    const { userId, orgId } = userData.value
+    const { userId, orgId, type } = userData
     const bookingId = uid(28)
 
     return {
@@ -82,6 +95,12 @@ export const useBookingsStore = defineStore('bookings', () => {
       createdAt: getLocalTime().format(),
       updatedAt: getLocalTime().format(),
       carriers: [],
+      preferredTruckers: preferredTruckers,
+      createdBy: {
+        userId,
+        type,
+        ...(userData?.workerId ? { workerId: userData.workerId } : {}),
+      },
     }
   }
   const createBooking = async booking => {
@@ -89,7 +108,6 @@ export const useBookingsStore = defineStore('bookings', () => {
     try {
       await setDoc(doc(collection(db, 'bookings'), newBooking.id), newBooking)
       bookings.value.push(newBooking)
-      alertStore.info({ content: 'Booking created' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
@@ -113,13 +131,12 @@ export const useBookingsStore = defineStore('bookings', () => {
           await deleteDoc(doc(db, 'drafts', id))
           alertStore.info({ content: 'Draft was deleted' })
         } else alertStore.warning({ content: 'Draft not found' })
-
       } else {
         const index = bookings.value.findIndex(i => i.id === id)
         if (index > -1) {
           bookings.value.splice(index, 1)
           await deleteDoc(doc(db, 'bookings', id))
-          alertStore.info({content: 'Bookings removed!'})
+          alertStore.info({ content: 'Bookings removed!' })
         } else alertStore.warning({ content: 'Booking not found' })
       }
     } catch ({ message }) {
@@ -153,7 +170,9 @@ export const useBookingsStore = defineStore('bookings', () => {
   const updateBooking = async (booking, collectionName) => {
     try {
       await updateDoc(doc(db, collectionName, booking.id), { ...booking })
-      alertStore.info({content: `${capitalize(collectionName).charAt(0) + collectionName.slice(1)} updated`})
+      alertStore.info({
+        content: `${capitalize(collectionName).charAt(0) + collectionName.slice(1)} updated`,
+      })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }

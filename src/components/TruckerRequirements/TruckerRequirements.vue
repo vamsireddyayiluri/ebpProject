@@ -9,14 +9,14 @@ const props = defineProps({
     default: () => true,
   },
 })
-const truckerManagementStore = useTruckerManagementStore()
-const { requiresForTruckers, preferredTruckersList, questionList } = storeToRefs(truckerManagementStore)
+const truckerManagement = useTruckerManagementStore()
+const { requiresForTruckers, preferredTruckersList, questionList } = storeToRefs(truckerManagement)
 const question = ref(null)
 const items = ref(preferredTruckersList)
 
 const scacList = ['aass', 'qqww']
 
-const removeRequirement = item => {
+const removeTrucker = item => {
   const index = preferredTruckersList.value.findIndex(i => i === item)
   items.value.splice(index, 1)
 }
@@ -43,7 +43,7 @@ const removeRequirement = item => {
       >
         <Chip
           closable
-          @click:close="removeRequirement(i)"
+          @click:close="removeTrucker(i)"
         >
           {{ i }}
         </Chip>
@@ -79,7 +79,8 @@ const removeRequirement = item => {
       height="48"
       variant="outlined"
       :color="getColor('uiLine')"
-      @click="truckerManagementStore.addAdditionalQuestion(question), question = null"
+      :disabled="!question"
+      @click="truckerManagement.addAdditionalQuestion(question), question = null"
     >
       <Icon
         icon="mdi-plus"
@@ -105,7 +106,7 @@ const removeRequirement = item => {
         variant="plain"
         width="48"
         height="48"
-        @click.stop="authStore.removeQuestion(question)"
+        @click.stop="truckerManagement.removeQuestion(question)"
       />
     </div>
   </template>

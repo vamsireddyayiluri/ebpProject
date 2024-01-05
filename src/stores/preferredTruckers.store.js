@@ -1,13 +1,16 @@
 import { defineStore } from 'pinia'
-import preferredTruckersData from '~/fixtures/preferredTruckers.json'
 import allTruckers from '~/fixtures/truckers.json'
-import { useAlertStore } from "~/stores/alert.store"
+import { useAlertStore } from '~/stores/alert.store'
+import { useAuthStore } from '~/stores/auth.store'
+import { addDoc, arrayRemove, arrayUnion, collection, doc, updateDoc } from 'firebase/firestore'
+import { db } from '~/firebase'
 
 export const usePreferredTruckersStore = defineStore('preferredTruckers', () => {
-  const preferredTruckers = ref(preferredTruckersData)
+  const { orgData } = useAuthStore()
+  const preferredTruckers = ref(orgData.preferredTruckers || [])
   const alertStore = useAlertStore()
 
-  const inviteTrucker = email => {
+  const inviteTrucker = async email => {
     const index = preferredTruckers.value.findIndex(i => i?.email === email)
     if (index > -1) {
       alertStore.warning({ content: 'User exist in your list' })
@@ -15,25 +18,55 @@ export const usePreferredTruckersStore = defineStore('preferredTruckers', () => 
       return
     }
 
-    return new Promise(resolve => {
-      setTimeout(() => {
-        const index = allTruckers.findIndex(i => i?.email === email)
-        if (index > -1) resolve(allTruckers[index])
-        else resolve('sentInvitation')
-      }, 500)
-    })
-  }
-  const addTrucker = trucker => {
-    preferredTruckers.value.push(trucker)
-  }
-  const deleteTrucker = email => {
-    const index = preferredTruckers.value.findIndex(i => i.email === email)
+    const ind = allTruckers.findIndex(i => i?.email === email)
+    if (index > -1) resolve(allTruckers[ind])
+    else {
+      await sendInviteToSTP(email)
 
-    return new Promise(resolve => {
-      setTimeout(() => {
-        if (index > -1) preferredTruckers.value.splice(index, 1), resolve('deleted')
-      }, 200)
-    })
+      return 'sentInvitation'
+    }
+  }
+  const sendInviteToSTP = async email => {
+    try {
+      await addDoc(collection(db, 'mail'), {
+        to: email,
+        message: {
+          subject: 'Hello from Qualle!',
+          html:
+            'Hello trucker <br>' +
+            `Exporter ${orgData.company} invited you to the platform` +
+            `<br/><a href="https://qualle-stpv2.web.app/register">Street turn platform</a>`,
+        },
+      })
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
+  const addTrucker = async trucker => {
+    try {
+      await updateDoc(doc(db, 'organizations', orgData.orgId), {
+        preferredTruckers: arrayUnion(trucker),
+      })
+      preferredTruckers.value.push(trucker)
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
+  const deleteTrucker = async trucker => {
+    delete trucker.index
+    delete trucker.selected
+    const truckerToRemove = trucker
+    try {
+      await updateDoc(doc(db, 'organizations', orgData.orgId), {
+        preferredTruckers: arrayRemove(truckerToRemove),
+      })
+      const index = preferredTruckers.value.findIndex(i => i.id === truckerToRemove.id)
+      if (index > -1) {
+        preferredTruckers.value.splice(index, 1)
+      }
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
   }
 
   return {
@@ -41,5 +74,6 @@ export const usePreferredTruckersStore = defineStore('preferredTruckers', () => 
     inviteTrucker,
     addTrucker,
     deleteTrucker,
+    sendInviteToSTP,
   }
 })

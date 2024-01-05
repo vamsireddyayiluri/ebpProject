@@ -26,7 +26,7 @@ const onAction = (action, e) => {
           v-bind="props"
           icon="mdi-dots-vertical"
           class="ml-auto -mr-1.5 pointer-events-auto"
-          :class="{'cursor-not-allowed': disabled}"
+          :class="{ 'cursor-not-allowed': disabled }"
           :disabled="disabled"
         />
       </slot>

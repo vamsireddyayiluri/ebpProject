@@ -1,0 +1,46 @@
+[
+  {
+    "size": "20 FR",
+    "label": "20 Foot Flat Rack"
+  },
+  {
+    "size": "20 OT",
+    "label": "20 Foot Open Top"
+  },
+  {
+    "size": "20 ST",
+    "label": "20 Foot Standard"
+  },
+  {
+    "size": "40 FR",
+    "label": "40 Foot Flat Rack"
+  },
+  {
+    "size": "40 HC",
+    "label": "40 Foot High Cube"
+  },
+  {
+    "size": "40 OT",
+    "label": "40 Foot Open Top"
+  },
+  {
+    "size": "40 ST",
+    "label": "40 Foot Standard"
+  },
+  {
+    "size": "45 FR",
+    "label": "45 Foot Flat Rack"
+  },
+  {
+    "size": "45 HC",
+    "label": "45 Foot High Cube"
+  },
+  {
+    "size": "45 OT",
+    "label": "45 Foot Open Top"
+  },
+  {
+    "size": "45 ST",
+    "label": "45 Foot Standard"
+  }
+]

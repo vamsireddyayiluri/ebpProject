@@ -2,43 +2,40 @@
 import { useTheme } from 'vuetify'
 import { useAuthStore } from './stores/auth.store'
 import { useAlertStore } from '~/stores/alert.store'
-import { storeToRefs } from "pinia"
+import { storeToRefs } from 'pinia'
 
 const authStore = useAuthStore()
-const { isLoading } = storeToRefs(authStore)
+const { isLoading, userData } = storeToRefs(authStore)
 const alertStore = useAlertStore()
 const vuetifyTheme = useTheme()
 const storage = useStorage('theme', '')
 const route = useRoute()
 
-onMounted(() => {
-  if (!storage.value) {
+onMounted(async () => {
+  if (storage.value === 'undefined') {
     vuetifyTheme.global.name.value = 'light'
     storage.value = 'light'
   } else {
     vuetifyTheme.global.name.value = storage.value
   }
+  if (!userData.value) {
+    await authStore.getUser()
+  }
 })
 
-onBeforeMount(() => {
-  authStore.getUser()
+onBeforeMount(async () => {
+  await authStore.getUser()
 })
 </script>
 
 <template>
-  <ThemeProvider>
+  <ThemeProvider class="scrollbar">
     <AppAlert />
+    <Loader :loading="isLoading" />
     <RouterView v-if="!isLoading" />
-    <ProgressCircular
-      v-else
-      :size="350"
-      value="15"
-      text="Loading..."
-      class="absolute top-[calc(50vh-125px)] left-[calc(50%-125px)]"
-    >
-      15%
-    </ProgressCircular>
   </ThemeProvider>
 </template>
 
-<style scoped></style>
+<style lang="scss">
+@import '~/@core/scss/mixins.scss';
+</style>

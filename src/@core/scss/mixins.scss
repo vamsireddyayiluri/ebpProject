@@ -1,0 +1,21 @@
+@mixin scrollbar {
+  &::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+    border-radius: 30px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(var(--v-theme-iconButton-2), 1);
+    border-radius: 30px;
+    visibility: hidden;
+  }
+  &:hover {
+    &::-webkit-scrollbar-thumb {
+      visibility: visible;
+    }
+  }
+}
+
+.scrollbar {
+  @include scrollbar;
+}

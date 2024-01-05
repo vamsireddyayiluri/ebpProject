@@ -14,7 +14,6 @@ export const groupedBookingLocations = bookings =>
     ),
   }))
 
-
 export const getOrgId = async (email = '') => {
   const invitations = query(collection(db, 'invitations'), where('email', '==', email))
   const invitationsCollection = await getDocs(invitations)

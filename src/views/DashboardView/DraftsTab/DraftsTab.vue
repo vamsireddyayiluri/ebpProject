@@ -144,7 +144,7 @@ const onClickOutsideDialog = () => {
 }
 
 onMounted(async () => {
-  await bookingsStore.getBookings({draft: true})
+  await bookingsStore.getBookings({ draft: true })
   computedSearchedEntities.value = bookingsStore.drafts
   computedFilteredEntities.value = bookingsStore.drafts
 })
@@ -168,7 +168,7 @@ watch(searchValue, value => {
   >
     <template #content>
       <div
-        class="pt-8 pl-8 pr-5 pb-8 flex flex-column h-full"
+        class="pt-8 pl-8 pr-5 pb-8 flex flex-column"
         :class="{ 'pr-8': !mapToggled || smAndDown }"
       >
         <div class="flex flex-wrap items-center gap-4 mb-7">
@@ -210,7 +210,7 @@ watch(searchValue, value => {
           :search-value="searchValue"
           :loading="loading"
           @selectTableRow="selectTableRow"
-          @editDraft="id => router.push({ path: `booking/${id}`, query: {from: 'draft'} })"
+          @editDraft="id => router.push({ path: `booking/${id}`, query: { from: 'draft' } })"
         />
       </div>
     </template>

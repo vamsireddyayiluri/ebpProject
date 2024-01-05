@@ -11,8 +11,16 @@ import { storeToRefs } from 'pinia'
 import { statuses } from '~/constants/statuses'
 import { useBookingHistoryStore } from '~/stores/bookingHistory.store'
 import { cloneDeep, isEqual } from 'lodash'
+import container from '~/assets/images/container.png'
+import { useWorkDetailsStore } from '~/stores/workDetails.store'
+import containersSizes from '~/fixtures/containersSizes.json'
+import { useAlertStore } from '~/stores/alert.store'
+import { checkPositiveInteger, validateExpiryDate } from '~/helpers/validations-functions'
 
 const authStore = useAuthStore()
+const alertStore = useAlertStore()
+
+const { userData } = authStore
 const { getBookings, getBooking, publishDraft, removeFromNetwork, deleteBooking, updateBooking } =
   useBookingsStore()
 const {
@@ -21,7 +29,9 @@ const {
   reactivateBooking,
   duplicateBooking,
 } = useBookingHistoryStore()
-const { bookings, drafts, loading } = storeToRefs(useBookingsStore())
+const workDetailsStore = useWorkDetailsStore()
+const { yards } = storeToRefs(workDetailsStore)
+const { bookings, drafts } = storeToRefs(useBookingsStore())
 const route = useRoute()
 const router = useRouter()
 const { smAndDown } = useDisplay()
@@ -31,6 +41,13 @@ const booking = ref(null)
 const removeBookingDialog = ref(null)
 const activated = ref(null)
 const hideChip = ref(null)
+const loading = ref(null)
+const currentDate = ref(new Date())
+const form = ref(null)
+
+const rules = {
+  containers: value => checkPositiveInteger(value),
+}
 
 const updateExpiryDate = value => {
   booking.value.bookingExpiry = value
@@ -90,11 +107,30 @@ const animate = async () => {
     hideChip.value = true
   }, 2000)
 }
+const validateRequiredFields = () => {
+  return !form.value?.errors.length
+}
+
+const isDisabledPublish = computed(() => {
+  return validateRequiredFields() && !validateExpiryDate(bookings?.value, booking.value)
+})
+
 const validateBooking = computed(() => {
-  return isEqual(booking.value, bookings.value.find(i => i.id === booking.value.id))
+  let condition = isEqual(
+    booking.value,
+    fromDraft
+      ? drafts.value.find(i => i.id === booking.value.id)
+      : bookings.value.find(i => i.id === booking.value.id),
+  )
+  condition = condition || !validateRequiredFields()
+  if (!fromDraft) {
+    condition = condition || !validateExpiryDate(bookings?.value, booking.value)
+  }
+
+  return condition
 })
 const cancelChanges = async () => {
-  if (expired || completed) {
+  if (expired.value || completed.value) {
     activated.value = false
     hideChip.value = false
     booking.value = await getBookingInHistory(route.params.id)
@@ -123,19 +159,20 @@ const onSave = async () => {
     }
   }
   await updateBooking(booking.value, fromDraft ? 'drafts' : 'bookings')
-  await getBookings(fromDraft? {draft: true}: {})
-  booking.value = await getBooking({ id: route.params.id })
+  await router.push({ name: 'dashboard' })
 }
 
 onMounted(async () => {
+  loading.value = true
   if (fromHistory) {
     booking.value = await getBookingInHistory(route.params.id)
   } else if (fromDraft) {
     booking.value = await getBooking({ id: route.params.id, draft: true })
   } else {
-    booking.value = await getBooking({id: route.params.id})
+    booking.value = await getBooking({ id: route.params.id })
   }
-  await getBookings(fromDraft? {draft: true}: {})
+  await getBookings(fromDraft ? { draft: true } : {})
+  loading.value = false
 })
 </script>
 
@@ -175,7 +212,7 @@ onMounted(async () => {
       <div class="w-full p-8 relative">
         <div class="min-h-[48px] flex items-center gap-4 mb-1.5">
           <Typography type="text-h1">
-            Booking <b>Ref#{{ booking.ref }}</b>
+            Booking <b>Ref #{{ booking.ref }}</b>
             <span :style="{ color: getColor('textSecondary') }">
               {{ fromDraft ? ' (Draft)' : '' }}
               {{ booking.status ? (completed ? '(Completed)' : '(Expired)') : '' }}
@@ -199,18 +236,19 @@ onMounted(async () => {
             variant="outlined"
             data="secondary1"
             class="ml-auto px-12"
+            :disabled="fromDraft ? isDisabledPublish : false"
             @click="handleBookingChanges"
           >
             {{ fromDraft ? 'publish' : 'Remove from network' }}
           </Button>
         </div>
         <Typography :color="getColor('textSecondary')">
-          created by Operator #23
+          created by {{ userData.type }} {{ userData?.workerId ? '#' + userData.workerId : null }}
         </Typography>
         <div
           v-if="expired || completed"
           class="mt-6 -mb-2"
-          :class="{'hidden': hideChip}"
+          :class="{ hidden: hideChip }"
         >
           <div
             v-if="activated"
@@ -238,68 +276,104 @@ onMounted(async () => {
             @update:modelValue="handleAction"
           />
         </div>
-        <div
+        <VForm
+          ref="form"
           class="w-full md:w-3/4 grid sm:grid-cols-2 grid-cols-1 gap-6 mt-10 [&>div]:h-fit"
           :class="{
             'md:w-full': drawer && !flyoutBottom,
           }"
+          @submit.prevent
         >
           <Textfield
             v-model="booking.ref"
             label="Booking ref*"
             required
             :disabled="expired || (completed && !activated)"
+            @input="validateExpiryDate"
           />
           <Textfield
-            v-model="booking.containers"
+            v-model.number="booking.containers"
             label="Number of containers*"
             type="number"
+            :rules="[rules.containers]"
             required
             :disabled="expired || completed"
           />
           <Datepicker
-            :picked="moment(booking.bookingExpiry).toDate()"
+            :picked="booking.bookingExpiry ? moment(booking.bookingExpiry).toDate() : null"
             label="Booking expiry *"
             :disabled="!activated && (expired || completed)"
-            :class="{'pointer-events-none': !activated && (expired || completed)}"
+            :class="{ 'pointer-events-none': !activated && (expired || completed) }"
+            :lower-limit="(booking.preferredDate && new Date(booking.preferredDate)) || currentDate"
             @onUpdate="updateExpiryDate"
+            :key="booking.bookingExpiry"
           />
           <Datepicker
-            :picked="moment(booking.preferredDate).toDate()"
+            :picked="booking.preferredDate ? moment(booking.preferredDate).toDate() : null"
             label="Preferred carrier window"
             :disabled="!activated && (expired || completed)"
-            :class="{'pointer-events-none': !activated && (expired || completed)}"
+            :class="{ 'pointer-events-none': !activated && (expired || completed) }"
+            :upper-limit="booking.bookingExpiry && new Date(booking.bookingExpiry)"
+            :lower-limit="currentDate"
             @onUpdate="updatePreferredDate"
+            :key="booking.preferredDate"
           />
           <Select
-            v-model="booking.line.label"
+            v-model="booking.line"
             :items="getAllLines()"
-            label="SSL"
+            label="SSL *"
             required
             item-title="label"
-            item-value="type"
+            item-value="id"
+            return-object
             :disabled="expired || completed"
           />
           <Select
-            v-model="booking.location.label"
-            :items="['Good yard', 'Work yard', 'Farm yard']"
+            v-model="booking.location"
+            :items="[
+              {
+                address: '875 Blake Wilbur Dr, Palo Alto, CA 94304, USA',
+                geohash: '9q9hgycyy',
+                label: 'california',
+                lat: 37.4357319,
+                lng: -122.1762866,
+              },
+              {
+                address: '3400 Bainbridge Ave, The Bronx, NY 10467, USA',
+                geohash: 'dr72wcgnz',
+                label: 'test2',
+                lat: 40.8799534,
+                lng: -73.878608,
+              },
+              {
+                address: '11200 Iberia St, Mira Loma, CA 91752, USA',
+                geohash: '9qh3t96uz',
+                label: 'Mira Loma Yard',
+                lat: 34.0213706,
+                lng: -117.5276535,
+              },
+            ]"
             label="Yard label *"
+            item-title="label"
+            item-value="address"
+            return-object
             required
             :disabled="expired || completed"
           />
           <AutocompleteScac
             :scac-list="booking.scacList"
-            :class="{ 'pointer-events-none': expired || completed }"
+            :disabled="expired || completed"
+            :key="booking.scacList"
           />
-          <Textfield
+          <Select
             v-model="booking.size"
-            type="text"
+            :items="containersSizes"
             label="Equipment type*"
-            hint="For e.g. 40 HC"
-            persistent-hint
+            item-title="label"
+            item-value="size"
             :disabled="expired || completed"
           />
-        </div>
+        </VForm>
         <SaveCancelChanges
           v-if="!(expired || completed) || activated"
           :disabled="validateBooking"
@@ -340,7 +414,7 @@ onMounted(async () => {
             <Typography type="text-h4">
               Booking timeline
             </Typography>
-            <div class="timeline">
+            <div class="timeline scrollbar">
               <Timeline
                 :items="[
                   {
@@ -368,6 +442,23 @@ onMounted(async () => {
           </div>
         </div>
       </div>
+    </div>
+    <div v-else-if="loading" />
+    <div
+      v-else
+      class="w-full h-[calc(100vh-120px)] flex flex-col gap-2 justify-center items-center"
+    >
+      <img
+        :src="container"
+        class="container-img"
+        alt="qualle container"
+      />
+      <Typography
+        type="text-h1"
+        class="!text-7xl mb-4 text-center"
+      >
+        Booking does not exist!
+      </Typography>
     </div>
   </Main>
   <Dialog

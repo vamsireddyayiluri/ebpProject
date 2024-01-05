@@ -29,7 +29,7 @@ const selectedBooking = ref(false)
     />
   </VRow>
   <Divider class="-mx-7" />
-  <div class="block md:flex gap-7 relative max-h-[70vh] overflow-y-auto overflow-x-auto">
+  <div class="block md:flex gap-7 relative max-h-[70vh] overflow-y-auto overflow-x-auto scrollbar">
     <BookingsMapPopup
       :booking="booking"
       class="w-full md:w-50 pt-8 !px-0 pb-1 static md:sticky top-0 block md:flex justify-between flex-col bg-transparent"
@@ -40,7 +40,7 @@ const selectedBooking = ref(false)
     />
     <div
       class="w-full md:w-50 pt-8 pb-1 overflow-y-visible"
-      :class="{'mb-10': selectedBooking}"
+      :class="{ 'mb-10': selectedBooking }"
     >
       <template v-if="!selectedBooking">
         <Typography
@@ -107,7 +107,7 @@ const selectedBooking = ref(false)
           class="mb-10"
         />
         <div class="styledDrawerActions flex gap-6 pt-8">
-          <Button @click="router.push({ path: `booking/${selectedBooking.id}`})">
+          <Button @click="router.push({ path: `booking/${selectedBooking.id}` })">
             Go to booking page
           </Button>
           <Button

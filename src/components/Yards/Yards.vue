@@ -1,9 +1,9 @@
 <script setup>
 import { useDisplay } from 'vuetify'
-import { useWorkDetailsStore } from "~/stores/workDetails.store"
-import { useAuthStore } from "~/stores/auth.store"
-import { storeToRefs } from "pinia"
-import { uid } from "uid"
+import { useWorkDetailsStore } from '~/stores/workDetails.store'
+import { useAuthStore } from '~/stores/auth.store'
+import { storeToRefs } from 'pinia'
+import { uid } from 'uid'
 
 const attrs = useAttrs()
 const workDetailsStore = useWorkDetailsStore()
@@ -61,6 +61,7 @@ const removeYard = async () => {
         sm="6"
       >
         <Location
+          v-model="newLocation.address"
           label="Address"
           hint="For e.g. 2972 Westheimer Santa Ana, Illinois"
           persistent-hint

@@ -57,16 +57,12 @@ onMounted(() => {
       </Typography>
     </template>
     <template #takenBookings>
-      <Typography>
-        12%
-      </Typography>
+      <Typography> 12% </Typography>
     </template>
     <template #takenFulfilled>
-      <Typography>
-        15 / 12
-      </Typography>
+      <Typography> 15 / 12 </Typography>
     </template>
-    <template #ranging="{ item }">
+    <template #ranging>
       <div class="flex gap-1.5">
         <Icon
           icon="mdi-timer"
@@ -75,7 +71,7 @@ onMounted(() => {
         <Typography class="flex-shrink-0">
           3 days
         </Typography>
-        <Tooltip :attach="!!item.index">
+        <Tooltip>
           Average fulfillment time
         </Tooltip>
       </div>
@@ -84,7 +80,7 @@ onMounted(() => {
         <Typography class="flex-shrink-0">
           25%
         </Typography>
-        <Tooltip :attach="!!item.index">
+        <Tooltip>
           Cancellation rate
         </Tooltip>
       </div>
@@ -93,7 +89,7 @@ onMounted(() => {
         <Typography class="flex-shrink-0">
           20 min
         </Typography>
-        <Tooltip :attach="!!item.index">
+        <Tooltip>
           Average acceptance time
         </Tooltip>
       </div>

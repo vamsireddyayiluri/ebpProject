@@ -1,11 +1,12 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
-import { useTruckerManagementStore } from "~/stores/truckerManagement.store"
+import { useTruckerManagementStore } from '~/stores/truckerManagement.store'
+import { storeToRefs } from 'pinia'
 
-const authStore = useTruckerManagementStore()
+const truckerManagement = useTruckerManagementStore()
 const fileLoading = ref(false)
 const file = ref(null)
-const files = ref(authStore.onboardingDocuments)
+const { onboardingDocuments: files } = storeToRefs(truckerManagement)
 const count = ref(0)
 const renameFileDialog = ref(null)
 const fileName = ref(null)
@@ -43,18 +44,17 @@ const showProgress = () => {
   }, 1500)
 }
 const removeFile = file => {
-  const index = files.value.findIndex(f => f.name === file.name)
-  files.value.splice(index, 1)
+  truckerManagement.removeDoc(file.name)
 }
 const getFilenameAndExtension = fullName => {
-  const filename = fullName.substring(0, fullName.lastIndexOf('.'))
+  const fileName = fullName.substring(0, fullName.lastIndexOf('.'))
   const ext = fullName.split('.').pop()
 
-  return [filename, ext]
+  return [fileName, ext]
 }
 const renameFile = () => {
-  files.value.push({...file.value, name: fileName.value})
-  authStore.saveOnboardingDocuments(files.value)
+  const newFile = new File([file.value], fileName.value, { type: file.value.type })
+  truckerManagement.addDoc(newFile)
   renameFileDialog.value.show(false)
 }
 </script>
@@ -63,7 +63,7 @@ const renameFile = () => {
   <input
     id="fileUpload"
     type="file"
-    accept="application/pdf, .docx, .csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+    accept="application/pdf, .docx, .doc .csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, text/plain"
     name="userDoc"
     class="input"
     @change="onChangeFile"
@@ -101,7 +101,9 @@ const renameFile = () => {
           icon="mdi-file-upload"
           :color="getColor('iconButton-2')"
         />
-        <Typography type="text-h4 mt-6"> Select file to upload (docx, pdf, excel, or others ) </Typography>
+        <Typography type="text-h4 mt-6">
+          Select file to upload (docx, pdf, excel, or others )
+        </Typography>
         <Typography
           type="mt-2"
           :color="getColor('textSecondary')"
@@ -125,7 +127,7 @@ const renameFile = () => {
         <span class="max-w-[80px] text-truncate">
           {{ i.name }}
         </span>
-        <Tooltip :attach="false">
+        <Tooltip>
           {{ i.name }}
         </Tooltip>
       </Chip>

@@ -1,10 +1,10 @@
 <script setup>
 import truckersData from '~/fixtures/truckers.json'
 import { useDisplay } from 'vuetify'
-import {useActions, useDate, useHeaders} from '~/composables'
+import { useActions, useDate, useHeaders } from '~/composables'
 import { getColor } from '~/helpers/colors'
-import {useBookingHistoryStore} from "~/stores/bookingHistory.store"
-import {storeToRefs} from "pinia"
+import { useBookingHistoryStore } from '~/stores/bookingHistory.store'
+import { storeToRefs } from 'pinia'
 import { statuses } from '~/constants/statuses'
 
 const bookingsStore = useBookingHistoryStore()
@@ -36,9 +36,10 @@ const debouncedSearch = useDebounceFn(searchValue => {
   } else {
     computedSearchedEntities.value = useArrayFilter(
       bookingsStore.bookings,
-      ({ ref, line: {label}, location: {label: address} }) =>
+      ({ ref, line: { label }, location: { label: address } }) =>
         useArraySome(
-          useArrayMap(Object.values({ ref, label, address }), value => String(value).toLowerCase()).value,
+          useArrayMap(Object.values({ ref, label, address }), value => String(value).toLowerCase())
+            .value,
           values => values.includes(searchValue.toLowerCase()),
         ).value,
     ).value
@@ -49,15 +50,17 @@ const containerActionHandler = ({ action, e }) => {
     removeBookingDialog.value.show(true)
     removeBookingDialog.value.data = e[0]
   }
-  if (action === 'duplicate') {}
-  if (action === 're-activate') {}
+  if (action === 'duplicate') {
+  }
+  if (action === 're-activate') {
+  }
 }
 const removeBooking = async id => {
   await bookingsStore.deleteHistoryBooking(id)
   removeBookingDialog.value.show(false)
 }
 const onSelectRow = e => {
-  router.push({ path: `booking/${e.id}`, query: { from: 'history' }})
+  router.push({ path: `booking/${e.id}`, query: { from: 'history' } })
 }
 
 onMounted(async () => {
@@ -108,7 +111,7 @@ watch(searchValue, value => {
           size="24"
           :color="getColor('iconButton-1')"
         />
-        <Tooltip location="top">
+        <Tooltip>
           Download datatable
         </Tooltip>
       </IconButton>
@@ -169,13 +172,13 @@ watch(searchValue, value => {
       </template>
       <template #expiry="{ item }">
         <Typography>
-          {{ getFormattedDateTime(item.expiryDate) }}
+          {{ getFormattedDateTime(item.bookingExpiry) }}
         </Typography>
       </template>
       <template #status="{ item }">
         <Classification
           type="status"
-          :value="item.status === statuses.expired? 'incomplete': item.status"
+          :value="item.status === statuses.expired ? 'incomplete' : item.status"
         />
       </template>
       <template #truckers="{ item }">
@@ -194,9 +197,9 @@ watch(searchValue, value => {
             icon="mdi-delete"
             size="24"
             class="-mr-1.5"
-            @click.stop="removeBookingDialog.show(true), removeBookingDialog.data = item"
+            @click.stop="removeBookingDialog.show(true), (removeBookingDialog.data = item)"
           >
-            <Tooltip :attach="false">
+            <Tooltip>
               Remove booking
             </Tooltip>
           </IconButton>

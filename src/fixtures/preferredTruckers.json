@@ -4,50 +4,34 @@
     "scac": "ANRN",
     "email": "tim.jennings@example.com",
     "company": "Gillette",
-    "lastBooking" : "",
+    "lastBooking": "",
     "documents": [
       {
-        "label": "Agreement_1",
-        "status": "checked"
+        "label": "file-pdf",
+        "status": "checked",
+        "url": "https://firebasestorage.googleapis.com/v0/b/ebpv3-69501.appspot.com/o/uploads%2Fonboarding%2Ftestpdf.pdf?alt=media",
+        "type": "pdf"
       },
       {
-        "label": "Agreement_2",
-        "status": "waiting"
-      }]
+        "label": "file-txt",
+        "status": "waiting",
+        "url": "https://firebasestorage.googleapis.com/v0/b/ebpv3-69501.appspot.com/o/uploads%2Fonboarding%2Fsample%20(1).txt?alt=media&token=d477b544-b959-4d38-a06c-2ec60c09da85",
+        "type": "txt"
+      }
+    ]
   },
   {
     "id": "ADEW",
     "scac": "ADEW",
     "email": "willie.jennings@example.com",
     "company": "Louis Vuitton",
-    "lastBooking" : "2023-03-09T14:30:49+00:00",
+    "lastBooking": "2023-03-09T14:30:49+00:00",
     "documents": [
       {
-        "label": "Agreement_4",
-        "status": "waiting"
-    },
-      {
-        "label": "Agreement",
-        "status": "notConsider"
-    },
-      {
-        "label": "new_Agreement",
-        "status": "checked"
-    },
-      {
-        "label": "Agreement_update",
-        "status": "pending"
-    }]
-  },
-  {
-    "id": "BLJU ",
-    "scac": "BLJU ",
-    "email": "tom.johnson@example.com",
-    "company": "Johnson & Johnson",
-    "documents": [
-      {
-        "label": "Agreement_5",
-        "status": "waiting"
+        "label": "file-docx",
+        "status": "pending",
+        "url": "https://firebasestorage.googleapis.com/v0/b/ebpv3-69501.appspot.com/o/uploads%2Fonboarding%2FQuale%20test.docx?alt=media&token=bb67f6e6-5a59-4311-94aa-2428e2b31e5e",
+        "type": "docx"
       }
     ]
   }

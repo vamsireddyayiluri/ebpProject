@@ -1,5 +1,5 @@
-@use 'vuetify' as *;
-@use 'vuetify/settings' with (
+@use "vuetify" as *;
+@use "vuetify/settings" with (
   $body-font-family: $body-font-family,
   $border-radius-root: $border-radius-root,
   $rounded: $rounded,

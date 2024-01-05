@@ -10,7 +10,7 @@ const tabs = [
     label: 'By truckers',
   },
   {
-    label: 'By SLL',
+    label: 'By SSL',
   },
   {
     label: 'By yards',

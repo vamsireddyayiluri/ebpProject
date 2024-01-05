@@ -46,9 +46,7 @@ const sendResetPasswordEmail = ({ email }) => {
 </script>
 
 <template>
-  <Typography
-    type="text-h1 mt-[140px]"
-  >
+  <Typography type="text-h1 mt-[140px]">
     {{ stepper.current.value.title }}
   </Typography>
   <form
@@ -125,5 +123,4 @@ const sendResetPasswordEmail = ({ email }) => {
   </form>
 </template>
 
-<style lang="scss">
-</style>
+<style lang="scss"></style>

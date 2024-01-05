@@ -18,9 +18,7 @@ const onSubmit = async () => {
 </script>
 
 <template>
-  <Typography
-    type="text-h1 mt-[140px]"
-  >
+  <Typography type="text-h1 mt-[140px]">
     Welcome back!
   </Typography>
   <form
@@ -92,5 +90,4 @@ const onSubmit = async () => {
   </VRow>
 </template>
 
-<style lang="scss">
-</style>
+<style lang="scss"></style>

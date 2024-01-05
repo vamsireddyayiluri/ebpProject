@@ -7,6 +7,7 @@ import {
   getDocs,
   query,
   setDoc,
+  updateDoc,
   where,
 } from 'firebase/firestore'
 import { auth, db } from '~/firebase'
@@ -24,8 +25,8 @@ export const useInvitationStore = defineStore('invitation', () => {
   const router = useRouter()
 
   // validating email is exists in the user collection or not to invite
-  const validateInviteUserEmail = async payload => {
-    const q = query(collection(db, 'users'), where('email', '==', payload))
+  const validateInviteUserEmail = async (collections, payload) => {
+    const q = query(collection(db, collections), where('email', '==', payload))
 
     const docData = await getDocs(q)
 
@@ -67,21 +68,23 @@ export const useInvitationStore = defineStore('invitation', () => {
   }
 
   // Getting invited users data from the users and invitations collection
-  const getInvitedUsersData = async userId => {
+  const getInvitedUsersData = async orgId => {
     const invitations = []
     try {
-      const q1 = query(collection(db, 'users'), where('invitedBy', '==', userId))
+      const q1 = query(collection(db, 'users'), where('orgId', '==', orgId))
       const querySnapshot = await getDocs(q1)
       querySnapshot.docs.map(val => {
-        invitations.push({
-          id: val.data().id,
-          value: val.data().email,
-          type: val.data().type,
-          isLoggedIn: true,
-          workerId: val.data().workerId,
-        })
+        if (authStore.userData.userId !== val.data().userId) {
+          invitations.push({
+            id: val.data().userId,
+            value: val.data().email,
+            type: val.data().type,
+            isLoggedIn: true,
+            workerId: val.data().workerId,
+          })
+        }
       })
-      const q2 = query(collection(db, 'invitations'), where('invitedBy', '==', userId))
+      const q2 = query(collection(db, 'invitations'), where('orgId', '==', orgId))
       const querySnapshot2 = await getDocs(q2)
       querySnapshot2.docs.map(val => {
         invitations.push({
@@ -101,13 +104,10 @@ export const useInvitationStore = defineStore('invitation', () => {
   // create invitation collection and send invitation mail
   const sendInvitationLink = async members => {
     for (const m of members) {
-      const q = query(collection(db, 'invitations'), where('email', '==', m.value))
+      const invitationExist = await validateInviteUserEmail('invitations', m.value)
+      const userExist = await validateInviteUserEmail('users', m.value)
 
-      const querySnapshot = await getDocs(q)
-      const exist = await validateInviteUserEmail(m.value)
-
-      if (!querySnapshot.empty || exist) {
-        console.log(!querySnapshot.empty, exist)
+      if (invitationExist || userExist) {
         continue
       }
       const newInvitation = {
@@ -192,6 +192,25 @@ export const useInvitationStore = defineStore('invitation', () => {
     }
   }
 
+  // change invited user type
+  const changeInvitedUserType = async user => {
+    const invitationExist = await validateInviteUserEmail('invitations', user.value)
+    const userExist = await validateInviteUserEmail('users', user.value)
+
+    if (invitationExist) {
+      await updateDoc(doc(db, 'invitations', user.id), { type: user.type })
+      alertStore.info({ content: 'Invited user type changed' })
+
+      return 'changed'
+    }
+    if (userExist) {
+      await updateDoc(doc(db, 'users', user.id), { type: user.type })
+      alertStore.info({ content: 'User type changed' })
+
+      return 'changed'
+    }
+  }
+
   return {
     invitedUsersData,
     isLoading,
@@ -202,5 +221,6 @@ export const useInvitationStore = defineStore('invitation', () => {
     sendInvitationLink,
     invitedUserRegistration,
     removeInvitedUser,
+    changeInvitedUserType,
   }
 })
