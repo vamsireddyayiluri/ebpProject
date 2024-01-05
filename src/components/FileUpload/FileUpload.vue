@@ -127,7 +127,7 @@ const renameFile = () => {
         <span class="max-w-[80px] text-truncate">
           {{ i.name }}
         </span>
-        <Tooltip :attach="false">
+        <Tooltip>
           {{ i.name }}
         </Tooltip>
       </Chip>

@@ -1,0 +1,32 @@
+.DS_Store
+node_modules
+
+# dist
+dist
+
+# local env files
+.env
+.env.*
+.env.local
+.env.*.local
+
+# Log files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor directories and files
+.idea
+.vscode
+.editorconfig
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.cache
+ui-debug.log
+firestore-debug.log
+firebase-debug.log

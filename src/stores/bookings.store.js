@@ -1,4 +1,4 @@
-import { defineStore, storeToRefs } from 'pinia'
+import { defineStore } from 'pinia'
 import { useAlertStore } from '~/stores/alert.store'
 import { uid } from 'uid'
 import {
@@ -83,7 +83,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     }
   }
   const createBookingObj = booking => {
-    const { userId, orgId } = userData
+    const { userId, orgId, type } = userData
     const bookingId = uid(28)
 
     return {
@@ -96,6 +96,11 @@ export const useBookingsStore = defineStore('bookings', () => {
       updatedAt: getLocalTime().format(),
       carriers: [],
       preferredTruckers: preferredTruckers,
+      createdBy: {
+        userId,
+        type,
+        ...(userData?.workerId ? { workerId: userData.workerId } : {}),
+      },
     }
   }
   const createBooking = async booking => {
@@ -103,7 +108,6 @@ export const useBookingsStore = defineStore('bookings', () => {
     try {
       await setDoc(doc(collection(db, 'bookings'), newBooking.id), newBooking)
       bookings.value.push(newBooking)
-      alertStore.info({ content: 'Booking created' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }

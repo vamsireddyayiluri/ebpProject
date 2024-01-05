@@ -30,6 +30,9 @@ const cancelChanges = () => {
 onMounted(() => {
   workDetailsStore.getYards()
 })
+tryOnUnmounted(() => {
+  cancelChanges()
+})
 </script>
 
 <template>
