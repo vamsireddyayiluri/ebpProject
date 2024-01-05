@@ -114,6 +114,7 @@ module.exports = {
     // -- Extension Rules
     'vue/no-irregular-whitespace': 'error',
     'vue/template-curly-spacing': 'error',
+    'import/extensions': ['error', 'never', { ignorePackages: false }],
   },
   settings: {
     'import/resolver': {

@@ -16,23 +16,27 @@ function fillBookingSSL(ssl) {
 }
 function fillBookingExpiry(expiry) {
   cy.get('.styleDatePicker[label="Booking expiry *"]').click().as('datePicker')
+
   // cy.get('.v3dp__heading > .v3dp__heading__button :visible').last().click()
   cy.get('@datePicker')
     .get('.v3dp__elements')
     .find('button')
     .filter(':visible')
     .find(`:contains(${expiry.date})`)
+
     // .should('be.visible')
     .click({ force: true })
 }
 function fillBookingExpiration(expiry) {
   cy.get('.styleDatePicker[label="Booking Expiration *"]').click().as('datePicker')
+
   // cy.get('.v3dp__heading > .v3dp__heading__button :visible').last().click()
   cy.get('@datePicker')
     .get('.v3dp__elements')
     .find('button')
     .filter(':visible')
     .find(`:contains(${expiry.date})`)
+
     // .should('be.visible')
     .click({ force: true })
 }
@@ -46,6 +50,7 @@ function fillPreferedCarrier(pcw) {
     .find('button')
     .filter(':visible')
     .find(`:contains(${pcw.date})`)
+
     // .should('be.visible')
     .click({ force: true })
 }
@@ -68,6 +73,7 @@ function fillTruckerScac(truckerScac) {
   cy.get('.v-overlay__content > .v-list > .v-list-item > .v-list-item__content')
     .contains(truckerScac)
     .click()
+
   // cy.get('.chipLabel').contains(data.TruckersScac).should('be.visible')
 }
 
@@ -84,6 +90,7 @@ describe('Creating new Bookings', () => {
         // If the URL doesn't contain '/dashboard', navigate to the dashboard route
         cy.visit('/login')
         cy.userLogin(register[0].email, register[0].password)
+
         // cy.userLogin('sravanthi.gorantla@cognine.com', '123456789')
       }
     })
@@ -350,7 +357,6 @@ describe('Creating new Bookings', () => {
     cy.wait(1000)
     cy.get('#bookingsTable')
       .find('.vue-recycle-scroller__item-wrapper ')
-
       .as('tableBody')
       .then(ele => {
         if (ele.length && ele.is(':visible')) {

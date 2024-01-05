@@ -52,12 +52,14 @@ import moment from 'moment-timezone'
 Cypress.Commands.add('getUsersData', async email => {
   const q = query(collection(db, 'users'), where('email', '==', email))
   const docData = await getDocs(q)
+  
   return docData.docs
 })
 
 Cypress.Commands.add('searchDocData', async (coll, label, value) => {
   const q = query(collection(db, coll), where(label, '==', value))
   const docData = await getDocs(q)
+  
   return docData.docs
 })
 
@@ -67,12 +69,14 @@ Cypress.Commands.add('searchDataWithTwoLables', async (coll, label1, value1, lab
   }
   const q = query(collection(db, coll), where(label1, '==', value1), where(label2, '==', value2))
   const docData = await getDocs(q)
+  
   return docData.docs
 })
 
 Cypress.Commands.add('getDocData', async (coll, document) => {
   const q = query(doc(db, coll, document))
   const docData = await getDoc(q)
+  
   return docData.data()
 })
 
@@ -99,6 +103,7 @@ Cypress.Commands.add('verifyEmail', async email => {
     const parsedHTML = parser.parseFromString(message.htmlBody, 'text/html')
     const anchorElement = parsedHTML.querySelector('a')
     const hrefValue = anchorElement.getAttribute('href')
+    
     return hrefValue
   } catch (error) {
     console.log('error', error)
