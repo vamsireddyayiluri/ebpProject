@@ -1,21 +1,15 @@
+import moment from 'moment-timezone'
+
 export const editRowData = {
-  ref: 'ref05',
-  expiry: '12/28/2023 12:00:00 am',
+  ref: 'ref04',
+  expiry: moment().add(1, 'days').startOf('day').format('MM/DD/YYYY hh:mm:ss a'),
+  currentDate: moment().startOf('day').format('MM/DD/YYYY hh:mm:ss a'),
 }
 
 export const editBookingData = {
   // ssl: 'MCL',
   equipmentType: '45 Foot High Cube',
-}
-
-export const removeBooking = {
-  ref: 'ref03',
-  expiry: '01/18/2024 12:00:00 am',
-}
-
-export const draftRowData = {
-  ref: 'ref03',
-  expiry: '01/18/2024 12:00:00 am',
+  expiry: { date: moment().format('DD') },
 }
 
 export const filterData = {
