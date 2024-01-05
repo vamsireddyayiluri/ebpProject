@@ -298,7 +298,7 @@ onMounted(async () => {
           @submit.prevent
         >
           <Textfield
-            v-model="booking.ref"
+            v-model.trim="booking.ref"
             label="Booking ref*"
             required
             :disabled="expired || (completed && !activated)"

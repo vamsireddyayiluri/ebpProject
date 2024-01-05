@@ -75,7 +75,7 @@ const removeYard = async () => {
         sm="6"
       >
         <Textfield
-          v-model="newLocation.label"
+          v-model.trim="newLocation.label"
           type="text"
           label="Location label"
           hint="For e.g. Farm label"
@@ -88,7 +88,7 @@ const removeYard = async () => {
         sm="6"
       >
         <Textfield
-          v-model="commodity"
+          v-model.trim="commodity"
           type="text"
           label="Commodities that you export"
           hint="For e.g. electronics, food"
