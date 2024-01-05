@@ -23,6 +23,6 @@
     "truckerScac": ["aass"],
     "additionalInfo": ["Brokerage", "MC Authority"],
     "questions": ["what trucker", "who is trucker"],
-    "documents": [{ "file": "Invoice-6D642819-0075.pdf", "rename": "test1" }]
+    "documents": [{ "file": "./cypress/fixtures/register/testfile.pdf", "rename": "test1" }]
   }
 ]
