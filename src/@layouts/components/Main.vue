@@ -14,8 +14,6 @@ const router = useRouter()
 const getActiveRoute = name => {
   return route.name === name
 }
-const { currentUser } = storeToRefs(authStore)
-
 const items = ref([
   {
     name: 'dashboard',
@@ -45,6 +43,15 @@ const mobileMenuItems = [
 ]
 const { notifications } = storeToRefs(notificationStore)
 const userMenuItems = ref([{ name: 'Profile settings', path: 'profile' }])
+const readAllNotifications = async () => {
+  await notificationStore.readAllNotifications()
+}
+const readNotification = async id => {
+  const notification = notifications.value.find(i => i.id === id)
+  if (notification.isUnread) {
+    await notificationStore.readNotification(id)
+  }
+}
 onMounted(async () => {
   await notificationStore.getNotifications()
 })
@@ -59,6 +66,8 @@ onMounted(async () => {
       :route="route"
       :user-menu-items="userMenuItems"
       sticky
+      @readAll="readAllNotifications"
+      @readNotification="readNotification"
       @logout="authStore.logout()"
     />
     <slot />

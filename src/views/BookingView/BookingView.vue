@@ -312,6 +312,7 @@ onMounted(async () => {
             :disabled="expired || completed"
           />
           <Datepicker
+            :key="booking.bookingExpiry"
             :picked="booking.bookingExpiry ? moment(booking.bookingExpiry).toDate() : null"
             label="Booking expiry *"
             :disabled="!activated && (expired || completed)"
@@ -322,6 +323,7 @@ onMounted(async () => {
             :error-messages="validateExpiryDates()"
           />
           <Datepicker
+            :key="booking.preferredDate"
             :picked="booking.preferredDate ? moment(booking.preferredDate).toDate() : null"
             label="Preferred carrier window"
             :disabled="!activated && (expired || completed)"
@@ -329,7 +331,6 @@ onMounted(async () => {
             :upper-limit="booking.bookingExpiry && new Date(booking.bookingExpiry)"
             :lower-limit="currentDate"
             @onUpdate="updatePreferredDate"
-            :key="booking.preferredDate"
           />
           <Select
             v-model="booking.line"
@@ -360,9 +361,9 @@ onMounted(async () => {
             :disabled="expired || completed"
           />
           <AutocompleteScac
+            :key="booking.scacList"
             :scac-list="booking.scacList"
             :disabled="expired || completed"
-            :key="booking.scacList"
           />
           <Select
             v-model="booking.size"
@@ -445,7 +446,7 @@ onMounted(async () => {
         :src="container"
         class="container-img"
         alt="qualle container"
-      />
+      >
       <Typography
         type="text-h1"
         class="!text-7xl mb-4 text-center"

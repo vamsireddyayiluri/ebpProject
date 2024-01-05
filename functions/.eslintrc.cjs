@@ -4,7 +4,7 @@ module.exports = {
     node: true,
     es6: true,
   },
-  extends: ['eslint:recommended', 'plugin:import/recommended'],
+  extends: ['eslint:recommended'],
   parser: '@babel/eslint-parser',
   parserOptions: {
     requireConfigFile: false,
@@ -26,6 +26,15 @@ module.exports = {
   },
   settings: {
     'es-x': { aggressive: true },
+    'import/resolver': {
+      node: {
+        extensions: ['.js', '.mjs'],
+      },
+      alias: {
+        extensions: ['.js', '.mjs'],
+        map: ['~', './lib'],
+      },
+    },
   },
   ignorePatterns: ['dist/**/*.js', '**/*.test.js'],
 }
