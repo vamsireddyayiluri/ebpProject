@@ -184,19 +184,19 @@ describe('Creating new Bookings', () => {
       .click()
       .as('selectedRow')
 
-    cy.get('@selectedRow')
-      .find('button')
-      .as('actionbutton')
-      .then(element => {
-        if (element.length) {
-          cy.log(element)
-          cy.get('@actionbutton').click()
-        } else {
-          cy.get('@selectedRow').scrollTo('right').find('[class=mdi-dots-vertical]').click()
-        }
-      })
+    // cy.get('@selectedRow')
+    //   .find('button')
+    //   .as('actionbutton')
+    //   .then(element => {
+    //     if (element.length) {
+    //       cy.log(element)
+    //       cy.get('@actionbutton').click()
+    //     } else {
+    //       cy.get('@selectedRow').scrollTo('right').find('[class=mdi-dots-vertical]').click()
+    //     }
+    //   })
 
-    cy.get('.v-overlay__content > .v-list > .v-list-item').contains('Re-activate').click()
+    // cy.get('.v-overlay__content > .v-list > .v-list-item').contains('Re-activate').click()
 
     cy.getInputByLabel('Re-activate booking').click()
 
