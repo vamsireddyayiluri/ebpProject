@@ -106,7 +106,6 @@ Cypress.Commands.add('verifyEmail', async email => {
 })
 
 // Removing user from the firebase
-
 Cypress.Commands.add('removeUser', email => {
   const user = auth.currentUser
   const userId = user.uid

@@ -13,7 +13,13 @@
         "commodity": "food"
       }
     ],
-
+    "inviteTeam": [
+      {
+        "email": "sravanthi@gmail.com",
+        "type": "Operator",
+        "workerId": "13245"
+      }
+    ],
     "truckerScac": ["aass"],
     "additionalInfo": ["Brokerage", "MC Authority"],
     "questions": ["what trucker", "who is trucker"],

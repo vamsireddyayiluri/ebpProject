@@ -96,13 +96,14 @@ export const useNotificationStore = defineStore('notification', () => {
       const notificationsRef = collection(db, 'notifications')
       const dataQuery = query(notificationsRef, where('orgId', '==', userData.orgId))
       await onSnapshot(dataQuery, snapshot => {
+        const list = snapshot.docs[0]?.data()?.list
         snapshot.docChanges().forEach(change => {
-          if (change.type === 'modified') {
+          if (change.type === 'modified' && list.length !== notifications.value.length) {
             // get last element .at(-1)
             showAlert(change.doc.data().list.at(-1))
           }
         })
-        notifications.value = snapshot.docs[0]?.data()?.list || []
+        notifications.value = list || []
       })
     } catch ({ message }) {
       alertStore.warning({ content: message })
@@ -116,6 +117,38 @@ export const useNotificationStore = defineStore('notification', () => {
     })
   }
 
+  const readAllNotifications = async () => {
+    const data = notifications.value.map(i => {
+      return {
+        ...i,
+        isUnread: false,
+      }
+    })
+    try {
+      await updateDoc(doc(db, 'notifications', userData.orgId), {
+        list: data,
+      })
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
+  const readNotification = async id => {
+    const data = notifications.value.map(i => {
+      if (i.id === id) {
+        i.isUnread = false
+      }
+
+      return i
+    })
+    try {
+      await updateDoc(doc(db, 'notifications', userData.orgId), {
+        list: data,
+      })
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
+
   return {
     notifications,
     addNewNotification,
@@ -126,5 +159,7 @@ export const useNotificationStore = defineStore('notification', () => {
     getNotificationSettings,
     updateSettings,
     getNotifications,
+    readAllNotifications,
+    readNotification,
   }
 })
