@@ -53,6 +53,7 @@ const containerActionHandler = ({ action, e }) => {
   if (action === 'duplicate') {
   }
   if (action === 're-activate') {
+    router.push({ path: `booking/${e[0].id}`, query: { from: 'history', activated: true } })
   }
 }
 const removeBooking = async id => {
@@ -111,9 +112,7 @@ watch(searchValue, value => {
           size="24"
           :color="getColor('iconButton-1')"
         />
-        <Tooltip location="top">
-          Download datatable
-        </Tooltip>
+        <Tooltip> Download datatable </Tooltip>
       </IconButton>
     </div>
     <VirtualTable
@@ -183,11 +182,10 @@ watch(searchValue, value => {
       </template>
       <template #truckers="{ item }">
         <div class="flex gap-2">
-          <template
-            v-for="i in item.carriers"
-            :key="i.scac"
-          >
-            <Chip>{{ i.scac }}</Chip>
+          <template v-for="scacList in item.scacList"
+            ><template v-for="scac in scacList" :key="scac">
+              <Chip>{{ scac }}</Chip>
+            </template>
           </template>
         </div>
       </template>
@@ -199,9 +197,7 @@ watch(searchValue, value => {
             class="-mr-1.5"
             @click.stop="removeBookingDialog.show(true), (removeBookingDialog.data = item)"
           >
-            <Tooltip :attach="false">
-              Remove booking
-            </Tooltip>
+            <Tooltip> Remove booking </Tooltip>
           </IconButton>
         </template>
         <MenuActions

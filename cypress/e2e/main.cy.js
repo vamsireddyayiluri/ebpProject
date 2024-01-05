@@ -1,0 +1,5 @@
+import './register.cy'
+import './verify.cy'
+import './bookingRules.cy'
+import './bookings.cy'
+import './removeUser.cy'

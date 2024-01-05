@@ -12,10 +12,14 @@ import { statuses } from '~/constants/statuses'
 import { useBookingHistoryStore } from '~/stores/bookingHistory.store'
 import { cloneDeep, isEqual } from 'lodash'
 import container from '~/assets/images/container.png'
-import { useWorkDetailsStore } from "~/stores/workDetails.store"
+import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import containersSizes from '~/fixtures/containersSizes.json'
+import { useAlertStore } from '~/stores/alert.store'
+import { checkPositiveInteger, validateExpiryDate } from '~/helpers/validations-functions'
 
 const authStore = useAuthStore()
+const alertStore = useAlertStore()
+
 const { userData } = authStore
 const { getBookings, getBooking, publishDraft, removeFromNetwork, deleteBooking, updateBooking } =
   useBookingsStore()
@@ -38,6 +42,13 @@ const removeBookingDialog = ref(null)
 const activated = ref(null)
 const hideChip = ref(null)
 const loading = ref(null)
+const currentDate = ref(new Date())
+const form = ref(null)
+const validExpiryDate = ref(false)
+
+const rules = {
+  containers: value => checkPositiveInteger(value),
+}
 
 const updateExpiryDate = value => {
   booking.value.bookingExpiry = value
@@ -97,15 +108,36 @@ const animate = async () => {
     hideChip.value = true
   }, 2000)
 }
+const validateRequiredFields = () => {
+  return !form.value?.errors.length
+}
+
 const isDisabledPublish = computed(() => {
-  return !(booking.value.ref && booking.value.containers && booking.value.bookingExpiry
-    && booking.value.preferredDate && booking.value.scacList.list.length && booking.value.size)
+  return validateRequiredFields() && !validExpiryDate.value
 })
+
 const validateBooking = computed(() => {
-  return isEqual(booking.value, fromDraft? drafts.value.find(i => i.id === booking.value.id): bookings.value.find(i => i.id === booking.value.id))
+  let condition = isEqual(
+    booking.value,
+    fromDraft
+      ? drafts.value.find(i => i.id === booking.value.id)
+      : bookings.value.find(i => i.id === booking.value.id),
+  )
+  condition = condition || !validateRequiredFields()
+
+  condition =
+    condition ||
+    moment(booking.value.bookingExpiry).isBefore(currentDate.value) ||
+    moment(booking.value.preferredDate).isBefore(currentDate.value)
+
+  if (!fromDraft) {
+    condition = condition || !validExpiryDate.value
+  }
+
+  return condition
 })
 const cancelChanges = async () => {
-  if (expired || completed) {
+  if (expired.value || completed.value) {
     activated.value = false
     hideChip.value = false
     booking.value = await getBookingInHistory(route.params.id)
@@ -136,17 +168,23 @@ const onSave = async () => {
   await updateBooking(booking.value, fromDraft ? 'drafts' : 'bookings')
   await router.push({ name: 'dashboard' })
 }
+const validateExpiryDates = () => {
+  validExpiryDate.value = validateExpiryDate(bookings?.value, booking.value)
+}
 
 onMounted(async () => {
   loading.value = true
   if (fromHistory) {
     booking.value = await getBookingInHistory(route.params.id)
+    if (queryParams.activated) {
+      animate()
+    }
   } else if (fromDraft) {
     booking.value = await getBooking({ id: route.params.id, draft: true })
   } else {
-    booking.value = await getBooking({id: route.params.id})
+    booking.value = await getBooking({ id: route.params.id })
   }
-  await getBookings(fromDraft? {draft: true}: {})
+  await getBookings(fromDraft ? { draft: true } : {})
   loading.value = false
 })
 </script>
@@ -211,19 +249,19 @@ onMounted(async () => {
             variant="outlined"
             data="secondary1"
             class="ml-auto px-12"
-            :disabled="fromDraft? isDisabledPublish: false"
+            :disabled="fromDraft ? isDisabledPublish : false"
             @click="handleBookingChanges"
           >
             {{ fromDraft ? 'publish' : 'Remove from network' }}
           </Button>
         </div>
         <Typography :color="getColor('textSecondary')">
-          created by {{ userData.type }} {{ userData?.workerId? '#' + userData.workerId: null }}
+          created by {{ userData.type }} {{ userData?.workerId ? '#' + userData.workerId : null }}
         </Typography>
         <div
           v-if="expired || completed"
           class="mt-6 -mb-2"
-          :class="{'hidden': hideChip}"
+          :class="{ hidden: hideChip }"
         >
           <div
             v-if="activated"
@@ -251,43 +289,53 @@ onMounted(async () => {
             @update:modelValue="handleAction"
           />
         </div>
-        <div
+        <VForm
+          ref="form"
           class="w-full md:w-3/4 grid sm:grid-cols-2 grid-cols-1 gap-6 mt-10 [&>div]:h-fit"
           :class="{
             'md:w-full': drawer && !flyoutBottom,
           }"
+          @submit.prevent
         >
           <Textfield
-            v-model="booking.ref"
+            v-model.trim="booking.ref"
             label="Booking ref*"
             required
             :disabled="expired || (completed && !activated)"
           />
           <Textfield
-            v-model="booking.containers"
+            v-model.number="booking.containers"
             label="Number of containers*"
             type="number"
+            :rules="[rules.containers]"
             required
             :disabled="expired || completed"
           />
           <Datepicker
-            :picked="booking.bookingExpiry? moment(booking.bookingExpiry).toDate(): null"
+            :key="booking.bookingExpiry"
+            :picked="booking.bookingExpiry ? moment(booking.bookingExpiry).toDate() : null"
             label="Booking expiry *"
             :disabled="!activated && (expired || completed)"
-            :class="{'pointer-events-none': !activated && (expired || completed)}"
+            :class="{ 'pointer-events-none': !activated && (expired || completed) }"
+            :lower-limit="(booking.preferredDate && new Date(booking.preferredDate)) || currentDate"
             @onUpdate="updateExpiryDate"
+            :key="booking.bookingExpiry"
+            :error-messages="validateExpiryDates()"
           />
           <Datepicker
-            :picked="booking.preferredDate? moment(booking.preferredDate).toDate(): null"
+            :key="booking.preferredDate"
+            :picked="booking.preferredDate ? moment(booking.preferredDate).toDate() : null"
             label="Preferred carrier window"
             :disabled="!activated && (expired || completed)"
-            :class="{'pointer-events-none': !activated && (expired || completed)}"
+            :class="{ 'pointer-events-none': !activated && (expired || completed) }"
+            :upper-limit="booking.bookingExpiry && new Date(booking.bookingExpiry)"
+            :lower-limit="currentDate"
             @onUpdate="updatePreferredDate"
           />
           <Select
             v-model="booking.line"
             :items="getAllLines()"
-            label="SSL"
+            label="SSL *"
             required
             item-title="label"
             item-value="id"
@@ -296,29 +344,15 @@ onMounted(async () => {
           />
           <Select
             v-model="booking.location"
-            :items="[
-              {
-                address: '875 Blake Wilbur Dr, Palo Alto, CA 94304, USA',
-                geohash: '9q9hgycyy',
-                label: 'california',
-                lat: 37.4357319,
-                lng: -122.1762866,
-              },
-              {
-                address: '3400 Bainbridge Ave, The Bronx, NY 10467, USA',
-                geohash: 'dr72wcgnz',
-                label: 'test2',
-                lat: 40.8799534,
-                lng: -73.878608,
-              },
-              {
-                address: '11200 Iberia St, Mira Loma, CA 91752, USA',
-                geohash: '9qh3t96uz',
-                label: 'Mira Loma Yard',
-                lat: 34.0213706,
-                lng: -117.5276535,
-              },
-            ]"
+            :items="
+              yards.map(yard => ({
+                address: yard.value,
+                geohash: yard.geohash,
+                label: yard.label,
+                lat: yard.lat,
+                lng: yard.lng,
+              }))
+            "
             label="Yard label *"
             item-title="label"
             item-value="address"
@@ -327,6 +361,7 @@ onMounted(async () => {
             :disabled="expired || completed"
           />
           <AutocompleteScac
+            :key="booking.scacList"
             :scac-list="booking.scacList"
             :disabled="expired || completed"
           />
@@ -338,7 +373,7 @@ onMounted(async () => {
             item-value="size"
             :disabled="expired || completed"
           />
-        </div>
+        </VForm>
         <SaveCancelChanges
           v-if="!(expired || completed) || activated"
           :disabled="validateBooking"
@@ -351,9 +386,7 @@ onMounted(async () => {
         :class="[flyoutBottom || smAndDown ? 'bottom' : 'right', drawer ? 'active' : '']"
       >
         <div class="flex justify-between items-center">
-          <Typography type="text-h1">
-            Statistics
-          </Typography>
+          <Typography type="text-h1"> Statistics </Typography>
           <IconButton
             v-if="!smAndDown"
             :icon="!flyoutBottom ? 'mdi-dock-bottom' : 'mdi-dock-right'"
@@ -363,9 +396,7 @@ onMounted(async () => {
         </div>
         <div class="statisticsContent">
           <div class="statisticsProgress">
-            <Typography type="text-h4">
-              Fulfillment progress
-            </Typography>
+            <Typography type="text-h4"> Fulfillment progress </Typography>
             <ProgressCircular
               :size="260"
               :value="getBookingLoad(booking.committed, booking.containers)"
@@ -376,9 +407,7 @@ onMounted(async () => {
             </ProgressCircular>
           </div>
           <div class="statisticsTimeline">
-            <Typography type="text-h4">
-              Booking timeline
-            </Typography>
+            <Typography type="text-h4"> Booking timeline </Typography>
             <div class="timeline scrollbar">
               <Timeline
                 :items="[

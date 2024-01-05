@@ -1,0 +1,28 @@
+[
+  {
+    "email": "qualle.cogninetest@ezztt.com",
+    "name": "sravanthi",
+    "company": "cognine",
+    "phoneNumber": "9876543210",
+    "password": "1234567890",
+    "confirmPassword": "1234567890",
+    "workDetails": [
+      {
+        "address": "1200",
+        "addressLabel": "test1",
+        "commodity": "food"
+      }
+    ],
+    "inviteTeam": [
+      {
+        "email": "sravanthi@gmail.com",
+        "type": "Operator",
+        "workerId": "13245"
+      }
+    ],
+    "truckerScac": ["aass"],
+    "additionalInfo": ["Brokerage", "MC Authority"],
+    "questions": ["what trucker", "who is trucker"],
+    "documents": [{ "file": "./cypress/fixtures/register/testfile.pdf", "rename": "test1" }]
+  }
+]
