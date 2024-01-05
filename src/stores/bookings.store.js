@@ -108,7 +108,6 @@ export const useBookingsStore = defineStore('bookings', () => {
     try {
       await setDoc(doc(collection(db, 'bookings'), newBooking.id), newBooking)
       bookings.value.push(newBooking)
-      alertStore.info({ content: 'Booking created' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }

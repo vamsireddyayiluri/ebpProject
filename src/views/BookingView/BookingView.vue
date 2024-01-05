@@ -12,10 +12,14 @@ import { statuses } from '~/constants/statuses'
 import { useBookingHistoryStore } from '~/stores/bookingHistory.store'
 import { cloneDeep, isEqual } from 'lodash'
 import container from '~/assets/images/container.png'
-import { useWorkDetailsStore } from "~/stores/workDetails.store"
+import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import containersSizes from '~/fixtures/containersSizes.json'
+import { useAlertStore } from '~/stores/alert.store'
+import { checkPositiveInteger, validateExpiryDate } from '~/helpers/validations-functions'
 
 const authStore = useAuthStore()
+const alertStore = useAlertStore()
+
 const { userData } = authStore
 const { getBookings, getBooking, publishDraft, removeFromNetwork, deleteBooking, updateBooking } =
   useBookingsStore()
@@ -38,6 +42,12 @@ const removeBookingDialog = ref(null)
 const activated = ref(null)
 const hideChip = ref(null)
 const loading = ref(null)
+const currentDate = ref(new Date())
+const form = ref(null)
+
+const rules = {
+  containers: value => checkPositiveInteger(value),
+}
 
 const updateExpiryDate = value => {
   booking.value.bookingExpiry = value
@@ -97,15 +107,30 @@ const animate = async () => {
     hideChip.value = true
   }, 2000)
 }
+const validateRequiredFields = () => {
+  return !form.value?.errors.length
+}
+
 const isDisabledPublish = computed(() => {
-  return !(booking.value.ref && booking.value.containers && booking.value.bookingExpiry
-    && booking.value.preferredDate && booking.value.scacList.list.length && booking.value.size)
+  return validateRequiredFields() && !validateExpiryDate(bookings?.value, booking.value)
 })
+
 const validateBooking = computed(() => {
-  return isEqual(booking.value, fromDraft? drafts.value.find(i => i.id === booking.value.id): bookings.value.find(i => i.id === booking.value.id))
+  let condition = isEqual(
+    booking.value,
+    fromDraft
+      ? drafts.value.find(i => i.id === booking.value.id)
+      : bookings.value.find(i => i.id === booking.value.id),
+  )
+  condition = condition || !validateRequiredFields()
+  if (!fromDraft) {
+    condition = condition || !validateExpiryDate(bookings?.value, booking.value)
+  }
+
+  return condition
 })
 const cancelChanges = async () => {
-  if (expired || completed) {
+  if (expired.value || completed.value) {
     activated.value = false
     hideChip.value = false
     booking.value = await getBookingInHistory(route.params.id)
@@ -144,9 +169,9 @@ onMounted(async () => {
   } else if (fromDraft) {
     booking.value = await getBooking({ id: route.params.id, draft: true })
   } else {
-    booking.value = await getBooking({id: route.params.id})
+    booking.value = await getBooking({ id: route.params.id })
   }
-  await getBookings(fromDraft? {draft: true}: {})
+  await getBookings(fromDraft ? { draft: true } : {})
   loading.value = false
 })
 </script>
@@ -211,19 +236,19 @@ onMounted(async () => {
             variant="outlined"
             data="secondary1"
             class="ml-auto px-12"
-            :disabled="fromDraft? isDisabledPublish: false"
+            :disabled="fromDraft ? isDisabledPublish : false"
             @click="handleBookingChanges"
           >
             {{ fromDraft ? 'publish' : 'Remove from network' }}
           </Button>
         </div>
         <Typography :color="getColor('textSecondary')">
-          created by {{ userData.type }} {{ userData?.workerId? '#' + userData.workerId: null }}
+          created by {{ userData.type }} {{ userData?.workerId ? '#' + userData.workerId : null }}
         </Typography>
         <div
           v-if="expired || completed"
           class="mt-6 -mb-2"
-          :class="{'hidden': hideChip}"
+          :class="{ hidden: hideChip }"
         >
           <div
             v-if="activated"
@@ -251,43 +276,52 @@ onMounted(async () => {
             @update:modelValue="handleAction"
           />
         </div>
-        <div
+        <VForm
+          ref="form"
           class="w-full md:w-3/4 grid sm:grid-cols-2 grid-cols-1 gap-6 mt-10 [&>div]:h-fit"
           :class="{
             'md:w-full': drawer && !flyoutBottom,
           }"
+          @submit.prevent
         >
           <Textfield
             v-model="booking.ref"
             label="Booking ref*"
             required
             :disabled="expired || (completed && !activated)"
+            @input="validateExpiryDate"
           />
           <Textfield
-            v-model="booking.containers"
+            v-model.number="booking.containers"
             label="Number of containers*"
             type="number"
+            :rules="[rules.containers]"
             required
             :disabled="expired || completed"
           />
           <Datepicker
-            :picked="booking.bookingExpiry? moment(booking.bookingExpiry).toDate(): null"
+            :key="booking.bookingExpiry"
+            :picked="booking.bookingExpiry ? moment(booking.bookingExpiry).toDate() : null"
             label="Booking expiry *"
             :disabled="!activated && (expired || completed)"
-            :class="{'pointer-events-none': !activated && (expired || completed)}"
+            :class="{ 'pointer-events-none': !activated && (expired || completed) }"
+            :lower-limit="(booking.preferredDate && new Date(booking.preferredDate)) || currentDate"
             @onUpdate="updateExpiryDate"
           />
           <Datepicker
-            :picked="booking.preferredDate? moment(booking.preferredDate).toDate(): null"
+            :key="booking.preferredDate"
+            :picked="booking.preferredDate ? moment(booking.preferredDate).toDate() : null"
             label="Preferred carrier window"
             :disabled="!activated && (expired || completed)"
-            :class="{'pointer-events-none': !activated && (expired || completed)}"
+            :class="{ 'pointer-events-none': !activated && (expired || completed) }"
+            :upper-limit="booking.bookingExpiry && new Date(booking.bookingExpiry)"
+            :lower-limit="currentDate"
             @onUpdate="updatePreferredDate"
           />
           <Select
             v-model="booking.line"
             :items="getAllLines()"
-            label="SSL"
+            label="SSL *"
             required
             item-title="label"
             item-value="id"
@@ -327,6 +361,7 @@ onMounted(async () => {
             :disabled="expired || completed"
           />
           <AutocompleteScac
+            :key="booking.scacList"
             :scac-list="booking.scacList"
             :disabled="expired || completed"
           />
@@ -338,7 +373,7 @@ onMounted(async () => {
             item-value="size"
             :disabled="expired || completed"
           />
-        </div>
+        </VForm>
         <SaveCancelChanges
           v-if="!(expired || completed) || activated"
           :disabled="validateBooking"

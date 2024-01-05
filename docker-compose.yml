@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   app:
-    container_name: ssl-portal
+    container_name: ebpv3
     build:
       context: .
       args:

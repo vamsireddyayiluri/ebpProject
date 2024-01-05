@@ -23,7 +23,7 @@ const newMember = reactive({
 })
 const removeMemberDialog = ref(null)
 const workerId = ref('')
-const isAdmin = (userData.type === userTypes.admin) || !userData
+const isAdmin = (userData?.type === userTypes?.admin) || !userData
 
 const addInvitation = async () => {
   const userExist = await invitationStore.validateInviteUserEmail('users', newMember.email)
