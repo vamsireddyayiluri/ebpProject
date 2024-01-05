@@ -81,7 +81,7 @@ describe('validate booking rules', () => {
     cy.getInputByLabel('Preferred carrier window')
       .invoke('val')
       .then(sometext => {
-        console.log('Sometext', sometext)
+        expect(sometext).equal(data.prefrredDate)
       })
 
     cy.getInputByLabel('Yard label *')
@@ -125,9 +125,9 @@ describe('validate booking rules', () => {
     cy.get('@saverules').should('be.disabled')
 
     cy.getInputByLabel('Set yard by default')
-      .siblings()
-      .find('.v-select__selection-text')
-      .should('have.text', '')
+      .parent()
+      .get(`.v-select__selection-text :contains(${data.addressLabel})`)
+      .should('not.exist')
 
     cy.getInputByLabel(
       'Set the time between the preferred carrier window and time before cutoff by default',
@@ -139,10 +139,12 @@ describe('validate booking rules', () => {
     cy.get('@preferedCutOff').type(invalidData.preferredCarrierDefault)
     cy.get('@saverules').should('be.disabled')
 
+    cy.get('@preferedCutOff').clear()
+
     cy.get('button[type="button"]')
+      .should('be.enabled')
       .contains('Cancel changes')
       .as('cancelRules')
-      .should('be.enabled')
       .click()
 
     cy.get('@preferedCutOff').should('have.text', data.preferredCarrierDefault)
