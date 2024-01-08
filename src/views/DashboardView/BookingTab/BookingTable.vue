@@ -98,7 +98,7 @@ onMounted(() => {
     </template>
     <template #worker="{ item }">
       <Typography>
-        {{ item.createdBy?.type }} {{ item.createdBy?.workerId ?? '' }}
+        {{ item.createdBy.fullName }}
       </Typography>
     </template>
     <template #progress="{ item }">
