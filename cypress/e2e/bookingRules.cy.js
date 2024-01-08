@@ -55,6 +55,7 @@ describe('validate booking rules', () => {
     cy.get('.v-overlay__content > .v-list > .v-list-item > .v-list-item__content')
       .contains(data.truckerScac)
       .click()
+
     // cy.get('.chipLabel').contains(data.truckerScac).should('be.visible')
     cy.getInputByLabel('Set the time for notification before cutoff date by default').type(
       data.notificationCutoffDays,
