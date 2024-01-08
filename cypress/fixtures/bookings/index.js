@@ -1,1 +1,1 @@
-export { default as validData } from './validData'
+export { validData } from './validData'
