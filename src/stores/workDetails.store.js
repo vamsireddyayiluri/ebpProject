@@ -11,7 +11,7 @@ export const useWorkDetailsStore = defineStore('workDetails', () => {
   const yards = ref([])
 
   const getYards = () => {
-    yards.value = authStore.orgData.workDetails.map(i => {
+    yards.value = authStore.orgData?.workDetails?.map(i => {
       return {
         ...i,
         text: `Commodity: ${i.commodity}`,
