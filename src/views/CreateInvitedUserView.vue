@@ -15,7 +15,7 @@ const form = reactive({
 })
 
 const onSubmit = async () => {
-  const exist = await invitationStore.validateInviteUserEmail(form.email)
+  const exist = await invitationStore.validateInviteUserEmail('users', form.email)
   if (exist) {
     alertStore.warning({ content: 'User exist!' })
   } else {
