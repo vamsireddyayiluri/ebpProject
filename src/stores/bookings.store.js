@@ -83,7 +83,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     }
   }
   const createBookingObj = booking => {
-    const { userId, orgId, type } = userData
+    const { userId, fullName, orgId, type } = userData
     const bookingId = uid(28)
 
     return {
@@ -98,6 +98,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       preferredTruckers: preferredTruckers,
       createdBy: {
         userId,
+        fullName,
         type,
         ...(userData?.workerId ? { workerId: userData.workerId } : {}),
       },

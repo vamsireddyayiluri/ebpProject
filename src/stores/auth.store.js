@@ -36,6 +36,7 @@ export const useAuthStore = defineStore('auth', () => {
   const userData = ref(null)
   const orgData = ref(null)
   const isLoading = ref(null)
+  const workers = ref([])
 
   const login = async ({ email, password }) => {
     isLoading.value = true
@@ -65,6 +66,8 @@ export const useAuthStore = defineStore('auth', () => {
     await signOut(auth)
 
     currentUser.value = null
+    userData.value = null
+    orgData.value = null
 
     router.push({ name: 'login' })
   }
@@ -259,9 +262,10 @@ export const useAuthStore = defineStore('auth', () => {
   // Getting current user organization data from the organization collection
   const getOrgData = async orgId => {
     try {
-      onSnapshot(doc(db, 'organizations', orgId), doc => {
+      onSnapshot(doc(db, 'organizations', orgId), async doc => {
         if (doc.data()) {
           orgData.value = doc.data()
+          await getOrgWorkers()
           isLoading.value = false
         }
       })
@@ -294,6 +298,11 @@ export const useAuthStore = defineStore('auth', () => {
       alertStore.warning({ content: message })
     }
   }
+  const getOrgWorkers = async () => {
+    const q = query(collection(db, 'users'), where('orgId', '==', userData.value.orgId))
+    const querySnapshot = await getDocs(q)
+    workers.value = querySnapshot.docs.map(doc => (doc.data()))
+  }
 
   return {
     login,
@@ -311,5 +320,6 @@ export const useAuthStore = defineStore('auth', () => {
     updateCompanyNameInOrg,
     saveUserDataReports,
     getOrgData,
+    workers,
   }
 })
