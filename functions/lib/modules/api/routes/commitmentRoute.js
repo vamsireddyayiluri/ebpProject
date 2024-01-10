@@ -3,6 +3,6 @@ import { createCommitments } from '../controllers/commitmentController'
 
 const router = express.Router()
 
-router.get('/', createCommitments)
+router.post('/', createCommitments)
 
 export default router
