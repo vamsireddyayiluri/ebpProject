@@ -1,5 +1,4 @@
 import * as functions from 'firebase-functions';
-import { createSlackPlatformAlert } from '@/helpers/alert';
 
 const preparedMessage = (message) => JSON.stringify(message);
 
@@ -33,13 +32,6 @@ export const exceptionErrorHandler = (error, req, res, next) => {
   functions.logger.error(
     `Error in ${req.route.path}: ${preparedMessage(message)}`
   );
-
-  (async () => {
-    await createSlackPlatformAlert({
-      name: `Error in ${req.route.path}`,
-      message,
-    });
-  })();
 
   return res.status(res.code).send({ status: 'error', message });
 };

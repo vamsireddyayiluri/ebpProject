@@ -1,8 +1,7 @@
-import * as admin from 'firebase-admin'
 import * as functions from 'firebase-functions'
 import { createError } from '~/middleware/error'
 
-export const createContacts = async (req, res, next) => {
+export const createCommitments = async (req, res, next) => {
   const {
     bookingId,
     committed,
