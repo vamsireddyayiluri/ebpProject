@@ -4,22 +4,32 @@ import { uid } from 'uid'
 import moment from 'moment-timezone'
 
 const collectionPath = 'notifications'
-
-export const bookingCreatedNotifier = async data => {
-  const notification = {
-    title: `Booking ${data.ref} has been created`,
+const createNotificationObj = data => {
+  return {
     content: moment(data.createdAt).format('MM/DD/YYYY hh:mm:ss a'),
     type: 'info',
     isUnread: true,
     id: uid(16),
+  }
+}
+const updateNotificationList = async (orgId, notification) => {
+  try {
+    const docRef = db.collection(collectionPath).doc(orgId)
+    await docRef.update({
+      list: FieldValue.arrayUnion(notification),
+    })
+  } catch ({ message }) {
+    console.error(message)
+  }
+}
+
+export const bookingCreatedNotifier = async data => {
+  const notification = {
+    ...createNotificationObj(data),
+    title: `Booking ${data.ref} has been created`,
     ref: data.ref,
   }
-
-  const docRef = db.collection(collectionPath).doc(data.orgId)
-
-  await docRef.update({
-    list: FieldValue.arrayUnion(notification),
-  })
+  await updateNotificationList(data.orgId, notification)
 }
 
 export const bookingFulfilledNotifier = async (currentData, previousData) => {
@@ -28,18 +38,26 @@ export const bookingFulfilledNotifier = async (currentData, previousData) => {
     currentData.committed === currentData.containers
   ) {
     const notification = {
+      ...createNotificationObj(currentData),
       title: `Booking ${currentData.ref} fulfilled`,
-      content: moment().format('MM/DD/YYYY hh:mm:ss a'),
-      type: 'info',
-      isUnread: true,
-      id: uid(16),
       ref: currentData.ref,
     }
-
-    const docRef = db.collection(collectionPath).doc(currentData.orgId)
-
-    await docRef.update({
-      list: FieldValue.arrayUnion(notification),
-    })
+    await updateNotificationList(currentData.orgId, notification)
   }
+}
+
+export const commitCreatedNotifier = async data => {
+  const notification = {
+    ...createNotificationObj(data),
+    title: `Trucker ${data.scac} offered capacity for booking ${data.ref}`,
+  }
+  await updateNotificationList(data.bookingOrgId, notification)
+}
+
+export const commitCancelNotifier = async data => {
+  const notification = {
+    ...createNotificationObj(data),
+    title: `Trucker ${data.scac} canceled load for booking ${data.ref}`,
+  }
+  await updateNotificationList(data.bookingOrgId, notification)
 }
