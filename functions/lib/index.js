@@ -2,7 +2,7 @@ import admin from 'firebase-admin'
 import 'dotenv/config'
 import runtimeConfig from './runtimeConfig'
 
-import { bookingCreated, bookingUpdated } from './modules/functions'
+import { bookingCreated, bookingUpdated, commitCreated, commitDeleted } from './modules/functions'
 
 if (runtimeConfig.runtime.env === 'development' && !process.env.CI) {
   process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8080'
@@ -15,4 +15,6 @@ export default {
   db,
   bookingCreated,
   bookingUpdated,
+  commitCreated,
+  commitDeleted,
 }
