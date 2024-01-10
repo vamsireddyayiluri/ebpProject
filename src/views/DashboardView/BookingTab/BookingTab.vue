@@ -7,12 +7,15 @@ import { getAllLines } from '@qualle-admin/qutil/dist/ssl'
 import { getColor } from '~/helpers/colors'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { storeToRefs } from 'pinia'
+import { useAuthStore } from "~/stores/auth.store"
+import { userTypes } from '~/constants/userTypes'
 
 const props = defineProps({
   mapToggled: Boolean,
 })
 const emit = defineEmits(['closeMap', 'selectRow'])
 const bookingsStore = useBookingsStore()
+const { workers, userData } = useAuthStore()
 const { loading } = storeToRefs(bookingsStore)
 const { smAndDown } = useDisplay()
 const router = useRouter()
@@ -39,6 +42,7 @@ const newId = ref(uid(8))
 const bookingStatisticsDialog = ref(null)
 const filters = ref({
   line: null,
+  workers: null,
 })
 const selectLine = ref(getAllLines())
 const createBookingDialog = ref(null)
@@ -137,7 +141,13 @@ const applyFilter = () => {
   if (filters.value.line) {
     filteredData = useArrayFilter(
       filteredData,
-      container => container.line.label === filters.value.line,
+      booking => booking.line.label === filters.value.line,
+    ).value
+  }
+  if (filters.value.workers) {
+    filteredData = useArrayFilter(
+      filteredData,
+      booking => booking.createdBy.userId === filters.value.workers.userId,
     ).value
   }
   computedFilteredEntities.value = filteredData
@@ -211,13 +221,25 @@ watch(searchValue, value => {
             class="max-w-[224px]"
             @update:modelValue="applyFilter"
           />
+          <Select
+            v-if="userData.type === userTypes.admin"
+            v-model="filters.workers"
+            :items="workers"
+            label="Workers"
+            item-title="fullName"
+            item-value="id"
+            return-object
+            clearable
+            class="max-w-[224px]"
+            @update:modelValue="applyFilter"
+          />
         </div>
         <BookingTable
           :computed-entities="computedEntities"
           :search-value="searchValue"
           :loading="loading"
           @selectTableRow="selectTableRow"
-          @editBooking="id => router.push({ path: `booking/${id}` })"
+          @editBooking="id => router.push({ path: `booking/${id}`})"
         />
       </div>
     </template>
