@@ -121,6 +121,11 @@ onMounted(async () => {
               </Typography>
             </div>
           </template>
+          <template #company="{ item }">
+            <Typography>
+              {{ item.company }}
+            </Typography>
+          </template>
           <template #documents="{ item }">
             <div class="flex gap-2 z-50">
               <template

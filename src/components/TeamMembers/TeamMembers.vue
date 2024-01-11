@@ -89,7 +89,7 @@ const removeMember = async id => {
       />
       <Button
         variant="outlined"
-        :disabled="!newMember.email.match(patterns.emailRegex) || !workerId"
+        :disabled="!newMember.email.match(patterns.emailRegex) "
         class="w-full sm:w-fit"
         @click="addInvitation"
       >

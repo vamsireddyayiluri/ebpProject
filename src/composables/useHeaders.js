@@ -18,7 +18,7 @@ export const bookingsHeaders = userType => {
       value: 'ssl',
     },
     {
-      text: 'Expiration',
+      text: 'Loading date',
       value: 'expiry',
       sortable: true,
       sorter: (a, b) => moment(a).diff(moment(b)),
@@ -72,7 +72,7 @@ export const draftsHeaders = userType => {
       value: 'yardLabel',
     },
     {
-      text: 'Expiration',
+      text: 'Loading date',
       value: 'expiry',
       sortable: true,
       sorter: (a, b) => moment(a).diff(moment(b)),
@@ -112,6 +112,11 @@ export const truckersDocumentsHeaders = [
     value: 'trucker',
     align: 'start',
     width: 3,
+  },
+  {
+    text: 'Company',
+    value: 'company',
+    width: 2,
   },
   {
     text: 'Documents',
@@ -160,7 +165,7 @@ export const bookingsHistoryHeaders = [
     value: 'ssl',
   },
   {
-    text: 'Expiration',
+    text: 'Loading date',
     value: 'expiry',
     sortable: true,
     sorter: (a, b) => moment(a).diff(moment(b)),

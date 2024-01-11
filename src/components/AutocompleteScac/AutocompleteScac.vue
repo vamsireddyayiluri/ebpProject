@@ -97,6 +97,7 @@ onUpdated(() => {
         <Chip
           closable
           @click:close="removeScac(i)"
+          :disabled="attrs.disabled"
         >
           {{ i }}
         </Chip>

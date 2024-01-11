@@ -12,7 +12,7 @@ const props = defineProps({
   loading: Boolean,
 })
 const emit = defineEmits(['selectTableRow', 'editBooking'])
-const { deleteBooking } = useBookingsStore()
+const { deleteBooking, createDraft  } = useBookingsStore()
 const { userData } = useAuthStore()
 const { smAndDown } = useDisplay()
 const showActions = ref(true)
@@ -35,6 +35,7 @@ const onSelectRow = e => {
 }
 const removeBooking = id => {
   deleteBooking(id)
+  createDraft( removeBookingDialog.value.data )
   removeBookingDialog.value.show(false)
 }
 const tableId = 'bookingsTable'

@@ -40,7 +40,7 @@ tryOnUnmounted(() => {
     type="text-h1"
     class="mb-8"
   >
-    Work details
+    Yard Details
   </Typography>
   <Yards class="w-full md:w-11/12 lg:w-8/12" />
   <SaveCancelChanges

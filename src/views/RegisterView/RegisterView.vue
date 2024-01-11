@@ -47,7 +47,7 @@ const steps = {
       form.password === form.confirmPassword,
   },
   'work-details': {
-    title: 'Work details',
+    title: 'Yard details',
     isValid: () => true,
   },
   'invite-members': {

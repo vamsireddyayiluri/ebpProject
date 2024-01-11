@@ -15,7 +15,11 @@ import container from '~/assets/images/container.png'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import containersSizes from '~/fixtures/containersSizes.json'
 import { useAlertStore } from '~/stores/alert.store'
-import { checkPositiveInteger, validateExpiryDate } from '~/helpers/validations-functions'
+import {
+  checkPositiveInteger,
+  validateExpiryDate,
+  validateFlexibleSizes,
+} from '~/helpers/validations-functions'
 
 const authStore = useAuthStore()
 const alertStore = useAlertStore()
@@ -55,6 +59,9 @@ const updateExpiryDate = value => {
 }
 const updatePreferredDate = value => {
   booking.value.preferredDate = value
+}
+const updateSize = () => {
+  booking.value.size = null
 }
 const toggleFlyoutPosition = () => {
   drawer.value = false
@@ -109,11 +116,30 @@ const animate = async () => {
   }, 2000)
 }
 const validateRequiredFields = () => {
-  return !form.value?.errors.length
+  return (
+    !(booking.value.ref &&
+    booking.value.containers > 0 &&
+    booking.value.commodity &&
+    booking.value.weight > 0 &&
+    booking.value.targetRate > 0 &&
+    booking.value.bookingExpiry &&
+    booking.value.preferredDate &&
+    booking.value.scacList.list.length &&
+    booking.value.size &&
+    booking.value.size
+      ? booking.value.size.length > 0
+      : false && booking.value.targetRateType) ||
+    validateFlexibleSizes(booking.value.size, booking.value.flexibleBooking)?.length > 0
+  )
 }
 
 const isDisabledPublish = computed(() => {
-  return validateRequiredFields() && !validExpiryDate.value
+  return (
+    validateRequiredFields() ||
+    (!validExpiryDate.value &&
+      moment(booking.value.bookingExpiry).endOf('day').isBefore(currentDate.value)) ||
+    moment(booking.value.preferredDate).endOf('day').isBefore(currentDate.value)
+  )
 })
 
 const validateBooking = computed(() => {
@@ -123,7 +149,7 @@ const validateBooking = computed(() => {
       ? drafts.value.find(i => i.id === booking.value.id)
       : bookings.value.find(i => i.id === booking.value.id),
   )
-  condition = condition || !validateRequiredFields()
+  condition = condition || validateRequiredFields()
 
   condition =
     condition ||
@@ -311,10 +337,26 @@ onMounted(async () => {
             required
             :disabled="expired || completed"
           />
+          <Autocomplete
+            v-model="booking.line"
+            :items="getAllLines()"
+            label="SSL *"
+            required
+            item-title="label"
+            item-value="id"
+            return-object
+            :disabled="expired || completed"
+          />
+          <Textfield
+            v-model="booking.commodity"
+            label="Commodity*"
+            required
+            :disabled="expired || completed"
+          />
           <Datepicker
             :key="booking.bookingExpiry"
             :picked="booking.bookingExpiry ? moment(booking.bookingExpiry).toDate() : null"
-            label="Booking expiry *"
+            label="Loading date *"
             :disabled="!activated && (expired || completed)"
             :class="{ 'pointer-events-none': !activated && (expired || completed) }"
             :lower-limit="(booking.preferredDate && new Date(booking.preferredDate)) || currentDate"
@@ -331,17 +373,7 @@ onMounted(async () => {
             :lower-limit="currentDate"
             @onUpdate="updatePreferredDate"
           />
-          <Select
-            v-model="booking.line"
-            :items="getAllLines()"
-            label="SSL *"
-            required
-            item-title="label"
-            item-value="id"
-            return-object
-            :disabled="expired || completed"
-          />
-          <Select
+          <Autocomplete
             v-model="booking.location"
             :items="
               yards.map(yard => ({
@@ -359,9 +391,39 @@ onMounted(async () => {
             required
             :disabled="expired || completed"
           />
-          <AutocompleteScac
-            :key="booking.scacList"
-            :scac-list="booking.scacList"
+          <Textfield
+            v-model.number="booking.weight"
+            label="Average Weight*"
+            type="number"
+            :rules="[rules.containers]"
+            required
+            :disabled="expired || completed"
+          />
+
+          <RadioGroup v-model="booking.targetRateType">
+            <Radio
+              value="All in rate"
+              label="All in rate"
+              :disabled="expired || completed"
+            />
+            <Radio
+              value="Linehaul + FSC Only"
+              label="Linehaul + FSC Only"
+              :disabled="expired || completed"
+            />
+          </RadioGroup>
+          <Textfield
+            v-model.number="booking.targetRate"
+            label="Target Rate*"
+            :rules="[rules.containers]"
+            type="number"
+            required
+            :disabled="expired || completed"
+          />
+          <Checkbox
+            v-model="booking.flexibleBooking"
+            label="Flexible Booking*"
+            @change="updateSize"
             :disabled="expired || completed"
           />
           <Select
@@ -370,6 +432,13 @@ onMounted(async () => {
             label="Equipment type*"
             item-title="label"
             item-value="size"
+            :multiple="booking.flexibleBooking"
+            :disabled="expired || completed"
+            :error-messages="validateFlexibleSizes(booking.size, booking.flexibleBooking)"
+          />
+          <AutocompleteScac
+            :key="booking.scacList"
+            :scac-list="booking.scacList"
             :disabled="expired || completed"
           />
         </VForm>
@@ -445,7 +514,7 @@ onMounted(async () => {
         :src="container"
         class="container-img"
         alt="qualle container"
-      >
+      />
       <Typography
         type="text-h1"
         class="!text-7xl mb-4 text-center"

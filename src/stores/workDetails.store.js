@@ -38,7 +38,7 @@ export const useWorkDetailsStore = defineStore('workDetails', () => {
     }
     try {
       await updateDoc(doc(db, 'organizations', orgData.orgId), data)
-      alertStore.info({ content: 'Work details saved!' })
+      alertStore.info({ content: 'Yard details saved!' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }

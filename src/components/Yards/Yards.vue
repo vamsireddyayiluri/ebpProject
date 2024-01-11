@@ -4,6 +4,8 @@ import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { useAuthStore } from '~/stores/auth.store'
 import { storeToRefs } from 'pinia'
 import { uid } from 'uid'
+import geohash from 'ngeohash';
+
 
 const attrs = useAttrs()
 const workDetailsStore = useWorkDetailsStore()
@@ -23,13 +25,14 @@ const onSelectLocation = location => {
   newLocation.value.lng = location.lng
 }
 const addYard = async () => {
+  const geohashedLocation = geohash.encode(newLocation.value.lat, newLocation.value.lng);
   await workDetailsStore.addYard({
     id: uid(28),
     value: newLocation.value.address,
     label: newLocation.value.label,
     lat: newLocation.value.lat,
     lng: newLocation.value.lng,
-    geohash: '',
+    geohash: geohashedLocation,
     commodity: commodity.value,
     text: `Commodity: ${commodity.value}`,
   })
