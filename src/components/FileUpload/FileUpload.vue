@@ -67,7 +67,7 @@ const renameFile = () => {
     name="userDoc"
     class="input"
     @change="onChangeFile"
-  >
+  />
   <label
     for="fileUpload"
     @dragover.prevent="handleDragOver"
@@ -97,7 +97,7 @@ const renameFile = () => {
         class="text-center"
       >
         <Icon
-          size="56"
+          size="60"
           icon="mdi-file-upload"
           :color="getColor('iconButton-2')"
         />
@@ -122,9 +122,10 @@ const renameFile = () => {
       <Chip
         prepend-icon="mdi-file"
         closable
+        class="pa-1"
         @click:close="removeFile(i)"
       >
-        <span class="max-w-[80px] text-truncate">
+        <span class="text-truncate px-2">
           {{ i.name }}
         </span>
         <Tooltip>
@@ -138,9 +139,7 @@ const renameFile = () => {
     max-width="480"
   >
     <template #text>
-      <Typography type="text-h3">
-        Rename file
-      </Typography>
+      <Typography type="text-h3"> Rename file </Typography>
       <form @submit.prevent="renameFile">
         <div class="flex gap-6 mt-10">
           <Textfield

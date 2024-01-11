@@ -148,7 +148,7 @@ onMounted(async () => {
   </ExpansionPanels>
   <Dialog
     ref="documentsDialog"
-    max-width="680"
+    max-width="85vw"
   >
     <template #text>
       <DocumentViewerDialog
