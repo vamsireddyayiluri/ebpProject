@@ -9,6 +9,7 @@ export const statuses = {
   onboarded: 'onboarded',
   paused: 'paused',
   active: 'active',
+  incomplete: 'incomplete',
 }
 export default () => ({
   statuses,

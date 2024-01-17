@@ -84,7 +84,7 @@ export const commitmentsActions = status => {
     {
       icon: 'mdi-cancel',
       label: 'Decline',
-      action: 'decline-commit',
+      action: 'decline-commitment',
       color: 'functionalError',
     },
   ]
@@ -93,7 +93,7 @@ export const commitmentsActions = status => {
       {
         icon: 'mdi-check',
         label: 'Approve',
-        action: 'approve-commit',
+        action: 'approve-commitment',
       },
       ...viewDetailsAction,
       ...declineAction,
@@ -103,8 +103,8 @@ export const commitmentsActions = status => {
     return [
       {
         icon: 'mdi-check-underline',
-        label: 'Onboard',
-        action: 'onboard-commit',
+        label: 'Complete commitment',
+        action: 'complete-commitment',
       },
       ...viewDetailsAction,
     ]

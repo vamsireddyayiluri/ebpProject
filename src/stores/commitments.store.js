@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia'
-import {collection, doc, getDocs, updateDoc, where} from 'firebase/firestore'
+import { doc, updateDoc } from 'firebase/firestore'
 import { db } from '~/firebase'
 import { statuses } from '~/constants/statuses'
 import { useAlertStore } from '~/stores/alert.store'
-import {useAuthStore} from "~/stores/auth.store"
-import {useBookingsStore} from "~/stores/bookings.store"
+import { useBookingsStore } from '~/stores/bookings.store'
+import { reasonCodes } from '~/constants/reasonCodes'
 
 export const useCommitmentsStore = defineStore('commitments', () => {
   const alertStore = useAlertStore()
@@ -27,16 +27,24 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       alertStore.warning({ content: message })
     }
   }
-  const onboardCommitment = async id => {
+  const completeCommitment = async (id, reason) => {
+    const obj = {}
+    if (reasonCodes.onboarded === reason || reasonCodes.onboardMovedLoad === reason) {
+      obj.status = statuses.onboarded
+    } else {
+      obj.status = statuses.incomplete
+      obj.reason = reason
+    }
     try {
       await updateDoc(doc(db, 'commitments', id), {
-        status: statuses.onboarded,
+        ...obj,
       })
       bookingsStore.bookings.forEach(i => {
         i.entities.forEach(j => {
           i.expand = true
           if (j.id === id) {
-            j.status = statuses.onboarded
+            j.status = obj.status,
+            (obj.reason? obj.reason: {})
           }
         })
       })
@@ -65,7 +73,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
 
   return {
     approveCommitment,
-    onboardCommitment,
+    completeCommitment,
     declineCommitment,
   }
 })
