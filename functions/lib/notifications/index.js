@@ -43,6 +43,13 @@ export const bookingFulfilledNotifier = async (currentData, previousData) => {
     await updateNotificationList(currentData.orgId, notification)
   }
 }
+export const bookingRemovedNotifier = async data => {
+  const notification = {
+    ...createNotificationObj(data),
+    title: `Booking ${data.ref} removed, commit declined`,
+  }
+  await updateNotificationList(data.orgId, notification)
+}
 export const commitCreatedNotifier = async data => {
   const notification = {
     ...createNotificationObj(data),
@@ -57,10 +64,18 @@ export const commitCanceledNotifier = async data => {
   }
   await updateNotificationList(data.bookingOrgId, notification)
 }
-export const bookingRemovedNotifier = async data => {
+export const commitApprovedNotifier = async data => {
   const notification = {
     ...createNotificationObj(data),
-    title: `Booking ${data.ref} removed, commit declined`,
+    title: `${data.company} approved the booking request of ${data.committed} containers. 
+    Please reach out to exporter contacts to begin the onboarding process: ${data.ref}`,
   }
-  await updateNotificationList(data.orgId, notification)
+  await updateNotificationList(data.bookingOrgId, notification)
+}
+export const commitDeclinedNotifier = async data => {
+  const notification = {
+    ...createNotificationObj(data),
+    title: `${data.company} declined the booking ${data.ref}`,
+  }
+  await updateNotificationList(data.bookingOrgId, notification)
 }

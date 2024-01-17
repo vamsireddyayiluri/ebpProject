@@ -6,6 +6,9 @@ export const statuses = {
   declined: 'declined',
   approved: 'approved',
   available: 'available',
+  onboarded: 'onboarded',
+  paused: 'paused',
+  active: 'active',
 }
 export default () => ({
   statuses,
