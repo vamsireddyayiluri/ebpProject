@@ -22,7 +22,6 @@ const updateNotificationList = async (orgId, notification) => {
     console.error(message)
   }
 }
-
 export const bookingCreatedNotifier = async data => {
   const notification = {
     ...createNotificationObj(data),
@@ -31,7 +30,6 @@ export const bookingCreatedNotifier = async data => {
   }
   await updateNotificationList(data.orgId, notification)
 }
-
 export const bookingFulfilledNotifier = async (currentData, previousData) => {
   if (
     currentData.committed !== previousData.committed &&
@@ -45,7 +43,13 @@ export const bookingFulfilledNotifier = async (currentData, previousData) => {
     await updateNotificationList(currentData.orgId, notification)
   }
 }
-
+export const bookingRemovedNotifier = async data => {
+  const notification = {
+    ...createNotificationObj(data),
+    title: `Booking ${data.ref} removed, commit declined`,
+  }
+  await updateNotificationList(data.orgId, notification)
+}
 export const commitCreatedNotifier = async data => {
   const notification = {
     ...createNotificationObj(data),
@@ -53,11 +57,25 @@ export const commitCreatedNotifier = async data => {
   }
   await updateNotificationList(data.bookingOrgId, notification)
 }
-
-export const commitCancelNotifier = async data => {
+export const commitCanceledNotifier = async data => {
   const notification = {
     ...createNotificationObj(data),
     title: `Trucker ${data.scac} canceled load for booking ${data.ref}`,
+  }
+  await updateNotificationList(data.bookingOrgId, notification)
+}
+export const commitApprovedNotifier = async data => {
+  const notification = {
+    ...createNotificationObj(data),
+    title: `${data.company} approved the booking request of ${data.committed} containers. 
+    Please reach out to exporter contacts to begin the onboarding process: ${data.ref}`,
+  }
+  await updateNotificationList(data.bookingOrgId, notification)
+}
+export const commitDeclinedNotifier = async data => {
+  const notification = {
+    ...createNotificationObj(data),
+    title: `${data.company} declined the booking ${data.ref}`,
   }
   await updateNotificationList(data.bookingOrgId, notification)
 }

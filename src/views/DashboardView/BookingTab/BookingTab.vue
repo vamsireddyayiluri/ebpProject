@@ -7,8 +7,10 @@ import { getAllLines } from '@qualle-admin/qutil/dist/ssl'
 import { getColor } from '~/helpers/colors'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { storeToRefs } from 'pinia'
-import { useAuthStore } from "~/stores/auth.store"
+import { useAuthStore } from '~/stores/auth.store'
 import { userTypes } from '~/constants/userTypes'
+import { collection, onSnapshot, query, where } from 'firebase/firestore'
+import { db } from '~/firebase'
 
 const props = defineProps({
   mapToggled: Boolean,
@@ -239,7 +241,7 @@ watch(searchValue, value => {
           :search-value="searchValue"
           :loading="loading"
           @selectTableRow="selectTableRow"
-          @editBooking="id => router.push({ path: `booking/${id}`})"
+          @editBooking="id => router.push({ path: `booking/${id}` })"
         />
       </div>
     </template>
