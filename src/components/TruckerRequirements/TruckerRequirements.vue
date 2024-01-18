@@ -30,7 +30,7 @@ const removeTrucker = item => {
     <Autocomplete
       v-model="items"
       :items="scacList"
-      placeholder="Seach for truckers by SCAC"
+      placeholder="Search for truckers by SCAC"
       prepend-inner-icon="mdi-magnify"
       multiple
       with-btn

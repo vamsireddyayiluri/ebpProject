@@ -150,7 +150,7 @@ onMounted(() => {
         </template>
         <template #actions="{ item, selected }">
           <MenuActions
-            :actions="bookingsActions"
+            :actions="() => bookingsActions(item.status)"
             :selected="selected"
             :container="item"
             @containerActionHandler="containerActionHandler"

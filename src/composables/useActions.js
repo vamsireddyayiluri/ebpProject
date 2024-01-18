@@ -1,18 +1,31 @@
 import { statuses } from '~/constants/statuses'
 
-export const bookingsActions = () => [
-  {
-    icon: 'mdi-pencil',
-    label: 'Edit booking',
-    action: 'edit-booking',
-  },
-  {
-    icon: 'mdi-delete',
-    label: 'Remove booking',
-    action: 'remove-booking',
-    color: 'functionalError',
-  },
-]
+export const bookingsActions = status => {
+  const actions = [
+    {
+      icon: 'mdi-pencil',
+      label: 'Edit booking',
+      action: 'edit-booking',
+    },
+    {
+      icon: 'mdi-delete',
+      label: 'Remove booking',
+      action: 'remove-booking',
+      color: 'functionalError',
+    },
+  ]
+  if (status !== statuses.paused) {
+    const pauseAction =  {
+      icon: 'mdi-pause',
+      label: 'Pause booking',
+      action: 'pause-booking',
+    }
+    const secondToLastIndex = actions.length - 1
+    actions.splice(secondToLastIndex, 0, pauseAction)
+  }
+
+  return actions
+}
 export const draftsActions = () => [
   {
     icon: 'mdi-pencil',
@@ -59,9 +72,50 @@ export const bookingHistoryActions = item => {
     ]
   }
 }
+export const commitmentsActions = status => {
+  const viewDetailsAction = [
+    {
+      icon: 'mdi-information',
+      label: 'View trucker details',
+      action: 'view-trucker-details',
+    },
+  ]
+  const declineAction = [
+    {
+      icon: 'mdi-cancel',
+      label: 'Decline',
+      action: 'decline-commit',
+      color: 'functionalError',
+    },
+  ]
+  if (status === statuses.pending) {
+    return [
+      {
+        icon: 'mdi-check',
+        label: 'Approve',
+        action: 'approve-commit',
+      },
+      ...viewDetailsAction,
+      ...declineAction,
+    ]
+  }
+  if (status === statuses.approved) {
+    return [
+      {
+        icon: 'mdi-check-underline',
+        label: 'Onboard',
+        action: 'onboard-commit',
+      },
+      ...viewDetailsAction,
+    ]
+  }
+
+  return viewDetailsAction
+}
 export default () => ({
   bookingsActions,
   draftsActions,
   truckersListActions,
   bookingHistoryActions,
+  commitmentsActions,
 })

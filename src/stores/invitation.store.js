@@ -129,7 +129,7 @@ export const useInvitationStore = defineStore('invitation', () => {
           handleCodeInApp: true,
         })
         invitedUsersData.value.push(newInvitation)
-        alertStore.info({ content: 'Invitations send!' })
+        alertStore.info({ content: 'Invitations sent!' })
       } catch (e) {
         isLoading.value = false
         alertStore.warning({ content: e.message })

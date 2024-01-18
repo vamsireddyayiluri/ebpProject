@@ -360,8 +360,8 @@ onMounted(async () => {
             :disabled="!activated && (expired || completed)"
             :class="{ 'pointer-events-none': !activated && (expired || completed) }"
             :lower-limit="(booking.preferredDate && new Date(booking.preferredDate)) || currentDate"
-            @onUpdate="updateExpiryDate"
             :error-messages="validateExpiryDates()"
+            @onUpdate="updateExpiryDate"
           />
           <Datepicker
             :key="booking.preferredDate"
