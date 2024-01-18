@@ -2,7 +2,6 @@
 import { getColor } from '~/helpers/colors'
 import { storeToRefs } from "pinia"
 import { useTruckerManagementStore } from "~/stores/truckerManagement.store"
-import listRequiresForTruckers from '~/fixtures/requiresForTruckers.json'
 
 
 const props = defineProps({
@@ -12,9 +11,8 @@ const props = defineProps({
   },
 })
 const truckerManagement = useTruckerManagementStore()
-const requiresForTruckers=ref(JSON.parse(JSON.stringify(listRequiresForTruckers)))
 
-const {  preferredTruckersList, questionList } = storeToRefs(truckerManagement)
+const {  requiresForTruckers,preferredTruckersList, questionList } = storeToRefs(truckerManagement)
 const question = ref(null)
 const items = ref(preferredTruckersList)
 
@@ -94,7 +92,7 @@ const computedItems = computed({
   </Typography>
   <div class="flex gap-5">
     <Textfield
-      v-model="question"
+      v-model.trim="question"
       label="Question for trucker"
     />
     <IconButton

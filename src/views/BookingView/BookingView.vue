@@ -118,11 +118,13 @@ const animate = async () => {
 const validateRequiredFields = () => {
   return (
     !(booking.value.ref &&
-    booking.value.containers > 0 &&
-    Number.isInteger(booking.value.containers) &&
+    booking.value.containers &&
+    rules.containers(booking.value.containers) === true &&
     booking.value.commodity &&
-    booking.value.weight > 0 &&
-    booking.value.targetRate > 0 &&
+    booking.value.weight &&
+    rules.containers(booking.value.weight) === true&&
+    booking.value.targetRate &&
+    rules.containers(booking.value.targetRate) === true&&
     booking.value.bookingExpiry &&
     booking.value.preferredDate &&
     booking.value.scacList.list?.length &&
@@ -137,7 +139,7 @@ const validateRequiredFields = () => {
 const isDisabledPublish = computed(() => {
   return (
     validateRequiredFields() ||
-    (!validExpiryDate.value &&
+    (!validExpiryDate.value ||
       moment(booking.value.bookingExpiry).endOf('day').isBefore(currentDate.value)) ||
     moment(booking.value.preferredDate).endOf('day').isBefore(currentDate.value)
   )
@@ -151,11 +153,11 @@ const validateBooking = computed(() => {
       : bookings.value.find(i => i.id === booking.value.id),
   )
   condition = condition || validateRequiredFields()
-
   condition =
     condition ||
-    moment(booking.value.bookingExpiry).isBefore(currentDate.value) ||
-    moment(booking.value.preferredDate).isBefore(currentDate.value)
+    moment(booking.value.bookingExpiry).endOf('day').isBefore(currentDate.value) ||
+    moment(booking.value.preferredDate).endOf('day').isBefore(currentDate.value)
+    
 
   if (!fromDraft) {
     condition = condition || !validExpiryDate.value
