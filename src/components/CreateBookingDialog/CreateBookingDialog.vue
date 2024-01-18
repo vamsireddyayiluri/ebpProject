@@ -84,7 +84,7 @@ const isDisabled = computed(() => {
   const values = Object.values(booking.value)
   values.pop()
   values.splice(10, 1)
-  let condition = values.some(i => !i) || !booking.value.scacList?.list.length
+  let condition = values.some(i => !i) || !booking.value.scacList?.list?.length
   if (!condition) {
     condition =
       form.value?.errors.length ||
@@ -97,7 +97,8 @@ const isDisabled = computed(() => {
 const isDirty = computed(() => {
   const values = Object.values(booking.value)
   values.pop()
-  return !values.some(i => !i) && booking.value.scacList.list.length > 0
+  values.splice(10, 1)
+  return !values.some(i => !i) && booking.value.scacList?.list.length > 0
 })
 
 const closeBookingDialog = () => {

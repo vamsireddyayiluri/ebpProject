@@ -94,6 +94,7 @@ export const useNotificationStore = defineStore('notification', () => {
   const getNotifications = async () => {
     try {
       const notificationsRef = collection(db, 'notifications')
+      if( userData?.orgId){
       const dataQuery = query(notificationsRef, where('orgId', '==', userData.orgId))
       await onSnapshot(dataQuery, snapshot => {
         const list = snapshot.docs[0]?.data()?.list
@@ -105,6 +106,7 @@ export const useNotificationStore = defineStore('notification', () => {
         })
         notifications.value = list || []
       })
+      }
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }

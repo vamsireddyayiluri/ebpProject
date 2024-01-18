@@ -119,12 +119,13 @@ const validateRequiredFields = () => {
   return (
     !(booking.value.ref &&
     booking.value.containers > 0 &&
+    Number.isInteger(booking.value.containers) &&
     booking.value.commodity &&
     booking.value.weight > 0 &&
     booking.value.targetRate > 0 &&
     booking.value.bookingExpiry &&
     booking.value.preferredDate &&
-    booking.value.scacList.list.length &&
+    booking.value.scacList.list?.length &&
     booking.value.size &&
     booking.value.size
       ? booking.value.size.length > 0
