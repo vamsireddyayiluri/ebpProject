@@ -23,6 +23,16 @@ export const bookingsActions = status => {
     const secondToLastIndex = actions.length - 1
     actions.splice(secondToLastIndex, 0, pauseAction)
   }
+  if (status === statuses.paused) {
+    return [
+      {
+        icon: 'mdi-reload',
+        label: 'Re-activate booking',
+        action: 'reactive-booking',
+      },
+      ...actions,
+    ]
+  }
 
   return actions
 }
