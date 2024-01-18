@@ -49,7 +49,7 @@ const onSelectRow = e => {
 }
 const removeBooking = id => {
   deleteBooking(id)
-  createDraft( removeBookingDialog.value.data )
+  createDraft(removeBookingDialog.value.data)
   removeBookingDialog.value.show(false)
 }
 const tableId = 'bookingsTable'
@@ -102,7 +102,7 @@ onMounted(() => {
         :src="getLineAvatar(item.line.id)"
         :alt="item.line.label"
         class="h-8"
-      >
+      />
     </template>
     <template #status="{ item }">
       <Classification

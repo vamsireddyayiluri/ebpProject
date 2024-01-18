@@ -3,6 +3,7 @@ import { getColor } from '~/helpers/colors'
 import { storeToRefs } from "pinia"
 import { useTruckerManagementStore } from "~/stores/truckerManagement.store"
 
+
 const props = defineProps({
   scacSection: {
     type: Boolean,
@@ -10,16 +11,34 @@ const props = defineProps({
   },
 })
 const truckerManagement = useTruckerManagementStore()
-const { requiresForTruckers, preferredTruckersList, questionList } = storeToRefs(truckerManagement)
+
+const {  requiresForTruckers,preferredTruckersList, questionList } = storeToRefs(truckerManagement)
 const question = ref(null)
 const items = ref(preferredTruckersList)
 
 const scacList = ['aass', 'qqww']
-
+let filteredScacList = ref([])
+ 
 const removeTrucker = item => {
   const index = preferredTruckersList.value.findIndex(i => i === item)
   items.value.splice(index, 1)
 }
+ 
+const filterItems = event => {
+  const search = event.target.value
+  const filter = scacList.filter(val => val.toLowerCase() === search.toLowerCase())
+  if (filter.length) {
+    filteredScacList.value.push(...filter)
+  } else {
+    filteredScacList.value.splice(0, filteredScacList.value.length)
+  }
+}
+ 
+const computedItems = computed({
+  get() {
+    return filteredScacList.value
+  },
+})
 </script>
 
 <template>
@@ -29,11 +48,13 @@ const removeTrucker = item => {
     </Typography>
     <Autocomplete
       v-model="items"
-      :items="scacList"
-      placeholder="Search for truckers by SCAC"
+      :items="computedItems"
+      placeholder="Seach for truckers by SCAC"
       prepend-inner-icon="mdi-magnify"
       multiple
       with-btn
+      @blur="filterItems"
+      @input="filterItems"
       class="text-left"
     />
     <div class="flex gap-3 mt-3 mb-8">
@@ -71,7 +92,7 @@ const removeTrucker = item => {
   </Typography>
   <div class="flex gap-5">
     <Textfield
-      v-model="question"
+      v-model.trim="question"
       label="Question for trucker"
     />
     <IconButton
