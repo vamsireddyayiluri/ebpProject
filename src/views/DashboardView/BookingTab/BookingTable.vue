@@ -4,7 +4,8 @@ import { getLineAvatar } from '~/firebase/getLineAvatar'
 import { useDisplay } from 'vuetify'
 import { getBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
-import { useAuthStore } from "~/stores/auth.store"
+import { useAuthStore } from '~/stores/auth.store'
+import { useCommitmentsStore } from '~/stores/commitments.store'
 
 const props = defineProps({
   computedEntities: Array,
@@ -12,22 +13,35 @@ const props = defineProps({
   loading: Boolean,
 })
 const emit = defineEmits(['selectTableRow', 'editBooking'])
-const { deleteBooking, createDraft  } = useBookingsStore()
+const { deleteBooking, pauseBooking, createDraft } = useBookingsStore()
+const { approveCommitment, onboardCommitment, declineCommitment } = useCommitmentsStore()
 const { userData } = useAuthStore()
 const { smAndDown } = useDisplay()
 const showActions = ref(true)
 const tableHeight = ref(0)
 const removeBookingDialog = ref(false)
 
-const { bookingsHeaders } = useHeaders()
-const { bookingsActions } = useActions()
+const { bookingsHeaders, commitmentsHeaders } = useHeaders()
+const { bookingsActions, commitmentsActions } = useActions()
 const { getFormattedDateTime } = useDate()
 
-const containerActionHandler = ({ action, e }) => {
+const containerActionHandler = async ({ action, e }) => {
   if (action === 'edit-booking') emit('editBooking', e[0].id)
   if (action === 'remove-booking') {
     removeBookingDialog.value.show(true)
     removeBookingDialog.value.data = e[0]
+  }
+  if (action === 'pause-booking') {
+    await pauseBooking(e[0].id)
+  }
+  if (action === 'approve-commit') {
+    await approveCommitment(e[0].id)
+  }
+  if (action === 'onboard-commit') {
+    await onboardCommitment(e[0].id)
+  }
+  if (action === 'decline-commit') {
+    await declineCommitment(e[0].id)
   }
 }
 const onSelectRow = e => {
@@ -35,7 +49,7 @@ const onSelectRow = e => {
 }
 const removeBooking = id => {
   deleteBooking(id)
-  createDraft( removeBookingDialog.value.data )
+  createDraft(removeBookingDialog.value.data)
   removeBookingDialog.value.show(false)
 }
 const tableId = 'bookingsTable'
@@ -61,6 +75,7 @@ onMounted(() => {
       showActions,
       tableHeight: tableHeight,
       tableMinWidth: 960,
+      expansionRow: true,
     }"
     @onSelectRow="onSelectRow"
   >
@@ -87,7 +102,13 @@ onMounted(() => {
         :src="getLineAvatar(item.line.id)"
         :alt="item.line.label"
         class="h-8"
-      >
+      />
+    </template>
+    <template #status="{ item }">
+      <Classification
+        type="status"
+        :value="item.status"
+      />
     </template>
     <template #expiry="{ item }">
       <Typography type="text-body-m-regular">
@@ -110,11 +131,49 @@ onMounted(() => {
 
     <template #actions="{ item, selected }">
       <MenuActions
-        :actions="bookingsActions"
+        :actions="() => bookingsActions(item.status)"
         :selected="selected"
         :container="item"
         @containerActionHandler="containerActionHandler"
       />
+    </template>
+    <template #expansion="{ item }">
+      <VirtualTable
+        :entities="item.entities"
+        :headers="commitmentsHeaders"
+        :options="{
+          rowHeight: 64,
+          showActions,
+          tableHeight: 575,
+          tableMinWidth: 640,
+        }"
+        class="pl-16"
+      >
+        <template #trucker="{ item }">
+          <Typography>
+            {{ item.scac }}
+          </Typography>
+        </template>
+        <template #committed="{ item }">
+          <Typography>
+            {{ item.committed }}
+          </Typography>
+        </template>
+        <template #status="{ item }">
+          <Classification
+            type="status"
+            :value="item.status"
+          />
+        </template>
+        <template #actions="{ item, selected }">
+          <MenuActions
+            :actions="() => commitmentsActions(item.status)"
+            :selected="selected"
+            :container="item"
+            @containerActionHandler="containerActionHandler"
+          />
+        </template>
+      </VirtualTable>
     </template>
   </VirtualTable>
 

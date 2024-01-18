@@ -182,8 +182,11 @@ watch(searchValue, value => {
       </template>
       <template #truckers="{ item }">
         <div class="flex gap-2">
-          <template v-for="scacList in item.scacList"
-            ><template v-for="scac in scacList" :key="scac">
+          <template v-for="scacList in item.scacList">
+            <template
+              v-for="scac in scacList"
+              :key="scac"
+            >
               <Chip>{{ scac }}</Chip>
             </template>
           </template>

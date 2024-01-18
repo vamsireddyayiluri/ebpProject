@@ -7,7 +7,7 @@ export const bookingsHeaders = userType => {
       text: 'Ref #',
       value: 'ref',
       align: 'start',
-      width: 2,
+      width: 1,
     },
     {
       text: 'Yard label',
@@ -16,6 +16,10 @@ export const bookingsHeaders = userType => {
     {
       text: 'SSL',
       value: 'ssl',
+    },
+    {
+      text: 'Status',
+      value: 'status',
     },
     {
       text: 'Loading date',
@@ -179,6 +183,21 @@ export const bookingsHistoryHeaders = [
     value: 'truckers',
   },
 ]
+export const commitmentsHeaders = [
+  {
+    text: 'Trucker',
+    value: 'trucker',
+  },
+  {
+    text: 'Committed',
+    value: 'committed',
+    sorter: (a, b) => moment(a).diff(moment(b)),
+  },
+  {
+    text: 'Status',
+    value: 'status',
+  },
+]
 export default () => ({
   bookingsHeaders,
   yardsHeaders,
@@ -187,4 +206,5 @@ export default () => ({
   truckersDocumentsHeaders,
   statisticsTruckersHeaders,
   bookingsHistoryHeaders,
+  commitmentsHeaders,
 })
