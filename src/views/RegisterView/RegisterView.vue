@@ -8,6 +8,7 @@ import { patterns } from '@qualle-admin/qutil'
 import { emailRegex, phoneRegex } from '@qualle-admin/qutil/dist/patterns'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { useTruckerManagementStore } from '~/stores/truckerManagement.store'
+import listRequiresForTruckers from '~/fixtures/requiresForTruckers.json'
 
 const authStore = useAuthStore()
 const workDetailsStore = useWorkDetailsStore()
