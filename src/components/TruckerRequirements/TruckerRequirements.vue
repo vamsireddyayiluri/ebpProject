@@ -53,9 +53,9 @@ const computedItems = computed({
       prepend-inner-icon="mdi-magnify"
       multiple
       with-btn
+      class="text-left"
       @blur="filterItems"
       @input="filterItems"
-      class="text-left"
     />
     <div class="flex gap-3 mt-3 mb-8">
       <template

@@ -143,7 +143,7 @@ onMounted(async () => {
   </Main>
   <Dialog
     ref="createBookingDialog"
-    class="max-w-[70vw] md:max-w-[70vw]"
+    class="max-w-full sm:max-w-[90vw] md:max-w-[75vw]"
   >
     <template #text>
       <CreateBookingDialog @close="createBookingDialog.show(false)" />

@@ -160,7 +160,7 @@ const onSubmit = async () => {
           </div>
         </template>
         <template v-if="stepper.isCurrent('work-details')">
-          <Yards class="mx-auto"> </Yards>
+          <Yards class="mx-auto" />
         </template>
         <div>
           <template v-if="stepper.isCurrent('invite-members')">
@@ -178,7 +178,7 @@ const onSubmit = async () => {
         <Button
           v-show="!stepper.isFirst.value"
           variant="outlined"
-          class="max-w-[220px] w-full mr-5"
+          class="max-w-[360px] sm:max-w-[220px] w-full mr-0 sm:!mr-5 mb-5 sm:!mb-0"
           @click="goToStep(stepper.stepNames.value[stepper.index.value - 1])"
         >
           Back
@@ -187,7 +187,7 @@ const onSubmit = async () => {
           v-if="!stepper.isLast.value"
           :disabled="!stepper.current.value.isValid()"
           type="submit"
-          :class="stepper.isFirst.value ? 'max-w-[360px] w-full' : 'max-w-[220px] w-full'"
+          :class="stepper.isFirst.value ? 'max-w-[360px] w-full' : 'max-w-[360px] sm:max-w-[220px] w-full'"
         >
           Next
         </Button>

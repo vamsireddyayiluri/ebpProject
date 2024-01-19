@@ -9,8 +9,6 @@ import { useBookingsStore } from '~/stores/bookings.store'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth.store'
 import { userTypes } from '~/constants/userTypes'
-import { collection, onSnapshot, query, where } from 'firebase/firestore'
-import { db } from '~/firebase'
 
 const props = defineProps({
   mapToggled: Boolean,
@@ -301,7 +299,7 @@ watch(searchValue, value => {
   </Dialog>
   <Dialog
     ref="createBookingDialog"
-    class="max-w-[70vw] md:max-w-[70vw]"
+    class="max-w-full sm:max-w-[90vw] md:max-w-[75vw]"
     @update:modelValue="onClickOutsideDialog"
   >
     <template #text>

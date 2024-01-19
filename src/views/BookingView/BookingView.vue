@@ -122,9 +122,9 @@ const validateRequiredFields = () => {
     rules.containers(booking.value.containers) === true &&
     booking.value.commodity &&
     booking.value.weight &&
-    rules.containers(booking.value.weight) === true&&
+    rules.containers(booking.value.weight) === true &&
     booking.value.targetRate &&
-    rules.containers(booking.value.targetRate) === true&&
+    rules.containers(booking.value.targetRate) === true &&
     booking.value.bookingExpiry &&
     booking.value.preferredDate &&
     booking.value.scacList.list?.length &&
@@ -139,8 +139,8 @@ const validateRequiredFields = () => {
 const isDisabledPublish = computed(() => {
   return (
     validateRequiredFields() ||
-    (!validExpiryDate.value ||
-      moment(booking.value.bookingExpiry).endOf('day').isBefore(currentDate.value)) ||
+    !validExpiryDate.value ||
+    moment(booking.value.bookingExpiry).endOf('day').isBefore(currentDate.value) ||
     moment(booking.value.preferredDate).endOf('day').isBefore(currentDate.value)
   )
 })
@@ -157,7 +157,6 @@ const validateBooking = computed(() => {
     condition ||
     moment(booking.value.bookingExpiry).endOf('day').isBefore(currentDate.value) ||
     moment(booking.value.preferredDate).endOf('day').isBefore(currentDate.value)
-    
 
   if (!fromDraft) {
     condition = condition || !validExpiryDate.value
@@ -403,18 +402,6 @@ onMounted(async () => {
             :disabled="expired || completed"
           />
 
-          <RadioGroup v-model="booking.targetRateType">
-            <Radio
-              value="All in rate"
-              label="All in rate"
-              :disabled="expired || completed"
-            />
-            <Radio
-              value="Linehaul + FSC Only"
-              label="Linehaul + FSC Only"
-              :disabled="expired || completed"
-            />
-          </RadioGroup>
           <Textfield
             v-model.number="booking.targetRate"
             label="Target Rate*"
@@ -423,12 +410,23 @@ onMounted(async () => {
             required
             :disabled="expired || completed"
           />
-          <Checkbox
-            v-model="booking.flexibleBooking"
-            label="Flexible Booking*"
-            @change="updateSize"
-            :disabled="expired || completed"
-          />
+          <RadioGroup
+            v-model="booking.targetRateType"
+            inline
+            class="mt-3"
+          >
+            <Radio
+              value="All in rate"
+              label="All in rate"
+              :disabled="expired || completed"
+              class="mr-6"
+            />
+            <Radio
+              value="Linehaul + FSC Only"
+              label="Linehaul + FSC Only"
+              :disabled="expired || completed"
+            />
+          </RadioGroup>
           <Select
             v-model="booking.size"
             :items="containersSizes"
@@ -439,15 +437,25 @@ onMounted(async () => {
             :disabled="expired || completed"
             :error-messages="validateFlexibleSizes(booking.size, booking.flexibleBooking)"
           />
-          <AutocompleteScac
-            :key="booking.scacList"
-            :scac-list="booking.scacList"
+          <Checkbox
+            v-model="booking.flexibleBooking"
+            label="Flexible Booking*"
             :disabled="expired || completed"
+            class="mt-3"
+            @change="updateSize"
           />
+          <div>
+            <AutocompleteScac
+              :key="booking.scacList"
+              :scac-list="booking.scacList"
+              :disabled="expired || completed"
+            />
+          </div>
         </VForm>
         <SaveCancelChanges
           v-if="!(expired || completed) || activated"
           :disabled="validateBooking"
+          class="mt-10"
           @onSave="onSave"
           @onCancel="cancelChanges"
         />
@@ -457,7 +465,9 @@ onMounted(async () => {
         :class="[flyoutBottom || smAndDown ? 'bottom' : 'right', drawer ? 'active' : '']"
       >
         <div class="flex justify-between items-center">
-          <Typography type="text-h1"> Statistics </Typography>
+          <Typography type="text-h1">
+            Statistics
+          </Typography>
           <IconButton
             v-if="!smAndDown"
             :icon="!flyoutBottom ? 'mdi-dock-bottom' : 'mdi-dock-right'"
@@ -467,7 +477,9 @@ onMounted(async () => {
         </div>
         <div class="statisticsContent">
           <div class="statisticsProgress">
-            <Typography type="text-h4"> Fulfillment progress </Typography>
+            <Typography type="text-h4">
+              Fulfillment progress
+            </Typography>
             <ProgressCircular
               :size="260"
               :value="getBookingLoad(booking.committed, booking.containers)"
@@ -478,7 +490,9 @@ onMounted(async () => {
             </ProgressCircular>
           </div>
           <div class="statisticsTimeline">
-            <Typography type="text-h4"> Booking timeline </Typography>
+            <Typography type="text-h4">
+              Booking timeline
+            </Typography>
             <div class="timeline scrollbar">
               <Timeline
                 :items="[
@@ -517,7 +531,7 @@ onMounted(async () => {
         :src="container"
         class="container-img"
         alt="qualle container"
-      />
+      >
       <Typography
         type="text-h1"
         class="!text-7xl mb-4 text-center"

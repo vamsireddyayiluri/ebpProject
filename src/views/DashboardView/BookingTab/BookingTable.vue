@@ -102,7 +102,7 @@ onMounted(() => {
         :src="getLineAvatar(item.line.id)"
         :alt="item.line.label"
         class="h-8"
-      />
+      >
     </template>
     <template #status="{ item }">
       <Classification

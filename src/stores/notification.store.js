@@ -95,17 +95,17 @@ export const useNotificationStore = defineStore('notification', () => {
     try {
       const notificationsRef = collection(db, 'notifications')
       if( userData?.orgId){
-      const dataQuery = query(notificationsRef, where('orgId', '==', userData.orgId))
-      await onSnapshot(dataQuery, snapshot => {
-        const list = snapshot.docs[0]?.data()?.list
-        snapshot.docChanges().forEach(change => {
-          if (change.type === 'modified' && list.length !== notifications.value.length) {
+        const dataQuery = query(notificationsRef, where('orgId', '==', userData.orgId))
+        await onSnapshot(dataQuery, snapshot => {
+          const list = snapshot.docs[0]?.data()?.list
+          snapshot.docChanges().forEach(change => {
+            if (change.type === 'modified' && list.length !== notifications.value.length) {
             // get last element .at(-1)
-            showAlert(change.doc.data().list.at(-1))
-          }
+              showAlert(change.doc.data().list.at(-1))
+            }
+          })
+          notifications.value = list || []
         })
-        notifications.value = list || []
-      })
       }
     } catch ({ message }) {
       alertStore.warning({ content: message })
