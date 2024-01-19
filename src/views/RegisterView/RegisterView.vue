@@ -88,6 +88,13 @@ const onSubmit = async () => {
     stepper.goToNext()
   }
 }
+onMounted(async () => {
+  workDetailsStore.yards = []
+  truckerManagement.requiresForTruckers = JSON.parse(JSON.stringify(listRequiresForTruckers))
+  truckerManagement.questionList = []
+  truckerManagement.onboardingDocuments = []
+  truckerManagement.preferredTruckersList = []
+})
 </script>
 
 <template>
@@ -187,7 +194,9 @@ const onSubmit = async () => {
           v-if="!stepper.isLast.value"
           :disabled="!stepper.current.value.isValid()"
           type="submit"
-          :class="stepper.isFirst.value ? 'max-w-[360px] w-full' : 'max-w-[360px] sm:max-w-[220px] w-full'"
+          :class="
+            stepper.isFirst.value ? 'max-w-[360px] w-full' : 'max-w-[360px] sm:max-w-[220px] w-full'
+          "
         >
           Next
         </Button>

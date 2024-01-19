@@ -50,6 +50,15 @@ const deleteTrucker = () => {
   preferredTruckersStore.deleteTrucker(deleteTruckerDialog.value.data)
   deleteTruckerDialog.value.show(false)
 }
+const customFilter = (search, lists) => {
+  const result = [
+    lists[0].filter(i => i.scac.toLowerCase() === search.toLowerCase()),
+
+    lists[1].filter(i => i.scac.toLowerCase() === search.toLowerCase()),
+  ]
+  return result
+}
+
 
 /*const sendInvitation = async () => {
   try {
@@ -99,6 +108,7 @@ onMounted(() => {
       item-title="scac"
       item-value="email"
       class="max-w-[500px] min-w-[280px]"
+      :customFilter="customFilter"
       @onSelect="e => {}"
       @onSelectMultiple="item => preferredTruckersStore.addTrucker(item)"
     >

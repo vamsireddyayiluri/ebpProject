@@ -15,30 +15,34 @@ const truckerManagement = useTruckerManagementStore()
 const {  requiresForTruckers,preferredTruckersList, questionList } = storeToRefs(truckerManagement)
 const question = ref(null)
 const items = ref(preferredTruckersList)
+const inviteTruckerDialog = ref(false)
 
 const scacList = ['aass', 'qqww']
 let filteredScacList = ref([])
- 
+let search = ref('')
+
 const removeTrucker = item => {
   const index = preferredTruckersList.value.findIndex(i => i === item)
   items.value.splice(index, 1)
 }
- 
+
 const filterItems = event => {
-  const search = event.target.value
-  const filter = scacList.filter(val => val.toLowerCase() === search.toLowerCase())
-  if (filter.length) {
+  search.value = event.target.value
+  const filter = scacList.filter(val => val.toLowerCase() === search.value.toLowerCase())
+  if (filter.length && event.data) {
     filteredScacList.value.push(...filter)
   } else {
     filteredScacList.value.splice(0, filteredScacList.value.length)
   }
 }
- 
-const computedItems = computed({
-  get() {
-    return filteredScacList.value
-  },
-})
+const clearData = event => {
+  search.value = ''
+  filteredScacList.value = []
+}
+const confirmSendInvitation = trucker => {
+  inviteTruckerDialog.value.show(true)
+  inviteTruckerDialog.value.data = trucker
+}
 </script>
 
 <template>
@@ -48,15 +52,28 @@ const computedItems = computed({
     </Typography>
     <Autocomplete
       v-model="items"
-      :items="computedItems"
+      :items="filteredScacList"
       placeholder="Seach for truckers by SCAC"
       prepend-inner-icon="mdi-magnify"
       multiple
       with-btn
-      class="text-left"
-      @blur="filterItems"
       @input="filterItems"
-    />
+      @blur="clearData"
+      :hide-no-data="search.length < 4"
+      class="text-left"
+    >
+      <template #no-data>
+        <Typography class="mb-5 inline-block">
+          Do you want to send an invitation via email?
+        </Typography>
+        <Button
+          class="w-full"
+          @click="confirmSendInvitation"
+        >
+          Invite new trucker
+        </Button>
+      </template>
+    </Autocomplete>
     <div class="flex gap-3 mt-3 mb-8">
       <template
         v-for="i in items"
@@ -131,4 +148,12 @@ const computedItems = computed({
       />
     </div>
   </template>
+   <Dialog
+    ref="inviteTruckerDialog"
+    max-width="480"
+  >
+    <template #text>
+      <InviteTruckerDialog @close="inviteTruckerDialog.show(false)" />
+    </template>
+  </Dialog>
 </template>
