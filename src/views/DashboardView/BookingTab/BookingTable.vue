@@ -6,6 +6,8 @@ import { getBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { useAuthStore } from '~/stores/auth.store'
 import { useCommitmentsStore } from '~/stores/commitments.store'
+import { reasonCodes } from '~/constants/reasonCodes'
+import { statuses } from '~/constants/statuses'
 
 const props = defineProps({
   computedEntities: Array,
@@ -13,13 +15,20 @@ const props = defineProps({
   loading: Boolean,
 })
 const emit = defineEmits(['selectTableRow', 'editBooking'])
-const { deleteBooking, pauseBooking } = useBookingsStore()
-const { approveCommitment, onboardCommitment, declineCommitment } = useCommitmentsStore()
+const { deleteBooking, updateBookingStatus } = useBookingsStore()
+const { approveCommitment, completeCommitment, declineCommitment } = useCommitmentsStore()
 const { userData } = useAuthStore()
 const { smAndDown } = useDisplay()
 const showActions = ref(true)
 const tableHeight = ref(0)
 const removeBookingDialog = ref(false)
+const completeCommitmentDialog = ref(false)
+const completeReasonList = [
+  reasonCodes.onboarded,
+  reasonCodes.onboardMovedLoad,
+  reasonCodes.neverOnboarded,
+  reasonCodes.other,
+]
 
 const { bookingsHeaders, commitmentsHeaders } = useHeaders()
 const { bookingsActions, commitmentsActions } = useActions()
@@ -32,15 +41,19 @@ const containerActionHandler = async ({ action, e }) => {
     removeBookingDialog.value.data = e[0]
   }
   if (action === 'pause-booking') {
-    await pauseBooking(e[0].id)
+    await updateBookingStatus(e[0].id, statuses.paused)
   }
-  if (action === 'approve-commit') {
+  if (action === 'reactive-booking') {
+    await updateBookingStatus(e[0].id, statuses.active)
+  }
+  if (action === 'approve-commitment') {
     await approveCommitment(e[0].id)
   }
-  if (action === 'onboard-commit') {
-    await onboardCommitment(e[0].id)
+  if (action === 'complete-commitment') {
+    completeCommitmentDialog.value.show(true)
+    completeCommitmentDialog.value.data = e[0].id
   }
-  if (action === 'decline-commit') {
+  if (action === 'decline-commitment') {
     await declineCommitment(e[0].id)
   }
 }
@@ -50,6 +63,10 @@ const onSelectRow = e => {
 const removeBooking = id => {
   deleteBooking(id)
   removeBookingDialog.value.show(false)
+}
+const onCompleteCommitment = async (id, reason) => {
+  await completeCommitment(id, reason)
+  completeCommitmentDialog.value.show(false)
 }
 const tableId = 'bookingsTable'
 onMounted(() => {
@@ -192,6 +209,22 @@ onMounted(() => {
           from your bookings?
         </Typography>
       </RemoveCancelDialog>
+    </template>
+  </Dialog>
+  <Dialog
+    ref="completeCommitmentDialog"
+    max-width="480"
+  >
+    <template #text>
+      <CompleteCommitmentsDialog
+        title="Complete commitment"
+        sub-title="Did you onboard and work with halo lab delivery successfully?"
+        select-label="Select"
+        :reason-list="completeReasonList"
+        btn-name="confirm"
+        @close="completeCommitmentDialog.show(false)"
+        @onClickBtn="e => onCompleteCommitment(completeCommitmentDialog.data, e)"
+      />
     </template>
   </Dialog>
 </template>

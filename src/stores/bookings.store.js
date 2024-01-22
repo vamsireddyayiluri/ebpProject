@@ -135,13 +135,13 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.warning({ content: message })
     }
   }
-  const pauseBooking = async id => {
+  const updateBookingStatus = async (id, status) => {
     try {
       await updateDoc(doc(db, 'bookings', id), {
-        status: statuses.paused,
+        status,
       })
-      bookings.value.find(i => i.id === id).status = statuses.paused
-      alertStore.info({ content: 'Bookings paused!' })
+      bookings.value.find(i => i.id === id).status = status
+      alertStore.info({ content: `Booking ${status}!` })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
@@ -214,6 +214,6 @@ export const useBookingsStore = defineStore('bookings', () => {
     publishDraft,
     removeFromNetwork,
     updateBooking,
-    pauseBooking,
+    updateBookingStatus,
   }
 })
