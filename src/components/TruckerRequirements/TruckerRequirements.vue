@@ -29,7 +29,7 @@ const removeTrucker = item => {
 const filterItems = event => {
   search.value = event.target.value
   const filter = scacList.filter(val => val.toLowerCase() === search.value.toLowerCase())
-  if (filter.length && event.data) {
+  if (filter.length) {
     filteredScacList.value.push(...filter)
   } else {
     filteredScacList.value.splice(0, filteredScacList.value.length)
@@ -46,7 +46,7 @@ const confirmSendInvitation = trucker => {
 </script>
 
 <template>
-  <template v-if="scacSection ">
+  <template v-if="scacSection">
     <Typography type="text-body-m-semibold mb-6 text-left">
       Search truckers you already work with by SCAC code and add them to your Preferred truckers list
     </Typography>
@@ -59,7 +59,7 @@ const confirmSendInvitation = trucker => {
       with-btn
       @input="filterItems"
       @blur="clearData"
-      :hide-no-data="search.length < 4"
+      :hide-no-data="search.length < 3"
       class="text-left"
     >
       <template #no-data>
