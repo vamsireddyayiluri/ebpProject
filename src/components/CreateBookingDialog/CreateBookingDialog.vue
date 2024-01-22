@@ -211,7 +211,7 @@ onMounted(async () => {
         no-gutters
         justify="space-between"
         align="center"
-        class="mb-8"
+        class="flex-nowrap mb-8"
       >
         <Typography> Do you want to keep the bookings in Drafts? </Typography>
         <IconButton
