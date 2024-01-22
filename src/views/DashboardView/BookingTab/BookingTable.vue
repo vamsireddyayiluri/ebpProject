@@ -33,6 +33,7 @@ const completeReasonList = [
 const { bookingsHeaders, commitmentsHeaders } = useHeaders()
 const { bookingsActions, commitmentsActions } = useActions()
 const { getFormattedDateTime } = useDate()
+const commitmentDetailsDialog = ref(null)
 
 const containerActionHandler = async ({ action, e }) => {
   if (action === 'edit-booking') emit('editBooking', e[0].id)
@@ -45,6 +46,10 @@ const containerActionHandler = async ({ action, e }) => {
   }
   if (action === 'reactive-booking') {
     await updateBookingStatus(e[0].id, statuses.active)
+  }
+  if (action === 'view-trucker-details') {
+    commitmentDetailsDialog.value.show(true)
+    commitmentDetailsDialog.value.data = e[0]
   }
   if (action === 'approve-commitment') {
     await approveCommitment(e[0].id)
@@ -224,6 +229,17 @@ onMounted(() => {
         btn-name="confirm"
         @close="completeCommitmentDialog.show(false)"
         @onClickBtn="e => onCompleteCommitment(completeCommitmentDialog.data, e)"
+      />
+    </template>
+  </Dialog>
+  <Dialog
+    ref="commitmentDetailsDialog"
+    max-width="980"
+  >
+    <template #text>
+      <CommitmentDetailsDialog
+        :commitment="commitmentDetailsDialog.data"
+        @close="commitmentDetailsDialog.show(false)"
       />
     </template>
   </Dialog>
