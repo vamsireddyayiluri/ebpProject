@@ -1494,10 +1494,10 @@
   resolved "https://registry.yarnpkg.com/@protobufjs/utf8/-/utf8-1.1.0.tgz#a777360b5b39a1a2e5106f8e858f2fd2d060c570"
   integrity sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==
 
-"@qualle-admin/qui@^1.185.0":
-  version "1.185.0"
-  resolved "https://npm.pkg.github.com/download/@qualle-admin/qui/1.185.0/6b0957dc235000eac1904d44b91e02fa1a42ea83#6b0957dc235000eac1904d44b91e02fa1a42ea83"
-  integrity sha512-RYjy2+x2BeNMvNfLbbTmPH2ID2p6ulOGqh40gDMDE+kuxcR62AqZFgubhm8s/VyjSqhYYe6qbcsJ6odMgw2TUA==
+"@qualle-admin/qui@latest":
+  version "1.187.0"
+  resolved "https://npm.pkg.github.com/download/@qualle-admin/qui/1.187.0/8c21c41f099ffbfcb5bab9cab2422f4fde9d6d03#8c21c41f099ffbfcb5bab9cab2422f4fde9d6d03"
+  integrity sha512-wXnLVgF4RqDhkIb2qC8D6YAjjUWCGxLW8JTXTduclwCIAc/xaEHQBkvBeyZXaXSos3VXPdzKOiuJ/pY0oncPUg==
   dependencies:
     uid "^2.0.1"
     "@fullcalendar/core" "^6.0.3"
@@ -1524,7 +1524,7 @@
     vue3-google-map "^0.15.0"
     vue3-timepicker "^1.0.0-beta.2"
     vue3-virtual-scroller "^0.2.3"
-    vuetify "3.0.3"
+    vuetify "3.5.1"
 
 "@qualle-admin/qutil@^1.35.0", "@qualle-admin/qutil@latest":
   version "1.65.0"
@@ -8964,6 +8964,11 @@ vuetify@3.0.3:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/vuetify/-/vuetify-3.0.3.tgz#444968004dc413af9e7732cece0d56faed51c33a"
   integrity sha512-ODqnS2ux/qUjn/E7W600mvy096nUSSf1mEgYN9o1IpfeNOC7RsakPD37t3zmtift54YTrE/upjSpILg3piYKmQ==
+
+vuetify@3.5.1:
+  version "3.5.1"
+  resolved "https://registry.yarnpkg.com/vuetify/-/vuetify-3.5.1.tgz#c2f35dad5e54a090e87e55ed1a4e76091199ed4a"
+  integrity sha512-fkhU4UFnX/lBARXg+n9mBCDPTaEDHoYGx9SZ5A/1LlzM7LohoqldmrNgza4WgpPTLIWqr6NvYp2NvT2IrcTfhg==
 
 w3c-xmlserializer@^4.0.0:
   version "4.0.0"

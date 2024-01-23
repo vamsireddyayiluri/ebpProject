@@ -1,0 +1,129 @@
+[
+  {
+    "chatId": "uniqueChatId1",
+    "user": {
+      "id": "1234",
+      "avatar": "https://ps.w.org/user-avatar-reloaded/assets/icon-128x128.png?rev=2540745",
+      "username": "Wade Warren",
+      "status": "online"
+    },
+    "lastMessage": {
+      "content": "Wonderful I am",
+      "timestamp": "Today, 3:10 pm"
+    },
+    "unreadCount": 2,
+    "messages": [
+      {
+        "id": "111",
+        "senderId": "000",
+        "content": "1 Physiological respiration involves the mechanisms that ensure that is composition of the functional.",
+        "date": "02/20/2022",
+        "timestamp": "10:10 am",
+        "isEditedMessage": true
+      },
+      {
+        "id": "222",
+        "senderId": "001",
+        "content": "message with attached image",
+        "date": "02/20/2022",
+        "timestamp": "10:10 am",
+        "files": [
+          {
+            "extension": "png",
+            "localUrl": "https://ps.w.org/user-avatar-reloaded/assets/icon-128x128.png?rev=2540745",
+            "name": "image",
+            "size": 441328,
+            "type": "image/png"
+          }
+        ]
+      },
+      {
+        "id": "555",
+        "senderId": "001",
+        "content": "It is reply",
+        "date": "02/20/2022",
+        "timestamp": "10:10 am",
+        "replyMessage": {
+          "id": "333",
+          "senderId": "000",
+          "content": "reply on it",
+          "date": "02/20/2022",
+          "timestamp": "10:10 am",
+          "files": []
+        }
+      }
+    ]
+  },
+  {
+    "chatId": "uniqueChatId2",
+    "user": {
+      "id": "4321",
+      "avatar": "https://cdn1.iconfinder.com/data/icons/user-pictures/100/female1-512.png",
+      "username": "Cameron Williamson",
+      "status": "offline"
+    },
+    "lastMessage": {
+      "content": "Wonderful I am",
+      "timestamp": "Today, 3:10 pm"
+    },
+    "unreadCount": 1,
+    "messages": [
+      {
+        "id": "111",
+        "senderId": "000",
+        "content": "2 Physiological respiration involves the mechanisms that ensure that is composition of the functional.",
+        "date": "02/20/2022",
+        "timestamp": "10:10 am",
+        "isEditedMessage": true
+      },
+      {
+        "id": "222",
+        "senderId": "001",
+        "content": "<b>Physiological</b> respiration involves the mechanisms that ensure that is composition of the functional.",
+        "date": "02/20/2022",
+        "timestamp": "10:10 am",
+        "isEditedMessage": true
+      },
+      {
+        "id": "222",
+        "senderId": "001",
+        "content": "123",
+        "date": "02/20/2022",
+        "timestamp": "10:10 am",
+        "isEditedMessage": true
+      },
+      {
+        "id": "222",
+        "senderId": "001",
+        "content": "123",
+        "date": "02/20/2022",
+        "timestamp": "10:10 am",
+        "isEditedMessage": true
+      },
+      {
+        "id": "222",
+        "senderId": "001",
+        "content": "123",
+        "date": "02/20/2022",
+        "timestamp": "10:10 am",
+        "isEditedMessage": true
+      },
+      {
+        "id": "222",
+        "senderId": "001",
+        "content": "123",
+        "date": "02/20/2022",
+        "timestamp": "10:10 am",
+        "isEditedMessage": true
+      },
+      {
+        "id": "222",
+        "senderId": "001",
+        "content": "123",
+        "date": "02/20/2022",
+        "timestamp": "10:10 am",
+        "isEditedMessage": true
+      }
+    ]
+  }
+]

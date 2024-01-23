@@ -3,9 +3,12 @@ import { useAuthStore } from '~/stores/auth.store'
 import { storeToRefs } from 'pinia'
 import { useNotificationStore } from '~/stores/notification.store'
 import { useDisplay } from 'vuetify'
+import { useChatStore } from '~/stores/chat.store'
 
 const authStore = useAuthStore()
 const notificationStore = useNotificationStore()
+const chatStore = useChatStore()
+const { isNewMessage } = storeToRefs(chatStore)
 const attrs = useAttrs()
 const { width } = useDisplay()
 const route = useRoute()
@@ -14,6 +17,7 @@ const router = useRouter()
 const getActiveRoute = name => {
   return route.name === name
 }
+
 const items = ref([
   {
     name: 'dashboard',
@@ -29,6 +33,11 @@ const items = ref([
     icon: getActiveRoute('statistics') ? 'statFill' : 'stat',
   },
   {
+    name: 'chat',
+    icon: getActiveRoute('chat') ? 'chatFill' : 'chat',
+    isUnread: isNewMessage,
+  },
+  {
     name: 'settings',
     icon: getActiveRoute('settings') ? 'settingFill' : 'setting',
   },
@@ -38,6 +47,7 @@ const mobileMenuItems = [
   { name: 'Dashboard', path: 'dashboard', icon: 'home' },
   { name: 'Calendar', path: 'calendar', icon: 'calendar' },
   { name: 'Statistics', path: 'statistics', icon: 'stat' },
+  { name: 'Chat', path: 'chat', icon: 'chat', isUnread: isNewMessage },
   { name: 'Settings', path: 'settings', icon: 'setting' },
   { name: 'Profile settings', path: 'profile', icon: 'user' },
 ]

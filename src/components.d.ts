@@ -20,6 +20,7 @@ declare module '@vue/runtime-core' {
     BookingTable: typeof import('./views/DashboardView/BookingTab/BookingTable.vue')['default']
     BookingView: typeof import('./views/BookingView/BookingView.vue')['default']
     CalendarView: typeof import('./views/CalendarView/CalendarView.vue')['default']
+    ChatView: typeof import('./views/ChatView/ChatView.vue')['default']
     CommitmentDetailsDialog: typeof import('./components/CommitmentDetailsDialog/CommitmentDetailsDialog.vue')['default']
     CompleteCommitmentsDialog: typeof import('./components/CompleteCommitmentsDialog/CompleteCommitmentsDialog.vue')['default']
     CreateBookingDialog: typeof import('./components/CreateBookingDialog/CreateBookingDialog.vue')['default']
