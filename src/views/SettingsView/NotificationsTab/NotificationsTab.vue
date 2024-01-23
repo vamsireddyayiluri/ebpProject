@@ -14,9 +14,19 @@ const isDisabled = ref(null)
 
 const showNews = e => {
   showNewsNotification.value = e
+  if (!showNewsNotification.value) {
+    settings.value.newsAndUpdates.value = ''
+  } else {
+    settings.value.newsAndUpdates.value = comparativeObject.newsAndUpdates.value
+  }
 }
 const showBookings = e => {
   showBookingsNotification.value = e
+  if (!showBookingsNotification.value) {
+    settings.value.bookingsNotification.value = ''
+  } else {
+    settings.value.bookingsNotification.value = comparativeObject.bookingsNotification.value
+  }
 }
 const validate = () => {
   if (!settings.value || !comparativeObject) return false
@@ -44,9 +54,7 @@ onUpdated(() => {
 
 <template>
   <div class="notificationTab w-full md:w-2/3 lg:w-1/2">
-    <Typography type="text-h1 mb-8">
-      Notifications
-    </Typography>
+    <Typography type="text-h1 mb-8"> Notifications </Typography>
 
     <div v-if="!loading">
       <div class="w-fit flex items-center relative">
@@ -54,11 +62,10 @@ onUpdated(() => {
           v-model="settings.newsAndUpdates.active"
           @update:modelValue="showNews"
         >
-          <Typography class="flex items-center gap-2">
-            News and updates
-          </Typography>
+          <Typography class="flex items-center gap-2"> News and updates </Typography>
         </Switch>
         <div
+          v-if="settings.newsAndUpdates.active"
           :class="{ 'rotate-180': showNewsNotification }"
           class="w-fit transition duration-300 absolute top-3.5 -right-9"
         >
@@ -80,6 +87,7 @@ onUpdated(() => {
         :style="{ maxHeight: !showNewsNotification ? 0 : '1000px' }"
       >
         <NotificationRadioButton
+          v-if="settings.newsAndUpdates.active"
           v-model="settings.newsAndUpdates.value"
           class="mt-9 ml-13"
         />
@@ -94,11 +102,10 @@ onUpdated(() => {
           v-model="settings.bookingsNotification.active"
           @update:modelValue="showBookings"
         >
-          <Typography class="flex items-center gap-2">
-            Information about bookings
-          </Typography>
+          <Typography class="flex items-center gap-2"> Information about bookings </Typography>
         </Switch>
         <div
+          v-if="settings.bookingsNotification.active"
           :class="{ 'rotate-180': showBookingsNotification }"
           class="w-fit transition duration-300 absolute top-3.5 -right-9"
         >
@@ -119,6 +126,7 @@ onUpdated(() => {
         :style="{ maxHeight: !showBookingsNotification ? 0 : '1000px' }"
       >
         <NotificationRadioButton
+          v-if="settings.bookingsNotification.active"
           v-model="settings.bookingsNotification.value"
           class="mt-9 ml-13"
         />
