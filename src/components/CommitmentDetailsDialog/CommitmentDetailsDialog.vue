@@ -4,11 +4,12 @@ import { capitalize } from 'lodash'
 import { getLineAvatar } from '~/firebase/getLineAvatar'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { useDate } from '~/composables'
+import { statuses } from '~/constants/statuses'
 
 const props = defineProps({
   commitment: Object,
 })
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'approveCommitment', 'completeCommitment', 'declineCommitment'])
 const { bookings } = useBookingsStore()
 const { getFormattedDate } = useDate()
 const details = ref([
@@ -30,7 +31,6 @@ const {
   line,
   size,
   location,
-  timeline,
 } = bookings.find(i => i.id === props.commitment.bookingId)
 const bookingObj = {
   ref: bookingRef,
@@ -81,7 +81,7 @@ const bookingDetails = Object.entries(bookingObj).map(([name, value]) => ({ name
     <VCol
       cols="12"
       md="7"
-      class="mt-8 pr-0 md:!pr-8"
+      class="mt-8 pr-0 md:!pr-8 mb-2"
     >
       <Typography
         type="text-h4"
@@ -89,7 +89,7 @@ const bookingDetails = Object.entries(bookingObj).map(([name, value]) => ({ name
       >
         Commitment details
       </Typography>
-      <Card class="styleSection elevation-0 mb-1">
+      <Card class="styleSection elevation-0">
         <ExpansionPanels
           v-model="openedPanel"
           variant="accordion"
@@ -190,7 +190,7 @@ const bookingDetails = Object.entries(bookingObj).map(([name, value]) => ({ name
     <VCol
       cols="12"
       md="5"
-      class="pt-8 pl-1 md:!pl-8"
+      class="relative pt-8 pl-1 md:!pl-8"
     >
       <Typography
         type="text-h4"
@@ -199,10 +199,35 @@ const bookingDetails = Object.entries(bookingObj).map(([name, value]) => ({ name
         Timeline
       </Typography>
       <Timeline
-        :items="timeline"
+        :items="commitment.timeline"
         variant="vertical"
-        class="scrollbar overflow-auto"
+        class="scrollbar overflow-auto md:mb-10"
       />
+      <div
+        class="styledCommitActionsBtns static md:fixed bottom-8 flex pt-8 gap-4"
+      >
+        <Button
+          v-if="commitment.status === statuses.approved"
+          @click="emit('completeCommitment', commitment.id)"
+        >
+          complete
+        </Button>
+        <template v-if="commitment.status === statuses.pending">
+          <Button
+            @click="emit('approveCommitment', commitment.id)"
+          >
+            approve
+          </Button>
+          <Button
+            variant="outlined"
+            data="secondary1"
+            :style="{ background: 'rgba(var(--v-theme-uiPrimary), 1)' }"
+            @click="emit('declineCommitment', commitment.id)"
+          >
+            decline
+          </Button>
+        </template>
+      </div>
     </VCol>
   </VRow>
 </template>
@@ -235,5 +260,8 @@ const bookingDetails = Object.entries(bookingObj).map(([name, value]) => ({ name
       }
     }
   }
+}
+.styledCommitActionsBtns {
+  background: linear-gradient(transparent, rgba(var(--v-theme-uiPrimary), 1));
 }
 </style>

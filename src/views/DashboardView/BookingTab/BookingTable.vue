@@ -55,8 +55,7 @@ const containerActionHandler = async ({ action, e }) => {
     await approveCommitment(e[0].id)
   }
   if (action === 'complete-commitment') {
-    completeCommitmentDialog.value.show(true)
-    completeCommitmentDialog.value.data = e[0].id
+    openCompleteCommitmentDialog(e[0].id)
   }
   if (action === 'decline-commitment') {
     await declineCommitment(e[0].id)
@@ -65,6 +64,18 @@ const containerActionHandler = async ({ action, e }) => {
 const onSelectRow = e => {
   emit('selectTableRow', e)
 }
+const onApproveCommitment = async id => {
+  commitmentDetailsDialog.value.show(false)
+  await approveCommitment(id)
+}
+const openCompleteCommitmentDialog = id => {
+  completeCommitmentDialog.value.show(true)
+  completeCommitmentDialog.value.data = id
+}
+const onDeclineCommitment = async id => {
+  commitmentDetailsDialog.value.show(false)
+  await declineCommitment(id)
+}
 const removeBooking = id => {
   deleteBooking(id)
   removeBookingDialog.value.show(false)
@@ -72,6 +83,7 @@ const removeBooking = id => {
 const onCompleteCommitment = async (id, reason) => {
   await completeCommitment(id, reason)
   completeCommitmentDialog.value.show(false)
+  commitmentDetailsDialog.value.show(false)
 }
 const tableId = 'bookingsTable'
 onMounted(() => {
@@ -239,6 +251,9 @@ onMounted(() => {
     <template #text>
       <CommitmentDetailsDialog
         :commitment="commitmentDetailsDialog.data"
+        @approveCommitment="onApproveCommitment"
+        @completeCommitment="openCompleteCommitmentDialog"
+        @declineCommitment="onDeclineCommitment"
         @close="commitmentDetailsDialog.show(false)"
       />
     </template>
