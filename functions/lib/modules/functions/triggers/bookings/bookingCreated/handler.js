@@ -1,5 +1,5 @@
 import { onDocumentCreated } from 'firebase-functions/v2/firestore'
-import { bookingCreatedNotifier } from '~/notifications/notifications'
+import { bookingCreatedNotifier } from '~/notifications'
 import { sendBookingPlatformNotifcations } from '~/helpers/notifications'
 
 export default onDocumentCreated('bookings/{docId}', async event => {
