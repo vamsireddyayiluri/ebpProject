@@ -4,7 +4,10 @@ import { getLineAvatar } from '~/firebase/getLineAvatar'
 import { useDisplay } from 'vuetify'
 import { getBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
-import { useAuthStore } from "~/stores/auth.store"
+import { useAuthStore } from '~/stores/auth.store'
+import { useCommitmentsStore } from '~/stores/commitments.store'
+import { reasonCodes } from '~/constants/reasonCodes'
+import { statuses } from '~/constants/statuses'
 
 const props = defineProps({
   computedEntities: Array,
@@ -12,22 +15,51 @@ const props = defineProps({
   loading: Boolean,
 })
 const emit = defineEmits(['selectTableRow', 'editBooking'])
-const { deleteBooking } = useBookingsStore()
+const { deleteBooking, updateBookingStatus } = useBookingsStore()
+const { approveCommitment, completeCommitment, declineCommitment } = useCommitmentsStore()
 const { userData } = useAuthStore()
 const { smAndDown } = useDisplay()
 const showActions = ref(true)
 const tableHeight = ref(0)
 const removeBookingDialog = ref(false)
+const completeCommitmentDialog = ref(false)
+const completeReasonList = [
+  reasonCodes.onboarded,
+  reasonCodes.onboardMovedLoad,
+  reasonCodes.neverOnboarded,
+  reasonCodes.other,
+]
 
-const { bookingsHeaders } = useHeaders()
-const { bookingsActions } = useActions()
+const { bookingsHeaders, commitmentsHeaders } = useHeaders()
+const { bookingsActions, commitmentsActions } = useActions()
 const { getFormattedDateTime } = useDate()
+const commitmentDetailsDialog = ref(null)
 
-const containerActionHandler = ({ action, e }) => {
+const containerActionHandler = async ({ action, e }) => {
   if (action === 'edit-booking') emit('editBooking', e[0].id)
   if (action === 'remove-booking') {
     removeBookingDialog.value.show(true)
     removeBookingDialog.value.data = e[0]
+  }
+  if (action === 'pause-booking') {
+    await updateBookingStatus(e[0].id, statuses.paused)
+  }
+  if (action === 'reactive-booking') {
+    await updateBookingStatus(e[0].id, statuses.active)
+  }
+  if (action === 'view-trucker-details') {
+    commitmentDetailsDialog.value.show(true)
+    commitmentDetailsDialog.value.data = e[0]
+  }
+  if (action === 'approve-commitment') {
+    await approveCommitment(e[0].id)
+  }
+  if (action === 'complete-commitment') {
+    completeCommitmentDialog.value.show(true)
+    completeCommitmentDialog.value.data = e[0].id
+  }
+  if (action === 'decline-commitment') {
+    await declineCommitment(e[0].id)
   }
 }
 const onSelectRow = e => {
@@ -36,6 +68,10 @@ const onSelectRow = e => {
 const removeBooking = id => {
   deleteBooking(id)
   removeBookingDialog.value.show(false)
+}
+const onCompleteCommitment = async (id, reason) => {
+  await completeCommitment(id, reason)
+  completeCommitmentDialog.value.show(false)
 }
 const tableId = 'bookingsTable'
 onMounted(() => {
@@ -60,6 +96,7 @@ onMounted(() => {
       showActions,
       tableHeight: tableHeight,
       tableMinWidth: 960,
+      expansionRow: true,
     }"
     @onSelectRow="onSelectRow"
   >
@@ -88,6 +125,12 @@ onMounted(() => {
         class="h-8"
       >
     </template>
+    <template #status="{ item }">
+      <Classification
+        type="status"
+        :value="item.status"
+      />
+    </template>
     <template #expiry="{ item }">
       <Typography type="text-body-m-regular">
         {{ getFormattedDateTime(item.bookingExpiry) }}
@@ -98,7 +141,7 @@ onMounted(() => {
     </template>
     <template #worker="{ item }">
       <Typography>
-        {{ item.createdBy?.type }} {{ item.createdBy?.workerId ?? '' }}
+        {{ item.createdBy.fullName }}
       </Typography>
     </template>
     <template #progress="{ item }">
@@ -109,11 +152,49 @@ onMounted(() => {
 
     <template #actions="{ item, selected }">
       <MenuActions
-        :actions="bookingsActions"
+        :actions="() => bookingsActions(item.status)"
         :selected="selected"
         :container="item"
         @containerActionHandler="containerActionHandler"
       />
+    </template>
+    <template #expansion="{ item }">
+      <VirtualTable
+        :entities="item.entities"
+        :headers="commitmentsHeaders"
+        :options="{
+          rowHeight: 64,
+          showActions,
+          tableHeight: 575,
+          tableMinWidth: 640,
+        }"
+        class="pl-16"
+      >
+        <template #trucker="{ item }">
+          <Typography>
+            {{ item.scac }}
+          </Typography>
+        </template>
+        <template #committed="{ item }">
+          <Typography>
+            {{ item.committed }}
+          </Typography>
+        </template>
+        <template #status="{ item }">
+          <Classification
+            type="status"
+            :value="item.status"
+          />
+        </template>
+        <template #actions="{ item, selected }">
+          <MenuActions
+            :actions="() => commitmentsActions(item.status)"
+            :selected="selected"
+            :container="item"
+            @containerActionHandler="containerActionHandler"
+          />
+        </template>
+      </VirtualTable>
     </template>
   </VirtualTable>
 
@@ -133,6 +214,33 @@ onMounted(() => {
           from your bookings?
         </Typography>
       </RemoveCancelDialog>
+    </template>
+  </Dialog>
+  <Dialog
+    ref="completeCommitmentDialog"
+    max-width="480"
+  >
+    <template #text>
+      <CompleteCommitmentsDialog
+        title="Complete commitment"
+        sub-title="Did you onboard and work with halo lab delivery successfully?"
+        select-label="Select"
+        :reason-list="completeReasonList"
+        btn-name="confirm"
+        @close="completeCommitmentDialog.show(false)"
+        @onClickBtn="e => onCompleteCommitment(completeCommitmentDialog.data, e)"
+      />
+    </template>
+  </Dialog>
+  <Dialog
+    ref="commitmentDetailsDialog"
+    max-width="980"
+  >
+    <template #text>
+      <CommitmentDetailsDialog
+        :commitment="commitmentDetailsDialog.data"
+        @close="commitmentDetailsDialog.show(false)"
+      />
     </template>
   </Dialog>
 </template>

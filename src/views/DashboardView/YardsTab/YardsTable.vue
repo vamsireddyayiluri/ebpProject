@@ -140,7 +140,7 @@ onMounted(() => {
         </template>
         <template #worker="{ item }">
           <Typography>
-            {{ item.createdBy?.type }} {{ item.createdBy?.workerId ?? '' }}
+            {{ item.createdBy.fullName }}
           </Typography>
         </template>
         <template #progress="{ item }">
@@ -150,7 +150,7 @@ onMounted(() => {
         </template>
         <template #actions="{ item, selected }">
           <MenuActions
-            :actions="bookingsActions"
+            :actions="() => bookingsActions(item.status)"
             :selected="selected"
             :container="item"
             @containerActionHandler="containerActionHandler"

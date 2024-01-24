@@ -38,11 +38,22 @@ export const useBookingsStore = defineStore('bookings', () => {
     } else {
       const bookingsQuery = query(collection(db, 'bookings'), where('orgId', '==', orgId))
       const querySnapshot = await getDocs(bookingsQuery)
-      const data = querySnapshot.docs.map(doc => doc.data())
-      validateBookingsExpiry(data)
+      const dataPromises = querySnapshot.docs.map(async doc => {
+        const commitments = await getCommitments(doc.data().id)
+
+        return { ...doc.data(), entities: commitments }
+      })
+      const data = await Promise.all(dataPromises)
+      await validateBookingsExpiry(data)
       bookings.value = data
     }
     loading.value = false
+  }
+  const getCommitments = async bookingId => {
+    const q = await query(collection(db, 'commitments'), where('bookingId', '==', bookingId))
+    const docData = await getDocs(q)
+
+    return docData.docs.map(doc => doc.data())
   }
   const validateBookingsExpiry = async bookings => {
     const today = getLocalServerTime(moment(), 'America/Los_Angeles')
@@ -83,7 +94,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     }
   }
   const createBookingObj = booking => {
-    const { userId, orgId, type } = userData
+    const { userId, fullName, orgId, type } = userData
     const bookingId = uid(28)
 
     return {
@@ -96,8 +107,10 @@ export const useBookingsStore = defineStore('bookings', () => {
       updatedAt: getLocalTime().format(),
       carriers: [],
       preferredTruckers: preferredTruckers,
+      status: statuses.active,
       createdBy: {
         userId,
+        fullName,
         type,
         ...(userData?.workerId ? { workerId: userData.workerId } : {}),
       },
@@ -118,6 +131,17 @@ export const useBookingsStore = defineStore('bookings', () => {
       await setDoc(doc(collection(db, 'drafts'), newDraft.id), newDraft)
       drafts.value.push(newDraft)
       alertStore.info({ content: 'Draft created' })
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
+  const updateBookingStatus = async (id, status) => {
+    try {
+      await updateDoc(doc(db, 'bookings', id), {
+        status,
+      })
+      bookings.value.find(i => i.id === id).status = status
+      alertStore.info({ content: `Booking ${status}!` })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
@@ -190,5 +214,6 @@ export const useBookingsStore = defineStore('bookings', () => {
     publishDraft,
     removeFromNetwork,
     updateBooking,
+    updateBookingStatus,
   }
 })

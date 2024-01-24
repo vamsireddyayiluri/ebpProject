@@ -7,12 +7,15 @@ import { getColor } from '~/helpers/colors'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { storeToRefs } from 'pinia'
 import { groupedBookingLocations } from '~/stores/helpers'
+import { userTypes } from '~/constants/userTypes'
+import { useAuthStore } from "~/stores/auth.store"
 
 const props = defineProps({
   mapToggled: Boolean,
 })
 const emit = defineEmits(['closeMap', 'selectRow'])
 const bookingsStore = useBookingsStore()
+const { workers, userData } = useAuthStore()
 const { bookings } = storeToRefs(bookingsStore)
 const { smAndDown } = useDisplay()
 const router = useRouter()
@@ -39,6 +42,7 @@ const newId = ref(uid(8))
 const bookingStatisticsDialog = ref(null)
 const filters = ref({
   line: null,
+  workers: null,
 })
 const selectLine = ref(getAllLines())
 const createBookingDialog = ref(null)
@@ -143,6 +147,12 @@ const applyFilter = () => {
       yard => useArraySome(yard.lines, line => line.label === filters.value.line).value,
     ).value
   }
+  if (filters.value.workers) {
+    filteredData = useArrayFilter(
+      filteredData,
+      booking => booking.createdBy.userId === filters.value.workers.userId,
+    ).value
+  }
   computedFilteredEntities.value = filteredData
 }
 const onClickOutsideDialog = () => {
@@ -205,6 +215,18 @@ watch(searchValue, value => {
             label="SSL"
             item-title="label"
             item-value="type"
+            clearable
+            class="max-w-[224px]"
+            @update:modelValue="applyFilter"
+          />
+          <Select
+            v-if="userData.type === userTypes.admin"
+            v-model="filters.workers"
+            :items="workers"
+            label="Workers"
+            item-title="fullName"
+            item-value="id"
+            return-object
             clearable
             class="max-w-[224px]"
             @update:modelValue="applyFilter"
