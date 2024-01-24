@@ -6,6 +6,8 @@ import { getBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { useAuthStore } from '~/stores/auth.store'
 import { useCommitmentsStore } from '~/stores/commitments.store'
+import { reasonCodes } from '~/constants/reasonCodes'
+import { statuses } from '~/constants/statuses'
 
 const props = defineProps({
   computedEntities: Array,
@@ -13,17 +15,25 @@ const props = defineProps({
   loading: Boolean,
 })
 const emit = defineEmits(['selectTableRow', 'editBooking'])
-const { deleteBooking, pauseBooking } = useBookingsStore()
-const { approveCommitment, onboardCommitment, declineCommitment } = useCommitmentsStore()
+const { deleteBooking, updateBookingStatus } = useBookingsStore()
+const { approveCommitment, completeCommitment, declineCommitment } = useCommitmentsStore()
 const { userData } = useAuthStore()
 const { smAndDown } = useDisplay()
 const showActions = ref(true)
 const tableHeight = ref(0)
 const removeBookingDialog = ref(false)
+const completeCommitmentDialog = ref(false)
+const completeReasonList = [
+  reasonCodes.onboarded,
+  reasonCodes.onboardMovedLoad,
+  reasonCodes.neverOnboarded,
+  reasonCodes.other,
+]
 
 const { bookingsHeaders, commitmentsHeaders } = useHeaders()
 const { bookingsActions, commitmentsActions } = useActions()
 const { getFormattedDateTime } = useDate()
+const commitmentDetailsDialog = ref(null)
 
 const containerActionHandler = async ({ action, e }) => {
   if (action === 'edit-booking') emit('editBooking', e[0].id)
@@ -32,24 +42,48 @@ const containerActionHandler = async ({ action, e }) => {
     removeBookingDialog.value.data = e[0]
   }
   if (action === 'pause-booking') {
-    await pauseBooking(e[0].id)
+    await updateBookingStatus(e[0].id, statuses.paused)
   }
-  if (action === 'approve-commit') {
+  if (action === 'reactive-booking') {
+    await updateBookingStatus(e[0].id, statuses.active)
+  }
+  if (action === 'view-trucker-details') {
+    commitmentDetailsDialog.value.show(true)
+    commitmentDetailsDialog.value.data = e[0]
+  }
+  if (action === 'approve-commitment') {
     await approveCommitment(e[0].id)
   }
-  if (action === 'onboard-commit') {
-    await onboardCommitment(e[0].id)
+  if (action === 'complete-commitment') {
+    openCompleteCommitmentDialog(e[0].id)
   }
-  if (action === 'decline-commit') {
+  if (action === 'decline-commitment') {
     await declineCommitment(e[0].id)
   }
 }
 const onSelectRow = e => {
   emit('selectTableRow', e)
 }
+const onApproveCommitment = async id => {
+  commitmentDetailsDialog.value.show(false)
+  await approveCommitment(id)
+}
+const openCompleteCommitmentDialog = id => {
+  completeCommitmentDialog.value.show(true)
+  completeCommitmentDialog.value.data = id
+}
+const onDeclineCommitment = async id => {
+  commitmentDetailsDialog.value.show(false)
+  await declineCommitment(id)
+}
 const removeBooking = id => {
   deleteBooking(id)
   removeBookingDialog.value.show(false)
+}
+const onCompleteCommitment = async (id, reason) => {
+  await completeCommitment(id, reason)
+  completeCommitmentDialog.value.show(false)
+  commitmentDetailsDialog.value.show(false)
 }
 const tableId = 'bookingsTable'
 onMounted(() => {
@@ -192,6 +226,36 @@ onMounted(() => {
           from your bookings?
         </Typography>
       </RemoveCancelDialog>
+    </template>
+  </Dialog>
+  <Dialog
+    ref="completeCommitmentDialog"
+    max-width="480"
+  >
+    <template #text>
+      <CompleteCommitmentsDialog
+        title="Complete commitment"
+        sub-title="Did you onboard and work with halo lab delivery successfully?"
+        select-label="Select"
+        :reason-list="completeReasonList"
+        btn-name="confirm"
+        @close="completeCommitmentDialog.show(false)"
+        @onClickBtn="e => onCompleteCommitment(completeCommitmentDialog.data, e)"
+      />
+    </template>
+  </Dialog>
+  <Dialog
+    ref="commitmentDetailsDialog"
+    max-width="980"
+  >
+    <template #text>
+      <CommitmentDetailsDialog
+        :commitment="commitmentDetailsDialog.data"
+        @approveCommitment="onApproveCommitment"
+        @completeCommitment="openCompleteCommitmentDialog"
+        @declineCommitment="onDeclineCommitment"
+        @close="commitmentDetailsDialog.show(false)"
+      />
     </template>
   </Dialog>
 </template>

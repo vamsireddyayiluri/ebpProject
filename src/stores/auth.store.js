@@ -188,15 +188,6 @@ export const useAuthStore = defineStore('auth', () => {
         company: data.company,
       }
 
-      const q = query(collection(db, 'invitations'), where('email', '==', data.email))
-      const docData = await getDocs(q)
-
-      if (!docData.empty) {
-        const querySnapshot = docData.docs[0].data()
-
-        newUser = { invitedBy: querySnapshot.invitedBy, ...newUser }
-        docData.docs.map(async doc => await deleteDoc(doc.ref))
-      }
       await setDoc(doc(db, 'users', userId), newUser)
       userData.value = newUser
 
