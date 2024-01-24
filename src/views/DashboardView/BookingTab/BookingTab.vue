@@ -9,7 +9,6 @@ import { useBookingsStore } from '~/stores/bookings.store'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth.store'
 import { userTypes } from '~/constants/userTypes'
-
 const props = defineProps({
   mapToggled: Boolean,
 })
