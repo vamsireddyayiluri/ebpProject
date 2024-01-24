@@ -15,7 +15,11 @@ import container from '~/assets/images/container.png'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import containersSizes from '~/fixtures/containersSizes.json'
 import { useAlertStore } from '~/stores/alert.store'
-import { checkPositiveInteger, validateExpiryDate } from '~/helpers/validations-functions'
+import {
+  checkPositiveInteger,
+  validateExpiryDate,
+  validateFlexibleSizes,
+} from '~/helpers/validations-functions'
 
 const authStore = useAuthStore()
 const alertStore = useAlertStore()
@@ -55,6 +59,9 @@ const updateExpiryDate = value => {
 }
 const updatePreferredDate = value => {
   booking.value.preferredDate = value
+}
+const updateSize = () => {
+  booking.value.size = null
 }
 const toggleFlyoutPosition = () => {
   drawer.value = false
@@ -109,11 +116,33 @@ const animate = async () => {
   }, 2000)
 }
 const validateRequiredFields = () => {
-  return !form.value?.errors.length
+  return (
+    !(booking.value.ref &&
+    booking.value.containers &&
+    rules.containers(booking.value.containers) === true &&
+    booking.value.commodity &&
+    booking.value.weight &&
+    rules.containers(booking.value.weight) === true &&
+    booking.value.targetRate &&
+    rules.containers(booking.value.targetRate) === true &&
+    booking.value.bookingExpiry &&
+    booking.value.preferredDate &&
+    booking.value.scacList.list?.length &&
+    booking.value.size &&
+    booking.value.size
+      ? booking.value.size.length > 0
+      : false && booking.value.targetRateType) ||
+    validateFlexibleSizes(booking.value.size, booking.value.flexibleBooking)?.length > 0
+  )
 }
 
 const isDisabledPublish = computed(() => {
-  return validateRequiredFields() && !validExpiryDate.value
+  return (
+    validateRequiredFields() ||
+    !validExpiryDate.value ||
+    moment(booking.value.bookingExpiry).endOf('day').isBefore(currentDate.value) ||
+    moment(booking.value.preferredDate).endOf('day').isBefore(currentDate.value)
+  )
 })
 
 const validateBooking = computed(() => {
@@ -123,12 +152,11 @@ const validateBooking = computed(() => {
       ? drafts.value.find(i => i.id === booking.value.id)
       : bookings.value.find(i => i.id === booking.value.id),
   )
-  condition = condition || !validateRequiredFields()
-
+  condition = condition || validateRequiredFields()
   condition =
     condition ||
-    moment(booking.value.bookingExpiry).isBefore(currentDate.value) ||
-    moment(booking.value.preferredDate).isBefore(currentDate.value)
+    moment(booking.value.bookingExpiry).endOf('day').isBefore(currentDate.value) ||
+    moment(booking.value.preferredDate).endOf('day').isBefore(currentDate.value)
 
   if (!fromDraft) {
     condition = condition || !validExpiryDate.value
@@ -185,6 +213,9 @@ onMounted(async () => {
     booking.value = await getBooking({ id: route.params.id })
   }
   await getBookings(fromDraft ? { draft: true } : {})
+  await getBookings({})
+  bookings.value = useBookingsStore().bookings
+  yards.value = workDetailsStore.yards
   loading.value = false
 })
 </script>
@@ -311,10 +342,26 @@ onMounted(async () => {
             required
             :disabled="expired || completed"
           />
+          <Autocomplete
+            v-model="booking.line"
+            :items="getAllLines()"
+            label="SSL *"
+            required
+            item-title="label"
+            item-value="id"
+            return-object
+            :disabled="expired || completed"
+          />
+          <Textfield
+            v-model="booking.commodity"
+            label="Commodity*"
+            required
+            :disabled="expired || completed"
+          />
           <Datepicker
             :key="booking.bookingExpiry"
             :picked="booking.bookingExpiry ? moment(booking.bookingExpiry).toDate() : null"
-            label="Booking expiry *"
+            label="Loading date *"
             :disabled="!activated && (expired || completed)"
             :class="{ 'pointer-events-none': !activated && (expired || completed) }"
             :lower-limit="(booking.preferredDate && new Date(booking.preferredDate)) || currentDate"
@@ -331,17 +378,7 @@ onMounted(async () => {
             :lower-limit="currentDate"
             @onUpdate="updatePreferredDate"
           />
-          <Select
-            v-model="booking.line"
-            :items="getAllLines()"
-            label="SSL *"
-            required
-            item-title="label"
-            item-value="id"
-            return-object
-            :disabled="expired || completed"
-          />
-          <Select
+          <Autocomplete
             v-model="booking.location"
             :items="
               yards.map(yard => ({
@@ -359,23 +396,69 @@ onMounted(async () => {
             required
             :disabled="expired || completed"
           />
-          <AutocompleteScac
-            :key="booking.scacList"
-            :scac-list="booking.scacList"
+          <Textfield
+            v-model.number="booking.weight"
+            label="Average Weight*"
+            type="number"
+            :rules="[rules.containers]"
+            required
             :disabled="expired || completed"
           />
+
+          <Textfield
+            v-model.number="booking.targetRate"
+            label="Target Rate*"
+            :rules="[rules.containers]"
+            type="number"
+            required
+            :disabled="expired || completed"
+          />
+          <RadioGroup
+            v-model="booking.targetRateType"
+            inline
+            class="mt-3"
+          >
+            <Radio
+              value="All in rate"
+              label="All in rate"
+              :disabled="expired || completed"
+              class="mr-6"
+            />
+            <Radio
+              value="Linehaul + FSC Only"
+              label="Linehaul + FSC Only"
+              :disabled="expired || completed"
+            />
+          </RadioGroup>
           <Select
             v-model="booking.size"
             :items="containersSizes"
             label="Equipment type*"
             item-title="label"
             item-value="size"
+            :multiple="booking.flexibleBooking"
             :disabled="expired || completed"
+            :error-messages="validateFlexibleSizes(booking.size, booking.flexibleBooking)"
           />
+          <Checkbox
+            v-model="booking.flexibleBooking"
+            label="Flexible Booking*"
+            :disabled="expired || completed"
+            class="mt-3"
+            @change="updateSize"
+          />
+          <div>
+            <AutocompleteScac
+              :key="booking.scacList"
+              :scac-list="booking.scacList"
+              :disabled="expired || completed"
+            />
+          </div>
         </VForm>
         <SaveCancelChanges
           v-if="!(expired || completed) || activated"
           :disabled="validateBooking"
+          class="mt-10"
           @onSave="onSave"
           @onCancel="cancelChanges"
         />
@@ -385,9 +468,7 @@ onMounted(async () => {
         :class="[flyoutBottom || smAndDown ? 'bottom' : 'right', drawer ? 'active' : '']"
       >
         <div class="flex justify-between items-center">
-          <Typography type="text-h1">
-            Statistics
-          </Typography>
+          <Typography type="text-h1"> Statistics </Typography>
           <IconButton
             v-if="!smAndDown"
             :icon="!flyoutBottom ? 'mdi-dock-bottom' : 'mdi-dock-right'"
@@ -397,9 +478,7 @@ onMounted(async () => {
         </div>
         <div class="statisticsContent">
           <div class="statisticsProgress">
-            <Typography type="text-h4">
-              Fulfillment progress
-            </Typography>
+            <Typography type="text-h4"> Fulfillment progress </Typography>
             <ProgressCircular
               :size="260"
               :value="getBookingLoad(booking.committed, booking.containers)"
@@ -410,9 +489,7 @@ onMounted(async () => {
             </ProgressCircular>
           </div>
           <div class="statisticsTimeline">
-            <Typography type="text-h4">
-              Booking timeline
-            </Typography>
+            <Typography type="text-h4"> Booking timeline </Typography>
             <div class="timeline scrollbar">
               <Timeline
                 :items="[
@@ -451,7 +528,7 @@ onMounted(async () => {
         :src="container"
         class="container-img"
         alt="qualle container"
-      >
+      />
       <Typography
         type="text-h1"
         class="!text-7xl mb-4 text-center"

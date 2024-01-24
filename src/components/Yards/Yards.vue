@@ -4,6 +4,7 @@ import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { useAuthStore } from '~/stores/auth.store'
 import { storeToRefs } from 'pinia'
 import { uid } from 'uid'
+import geohash from 'ngeohash'
 
 const attrs = useAttrs()
 const workDetailsStore = useWorkDetailsStore()
@@ -23,13 +24,14 @@ const onSelectLocation = location => {
   newLocation.value.lng = location.lng
 }
 const addYard = async () => {
+  const geohashedLocation = geohash.encode(newLocation.value.lat, newLocation.value.lng)
   await workDetailsStore.addYard({
     id: uid(28),
     value: newLocation.value.address,
     label: newLocation.value.label,
     lat: newLocation.value.lat,
     lng: newLocation.value.lng,
-    geohash: '',
+    geohash: geohashedLocation,
     commodity: commodity.value,
     text: `Commodity: ${commodity.value}`,
   })
@@ -52,60 +54,41 @@ const removeYard = async () => {
     class="w-full md:w-11/12"
     v-bind="{ ...attrs }"
   >
-    <VRow
-      no-gutters
-      class="[&>div]:mb-4 [&>div]:text-left"
-    >
-      <VCol
-        cols="12"
-        sm="6"
-      >
-        <Location
-          v-model="newLocation.address"
-          label="Address"
-          hint="For e.g. 2972 Westheimer Santa Ana, Illinois"
-          persistent-hint
-          :autofocus="false"
-          :prepend-icon="xs ? '' : 'mdi-map'"
-          @onSelect="onSelectLocation"
-        />
-      </VCol>
-      <VCol
-        cols="12"
-        sm="6"
-      >
-        <Textfield
-          v-model.trim="newLocation.label"
-          type="text"
-          label="Location label"
-          hint="For e.g. Farm label"
-          persistent-hint
-          class="mx-0 sm:!ml-4"
-        />
-      </VCol>
-      <VCol
-        cols="12"
-        sm="6"
-      >
-        <Textfield
-          v-model.trim="commodity"
-          type="text"
-          label="Commodities that you export"
-          hint="For e.g. electronics, food"
-          persistent-hint
-          :prepend-icon="xs ? '' : 'mdi-package-variant'"
-        />
-      </VCol>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 [&>div]:text-left">
+      <Location
+        v-model="newLocation.address"
+        label="Address"
+        hint="For e.g. 2972 Westheimer Santa Ana, Illinois"
+        persistent-hint
+        :autofocus="false"
+        :prepend-icon="xs ? '' : 'mdi-map'"
+        @onSelect="onSelectLocation"
+      />
+      <Textfield
+        v-model.trim="newLocation.label"
+        type="text"
+        label="Location label"
+        hint="For e.g. Farm label"
+        persistent-hint
+      />
+      <Textfield
+        v-model.trim="commodity"
+        type="text"
+        label="Commodities that you export"
+        hint="For e.g. electronics, food"
+        persistent-hint
+        :prepend-icon="xs ? '' : 'mdi-package-variant'"
+      />
       <Button
         variant="outlined"
         type="button"
         :disabled="!newLocation?.address || !newLocation?.label"
-        class="w-full mx-0 sm:!ml-4 sm:!w-auto"
+        class="w-full sm:w-min"
         @click="addYard"
       >
         Add
       </Button>
-    </VRow>
+    </div>
     <LocationItems
       :locations="yards"
       is-close-btn

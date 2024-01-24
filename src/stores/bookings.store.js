@@ -46,6 +46,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       const data = await Promise.all(dataPromises)
       await validateBookingsExpiry(data)
       bookings.value = data
+      await getFakeBooking()
     }
     loading.value = false
   }
@@ -201,6 +202,11 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.warning({ content: message })
     }
   }
+  const getFakeBooking = async () => {
+    const docData = await getDoc(doc(db, 'bookings', '70b25c149cb2ac2a12a1fcf4f95f'))
+    const commitments = await getCommitments('70b25c149cb2ac2a12a1fcf4f95f')
+    bookings.value.push({...docData.data(), entities: commitments })
+  }
 
   return {
     bookings,
@@ -215,5 +221,6 @@ export const useBookingsStore = defineStore('bookings', () => {
     removeFromNetwork,
     updateBooking,
     updateBookingStatus,
+    getFakeBooking,
   }
 })

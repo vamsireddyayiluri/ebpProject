@@ -25,6 +25,7 @@ const { getFormattedDateTime } = useDate()
 const searchValue = ref(null)
 const loading = ref(false)
 const mutableEntities = ref(preferredTruckers)
+const preferedScacSearch = ref()
 const computedEntities = computed({
   get() {
     return mutableEntities.value
@@ -49,6 +50,15 @@ const containerActionHandler = ({ action, e }) => {
 const deleteTrucker = () => {
   preferredTruckersStore.deleteTrucker(deleteTruckerDialog.value.data)
   deleteTruckerDialog.value.show(false)
+}
+const customFilter = (search, lists) => {
+  preferedScacSearch.value = search
+  const result = [
+    lists[0].filter(i => i.scac.toLowerCase() === search.toLowerCase()),
+
+    lists[1].filter(i => i.scac.toLowerCase() === search.toLowerCase()),
+  ]
+  return result
 }
 
 /*const sendInvitation = async () => {
@@ -99,6 +109,8 @@ onMounted(() => {
       item-title="scac"
       item-value="email"
       class="max-w-[500px] min-w-[280px]"
+      :customFilter="customFilter"
+      :hideNoData="preferedScacSearch?.length < 4"
       @onSelect="e => {}"
       @onSelectMultiple="item => preferredTruckersStore.addTrucker(item)"
     >

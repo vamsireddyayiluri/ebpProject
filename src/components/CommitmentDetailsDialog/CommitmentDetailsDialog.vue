@@ -1,6 +1,5 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
-import { capitalize } from 'lodash'
 import { getLineAvatar } from '~/firebase/getLineAvatar'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { useDate } from '~/composables'
@@ -13,12 +12,17 @@ const emit = defineEmits(['close', 'approveCommitment', 'completeCommitment', 'd
 const { bookings } = useBookingsStore()
 const { getFormattedDate } = useDate()
 const details = ref([
-  { name: 'SCAC', value: 'ABCD' },
-  { name: 'Chassis Type', value: 'Private' },
   { name: 'Company name', value: 'FedEx Freight' },
+  { name: 'SCAC', value: 'ABCD' },
+  { name: 'Name', value: 'Vitaliy' },
+  { name: 'Contact number', value: '0123456789' },
+  { name: 'Secondary name', value: '0123456789' },
+  { name: 'Secondary number', value: '--' },
   { name: 'Email', value: 'fedex.freight@mail.com' },
-  { name: 'Contact Name', value: 'Helga Corlovich' },
-  { name: 'Cell Number', value: '0123456789' },
+  { name: 'Safer link', value: '2' },
+  { name: 'Number of truckers', value: '20' },
+  { name: 'Insurance amount', value: '250.000-500.000' },
+  { name: 'Authorized for Overweight', value: 'No' },
 ])
 const openedPanel = ref([0])
 const {
@@ -32,18 +36,6 @@ const {
   size,
   location,
 } = bookings.find(i => i.id === props.commitment.bookingId)
-const bookingObj = {
-  ref: bookingRef,
-  containers,
-  committed,
-  status,
-  'loading date': getFormattedDate(bookingExpiry),
-  commodity,
-  line,
-  size,
-  'export facility': location,
-}
-const bookingDetails = Object.entries(bookingObj).map(([name, value]) => ({ name, value }))
 </script>
 
 <template>
@@ -137,47 +129,98 @@ const bookingDetails = Object.entries(bookingObj).map(([name, value]) => ({ name
               </Typography>
             </ExpansionPanelTitle>
             <ExpansionPanelText class="pa-0">
-              <VRow
-                v-for="({ name, value }, n) in bookingDetails"
-                :key="n"
-                no-gutters
-                justify="space-between"
-                class="py-1.5 mb-3 last:!mb-0"
-              >
+              <div class="grid grid-cols-2 items-center [&>div]:py-2.5">
                 <Typography type="text-body-s-regular">
-                  {{ capitalize(name) }}
+                  Ref
                 </Typography>
-                <template v-if="name === 'status'">
-                  <Classification
-                    type="status"
-                    :value="value"
-                    class="-my-2"
-                  />
-                </template>
-                <template v-else-if="name === 'line'">
-                  <img
-                    :src="getLineAvatar(value.id)"
-                    :alt="value.label"
-                    class="h-8"
-                  >
-                </template>
-                <template v-else-if="name === 'export facility'">
+                <Typography
+                  type="text-body-s-regular text-end"
+                  :color="getColor('textSecondary')"
+                >
+                  {{ bookingRef }}
+                </Typography>
+                <Typography type="text-body-s-regular">
+                  Containers
+                </Typography>
+                <Typography
+                  type="text-body-s-regular text-end"
+                  :color="getColor('textSecondary')"
+                >
+                  {{ containers }}
+                </Typography>
+                <Typography type="text-body-s-regular">
+                  Committed
+                </Typography>
+                <Typography
+                  type="text-body-s-regular text-end"
+                  :color="getColor('textSecondary')"
+                >
+                  {{ committed }}
+                </Typography>
+                <Typography type="text-body-s-regular">
+                  Status
+                </Typography>
+                <Classification
+                  type="status"
+                  :value="commitment.status"
+                  class="w-min h-fit ml-auto"
+                />
+                <template v-if="commitment.status === statuses.declined || commitment.status === statuses.incomplete">
+                  <Typography type="text-body-s-regular">
+                    Reason
+                  </Typography>
                   <Typography
-                    type="text-body-s-regular ml-1"
+                    type="text-body-s-regular text-end"
                     :color="getColor('textSecondary')"
                   >
-                    {{ value.address }}
+                    {{ commitment.reason }}
                   </Typography>
                 </template>
-                <template v-else>
-                  <Typography
-                    type="text-body-s-regular ml-1"
-                    :color="getColor('textSecondary')"
-                  >
-                    {{ value }}
-                  </Typography>
-                </template>
-              </VRow>
+                <Typography type="text-body-s-regular">
+                  Loading date
+                </Typography>
+                <Typography
+                  type="text-body-s-regular text-end"
+                  :color="getColor('textSecondary')"
+                >
+                  {{ getFormattedDate(bookingExpiry) }}
+                </Typography>
+                <Typography type="text-body-s-regular">
+                  Commodity
+                </Typography>
+                <Typography
+                  type="text-body-s-regular text-end"
+                  :color="getColor('textSecondary')"
+                >
+                  {{ commodity }}
+                </Typography>
+                <Typography type="text-body-s-regular">
+                  Line
+                </Typography>
+                <img
+                  :src="getLineAvatar(line.id)"
+                  :alt="line.label"
+                  class="h-8 ml-auto"
+                >
+                <Typography type="text-body-s-regular">
+                  Size
+                </Typography>
+                <Typography
+                  type="text-body-s-regular text-end"
+                  :color="getColor('textSecondary')"
+                >
+                  {{ size }}
+                </Typography>
+                <Typography type="text-body-s-regular">
+                  Export facility
+                </Typography>
+                <Typography
+                  type="text-body-s-regular text-end"
+                  :color="getColor('textSecondary')"
+                >
+                  {{ location.address }}
+                </Typography>
+              </div>
             </ExpansionPanelText>
           </ExpansionPanel>
         </ExpansionPanels>
