@@ -56,7 +56,7 @@ onUpdated(() => {
   <div class="notificationTab w-full md:w-2/3 lg:w-1/2">
     <Typography type="text-h1 mb-8"> Notifications </Typography>
 
-    <div v-if="!loading">
+    <div v-if="!loading" id="newsAndUpdates">
       <div class="w-fit flex items-center relative">
         <Switch
           v-model="settings.newsAndUpdates.active"
@@ -96,6 +96,7 @@ onUpdated(() => {
     <div
       v-if="!loading"
       class="my-6 mb-14"
+      id='bookingsInfo'
     >
       <div class="w-fit flex items-center relative">
         <Switch

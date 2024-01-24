@@ -1,5 +1,5 @@
 import { onDocumentCreated } from 'firebase-functions/v2/firestore'
-import { commitCreatedNotifier } from '~/notifications'
+import { commitCreatedNotifier } from '~/helpers/notifications'
 import { addCommitmentCreationToBooking } from '~/timelinesUpdater'
 
 export default onDocumentCreated('commitments/{docId}', async event => {

@@ -1,4 +1,4 @@
-import { db } from '../index'
+import { db } from '../../index'
 import { FieldValue } from 'firebase-admin/firestore'
 import { uid } from 'uid'
 import moment from 'moment-timezone'
