@@ -5,7 +5,7 @@ import { storeToRefs } from 'pinia'
 import { useAlertStore } from '~/stores/alert.store'
 import { useHeaders, useDocumentsChip } from '~/composables'
 import truckers from '~/fixtures/preferredTruckers.json'
-import { isEqual } from 'lodash'
+import { isEqual, cloneDeep } from 'lodash'
 
 const alertStore = useAlertStore()
 const truckerManagement = useTruckerManagementStore()
@@ -14,16 +14,18 @@ const { requiresForTruckers, questionList } = storeToRefs(truckerManagement)
 const openedPanel = ref([2])
 const loading = ref(false)
 const documentsDialog = ref(null)
-const truckerManagementDB = ref({ requiresForTruckers: null, questionList: null })
+let truckerManagementDB = ref({ requiresForTruckers: null, questionList: null })
+const isDisabled = ref(false)
 
 const validateRequirements = computed(() => {
-  return isEqual(
+  isDisabled.value = isEqual(
     { requiresForTruckers: requiresForTruckers.value, questionList: questionList.value },
     {
-      requiresForTruckers: truckerManagementDB.value.requiresForTruckers,
-      questionList: truckerManagementDB.value.questionList,
+      requiresForTruckers: truckerManagementDB.requiresForTruckers,
+      questionList: truckerManagementDB.questionList,
     },
   )
+  return isDisabled.value
 })
 const openDocuments = doc => {
   documentsDialog.value.show(true)
@@ -34,17 +36,17 @@ const saveTruckerRequirements = async () => {
     requiresForTruckers: requiresForTruckers.value,
     questionList: questionList.value,
   })
-  truckerManagementDB.value = data
+  truckerManagementDB = cloneDeep(data)
+  isDisabled.value = true
 }
 const cancelChanges = async () => {
   const data = await truckerManagement.getTruckerRequirements()
-  requiresForTruckers.value = data.requiresForTruckers
-  questionList.value = data.questionList
+  requiresForTruckers.value = cloneDeep(data.requiresForTruckers)
+  questionList.value = cloneDeep(data.questionList)
 }
-
 onMounted(async () => {
   const data = await truckerManagement.getTruckerRequirements()
-  truckerManagementDB.value = data
+  truckerManagementDB = cloneDeep(data)
   await truckerManagement.getOnboardingDocuments()
 })
 </script>
@@ -62,16 +64,14 @@ onMounted(async () => {
   >
     <ExpansionPanel elevation="0">
       <ExpansionPanelTitle :color="getColor('uiSecondary-02')">
-        <Typography type="text-h4">
-          Trucker requirements
-        </Typography>
+        <Typography type="text-h4"> Trucker requirements </Typography>
       </ExpansionPanelTitle>
       <ExpansionPanelText class="w-full md:w-2/3 lg:w-4/3 pt-4">
         <div>
           <TruckerRequirements :scac-section="false" />
           <SaveCancelChanges
             class="mt-10"
-            :disabled="validateRequirements"
+            :disabled="validateRequirements || isDisabled"
             @onSave="saveTruckerRequirements"
             @onCancel="cancelChanges"
           />
@@ -80,9 +80,7 @@ onMounted(async () => {
     </ExpansionPanel>
     <ExpansionPanel elevation="0">
       <ExpansionPanelTitle :color="getColor('uiSecondary-02')">
-        <Typography type="text-h4">
-          Required onboarding documents
-        </Typography>
+        <Typography type="text-h4"> Required onboarding documents </Typography>
       </ExpansionPanelTitle>
       <ExpansionPanelText class="w-full md:w-2/3 lg:w-4/3 pt-4">
         <div>
@@ -92,9 +90,7 @@ onMounted(async () => {
     </ExpansionPanel>
     <ExpansionPanel elevation="0">
       <ExpansionPanelTitle :color="getColor('uiSecondary-02')">
-        <Typography type="text-h4">
-          Onboarding
-        </Typography>
+        <Typography type="text-h4"> Onboarding </Typography>
       </ExpansionPanelTitle>
       <ExpansionPanelText class="pt-4">
         <VirtualTable
