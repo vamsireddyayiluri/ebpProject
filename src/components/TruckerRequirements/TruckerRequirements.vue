@@ -29,7 +29,7 @@ const removeTrucker = item => {
 const filterItems = event => {
   search.value = event.target.value
   const filter = scacList.filter(val => val.toLowerCase() === search.value.toLowerCase())
-  if (filter.length) {
+  if (filter?.length) {
     filteredScacList.value.push(...filter)
   } else {
     filteredScacList.value.splice(0, filteredScacList.value.length)
@@ -59,7 +59,6 @@ const confirmSendInvitation = trucker => {
       with-btn
       @input="filterItems"
       @blur="clearData"
-      :hide-no-data="search.length < 3"
       class="text-left"
     >
       <template #no-data>

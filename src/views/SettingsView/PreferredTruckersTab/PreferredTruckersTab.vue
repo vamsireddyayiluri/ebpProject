@@ -110,7 +110,7 @@ onMounted(() => {
       item-value="email"
       class="max-w-[500px] min-w-[280px]"
       :customFilter="customFilter"
-      :hideNoData="preferedScacSearch.length < 4"
+      :hideNoData="preferedScacSearch?.length < 4"
       @onSelect="e => {}"
       @onSelectMultiple="item => preferredTruckersStore.addTrucker(item)"
     >
