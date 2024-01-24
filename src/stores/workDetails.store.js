@@ -11,7 +11,7 @@ export const useWorkDetailsStore = defineStore('workDetails', () => {
   const yards = ref([])
 
   const getYards = () => {
-    yards.value = authStore.orgData.workDetails.map(i => {
+    yards.value = authStore.orgData?.workDetails?.map(i => {
       return {
         ...i,
         text: `Commodity: ${i.commodity}`,
@@ -38,7 +38,7 @@ export const useWorkDetailsStore = defineStore('workDetails', () => {
     }
     try {
       await updateDoc(doc(db, 'organizations', orgData.orgId), data)
-      alertStore.info({ content: 'Work details saved!' })
+      alertStore.info({ content: 'Yard details saved!' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }

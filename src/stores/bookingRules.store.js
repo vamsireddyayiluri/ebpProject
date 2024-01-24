@@ -11,7 +11,7 @@ export const useBookingRulesStore = defineStore('bookingRules', () => {
   const alertStore = useAlertStore()
   const rules = ref({
     yard: bookingRules.yard || null,
-    truckers: bookingRules.truckers || { list: [] },
+    truckers: bookingRules?.truckers || { list: [] },
     timeForTruckersFromMarketplace: bookingRules.timeForTruckersFromMarketplace || null,
     timeForNotificationBeforeCutoff: bookingRules.timeForNotificationBeforeCutoff || null,
   })

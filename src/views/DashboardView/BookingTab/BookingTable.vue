@@ -15,8 +15,8 @@ const props = defineProps({
   loading: Boolean,
 })
 const emit = defineEmits(['selectTableRow', 'editBooking'])
-const { deleteBooking, updateBookingStatus } = useBookingsStore()
-const { approveCommitment, completeCommitment, declineCommitment } = useCommitmentsStore()
+const { deleteBooking, pauseBooking, createDraft, updateBookingStatus } = useBookingsStore()
+const { approveCommitment, declineCommitment, completeCommitment } = useCommitmentsStore()
 const { userData } = useAuthStore()
 const { smAndDown } = useDisplay()
 const showActions = ref(true)
@@ -78,6 +78,7 @@ const onDeclineCommitment = async id => {
 }
 const removeBooking = id => {
   deleteBooking(id)
+  createDraft(removeBookingDialog.value.data)
   removeBookingDialog.value.show(false)
 }
 const onCompleteCommitment = async (id, reason) => {
@@ -135,7 +136,7 @@ onMounted(() => {
         :src="getLineAvatar(item.line.id)"
         :alt="item.line.label"
         class="h-8"
-      >
+      />
     </template>
     <template #status="{ item }">
       <Classification

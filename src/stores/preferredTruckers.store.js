@@ -7,11 +7,11 @@ import { db } from '~/firebase'
 
 export const usePreferredTruckersStore = defineStore('preferredTruckers', () => {
   const { orgData } = useAuthStore()
-  const preferredTruckers = ref(orgData.preferredTruckers || [])
+  const preferredTruckers = ref(orgData?.preferredTruckers || [])
   const alertStore = useAlertStore()
 
   const inviteTrucker = async email => {
-    const index = preferredTruckers.value.findIndex(i => i?.email === email)
+    const index = preferredTruckers?.value.findIndex(i => i?.email === email)
     if (index > -1) {
       alertStore.warning({ content: 'User exist in your list' })
 

@@ -26,11 +26,13 @@ import { getOrgId } from '~/stores/helpers'
 import { userTypes } from '~/constants/userTypes'
 import firebase from 'firebase/compat/app'
 import { useInvitationStore } from '~/stores/invitation.store'
+import { useNotificationStore } from '~/stores/notification.store'
 
 export const useAuthStore = defineStore('auth', () => {
   const router = useRouter()
   const alertStore = useAlertStore()
   const invitationStore = useInvitationStore()
+  const notificationStore = useNotificationStore()
   const currentUser = ref(null)
   const storage = getStorage()
   const userData = ref(null)
@@ -213,11 +215,7 @@ export const useAuthStore = defineStore('auth', () => {
         requiresForTruckers: data.requiresForTruckers,
         questionList: data.questionList,
       })
-      await setDoc(doc(db, 'notifications', data.orgId), {
-        orgId: data.orgId,
-        settings: {},
-        list: [],
-      })
+      await notificationStore.createNotificationCollection(data.orgId)
       await deleteDoc(doc(db, 'pending_verifications', data.id))
       await getUser()
 
@@ -292,7 +290,7 @@ export const useAuthStore = defineStore('auth', () => {
   const getOrgWorkers = async () => {
     const q = query(collection(db, 'users'), where('orgId', '==', userData.value.orgId))
     const querySnapshot = await getDocs(q)
-    workers.value = querySnapshot.docs.map(doc => (doc.data()))
+    workers.value = querySnapshot.docs.map(doc => doc.data())
   }
 
   return {

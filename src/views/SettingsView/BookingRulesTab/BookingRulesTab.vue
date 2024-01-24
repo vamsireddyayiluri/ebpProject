@@ -73,11 +73,12 @@ tryOnUnmounted(() => {
         class="bookingRules"
         :rules="[errorRules.days(rules.timeForTruckersFromMarketplace)]"
       />
-      <AutocompleteScac
-        :scac-list="rules.truckers"
-        :menu-btn="false"
-        class="order-4 sm:!order-3 !-mb-4"
-      />
+      <div class="order-4 sm:!order-3 !-mb-4 flex flex-col">
+        <AutocompleteScac
+          :scac-list="rules.truckers"
+          :menu-btn="false"
+        />
+      </div>
       <Textfield
         v-model.number="rules.timeForNotificationBeforeCutoff"
         type="number"

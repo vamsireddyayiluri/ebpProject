@@ -1,10 +1,12 @@
 <script setup>
 import { useAuthStore } from '~/stores/auth.store'
 import { useInvitationStore } from '~/stores/invitation.store'
+import { useAlertStore } from '~/stores/alert.store'
 
 const isPasswordVisible = ref(false)
 const authStore = useAuthStore()
 const invitationStore = useInvitationStore()
+const alertStore = useAlertStore()
 const router = useRouter()
 const form = reactive({
   id: '',

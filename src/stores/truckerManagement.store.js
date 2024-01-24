@@ -8,7 +8,7 @@ import { db, storage } from '~/firebase'
 
 export const useTruckerManagementStore = defineStore('truckerManagement', () => {
   const alertStore = useAlertStore()
-  const requiresForTruckers = ref(listRequiresForTruckers)
+  const requiresForTruckers = ref(JSON.parse(JSON.stringify(listRequiresForTruckers)))
   const questionList = ref([])
   const onboardingDocuments = ref([])
   const preferredTruckersList = ref([])

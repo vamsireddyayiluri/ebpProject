@@ -8,6 +8,7 @@ import { patterns } from '@qualle-admin/qutil'
 import { emailRegex, phoneRegex } from '@qualle-admin/qutil/dist/patterns'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { useTruckerManagementStore } from '~/stores/truckerManagement.store'
+import listRequiresForTruckers from '~/fixtures/requiresForTruckers.json'
 
 const authStore = useAuthStore()
 const workDetailsStore = useWorkDetailsStore()
@@ -47,7 +48,7 @@ const steps = {
       form.password === form.confirmPassword,
   },
   'work-details': {
-    title: 'Work details',
+    title: 'Yard details',
     isValid: () => true,
   },
   'invite-members': {
@@ -88,6 +89,13 @@ const onSubmit = async () => {
     stepper.goToNext()
   }
 }
+onMounted(async () => {
+  workDetailsStore.yards = []
+  truckerManagement.requiresForTruckers = JSON.parse(JSON.stringify(listRequiresForTruckers))
+  truckerManagement.questionList = []
+  truckerManagement.onboardingDocuments = []
+  truckerManagement.preferredTruckersList = []
+})
 </script>
 
 <template>
@@ -176,10 +184,20 @@ const onSubmit = async () => {
       </div>
       <div class="mt-10 mx-auto">
         <Button
+          v-show="!stepper.isFirst.value"
+          variant="outlined"
+          class="max-w-[360px] sm:max-w-[220px] w-full mr-0 sm:!mr-5 mb-5 sm:!mb-0"
+          @click="goToStep(stepper.stepNames.value[stepper.index.value - 1])"
+        >
+          Back
+        </Button>
+        <Button
           v-if="!stepper.isLast.value"
           :disabled="!stepper.current.value.isValid()"
           type="submit"
-          class="max-w-[360px] w-full"
+          :class="
+            stepper.isFirst.value ? 'max-w-[360px] w-full' : 'max-w-[360px] sm:max-w-[220px] w-full'
+          "
         >
           Next
         </Button>
@@ -187,7 +205,7 @@ const onSubmit = async () => {
           v-if="stepper.isLast.value"
           :disabled="!stepper.current.value.isValid()"
           type="submit"
-          class="max-w-[360px] w-full"
+          class="max-w-[220px] w-full"
         >
           Create workspace
         </Button>

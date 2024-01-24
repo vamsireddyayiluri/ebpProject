@@ -4,7 +4,7 @@ import { Main } from '@layouts'
 const tab = ref(0)
 const tabs = [
   {
-    label: 'Work details',
+    label: 'Yard Details',
   },
   {
     label: 'Team members',
