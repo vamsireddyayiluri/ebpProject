@@ -1,4 +1,4 @@
-import { db } from '../index'
+import { db } from '../notifications/index'
 import { bookingRemovedNotifier } from '~/notifications'
 
 export const removeBookingListener = async data => {
