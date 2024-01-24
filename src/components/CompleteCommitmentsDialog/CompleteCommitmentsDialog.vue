@@ -1,6 +1,6 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
-import { reasonCodes } from '~/constants/reasonCodes'
+import { onboardingCodes } from '~/constants/reasonCodes'
 
 const props = defineProps({
   title: String,
@@ -16,7 +16,7 @@ const reportReason = ref(null)
 const yourReason = ref()
 const extended = computed(
   () =>
-    reportReason.value === reasonCodes.neverOnboarded || reportReason.value === reasonCodes.other,
+    reportReason.value === onboardingCodes.neverOnboarded || reportReason.value === onboardingCodes.other,
 )
 
 const onReport = () => {

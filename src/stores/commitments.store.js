@@ -4,7 +4,7 @@ import { db } from '~/firebase'
 import { statuses } from '~/constants/statuses'
 import { useAlertStore } from '~/stores/alert.store'
 import { useBookingsStore } from '~/stores/bookings.store'
-import { reasonCodes } from '~/constants/reasonCodes'
+import { onboardingCodes } from '~/constants/reasonCodes'
 
 export const useCommitmentsStore = defineStore('commitments', () => {
   const alertStore = useAlertStore()
@@ -29,7 +29,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
   }
   const completeCommitment = async (id, reason) => {
     const obj = {}
-    if (reasonCodes.onboarded === reason || reasonCodes.onboardMovedLoad === reason) {
+    if (onboardingCodes.onboarded === reason || onboardingCodes.onboardMovedLoad === reason) {
       obj.status = statuses.onboarded
     } else {
       obj.status = statuses.incomplete
@@ -53,16 +53,18 @@ export const useCommitmentsStore = defineStore('commitments', () => {
     }
   }
 
-  const declineCommitment = async id => {
+  const declineCommitment = async (id, reason) => {
     try {
       await updateDoc(doc(db, 'commitments', id), {
         status: statuses.declined,
+        reason,
       })
       bookingsStore.bookings.forEach(i => {
         i.entities.forEach(j => {
           i.expand = true
           if (j.id === id) {
-            j.status = statuses.declined
+            j.status = statuses.declined,
+            reason
           }
         })
       })
