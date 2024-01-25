@@ -144,7 +144,7 @@ watch(searchValue, value => {
         </Typography>
       </template>
       <template #yardLabel="{ item }">
-        <Typography>
+        <FlexTypography>
           <Highlighter
             v-if="searchValue"
             :query="searchValue"
@@ -154,7 +154,7 @@ watch(searchValue, value => {
           <template v-else>
             {{ item.location.label || '--' }}
           </template>
-        </Typography>
+        </FlexTypography>
       </template>
       <template #ssl="{ item }">
         <Typography>

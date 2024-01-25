@@ -84,15 +84,17 @@ onMounted(() => {
       >
     </template>
     <template #yardLabel="{ item }">
-      <Highlighter
-        v-if="searchValue"
-        :query="searchValue"
-      >
-        {{ item.location?.label }}
-      </Highlighter>
-      <template v-else>
-        {{ item.location?.label }}
-      </template>
+      <FlexTypography type="text-body-m-regular">
+        <Highlighter
+          v-if="searchValue"
+          :query="searchValue"
+        >
+          {{ item.location?.label }}
+        </Highlighter>
+        <template v-else>
+          {{ item.location?.label }}
+        </template>
+      </FlexTypography>
     </template>
     <template #worker="{ item }">
       <Typography>

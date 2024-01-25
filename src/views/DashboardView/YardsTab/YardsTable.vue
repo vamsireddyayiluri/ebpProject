@@ -63,7 +63,7 @@ onMounted(() => {
     @onSelectRow="onSelectRow"
   >
     <template #yardLabel="{ item }">
-      <Typography type="text-body-m-regular">
+      <FlexTypography type="text-body-m-regular">
         <Highlighter
           v-if="searchValue"
           :query="searchValue"
@@ -73,7 +73,7 @@ onMounted(() => {
         <template v-else>
           {{ item.location.label || '--' }}
         </template>
-      </Typography>
+      </FlexTypography>
     </template>
     <template #location="{ item }">
       <Typography type="text-body-m-regular">
@@ -119,9 +119,9 @@ onMounted(() => {
           </Typography>
         </template>
         <template #yardLabel="{ item }">
-          <Typography type="text-body-m-regular">
+          <FlexTypography type="text-body-m-regular">
             {{ item.location.label || '--' }}
-          </Typography>
+          </FlexTypography>
         </template>
         <template #ssl="{ item }">
           <img

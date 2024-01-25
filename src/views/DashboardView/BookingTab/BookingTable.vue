@@ -139,9 +139,9 @@ onMounted(() => {
       </Typography>
     </template>
     <template #yardLabel="{ item }">
-      <Typography type="text-body-m-regular">
+      <FlexTypography type="text-body-m-regular">
         {{ item.location.label || '--' }}
-      </Typography>
+      </FlexTypography>
     </template>
     <template #ssl="{ item }">
       <img
