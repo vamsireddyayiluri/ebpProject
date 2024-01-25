@@ -8,7 +8,7 @@ export const editRowData = {
 
 export const editBookingData = {
   // ssl: 'MCL',
-  equipmentType: '45 Foot High Cube',
+  equipmentType: { flexibleBooking: false, size: '20 Foot Flat Rack' },
   expiry: { date: moment().format('DD') },
 }
 

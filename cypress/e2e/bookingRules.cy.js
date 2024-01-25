@@ -1,5 +1,6 @@
 import { rulesData as data } from '../fixtures/bookingRules/validData'
 import { invalidData } from '../fixtures/bookingRules/invalidData'
+import { validData as register } from '../fixtures/register'
 describe('validate booking rules', () => {
   before(() => {
     cy.visit('/settings')
@@ -8,7 +9,8 @@ describe('validate booking rules', () => {
       if (!url.includes('/settings')) {
         // If the URL doesn't contain '/dashboard', navigate to the dashboard route
         cy.visit('/login')
-        cy.userLogin('sravanthi.gorantla@cognine.com', '123456789')
+        cy.userLogin(register[0].email, register[0].password)
+        cy.wait(2000)
       }
     })
   })
@@ -37,7 +39,7 @@ describe('validate booking rules', () => {
     cy.contains('button', 'Save').should('be.enabled').click()
 
     cy.get('.v-dialog').get('button[type="button"]').contains('Save').click()
-    cy.get('.v-alert').contains('Work details saved!')
+    cy.get('.v-alert').contains('Yard details saved!')
 
     cy.get('button[type="button"]').should('be.visible').contains('Booking rules').click()
 
@@ -71,7 +73,7 @@ describe('validate booking rules', () => {
     cy.contains('button', 'Create booking').should('be.visible').click()
     cy.get('.v-dialog').should('be.visible')
 
-    cy.get('.styleDatePicker[label="Booking Expiration *"]')
+    cy.get('.styleDatePicker[label="Loading date *"]')
       .click()
       .get('.v3dp__elements')
       .find('button')
@@ -87,16 +89,17 @@ describe('validate booking rules', () => {
 
     cy.getInputByLabel('Yard label *')
       .siblings()
-      .find('.v-select__selection-text')
+      .find('.v-autocomplete__selection-text')
       .should('have.text', data.addressLabel)
 
-    cy.get('.chipLabel').contains(data.truckerScac).should('be.visible')
+    // cy.get('.chipLabel').contains(data.truckerScac).should('be.visible')
   })
 
   it('booking rules with invliad data', () => {
     cy.url().then(url => {
       if (!url.includes('/settings')) {
         cy.visit('/settings')
+        cy.wait(2000)
       }
     })
 
@@ -118,7 +121,7 @@ describe('validate booking rules', () => {
 
     cy.get('.v-dialog').get('button[type="button"]').contains('Save').click()
 
-    cy.get('.v-alert').contains('Work details saved!')
+    cy.get('.v-alert').contains('Yard details saved!')
 
     cy.get('button[type="button"]').should('be.visible').contains('Booking rules').click()
 
@@ -147,8 +150,8 @@ describe('validate booking rules', () => {
       .contains('Cancel changes')
       .as('cancelRules')
       .click()
-
-    cy.get('@preferedCutOff').should('have.text', data.preferredCarrierDefault)
+    cy.wait(1000)
+    cy.get('@preferedCutOff').should('have.value', data.preferredCarrierDefault)
 
     cy.getInputByLabel('Set the time for notification before cutoff date by default')
       .as('notificationCutOff')

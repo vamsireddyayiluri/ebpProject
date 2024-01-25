@@ -11,7 +11,7 @@ export function fillBookingSSL(ssl) {
     .click()
 }
 export function fillBookingExpiry(expiry) {
-  cy.get('.styleDatePicker[label="Booking expiry *"]').click().as('datePicker')
+  cy.get('.styleDatePicker[label="Loading date *"]').click().as('datePicker')
 
   // cy.get('.v3dp__heading > .v3dp__heading__button :visible').last().click()
   cy.get('@datePicker')
@@ -24,7 +24,7 @@ export function fillBookingExpiry(expiry) {
     .click({ force: true })
 }
 export function fillBookingExpiration(expiry) {
-  cy.get('.styleDatePicker[label="Booking Expiration *"]').click().as('datePicker')
+  cy.get('.styleDatePicker[label="Loading date *"]').click().as('datePicker')
 
   // cy.get('.v3dp__heading > .v3dp__heading__button :visible').last().click()
   cy.get('@datePicker')
@@ -56,12 +56,21 @@ export function fillBookingYard(yard) {
   cy.get('.v-list-item-title').contains(yard).click()
 }
 
-export function fillBookingEquipment(size) {
-  cy.getInputByLabel('Equipment type*').click({ force: true })
+export function fillBookingEquipment(equipmentType) {
+  if (equipmentType.flexibleBooking) {
+    cy.getInputByLabel('Flexible booking*').check()
+    cy.getInputByLabel('Equipment type*').click({ force: true })
+    cy.get('.v-overlay__content > .v-list > .v-list-item > .v-list-item__content').as('list')
+    equipmentType.size.forEach(val => {
+      cy.get('@list').contains(val).click()
+    })
+  } else {
+    cy.getInputByLabel('Equipment type*').click({ force: true })
 
-  cy.get('.v-overlay__content > .v-list > .v-list-item > .v-list-item__content')
-    .contains(size)
-    .click()
+    cy.get('.v-overlay__content > .v-list > .v-list-item > .v-list-item__content')
+      .contains(equipmentType.size)
+      .click()
+  }
 }
 
 export function fillTruckerScac(truckerScac) {
@@ -72,6 +81,24 @@ export function fillTruckerScac(truckerScac) {
       .click()
 
     // cy.get('.chipLabel').contains(data.TruckersScac).should('be.visible')
+  }
+}
+
+export function fillcommodity(commodity) {
+  if (commodity) {
+    cy.getInputByLabel('Commodity*').type(commodity)
+  }
+}
+export function fillAverageWeight(weight) {
+  cy.getInputByLabel('Average weight*').type(weight)
+}
+
+export function fillTargetRate(rate) {
+  cy.getInputByLabel('Target rate*').type(rate)
+}
+export function selectTargetRateType(rateType) {
+  if (rateType) {
+    cy.getInputByLabel(rateType).check()
   }
 }
 
