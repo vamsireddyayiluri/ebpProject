@@ -58,6 +58,7 @@ const customFilter = (search, lists) => {
 
     lists[1].filter(i => i.scac.toLowerCase() === search.toLowerCase()),
   ]
+  
   return result
 }
 
@@ -109,8 +110,8 @@ onMounted(() => {
       item-title="scac"
       item-value="email"
       class="max-w-[500px] min-w-[280px]"
-      :customFilter="customFilter"
-      :hideNoData="preferedScacSearch?.length < 4"
+      :custom-filter="customFilter"
+      :hide-no-data="preferedScacSearch?.length < 4"
       @onSelect="e => {}"
       @onSelectMultiple="item => preferredTruckersStore.addTrucker(item)"
     >

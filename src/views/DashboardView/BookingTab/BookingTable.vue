@@ -104,7 +104,7 @@ onMounted(() => {
     const table = document.getElementById(tableId)
     tableHeight.value = smAndDown.value
       ? 396
-      : window.innerHeight - table.getBoundingClientRect().top - 95
+      : window.innerHeight - table.getBoundingClientRect().top - 108
   })
 })
 </script>
@@ -148,7 +148,7 @@ onMounted(() => {
         :src="getLineAvatar(item.line.id)"
         :alt="item.line.label"
         class="h-8"
-      />
+      >
     </template>
     <template #size="{ item }">
       <Typography>
