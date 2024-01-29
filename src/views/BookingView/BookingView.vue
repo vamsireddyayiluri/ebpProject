@@ -259,7 +259,8 @@ onMounted(async () => {
             Booking <b>Ref #{{ booking.ref }}</b>
             <span :style="{ color: getColor('textSecondary') }">
               {{ fromDraft ? ' (Draft)' : '' }}
-              {{ booking.status ? (completed ? '(Completed)' : '(Expired)') : '' }}
+              {{ booking.status === statuses.completed ? '(Completed)': '' }}
+              {{ booking.status === statuses.expired ? '(Expired)': '' }}
             </span>
           </Typography>
           <IconButton
@@ -498,26 +499,7 @@ onMounted(async () => {
             </Typography>
             <div class="timeline scrollbar">
               <Timeline
-                :items="[
-                  {
-                    title: 'RCAS commited 25 containers',
-                    date: '02/20/2022 5:23:17 am',
-                    type: 'icon',
-                  },
-                  {
-                    title: 'Booking is 100% fullfilled',
-                    date: '02/20/2022 5:23:17 am',
-                  },
-                  {
-                    title: 'Expiring date approaching',
-                    date: '02/20/2022 5:23:17 am',
-                  },
-                  {
-                    title: 'OLAP cancelled 10 containers',
-                    date: '02/20/2022 5:23:17 am',
-                    type: 'icon',
-                  },
-                ]"
+                :items="booking.timeline"
                 :variant="flyoutBottom ? 'horizontal' : 'vertical'"
               />
             </div>
