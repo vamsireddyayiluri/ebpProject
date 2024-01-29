@@ -8,7 +8,7 @@ import { useBookingsStore } from '~/stores/bookings.store'
 import { storeToRefs } from 'pinia'
 import { groupedBookingLocations } from '~/stores/helpers'
 import { userTypes } from '~/constants/userTypes'
-import { useAuthStore } from "~/stores/auth.store"
+import { useAuthStore } from '~/stores/auth.store'
 
 const props = defineProps({
   mapToggled: Boolean,

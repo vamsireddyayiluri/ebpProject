@@ -15,7 +15,6 @@ import { useAuthStore } from '~/stores/auth.store'
 
 export const useNotificationStore = defineStore('notification', () => {
   const alertStore = useAlertStore()
-  const authStore = useAuthStore()
   const { userData } = useAuthStore()
   const notifications = ref([])
   const defaultSettings = {
@@ -41,9 +40,9 @@ export const useNotificationStore = defineStore('notification', () => {
   const getNotificationSettings = async () => {
     loading.value = true
     try {
-      const settingsDoc = await getDoc(doc(db, 'notifications', authStore.userData.orgId))
+      const settingsDoc = await getDoc(doc(db, 'notifications', userData.orgId))
       if (!settingsDoc.exists()) {
-        await createNotificationCollection(authStore.userData.orgId)
+        await createNotificationCollection(userData.orgId)
         settings.value = defaultSettings
         loading.value = false
       } else {
@@ -58,7 +57,7 @@ export const useNotificationStore = defineStore('notification', () => {
 
   const updateSettings = async data => {
     try {
-      await updateDoc(doc(db, 'notifications', authStore.userData.orgId), {
+      await updateDoc(doc(db, 'notifications', userData.orgId), {
         settings: data,
       })
       settings.value = data
@@ -95,7 +94,7 @@ export const useNotificationStore = defineStore('notification', () => {
   const getNotifications = async () => {
     try {
       const notificationsRef = collection(db, 'notifications')
-      const dataQuery = query(notificationsRef, where('orgId', '==', authStore.userData.orgId))
+      const dataQuery = query(notificationsRef, where('orgId', '==', userData.orgId))
       await onSnapshot(dataQuery, snapshot => {
         const list = snapshot.docs[0]?.data()?.list
         snapshot.docChanges().forEach(change => {
@@ -126,7 +125,7 @@ export const useNotificationStore = defineStore('notification', () => {
       }
     })
     try {
-      await updateDoc(doc(db, 'notifications', authStore.userData.orgId), {
+      await updateDoc(doc(db, 'notifications', userData.orgId), {
         list: data,
       })
     } catch ({ message }) {
@@ -142,7 +141,7 @@ export const useNotificationStore = defineStore('notification', () => {
       return i
     })
     try {
-      await updateDoc(doc(db, 'notifications', authStore.userData.orgId), {
+      await updateDoc(doc(db, 'notifications', userData.orgId), {
         list: data,
       })
     } catch ({ message }) {

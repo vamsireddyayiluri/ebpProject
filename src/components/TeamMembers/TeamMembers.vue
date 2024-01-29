@@ -23,11 +23,14 @@ const newMember = reactive({
 })
 const removeMemberDialog = ref(null)
 const workerId = ref('')
-const isAdmin = (userData?.type === userTypes?.admin) || !userData
+const isAdmin = userData?.type === userTypes?.admin || !userData
 
 const addInvitation = async () => {
   const userExist = await invitationStore.validateInviteUserEmail('users', newMember.email)
-  const invitationExist = await invitationStore.validateInviteUserEmail('invitations', newMember.email)
+  const invitationExist = await invitationStore.validateInviteUserEmail(
+    'invitations',
+    newMember.email,
+  )
   if (userExist || invitationExist) {
     alertStore.warning({ content: 'User already exists with this email!' })
   } else {
@@ -44,12 +47,12 @@ const addInvitation = async () => {
 }
 const changeMemberType = async (type, member) => {
   if (type !== member.type) {
-    await invitationStore.changeInvitedUserType({...member, type})
+    await invitationStore.changeInvitedUserType({ ...member, type })
     const m = teamMembers.value.findIndex(i => i.id === member.id)
-    teamMembers.value[m] = {...member, type}
+    teamMembers.value[m] = { ...member, type }
   }
 }
-const handleMemberType = e => newMember.type = e
+const handleMemberType = e => (newMember.type = e)
 const openRemoveMemberDialog = memberId => {
   removeMemberDialog.value.show(true)
   removeMemberDialog.value.data = useArrayFind(teamMembers.value, m => m.id === memberId).value
@@ -89,7 +92,7 @@ const removeMember = async id => {
       />
       <Button
         variant="outlined"
-        :disabled="!newMember.email.match(patterns.emailRegex) "
+        :disabled="!newMember.email.match(patterns.emailRegex)"
         class="w-full sm:w-fit"
         @click="addInvitation"
       >

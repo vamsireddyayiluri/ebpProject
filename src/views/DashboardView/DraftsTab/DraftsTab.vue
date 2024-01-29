@@ -7,7 +7,7 @@ import { getColor } from '~/helpers/colors'
 import { groupedBookingLocations } from '~/stores/helpers'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { storeToRefs } from 'pinia'
-import { useAuthStore } from "~/stores/auth.store"
+import { useAuthStore } from '~/stores/auth.store'
 import { userTypes } from '~/constants/userTypes'
 
 const props = defineProps({

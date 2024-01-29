@@ -54,15 +54,22 @@ onUpdated(() => {
 
 <template>
   <div class="notificationTab w-full md:w-2/3 lg:w-1/2">
-    <Typography type="text-h1 mb-8"> Notifications </Typography>
+    <Typography type="text-h1 mb-8">
+      Notifications
+    </Typography>
 
-    <div v-if="!loading" id="newsAndUpdates">
+    <div
+      v-if="!loading"
+      id="newsAndUpdates"
+    >
       <div class="w-fit flex items-center relative">
         <Switch
           v-model="settings.newsAndUpdates.active"
           @update:modelValue="showNews"
         >
-          <Typography class="flex items-center gap-2"> News and updates </Typography>
+          <Typography class="flex items-center gap-2">
+            News and updates
+          </Typography>
         </Switch>
         <div
           v-if="settings.newsAndUpdates.active"
@@ -95,15 +102,17 @@ onUpdated(() => {
     </div>
     <div
       v-if="!loading"
+      id="bookingsInfo"
       class="my-6 mb-14"
-      id='bookingsInfo'
     >
       <div class="w-fit flex items-center relative">
         <Switch
           v-model="settings.bookingsNotification.active"
           @update:modelValue="showBookings"
         >
-          <Typography class="flex items-center gap-2"> Information about bookings </Typography>
+          <Typography class="flex items-center gap-2">
+            Information about bookings
+          </Typography>
         </Switch>
         <div
           v-if="settings.bookingsNotification.active"

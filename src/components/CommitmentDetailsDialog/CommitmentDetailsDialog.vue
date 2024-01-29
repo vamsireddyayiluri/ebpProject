@@ -43,17 +43,13 @@ const {
     <Typography type="text-h1">
       Commitment
     </Typography>
-    <div
-      class="ml-auto"
-    >
+    <div class="ml-auto">
       <IconButton
         icon="mdi-message-text"
         class="mr-2"
         @click="() => {}"
       >
-        <Tooltip>
-          Go go chat
-        </Tooltip>
+        <Tooltip> Go go chat </Tooltip>
       </IconButton>
       <IconButton
         icon="mdi-close"
@@ -165,7 +161,12 @@ const {
                   :value="commitment.status"
                   class="w-min h-fit ml-auto"
                 />
-                <template v-if="commitment.status === statuses.declined || commitment.status === statuses.incomplete">
+                <template
+                  v-if="
+                    commitment.status === statuses.declined ||
+                      commitment.status === statuses.incomplete
+                  "
+                >
                   <Typography type="text-body-s-regular">
                     Reason
                   </Typography>
@@ -246,9 +247,7 @@ const {
         variant="vertical"
         class="scrollbar overflow-auto md:mb-10"
       />
-      <div
-        class="styledCommitActionsBtns static md:fixed bottom-8 flex pt-8 gap-4"
-      >
+      <div class="styledCommitActionsBtns static md:fixed bottom-8 flex pt-8 gap-4">
         <Button
           v-if="commitment.status === statuses.approved"
           @click="emit('completeCommitment', commitment.id)"

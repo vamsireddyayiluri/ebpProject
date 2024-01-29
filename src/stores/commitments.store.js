@@ -53,8 +53,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         i.entities.forEach(j => {
           i.expand = true
           if (j.id === id) {
-            j.status = obj.status,
-            (obj.reason? obj.reason: {})
+            ;(j.status = obj.status), obj.reason ? obj.reason : {}
           }
         })
       })
@@ -73,8 +72,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         i.entities.forEach(j => {
           i.expand = true
           if (j.id === id) {
-            j.status = statuses.declined,
-            reason
+            ;(j.status = statuses.declined), reason
           }
         })
       })
