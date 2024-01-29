@@ -25,7 +25,7 @@ const validateRequirements = computed(() => {
       questionList: truckerManagementDB.questionList,
     },
   )
-  
+
   return isDisabled.value
 })
 const openDocuments = doc => {

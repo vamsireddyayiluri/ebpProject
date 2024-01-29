@@ -17,7 +17,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
 
     //throw error if commitment capacity is not available
     if (availableContainers < +commitment.committed) {
-      alertStore.warning({ content:  `You can only commit ${availableContainers} containers`})
+      alertStore.warning({ content: `You can only commit ${availableContainers} containers` })
 
       return
     }

@@ -259,8 +259,8 @@ onMounted(async () => {
             Booking <b>Ref #{{ booking.ref }}</b>
             <span :style="{ color: getColor('textSecondary') }">
               {{ fromDraft ? ' (Draft)' : '' }}
-              {{ booking.status === statuses.completed ? '(Completed)': '' }}
-              {{ booking.status === statuses.expired ? '(Expired)': '' }}
+              {{ booking.status === statuses.completed ? '(Completed)' : '' }}
+              {{ booking.status === statuses.expired ? '(Expired)' : '' }}
             </span>
           </Typography>
           <IconButton

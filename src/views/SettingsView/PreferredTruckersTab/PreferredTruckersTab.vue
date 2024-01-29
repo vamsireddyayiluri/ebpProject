@@ -58,7 +58,7 @@ const customFilter = (search, lists) => {
 
     lists[1].filter(i => i.scac.toLowerCase() === search.toLowerCase()),
   ]
-  
+
   return result
 }
 
