@@ -59,7 +59,7 @@ const containerActionHandler = async ({ action, e }) => {
     commitmentDetailsDialog.value.data = e[0]
   }
   if (action === 'approve-commitment') {
-    await approveCommitment(e[0].id)
+    await approveCommitment(e[0])
   }
   if (action === 'complete-commitment') {
     openCompleteCommitmentDialog(e[0].id)
@@ -71,9 +71,9 @@ const containerActionHandler = async ({ action, e }) => {
 const onSelectRow = e => {
   emit('selectTableRow', e)
 }
-const onApproveCommitment = async id => {
+const onApproveCommitment = async commitment => {
   commitmentDetailsDialog.value.show(false)
-  await approveCommitment(id)
+  await approveCommitment(commitment)
 }
 const openCompleteCommitmentDialog = id => {
   completeCommitmentDialog.value.show(true)

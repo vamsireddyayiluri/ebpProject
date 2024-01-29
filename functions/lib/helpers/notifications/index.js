@@ -72,6 +72,13 @@ export const commitApprovedNotifier = async data => {
   }
   await updateNotificationList(data.bookingOrgId, notification)
 }
+export const commitIncompleteNotifier = async data => {
+  const notification = {
+    ...createNotificationObj(data),
+    title: `${data.company} incomplete commitment: ${data.ref}`,
+  }
+  await updateNotificationList(data.bookingOrgId, notification)
+}
 export const commitDeclinedNotifier = async data => {
   const notification = {
     ...createNotificationObj(data),

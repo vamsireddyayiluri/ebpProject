@@ -257,7 +257,7 @@ const {
         </Button>
         <template v-if="commitment.status === statuses.pending">
           <Button
-            @click="emit('approveCommitment', commitment.id)"
+            @click="emit('approveCommitment', commitment)"
           >
             approve
           </Button>

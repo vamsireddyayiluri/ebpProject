@@ -1,13 +1,16 @@
 import {
   commitApprovedNotifier,
+  commitIncompleteNotifier,
   commitCanceledNotifier,
   commitDeclinedNotifier,
-} from '~/notifications'
+} from '~/helpers/notifications'
 import {
   addCommitmentApproving,
   addCommitmentCancellation,
   addCommitmentDeclining,
-} from '~/timelinesUpdater'
+  addCommitmentOnboarding,
+} from '~/helpers/timelinesUpdater'
+import { updateBookingCommit, updateBookingStatus } from "~/helpers/booking"
 
 export const updateCommitmentListener = async (currentData, previousData) => {
   try {
@@ -16,6 +19,12 @@ export const updateCommitmentListener = async (currentData, previousData) => {
     }
     if (currentData.status === 'approved' && previousData.status === 'pending') {
       await commitmentApproveAction(currentData)
+    }
+    if (currentData.status === 'onboarded' && previousData.status === 'approved') {
+      await commitmentOnboardedAction(currentData)
+    }
+    if (currentData.status === 'incomplete' && previousData.status === 'approved') {
+      await commitmentIncompleteAction(currentData)
     }
     if (currentData.status === 'declined' && previousData.status === 'pending') {
       await commitmentDeclineAction(currentData)
@@ -31,6 +40,16 @@ const commitmentCancelAction = async data => {
 const commitmentApproveAction = async data => {
   await commitApprovedNotifier(data)
   await addCommitmentApproving(data)
+  await updateBookingCommit('increase', data)
+}
+const commitmentOnboardedAction = async data => {
+  await addCommitmentOnboarding(data)
+  await updateBookingStatus(data.bookingId, 'completed')
+}
+const commitmentIncompleteAction = async data => {
+  await commitIncompleteNotifier(data)
+  await addCommitmentApproving(data)
+  await updateBookingStatus(data.bookingId, 'completed')
 }
 const commitmentDeclineAction = async data => {
   await commitDeclinedNotifier(data)
