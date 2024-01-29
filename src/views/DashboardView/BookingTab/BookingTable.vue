@@ -59,7 +59,7 @@ const containerActionHandler = async ({ action, e }) => {
     commitmentDetailsDialog.value.data = e[0]
   }
   if (action === 'approve-commitment') {
-    await approveCommitment(e[0].id)
+    await approveCommitment(e[0])
   }
   if (action === 'complete-commitment') {
     openCompleteCommitmentDialog(e[0].id)
@@ -71,9 +71,9 @@ const containerActionHandler = async ({ action, e }) => {
 const onSelectRow = e => {
   emit('selectTableRow', e)
 }
-const onApproveCommitment = async id => {
+const onApproveCommitment = async commitment => {
   commitmentDetailsDialog.value.show(false)
-  await approveCommitment(id)
+  await approveCommitment(commitment)
 }
 const openCompleteCommitmentDialog = id => {
   completeCommitmentDialog.value.show(true)
@@ -104,7 +104,7 @@ onMounted(() => {
     const table = document.getElementById(tableId)
     tableHeight.value = smAndDown.value
       ? 396
-      : window.innerHeight - table.getBoundingClientRect().top - 95
+      : window.innerHeight - table.getBoundingClientRect().top - 108
   })
 })
 </script>
@@ -139,16 +139,16 @@ onMounted(() => {
       </Typography>
     </template>
     <template #yardLabel="{ item }">
-      <Typography type="text-body-m-regular">
+      <FlexTypography type="text-body-m-regular">
         {{ item.location.label || '--' }}
-      </Typography>
+      </FlexTypography>
     </template>
     <template #ssl="{ item }">
       <img
         :src="getLineAvatar(item.line.id)"
         :alt="item.line.label"
         class="h-8"
-      />
+      >
     </template>
     <template #size="{ item }">
       <Typography>

@@ -62,7 +62,7 @@ onMounted(async () => {
     <Header
       class="default z-10 top-0"
       :items="width < 760 ? mobileMenuItems : items"
-      :notifications="notifications"
+      :notifications="notifications.reverse()"
       :route="route"
       :user-menu-items="userMenuItems"
       sticky

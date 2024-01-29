@@ -1,4 +1,4 @@
-import { db } from '../index'
+import { db } from '../../index'
 import { FieldValue } from 'firebase-admin/firestore'
 
 const updateTimelines = async (bookingId, commitmentId, point) => {
@@ -32,6 +32,20 @@ export const addCommitmentCancellation = async data => {
 export const addCommitmentApproving = async data => {
   const point = {
     title: `${data.company} approved ${data.committed} containers`,
+    data: data.commitmentDate,
+  }
+  await updateTimelines(data.bookingId, data.id, point)
+}
+export const addCommitmentOnboarding = async data => {
+  const point = {
+    title: `${data.company} onboarded ${data.committed}`,
+    data: data.commitmentDate,
+  }
+  await updateTimelines(data.bookingId, data.id, point)
+}
+export const addCommitmentIncomplete = async data => {
+  const point = {
+    title: `${data.company} incomplete ${data.committed} containers`,
     data: data.commitmentDate,
   }
   await updateTimelines(data.bookingId, data.id, point)

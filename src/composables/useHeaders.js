@@ -12,6 +12,7 @@ export const bookingsHeaders = userType => {
     {
       text: 'Yard label',
       value: 'yardLabel',
+      width: 2,
     },
     {
       text: 'SSL',
@@ -78,6 +79,7 @@ export const draftsHeaders = userType => {
     {
       text: 'Yard label',
       value: 'yardLabel',
+      width: 2,
     },
     {
       text: 'Loading date',
@@ -167,6 +169,7 @@ export const bookingsHistoryHeaders = [
   {
     text: 'Yard label',
     value: 'yardLabel',
+    width: 2,
   },
   {
     text: 'SSL',

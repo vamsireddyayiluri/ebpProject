@@ -10,15 +10,25 @@ export const useCommitmentsStore = defineStore('commitments', () => {
   const alertStore = useAlertStore()
   const bookingsStore = useBookingsStore()
 
-  const approveCommitment = async id => {
+  const approveCommitment = async commitment => {
+    // find booking
+    const booking = bookingsStore.bookings.find(i => i.id === commitment.bookingId)
+    const availableContainers = booking.containers - booking.committed
+
+    //throw error if commitment capacity is not available
+    if (availableContainers < +commitment.committed) {
+      alertStore.warning({ content:  `You can only commit ${availableContainers} containers`})
+
+      return
+    }
     try {
-      await updateDoc(doc(db, 'commitments', id), {
+      await updateDoc(doc(db, 'commitments', commitment.id), {
         status: statuses.approved,
       })
       bookingsStore.bookings.forEach(i => {
         i.entities.forEach(j => {
           i.expand = true
-          if (j.id === id) {
+          if (j.id === commitment.id) {
             j.status = statuses.approved
           }
         })

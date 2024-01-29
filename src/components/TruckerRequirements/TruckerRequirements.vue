@@ -57,9 +57,9 @@ const confirmSendInvitation = trucker => {
       prepend-inner-icon="mdi-magnify"
       multiple
       with-btn
+      class="text-left"
       @input="filterItems"
       @blur="clearData"
-      class="text-left"
     >
       <template #no-data>
         <Typography class="mb-5 inline-block">
@@ -147,7 +147,7 @@ const confirmSendInvitation = trucker => {
       />
     </div>
   </template>
-   <Dialog
+  <Dialog
     ref="inviteTruckerDialog"
     max-width="480"
   >

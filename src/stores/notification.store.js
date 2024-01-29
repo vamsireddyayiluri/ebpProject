@@ -101,12 +101,11 @@ export const useNotificationStore = defineStore('notification', () => {
         snapshot.docChanges().forEach(change => {
           if (change.type === 'modified' && list.length !== notifications.value.length) {
             // get last element .at(-1)
-              showAlert(change.doc.data().list.at(-1))
-            }
-          })
-          notifications.value = list || []
+            showAlert(change.doc.data().list.at(-1))
+          }
         })
-      }
+        notifications.value = list || []
+      })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }

@@ -2,4 +2,4 @@ export { default as bookingCreated } from './triggers/bookings/bookingCreated/ha
 export { default as bookingUpdated } from './triggers/bookings/bookingUpdated/handler'
 export { default as bookingDeleted } from './triggers/bookings/bookingDeleted/handler'
 export { default as commitCreated } from './triggers/commitments/commitCreated/handler'
-export { default as commitCanceled } from './triggers/commitments/commitUpdated/handler'
+export { default as commitUpdated } from './triggers/commitments/commitUpdated/handler'
