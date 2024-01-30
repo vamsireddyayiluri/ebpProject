@@ -130,7 +130,7 @@ onMounted(() => {
             class="h-8"
           >
         </template>
-        <template #expiry="{ item }">
+        <template #bookingExpiry="{ item }">
           <Typography type="text-body-m-regular">
             {{ getFormattedDate(item.bookingExpiry) }}
             <Tooltip>
