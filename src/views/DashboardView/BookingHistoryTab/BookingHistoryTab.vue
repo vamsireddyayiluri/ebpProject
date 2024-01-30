@@ -74,7 +74,7 @@ onMounted(() => {
     const table = document.getElementById(tableId)
     tableHeight.value = smAndDown.value
       ? 396
-      : window.innerHeight - table.getBoundingClientRect().top - 95
+      : window.innerHeight - table.getBoundingClientRect().top - 108
   })
 })
 watch(searchValue, value => {
@@ -144,7 +144,7 @@ watch(searchValue, value => {
         </Typography>
       </template>
       <template #yardLabel="{ item }">
-        <Typography>
+        <FlexTypography>
           <Highlighter
             v-if="searchValue"
             :query="searchValue"
@@ -154,7 +154,7 @@ watch(searchValue, value => {
           <template v-else>
             {{ item.location.label || '--' }}
           </template>
-        </Typography>
+        </FlexTypography>
       </template>
       <template #ssl="{ item }">
         <Typography>

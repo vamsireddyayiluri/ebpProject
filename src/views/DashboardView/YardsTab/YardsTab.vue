@@ -8,7 +8,7 @@ import { useBookingsStore } from '~/stores/bookings.store'
 import { storeToRefs } from 'pinia'
 import { groupedBookingLocations } from '~/stores/helpers'
 import { userTypes } from '~/constants/userTypes'
-import { useAuthStore } from "~/stores/auth.store"
+import { useAuthStore } from '~/stores/auth.store'
 
 const props = defineProps({
   mapToggled: Boolean,
@@ -286,7 +286,7 @@ watch(searchValue, value => {
   </Panes>
   <Dialog
     ref="createBookingDialog"
-    class="max-w-[620px] md:max-w-[680px]"
+    class="max-w-full sm:max-w-[90vw] md:max-w-[75vw]"
     @update:modelValue="onClickOutsideDialog"
   >
     <template #text>

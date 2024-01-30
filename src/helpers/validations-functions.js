@@ -1,9 +1,9 @@
-import moment from "moment-timezone"
-import {useAlertStore} from "~/stores/alert.store"
+import moment from 'moment-timezone'
+import { useAlertStore } from '~/stores/alert.store'
 
 const alertStore = useAlertStore()
 export const checkPositiveInteger = value => {
-  if (value && (value < 0 || !Number.isInteger(value))) {
+  if ((value && (value <= 0 || !Number.isInteger(value))) || value === 0) {
     return 'Value should be positive integer'
   } else {
     return true
@@ -28,5 +28,15 @@ export const validateExpiryDate = (entities, entity) => {
     return false
   } else {
     return true
+  }
+}
+
+export const validateFlexibleSizes = (value, flexiblBooking) => {
+  if (flexiblBooking === true) {
+    if (value?.length > 2) {
+      return 'Cannot select more than 2'
+    }
+  } else {
+    return ''
   }
 }

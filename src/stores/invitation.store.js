@@ -142,7 +142,6 @@ export const useInvitationStore = defineStore('invitation', () => {
     isLoading.value = true
     try {
       const data = await signInWithEmailLink(auth, form.email, window.location.href)
-      router.push({ name: 'dashboard' })
       authStore.currentUser = data.user
       const newUser = {
         fullName: form.fullName,

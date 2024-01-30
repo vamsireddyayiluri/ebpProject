@@ -6,7 +6,7 @@ import { getBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { useAuthStore } from '~/stores/auth.store'
 import { useCommitmentsStore } from '~/stores/commitments.store'
-import { reasonCodes } from '~/constants/reasonCodes'
+import { declineCodes, onboardingCodes } from '~/constants/reasonCodes'
 import { statuses } from '~/constants/statuses'
 
 const props = defineProps({
@@ -15,19 +15,26 @@ const props = defineProps({
   loading: Boolean,
 })
 const emit = defineEmits(['selectTableRow', 'editBooking'])
-const { deleteBooking, updateBookingStatus } = useBookingsStore()
-const { approveCommitment, completeCommitment, declineCommitment } = useCommitmentsStore()
+const { deleteBooking, pauseBooking, createDraft, updateBookingStatus } = useBookingsStore()
+const { approveCommitment, declineCommitment, completeCommitment } = useCommitmentsStore()
 const { userData } = useAuthStore()
 const { smAndDown } = useDisplay()
 const showActions = ref(true)
 const tableHeight = ref(0)
 const removeBookingDialog = ref(false)
 const completeCommitmentDialog = ref(false)
+const declineCommitmentDialog = ref(false)
 const completeReasonList = [
-  reasonCodes.onboarded,
-  reasonCodes.onboardMovedLoad,
-  reasonCodes.neverOnboarded,
-  reasonCodes.other,
+  onboardingCodes.onboarded,
+  onboardingCodes.onboardMovedLoad,
+  onboardingCodes.neverOnboarded,
+  onboardingCodes.other,
+]
+const declineReasonList = [
+  declineCodes.bookingCanceled,
+  declineCodes.bookingRolled,
+  declineCodes.tenderedElsewhere,
+  declineCodes.other,
 ]
 
 const { bookingsHeaders, commitmentsHeaders } = useHeaders()
@@ -52,26 +59,44 @@ const containerActionHandler = async ({ action, e }) => {
     commitmentDetailsDialog.value.data = e[0]
   }
   if (action === 'approve-commitment') {
-    await approveCommitment(e[0].id)
+    await approveCommitment(e[0])
   }
   if (action === 'complete-commitment') {
-    completeCommitmentDialog.value.show(true)
-    completeCommitmentDialog.value.data = e[0].id
+    openCompleteCommitmentDialog(e[0].id)
   }
   if (action === 'decline-commitment') {
-    await declineCommitment(e[0].id)
+    openDeclineCommitmentDialog(e[0].id)
   }
 }
 const onSelectRow = e => {
   emit('selectTableRow', e)
 }
+const onApproveCommitment = async commitment => {
+  commitmentDetailsDialog.value.show(false)
+  await approveCommitment(commitment)
+}
+const openCompleteCommitmentDialog = id => {
+  completeCommitmentDialog.value.show(true)
+  completeCommitmentDialog.value.data = id
+}
+const openDeclineCommitmentDialog = id => {
+  declineCommitmentDialog.value.show(true)
+  declineCommitmentDialog.value.data = id
+}
 const removeBooking = id => {
   deleteBooking(id)
+  createDraft(removeBookingDialog.value.data)
   removeBookingDialog.value.show(false)
 }
 const onCompleteCommitment = async (id, reason) => {
   await completeCommitment(id, reason)
   completeCommitmentDialog.value.show(false)
+  commitmentDetailsDialog.value.show(false)
+}
+const onDeclineCommitment = async (id, reason) => {
+  declineCommitmentDialog.value.show(false)
+  commitmentDetailsDialog.value.show(false)
+  await declineCommitment(id, reason)
 }
 const tableId = 'bookingsTable'
 onMounted(() => {
@@ -79,7 +104,7 @@ onMounted(() => {
     const table = document.getElementById(tableId)
     tableHeight.value = smAndDown.value
       ? 396
-      : window.innerHeight - table.getBoundingClientRect().top - 95
+      : window.innerHeight - table.getBoundingClientRect().top - 108
   })
 })
 </script>
@@ -114,9 +139,9 @@ onMounted(() => {
       </Typography>
     </template>
     <template #yardLabel="{ item }">
-      <Typography type="text-body-m-regular">
+      <FlexTypography type="text-body-m-regular">
         {{ item.location.label || '--' }}
-      </Typography>
+      </FlexTypography>
     </template>
     <template #ssl="{ item }">
       <img
@@ -124,6 +149,11 @@ onMounted(() => {
         :alt="item.line.label"
         class="h-8"
       >
+    </template>
+    <template #size="{ item }">
+      <Typography>
+        {{ item.size }}
+      </Typography>
     </template>
     <template #status="{ item }">
       <Classification
@@ -233,12 +263,31 @@ onMounted(() => {
     </template>
   </Dialog>
   <Dialog
+    ref="declineCommitmentDialog"
+    max-width="480"
+  >
+    <template #text>
+      <CompleteCommitmentsDialog
+        title="Decline commitment"
+        sub-title="Choose the reason why you want to decline commitment"
+        select-label="Select"
+        :reason-list="declineReasonList"
+        btn-name="decline"
+        @close="declineCommitmentDialog.show(false)"
+        @onClickBtn="e => onDeclineCommitment(declineCommitmentDialog.data, e)"
+      />
+    </template>
+  </Dialog>
+  <Dialog
     ref="commitmentDetailsDialog"
     max-width="980"
   >
     <template #text>
       <CommitmentDetailsDialog
         :commitment="commitmentDetailsDialog.data"
+        @approveCommitment="onApproveCommitment"
+        @completeCommitment="openCompleteCommitmentDialog"
+        @declineCommitment="openDeclineCommitmentDialog"
         @close="commitmentDetailsDialog.show(false)"
       />
     </template>

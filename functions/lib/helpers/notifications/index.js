@@ -1,4 +1,4 @@
-import { db } from '../index'
+import { db } from '../../index'
 import { FieldValue } from 'firebase-admin/firestore'
 import { uid } from 'uid'
 import moment from 'moment-timezone'
@@ -69,6 +69,13 @@ export const commitApprovedNotifier = async data => {
     ...createNotificationObj(data),
     title: `${data.company} approved the booking request of ${data.committed} containers. 
     Please reach out to exporter contacts to begin the onboarding process: ${data.ref}`,
+  }
+  await updateNotificationList(data.bookingOrgId, notification)
+}
+export const commitIncompleteNotifier = async data => {
+  const notification = {
+    ...createNotificationObj(data),
+    title: `${data.company} incomplete commitment: ${data.ref}`,
   }
   await updateNotificationList(data.bookingOrgId, notification)
 }

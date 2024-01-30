@@ -7,7 +7,7 @@ import { getColor } from '~/helpers/colors'
 import { groupedBookingLocations } from '~/stores/helpers'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { storeToRefs } from 'pinia'
-import { useAuthStore } from "~/stores/auth.store"
+import { useAuthStore } from '~/stores/auth.store'
 import { userTypes } from '~/constants/userTypes'
 
 const props = defineProps({
@@ -279,7 +279,7 @@ watch(searchValue, value => {
   </Panes>
   <Dialog
     ref="createBookingDialog"
-    class="max-w-[620px] md:max-w-[680px]"
+    class="max-w-full sm:max-w-[90vw] md:max-w-[75vw]"
     @update:modelValue="onClickOutsideDialog"
   >
     <template #text>

@@ -4,21 +4,31 @@ import { db } from '~/firebase'
 import { statuses } from '~/constants/statuses'
 import { useAlertStore } from '~/stores/alert.store'
 import { useBookingsStore } from '~/stores/bookings.store'
-import { reasonCodes } from '~/constants/reasonCodes'
+import { onboardingCodes } from '~/constants/reasonCodes'
 
 export const useCommitmentsStore = defineStore('commitments', () => {
   const alertStore = useAlertStore()
   const bookingsStore = useBookingsStore()
 
-  const approveCommitment = async id => {
+  const approveCommitment = async commitment => {
+    // find booking
+    const booking = bookingsStore.bookings.find(i => i.id === commitment.bookingId)
+    const availableContainers = booking.containers - booking.committed
+
+    //throw error if commitment capacity is not available
+    if (availableContainers < +commitment.committed) {
+      alertStore.warning({ content: `You can only commit ${availableContainers} containers` })
+
+      return
+    }
     try {
-      await updateDoc(doc(db, 'commitments', id), {
+      await updateDoc(doc(db, 'commitments', commitment.id), {
         status: statuses.approved,
       })
       bookingsStore.bookings.forEach(i => {
         i.entities.forEach(j => {
           i.expand = true
-          if (j.id === id) {
+          if (j.id === commitment.id) {
             j.status = statuses.approved
           }
         })
@@ -29,7 +39,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
   }
   const completeCommitment = async (id, reason) => {
     const obj = {}
-    if (reasonCodes.onboarded === reason || reasonCodes.onboardMovedLoad === reason) {
+    if (onboardingCodes.onboarded === reason || onboardingCodes.onboardMovedLoad === reason) {
       obj.status = statuses.onboarded
     } else {
       obj.status = statuses.incomplete
@@ -43,8 +53,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         i.entities.forEach(j => {
           i.expand = true
           if (j.id === id) {
-            j.status = obj.status,
-            (obj.reason? obj.reason: {})
+            ;(j.status = obj.status), obj.reason ? obj.reason : {}
           }
         })
       })
@@ -53,16 +62,17 @@ export const useCommitmentsStore = defineStore('commitments', () => {
     }
   }
 
-  const declineCommitment = async id => {
+  const declineCommitment = async (id, reason) => {
     try {
       await updateDoc(doc(db, 'commitments', id), {
         status: statuses.declined,
+        reason,
       })
       bookingsStore.bookings.forEach(i => {
         i.entities.forEach(j => {
           i.expand = true
           if (j.id === id) {
-            j.status = statuses.declined
+            ;(j.status = statuses.declined), reason
           }
         })
       })

@@ -8,7 +8,11 @@ import { useBookingRulesStore } from '~/stores/bookingRules.store'
 import containersSizes from '~/fixtures/containersSizes.json'
 import moment from 'moment'
 import { useAlertStore } from '~/stores/alert.store'
-import { checkPositiveInteger, validateExpiryDate } from '~/helpers/validations-functions'
+import {
+  checkPositiveInteger,
+  validateExpiryDate,
+  validateFlexibleSizes,
+} from '~/helpers/validations-functions'
 
 const props = defineProps({
   clickedOutside: Boolean,
@@ -25,6 +29,7 @@ const alertStore = useAlertStore()
 const { yards } = storeToRefs(workDetailsStore)
 const { bookings } = storeToRefs(bookingsStore)
 const form = ref(null)
+const validExpiryDate = ref(false)
 
 const computedEntities = computed(() => bookings.value)
 
@@ -32,9 +37,14 @@ const booking = ref({
   ref: '',
   containers: null,
   line: null,
+  commodity: '',
   bookingExpiry: null,
   preferredDate: null,
   location: bookingRulesStore.rules.yard,
+  weight: null,
+  targetRateType: 'All in rate',
+  targetRate: null,
+  flexibleBooking: false,
   size: null,
   scacList: bookingRulesStore.rules.truckers,
 })
@@ -54,7 +64,7 @@ const updateExpiryDate = value => {
       .subtract(bookingRulesStore?.rules?.timeForTruckersFromMarketplace, 'day')
       .format()
     if (moment(booking.value.preferredDate).endOf('day').isBefore(currentDate.value)) {
-      booking.value.preferredDate = currentDate.value
+      booking.value.preferredDate = moment(currentDate.value).format()
     }
   }
 }
@@ -62,21 +72,36 @@ const updatePreferredDate = value => {
   booking.value.preferredDate = value
 }
 
+const updateSize = () => {
+  booking.value.size = null
+}
+
+const validateExpiryDates = () => {
+  validExpiryDate.value = validateExpiryDate(bookings?.value, booking.value)
+}
+
 const isDisabled = computed(() => {
   const values = Object.values(booking.value)
   values.pop()
-  let condition = values.some(i => !i) || !booking.value.scacList.list.length
+  values.splice(10, 1)
+  let condition = values.some(i => !i) || !booking.value.scacList?.list?.length
   if (!condition) {
-    condition = form.value?.errors.length || !validateExpiryDate(computedEntities?.value, booking.value)
+    condition =
+      form.value?.errors.length ||
+      !validExpiryDate.value ||
+      validateFlexibleSizes(booking.value.size, booking.value.flexibleBooking)?.length > 0
   }
 
   return condition
 })
+
+// if true shows save to draft dialog
 const isDirty = computed(() => {
   const values = Object.values(booking.value)
   values.pop()
+  values.splice(10, 1)
 
-  return !values.some(i => !i) || !booking.value.scacList.list.length
+  return !values.some(i => !i) && booking.value.scacList?.list.length > 0
 })
 
 const closeBookingDialog = () => {
@@ -123,16 +148,15 @@ onMounted(async () => {
   </VRow>
   <VForm
     ref="form"
-    class="w-mt-10 mx-auto"
+    class="flex justify-center flex-col"
     @submit.prevent="saveBooking"
   >
-    <Textfield
-      v-model.trim="booking.ref"
-      label="Booking ref*"
-      required
-      class="mb-6"
-    />
-    <div class="grid sm:grid-cols-2 grid-cols-1 gap-6 mb-6">
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-6 mb-6">
+      <Textfield
+        v-model.trim="booking.ref"
+        label="Booking ref*"
+        required
+      />
       <Textfield
         v-model.number="booking.containers"
         label="Number of containers*"
@@ -140,7 +164,7 @@ onMounted(async () => {
         type="number"
         required
       />
-      <Select
+      <Autocomplete
         v-model="booking.line"
         :items="getAllLines()"
         label="SSL *"
@@ -150,21 +174,7 @@ onMounted(async () => {
         return-object
         class="h-fit"
       />
-      <Datepicker
-        :picked="booking.bookingExpiry"
-        label="Booking Expiration *"
-        :lower-limit="(booking.preferredDate && new Date(booking.preferredDate)) || currentDate"
-        @onUpdate="updateExpiryDate"
-      />
-      <Datepicker
-        :key="booking.preferredDate"
-        :picked="booking.preferredDate"
-        label="Preferred carrier window"
-        :upper-limit="booking.bookingExpiry && new Date(booking.bookingExpiry)"
-        :lower-limit="currentDate"
-        @onUpdate="updatePreferredDate"
-      />
-      <Select
+      <Autocomplete
         v-model="booking.location"
         :items="
           yards.map(yard => ({
@@ -182,21 +192,93 @@ onMounted(async () => {
         return-object
         class="h-fit"
       />
-      <Select
-        v-model="booking.size"
-        :items="containersSizes"
-        label="Equipment type*"
-        item-title="label"
-        item-value="size"
+      <Datepicker
+        :picked="booking.bookingExpiry"
+        label="Loading date *"
+        typeable
+        clearable
+        :lower-limit="(booking.preferredDate && new Date(booking.preferredDate)) || currentDate"
+        :error-messages="validateExpiryDates()"
+        @onUpdate="updateExpiryDate"
       />
+      <Datepicker
+        :key="booking.preferredDate"
+        :picked="booking.preferredDate"
+        label="Preferred carrier window"
+        :upper-limit="booking.bookingExpiry && new Date(booking.bookingExpiry)"
+        :lower-limit="currentDate"
+        @onUpdate="updatePreferredDate"
+      />
+      <Textfield
+        v-model="booking.commodity"
+        label="Commodity*"
+        required
+      />
+      <Textfield
+        v-model.number="booking.weight"
+        label="Average weight*"
+        type="number"
+        :rules="[rules.containers]"
+        required
+      />
+
+      <div class="grid grid-cols-subgrid gap-6 col-span-2 md:col-span-3">
+        <Typography type="text-body-xs-semibold col-span-2 md:col-span-3 -mb-3">
+          Target rate
+        </Typography>
+        <Textfield
+          v-model.number="booking.targetRate"
+          label="Target rate*"
+          :rules="[rules.containers]"
+          type="number"
+          required
+          class="col-span-1"
+        />
+        <RadioGroup
+          v-model="booking.targetRateType"
+          inline
+          class="mt-0 md:mt-3"
+        >
+          <Radio
+            value="All in rate"
+            label="All in rate"
+            class="mr-6"
+          />
+          <Radio
+            value="Linehaul + FSC Only"
+            label="Linehaul + FSC Only"
+          />
+        </RadioGroup>
+      </div>
+      <div class="grid grid-cols-subgrid gap-6 col-span-2 md:col-span-3">
+        <Typography type="text-body-xs-semibold col-span-2 md:col-span-3 -mb-3">
+          Equipment type
+        </Typography>
+        <Select
+          v-model="booking.size"
+          :items="containersSizes"
+          label="Equipment type*"
+          item-title="label"
+          item-value="size"
+          :multiple="booking.flexibleBooking"
+          :error-messages="validateFlexibleSizes(booking.size, booking.flexibleBooking)"
+        />
+        <Checkbox
+          v-model="booking.flexibleBooking"
+          label="Flexible booking*"
+          class="mt-3"
+          @change="updateSize"
+        />
+      </div>
     </div>
     <AutocompleteScac
       :scac-list="booking.scacList"
       :menu-btn="false"
+      class="grid grid-cols-2 md:grid-cols-3 gap-6"
     />
     <Button
       type="submit"
-      class="w-full"
+      class="w-fit mt-10 ml-auto"
       :disabled="isDisabled"
     >
       Create

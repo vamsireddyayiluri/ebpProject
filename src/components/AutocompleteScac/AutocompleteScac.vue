@@ -5,7 +5,9 @@ import truckers from '~/fixtures/truckers.json'
 const props = defineProps({
   scacList: {
     type: Object,
-    default: () => {list: []},
+    default: () => {
+      list: []
+    },
   },
   menuBtn: {
     type: Boolean,
@@ -33,22 +35,6 @@ const updateModelValue = updatedScacList => {
 
   emit('onChange', updatedScacList)
 }
-const updateMenu = e => {
-  if (!e && scacList.value?.length) {
-    // add margin when menu is closed
-    marginBottom.value = 'mb-10'
-  } else marginBottom.value = ''
-}
-onMounted(() => {
-  if (scacList.value?.length) {
-    marginBottom.value = 'mb-10'
-  }
-})
-onUpdated(() => {
-  if (!scacList.value?.length) {
-    marginBottom.value = ''
-  } else marginBottom.value = 'mb-10'
-})
 </script>
 
 <template>
@@ -64,7 +50,6 @@ onUpdated(() => {
       with-btn
       :disabled="attrs.disabled"
       :value="autocompleteValue"
-      @update:menu="updateMenu"
       @update:modelValue="updateModelValue"
     >
       <template
@@ -86,26 +71,23 @@ onUpdated(() => {
         </div>
       </template>
     </Autocomplete>
-    <div
-      v-if="scacList?.length || !menuBtn"
-      class="my-4 flex flex-wrap gap-2"
+  </div>
+  <div
+    v-if="scacList?.length"
+    class="mt-4 flex flex-wrap gap-2"
+  >
+    <template
+      v-for="i in scacList"
+      :key="i"
     >
-      <template
-        v-for="i in scacList"
-        :key="i"
+      <Chip
+        closable
+        :disabled="attrs.disabled"
+        @click:close="removeScac(i)"
       >
-        <Chip
-          closable
-          @click:close="removeScac(i)"
-        >
-          {{ i }}
-        </Chip>
-      </template>
-    </div>
-    <div
-      v-else
-      class="h-16"
-    />
+        {{ i }}
+      </Chip>
+    </template>
   </div>
   <Dialog
     ref="sendDialog"
