@@ -39,7 +39,7 @@ const declineReasonList = [
 
 const { bookingsHeaders, commitmentsHeaders } = useHeaders()
 const { bookingsActions, commitmentsActions } = useActions()
-const { getFormattedDateTime } = useDate()
+const { getFormattedDateTime, getFormattedDate } = useDate()
 const commitmentDetailsDialog = ref(null)
 
 const containerActionHandler = async ({ action, e }) => {
@@ -163,7 +163,10 @@ onMounted(() => {
     </template>
     <template #expiry="{ item }">
       <Typography type="text-body-m-regular">
-        {{ getFormattedDateTime(item.bookingExpiry) }}
+        {{ getFormattedDate(item.bookingExpiry) }}
+        <Tooltip>
+          {{ getFormattedDateTime(item.bookingExpiry) }}
+        </Tooltip>
       </Typography>
     </template>
     <template #location="{ item }">

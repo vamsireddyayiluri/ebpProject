@@ -13,7 +13,6 @@ import listRequiresForTruckers from '~/fixtures/requiresForTruckers.json'
 const authStore = useAuthStore()
 const workDetailsStore = useWorkDetailsStore()
 const truckerManagement = useTruckerManagementStore()
-const { isLoading } = storeToRefs(authStore)
 
 const form = reactive({
   fullName: '',
@@ -23,6 +22,7 @@ const form = reactive({
   password: '',
   confirmPassword: '',
 })
+const loading = ref(false)
 const { yards } = storeToRefs(workDetailsStore)
 const { requiresForTruckers, preferredTruckersList, questionList, onboardingDocuments } =
   storeToRefs(truckerManagement)
@@ -76,6 +76,7 @@ const goToStep = stepId => {
 
 const onSubmit = async () => {
   if (stepper.isLast.value) {
+    loading.value = true
     await authStore.register({
       form,
       yards: yards.value,
@@ -84,6 +85,7 @@ const onSubmit = async () => {
       questionList: questionList.value,
       onboardingDocuments: onboardingDocuments.value,
     })
+    loading.value = false
   }
   if (stepper.current.value.isValid()) {
     stepper.goToNext()
@@ -205,6 +207,7 @@ onMounted(async () => {
           v-if="stepper.isLast.value"
           :disabled="!stepper.current.value.isValid()"
           type="submit"
+          :loading="loading"
           class="max-w-[220px] w-full"
         >
           Create workspace

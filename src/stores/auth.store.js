@@ -82,7 +82,6 @@ export const useAuthStore = defineStore('auth', () => {
     questionList,
     onboardingDocuments,
   }) => {
-    isLoading.value = true
     try {
       await createUserWithEmailAndPassword(auth, form.email, form.password)
       await signInWithEmailAndPassword(auth, form.email, form.password)
@@ -108,8 +107,9 @@ export const useAuthStore = defineStore('auth', () => {
           alertStore.warning({ content: "File wasn't uploaded " + message })
         }
       }
-      router.push({ name: 'verify1' })
+      await router.push({ name: 'verify1' })
       isLoading.value = false
+      await sendVerificationEmail()
     } catch (error) {
       switch (error.code) {
       case 'auth/email-already-in-use':

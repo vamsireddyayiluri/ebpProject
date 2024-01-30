@@ -20,7 +20,7 @@ const deleteDraftDialog = ref(false)
 
 const { draftsHeaders } = useHeaders()
 const { draftsActions } = useActions()
-const { getFormattedDateTime } = useDate()
+const { getFormattedDateTime, getFormattedDate } = useDate()
 
 const containerActionHandler = ({ action, e }) => {
   if (action === 'edit-draft') emit('editDraft', e[0].id)
@@ -103,7 +103,10 @@ onMounted(() => {
     </template>
     <template #expiry="{ item }">
       <Typography type="text-body-m-regular">
-        {{ getFormattedDateTime(item.bookingExpiry) }}
+        {{ getFormattedDate(item.bookingExpiry) }}
+        <Tooltip>
+          {{ getFormattedDateTime(item.bookingExpiry) }}
+        </Tooltip>
       </Typography>
     </template>
     <template #location="{ item }">
