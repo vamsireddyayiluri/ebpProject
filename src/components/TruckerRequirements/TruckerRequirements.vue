@@ -143,7 +143,7 @@ const confirmSendInvitation = trucker => {
         variant="plain"
         width="48"
         height="48"
-        @click.stop="truckerManagement.removeQuestion(question)"
+        @click.stop="truckerManagement.removeQuestion(i)"
       />
     </div>
   </template>
