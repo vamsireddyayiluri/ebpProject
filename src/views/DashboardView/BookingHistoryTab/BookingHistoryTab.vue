@@ -12,7 +12,7 @@ const { loading } = storeToRefs(bookingsStore)
 const { smAndDown } = useDisplay()
 const { bookingsHistoryHeaders } = useHeaders()
 const { bookingHistoryActions } = useActions()
-const { getFormattedDateTime } = useDate()
+const { getFormattedDateTime, getFormattedDate } = useDate()
 const router = useRouter()
 const statistics = ref(truckersData)
 const tableHeight = ref(0)
@@ -169,9 +169,12 @@ watch(searchValue, value => {
           </template>
         </Typography>
       </template>
-      <template #expiry="{ item }">
+      <template #bookingExpiry="{ item }">
         <Typography>
-          {{ getFormattedDateTime(item.bookingExpiry) }}
+          {{ getFormattedDate(item.bookingExpiry) }}
+          <Tooltip>
+            {{ getFormattedDateTime(item.bookingExpiry) }}
+          </Tooltip>
         </Typography>
       </template>
       <template #status="{ item }">

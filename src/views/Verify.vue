@@ -3,16 +3,13 @@ import { useAuthStore } from '~/stores/auth.store'
 import { getColor } from '~/helpers/colors'
 const authStore = useAuthStore()
 
-onMounted(() => {
-  sendVerifyEmail()
-})
 const sendVerifyEmail = () => {
   authStore.sendVerificationEmail()
 }
 </script>
 
 <template>
-  <form
+  <div
     class="mx-auto"
     :style="{ maxWidth: '360px' }"
   >
@@ -24,9 +21,7 @@ const sendVerifyEmail = () => {
       We sent a verification link to the registered email<b />
     </Typography>
     <Button
-      type="submit"
       class="w-100 mx-auto"
-      @click="openMail"
     >
       Open mailbox
     </Button>
@@ -38,5 +33,5 @@ const sendVerifyEmail = () => {
     >
       Click to resend
     </Button>
-  </form>
+  </div>
 </template>

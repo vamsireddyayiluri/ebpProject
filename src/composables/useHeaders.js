@@ -28,7 +28,7 @@ export const bookingsHeaders = userType => {
     },
     {
       text: 'Loading date',
-      value: 'expiry',
+      value: 'bookingExpiry',
       sortable: true,
       sorter: (a, b) => moment(a).diff(moment(b)),
     },
@@ -83,7 +83,7 @@ export const draftsHeaders = userType => {
     },
     {
       text: 'Loading date',
-      value: 'expiry',
+      value: 'bookingExpiry',
       sortable: true,
       sorter: (a, b) => moment(a).diff(moment(b)),
     },
@@ -177,7 +177,7 @@ export const bookingsHistoryHeaders = [
   },
   {
     text: 'Loading date',
-    value: 'expiry',
+    value: 'bookingExpiry',
     sortable: true,
     sorter: (a, b) => moment(a).diff(moment(b)),
   },

@@ -21,7 +21,7 @@ const removeBookingDialog = ref(false)
 
 const { yardsHeaders, bookingsHeaders } = useHeaders()
 const { bookingsActions } = useActions()
-const { getFormattedDateTime } = useDate()
+const { getFormattedDateTime, getFormattedDate } = useDate()
 
 const containerActionHandler = ({ action, e }) => {
   if (action === 'edit-booking') emit('editBooking', e[0].id)
@@ -130,9 +130,12 @@ onMounted(() => {
             class="h-8"
           >
         </template>
-        <template #expiry="{ item }">
+        <template #bookingExpiry="{ item }">
           <Typography type="text-body-m-regular">
-            {{ getFormattedDateTime(item.bookingExpiry) }}
+            {{ getFormattedDate(item.bookingExpiry) }}
+            <Tooltip>
+              {{ getFormattedDateTime(item.bookingExpiry) }}
+            </Tooltip>
           </Typography>
         </template>
         <template #location="{ item }">
