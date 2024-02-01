@@ -64,6 +64,7 @@ const readNotification = async id => {
 }
 onMounted(async () => {
   await notificationStore.getNotifications()
+  await chatStore.getChats()
 })
 </script>
 

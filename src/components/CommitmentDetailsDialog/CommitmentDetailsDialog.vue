@@ -4,6 +4,7 @@ import { getLineAvatar } from '~/firebase/getLineAvatar'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { useDate } from '~/composables'
 import { statuses } from '~/constants/statuses'
+import { useChatStore } from '~/stores/chat.store'
 
 const props = defineProps({
   commitment: Object,
@@ -11,6 +12,7 @@ const props = defineProps({
 const emit = defineEmits(['close', 'approveCommitment', 'completeCommitment', 'declineCommitment'])
 const { bookings } = useBookingsStore()
 const { getFormattedDate } = useDate()
+const { goToChat } = useChatStore()
 const details = ref([
   { name: 'Company name', value: 'FedEx Freight' },
   { name: 'SCAC', value: 'ABCD' },
@@ -47,7 +49,7 @@ const {
       <IconButton
         icon="mdi-message-text"
         class="mr-2"
-        @click="() => {}"
+        @click="goToChat('6srEzErbjIW4bL9gQUNbI51BGlE3')"
       >
         <Tooltip> Go go chat </Tooltip>
       </IconButton>

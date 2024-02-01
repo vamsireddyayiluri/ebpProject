@@ -291,9 +291,9 @@
     "@babel/plugin-syntax-typescript" "^7.23.3"
 
 "@babel/runtime@^7.21.0":
-  version "7.23.8"
-  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.23.8.tgz#8ee6fe1ac47add7122902f257b8ddf55c898f650"
-  integrity sha512-Y7KbAP984rn1VGMbGqKmBLio9V7y5Je9GvU4rQPCPinCyNfUcToxIXl06d59URp/F3LwinvODxab5N/G6qggkw==
+  version "7.23.9"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.23.9.tgz#47791a15e4603bb5f905bc0753801cf21d6345f7"
+  integrity sha512-0CX6F+BI2s9dkUqr08KFrAIZgNFj75rdBU/DjCyYLIaV/quFjkk6T+EJ2LkZHyZTbEV4L5p97mNkUsHl2wLFAw==
   dependencies:
     regenerator-runtime "^0.14.0"
 
@@ -931,9 +931,9 @@
     fast-deep-equal "^3.1.3"
 
 "@googlemaps/markerclusterer@^2.0.6":
-  version "2.5.2"
-  resolved "https://registry.yarnpkg.com/@googlemaps/markerclusterer/-/markerclusterer-2.5.2.tgz#d20511582bdafad720d00d72a20bc82023e47266"
-  integrity sha512-wIbgghVrnuS9XpkbI/9SkBZGO+Zlb+WS9Vc87ul7GytK2aKpCIfb5w17Y6xU+DpLLhYnSOZpQp9Ncwkodsr8ug==
+  version "2.5.3"
+  resolved "https://registry.yarnpkg.com/@googlemaps/markerclusterer/-/markerclusterer-2.5.3.tgz#9f891ce7e8e161775f3a3e2c9f66956810284591"
+  integrity sha512-x7lX0R5yYOoiNectr10wLgCBasNcXFHiADIBdmn7jQllF2B5ENQw5XtZK+hIw4xnV0Df0xhN4LN98XqA5jaiOw==
   dependencies:
     fast-deep-equal "^3.1.3"
     supercluster "^8.0.1"
@@ -1495,9 +1495,9 @@
   integrity sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==
 
 "@qualle-admin/qui@latest":
-  version "1.188.0"
-  resolved "https://npm.pkg.github.com/download/@qualle-admin/qui/1.188.0/b7a08b789f6be932a0b742d42ad6d5777de85e7c#b7a08b789f6be932a0b742d42ad6d5777de85e7c"
-  integrity sha512-vVXE8os/SSeGPX3tzbbtnoXJeCUhkuTOVED6L9EinUj7xvCOP7V1LsytS83AYs8IaNeMrqPEdLhtpaPXo940GQ==
+  version "1.190.0"
+  resolved "https://npm.pkg.github.com/download/@qualle-admin/qui/1.190.0/3dbdd63b9c26090b706c93aeb80545460887a7e5#3dbdd63b9c26090b706c93aeb80545460887a7e5"
+  integrity sha512-GfifKAjdYXiWJE0RlqOO3xSaypxCNj+MiioYr5n1TyvM2DwTDikcIn3oucPAwrfU2xai2m+ZO8yaoYXzoSGuoQ==
   dependencies:
     uid "^2.0.1"
     "@fullcalendar/core" "^6.0.3"
