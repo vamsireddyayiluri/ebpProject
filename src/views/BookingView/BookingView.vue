@@ -20,6 +20,8 @@ import {
   validateExpiryDate,
   validateFlexibleSizes,
 } from '~/helpers/validations-functions'
+import { insuranceTypes } from '~/constants/settings'
+
 
 const authStore = useAuthStore()
 const alertStore = useAlertStore()
@@ -49,7 +51,7 @@ const loading = ref(null)
 const currentDate = ref(new Date())
 const form = ref(null)
 const validExpiryDate = ref(false)
-
+const insuranceItems= ref(insuranceTypes)
 const rules = {
   containers: value => checkPositiveInteger(value),
 }
@@ -121,6 +123,7 @@ const validateRequiredFields = () => {
     booking.value.containers &&
     rules.containers(booking.value.containers) === true &&
     booking.value.commodity &&
+    booking.value.insurance &&
     booking.value.weight &&
     rules.containers(booking.value.weight) === true &&
     booking.value.targetRate &&
@@ -354,7 +357,7 @@ onMounted(async () => {
             :disabled="expired || completed"
           />
           <Textfield
-            v-model="booking.commodity"
+            v-model.trim="booking.commodity"
             label="Commodity*"
             required
             :disabled="expired || completed"
@@ -405,7 +408,15 @@ onMounted(async () => {
             required
             :disabled="expired || completed"
           />
-
+          <Autocomplete
+          v-model="booking.insurance"
+          :items="insuranceItems"
+          label="Minimum Insurance"
+          required
+          item-title="label"
+          item-value="id"
+          return-object
+        />
           <Textfield
             v-model.number="booking.targetRate"
             label="Target Rate*"
