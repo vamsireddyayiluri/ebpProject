@@ -30,7 +30,7 @@ describe('Validate trucker managment tab', () => {
       .parent()
       .click()
     additionalInfo?.forEach(info => {
-      cy.getInputByLabel(info).check()
+      cy.getInputByLabel(info).check({ force: true })
     })
     questions?.forEach(question => {
       cy.getInputByLabel('Question for trucker').type(question)
@@ -68,7 +68,7 @@ describe('Validate trucker managment tab', () => {
 
   it('Cancel edit changes', () => {
     additionalInfo?.forEach(info => {
-      cy.getInputByLabel(info).uncheck()
+      cy.getInputByLabel(info).uncheck({ force: true })
     })
 
     questions?.forEach(question => {

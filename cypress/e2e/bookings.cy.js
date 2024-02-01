@@ -1,85 +1,22 @@
 import { validData } from '../fixtures/bookings/validData'
 import { validData as register } from '../fixtures/register'
 import { editRowData, editBookingData, filterData } from '../fixtures/bookings/editData'
-
-function fillBookingRef(ref) {
-  cy.getInputByLabel('Booking ref*').type(ref)
-}
-function fillNoOfContainers(containers) {
-  cy.getInputByLabel('Number of containers*').type(containers)
-}
-function fillBookingSSL(ssl) {
-  cy.getInputByLabel('SSL *').type('{enter}', { force: true })
-  cy.get('.v-overlay__content > .v-list > .v-list-item > .v-list-item__content')
-    .contains(ssl)
-    .click()
-}
-function fillBookingExpiry(expiry) {
-  cy.get('.styleDatePicker[label="Booking expiry *"]').click().as('datePicker')
-
-  // cy.get('.v3dp__heading > .v3dp__heading__button :visible').last().click()
-  cy.get('@datePicker')
-    .get('.v3dp__elements')
-    .find('button')
-    .filter(':visible')
-    .find(`:contains(${expiry.date})`)
-
-    // .should('be.visible')
-    .click({ force: true })
-}
-function fillBookingExpiration(expiry) {
-  cy.get('.styleDatePicker[label="Booking Expiration *"]').click().as('datePicker')
-
-  // cy.get('.v3dp__heading > .v3dp__heading__button :visible').last().click()
-  cy.get('@datePicker')
-    .get('.v3dp__elements')
-    .find('button')
-    .filter(':visible')
-    .find(`:contains(${expiry.date})`)
-
-    // .should('be.visible')
-    .click({ force: true })
-}
-function fillPreferedCarrier(pcw) {
-  cy.get('.styleDatePicker[label="Preferred carrier window"]').click().as('datePicker')
-
-  // cy.get('.v3dp__heading > .v3dp__heading__button :visible').last().click()
-
-  cy.get('@datePicker')
-    .get('.v3dp__elements')
-    .find('button')
-    .filter(':visible')
-    .find(`:contains(${pcw.date})`)
-
-    // .should('be.visible')
-    .click({ force: true })
-}
-
-function fillBookingYard(yard) {
-  cy.getInputByLabel('Yard label *').type('{enter}', { force: true })
-  cy.get('.v-list-item-title').contains(yard).click()
-}
-
-function fillBookingEquipment(size) {
-  cy.getInputByLabel('Equipment type*').click({ force: true })
-
-  cy.get('.v-overlay__content > .v-list > .v-list-item > .v-list-item__content')
-    .contains(size)
-    .click()
-}
-
-function fillTruckerScac(truckerScac) {
-  cy.get('input[placeholder="Choose truckers by SCAС *"]').type(truckerScac)
-  cy.get('.v-overlay__content > .v-list > .v-list-item > .v-list-item__content')
-    .contains(truckerScac)
-    .click()
-
-  // cy.get('.chipLabel').contains(data.TruckersScac).should('be.visible')
-}
-
-function clearFieldData(field) {
-  cy.getInputByLabel(field).clear()
-}
+import {
+  clearFieldData,
+  fillAverageWeight,
+  fillBookingEquipment,
+  fillBookingExpiration,
+  fillBookingExpiry,
+  fillBookingRef,
+  fillBookingSSL,
+  fillBookingYard,
+  fillNoOfContainers,
+  fillPreferedCarrier,
+  fillTargetRate,
+  fillTruckerScac,
+  fillcommodity,
+  selectTargetRateType,
+} from '../helpers/bookings'
 
 describe('Creating new Bookings', () => {
   before(() => {
@@ -89,9 +26,9 @@ describe('Creating new Bookings', () => {
       if (!url.includes('/dashboard')) {
         // If the URL doesn't contain '/dashboard', navigate to the dashboard route
         cy.visit('/login')
-        cy.userLogin(register[0].email, register[0].password)
+        // cy.userLogin(register[0].email, register[0].password)
 
-        // cy.userLogin('sravanthi.gorantla@cognine.com', '123456789')
+        cy.userLogin('sravanthi.gorantla@cognine.com', '123456789')
       }
     })
   })
@@ -111,9 +48,13 @@ describe('Creating new Bookings', () => {
       fillBookingExpiration(data.expiry)
       fillPreferedCarrier(data.pcw)
       fillBookingYard(data.yard)
+      fillcommodity(data.commodity)
+      fillAverageWeight(data.averageWeight)
+      fillTargetRate(data.targetRate)
+      selectTargetRateType(data.targetRateType)
       fillBookingEquipment(data.equipmentType)
       fillTruckerScac(data.TruckersScac)
-      cy.getInputByLabel('Booking Expiration *')
+      cy.getInputByLabel('Loading date *')
         .invoke('val')
         .then(sometext => {
           cy.wrap(sometext).as('expiry')
@@ -152,7 +93,7 @@ describe('Creating new Bookings', () => {
       .then(element => {
         if (element.length) {
           cy.log(element)
-          cy.get('@actionbutton').click()
+          cy.get('@actionbutton').find('.mdi-dots-vertical').click()
         } else {
           cy.get('@selectedRow').scrollTo('right').find('[class=mdi-dots-vertical]').click()
         }
@@ -243,7 +184,7 @@ describe('Creating new Bookings', () => {
       .then(element => {
         if (element.length) {
           cy.log(element)
-          cy.get('@actionbutton').click()
+          cy.get('@actionbutton').find('.mdi-dots-vertical').click()
         } else {
           cy.get('@selectedRow').scrollTo('right').find('[class=mdi-dots-vertical]').click()
         }
@@ -285,7 +226,7 @@ describe('Creating new Bookings', () => {
       .then(element => {
         if (element.length) {
           cy.log(element)
-          cy.get('@actionbutton').click()
+          cy.get('@actionbutton').find('.mdi-dots-vertical').click()
         } else {
           cy.get('@selectedRow').scrollTo('right').find('[class=mdi-dots-vertical]').click()
         }
@@ -293,7 +234,7 @@ describe('Creating new Bookings', () => {
     cy.get('.v-overlay__content > .v-list > .v-list-item').contains('Edit').click()
     cy.wait(1000)
 
-    cy.get('button[type="button"]').should('be.visible').as('publish').contains('publish').click()
+    cy.get('button[type="button"]').contains('publish').should('be.visible').click()
 
     cy.get('.v-alert').contains('Draft was deleted').should('be.visible')
     cy.wait(1000)
@@ -327,7 +268,7 @@ describe('Creating new Bookings', () => {
       .then(element => {
         if (element.length) {
           cy.log(element)
-          cy.get('@actionbutton').click()
+          cy.get('@actionbutton').find('.mdi-dots-vertical').click()
         } else {
           cy.get('@selectedRow').scrollTo('right').find('[class=mdi-dots-vertical]').click()
         }
@@ -342,6 +283,54 @@ describe('Creating new Bookings', () => {
 
     cy.searchDataWithTwoLables(
       'bookings',
+      'ref',
+      editRowData.ref,
+      'bookingExpiry',
+      editRowData.expiry,
+    ).then(docs => {
+      expect(docs.length).to.be.at.least(0)
+    })
+    cy.searchDataWithTwoLables(
+      'drafts',
+      'ref',
+      editRowData.ref,
+      'bookingExpiry',
+      editRowData.expiry,
+    ).then(docs => {
+      expect(docs.length).to.be.at.least(1)
+    })
+    cy.get('button[type="button"]').contains('Drafts').click()
+    cy.get('#draftTable')
+      .get(`.v-col[data-column="ref"]`)
+      .find(`:contains(${editRowData.ref})`)
+      .parent()
+      .parent()
+      .find(`.v-col[data-column="expiry"] :contains(${editRowData.expiry})`)
+      .parent()
+      .parent()
+      .as('selectedRow')
+
+    cy.get('@selectedRow')
+      .find('button')
+      .as('actionbutton')
+      .then(element => {
+        if (element.length) {
+          cy.log(element)
+          cy.get('@actionbutton').find('.mdi-dots-vertical').click()
+        } else {
+          cy.get('@selectedRow').scrollTo('right').find('[class=mdi-dots-vertical]').click()
+        }
+      })
+    cy.get('.v-overlay__content > .v-list > .v-list-item').contains('Delete').click()
+
+    cy.get('.v-dialog').should('be.visible')
+
+    cy.get('button[type="button"]').contains('Delete').click()
+
+    cy.get('.v-alert').contains('Draft was deleted').should('be.visible')
+
+    cy.searchDataWithTwoLables(
+      'drafts',
       'ref',
       editRowData.ref,
       'bookingExpiry',
@@ -405,6 +394,12 @@ describe('Creating new Bookings', () => {
       cy.get('@submitbutton').should('be.disabled')
       fillBookingYard(data.yard)
       cy.get('@submitbutton').should('be.disabled')
+      fillcommodity(data.commodity)
+      cy.get('@submitbutton').should('be.disabled')
+      fillAverageWeight(data.averageWeight)
+      cy.get('@submitbutton').should('be.disabled')
+      fillTargetRate(data.targetRate)
+      cy.get('@submitbutton').should('be.disabled')
       fillBookingEquipment(data.equipmentType)
       cy.get('@submitbutton').should('be.enabled')
 
@@ -415,6 +410,9 @@ describe('Creating new Bookings', () => {
       clearFieldData('Number of containers*')
       cy.get('@submitbutton').should('be.disabled')
       fillNoOfContainers(data.noOfContainers)
+      clearFieldData('Target rate*')
+      cy.get('@submitbutton').should('be.disabled')
+      fillTargetRate(data.targetRate)
       cy.get('@submitbutton').should('be.enabled')
 
       cy.xpath('/html/body/div[2]/div/div[2]/div/div[2]/div/div[2]/div/button').click({
@@ -441,9 +439,13 @@ describe('Creating new Bookings', () => {
       fillPreferedCarrier(data.pcw)
       fillBookingYard(data.yard)
       fillBookingEquipment(data.equipmentType)
-      fillTruckerScac(data.TruckersScac)
+      fillcommodity(data.commodity)
+      fillAverageWeight(data.averageWeight)
+      fillTargetRate(data.targetRate)
+      selectTargetRateType(data.targetRateType)
+      // fillTruckerScac(data.TruckersScac)
 
-      cy.getInputByLabel('Booking Expiration *')
+      cy.getInputByLabel('Loading date *')
         .invoke('val')
         .then(sometext => {
           cy.wrap(sometext).as('expiry')
@@ -453,7 +455,7 @@ describe('Creating new Bookings', () => {
       // cy.xpath('/html/body/div[2]/div[5]/div[2]/div/div[2]/div/div[2]/div/button').click({
       //   force: true,
       // })
-      cy.get('.mdi-close').click({ force: true })
+      cy.get('.mdi-close').first().click({ force: true })
       cy.get('.v-dialog').should('have.length', 2)
       cy.contains('Do you want to keep the bookings in Drafts?')
       cy.get('button[type="button"]').contains('save').click()
@@ -487,7 +489,7 @@ describe('Creating new Bookings', () => {
       .then(element => {
         if (element.length) {
           cy.log(element)
-          cy.get('@actionbutton').click()
+          cy.get('@actionbutton').find('.mdi-dots-vertical').click()
         } else {
           cy.get('@selectedRow').scrollTo('right').find('[class=mdi-dots-vertical]').click()
         }

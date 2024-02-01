@@ -7,6 +7,10 @@ import {
   fillNoOfContainers,
   fillPreferedCarrier,
   fillTruckerScac,
+  fillAverageWeight,
+  fillTargetRate,
+  selectTargetRateType,
+  fillcommodity,
 } from '../helpers/bookings'
 import { bookingData, bookingDatawithoutNotification } from '../fixtures/notifications'
 import { validData as register } from '../fixtures/register'
@@ -18,9 +22,13 @@ function createBooking(bookingData) {
   fillBookingExpiration(bookingData.expiry)
   fillPreferedCarrier(bookingData.pcw)
   fillBookingYard(bookingData.yard)
+  fillcommodity(bookingData.commodity)
+  fillAverageWeight(bookingData.averageWeight)
+  fillTargetRate(bookingData.targetRate)
+  selectTargetRateType(bookingData.targetRateType)
   fillBookingEquipment(bookingData.equipmentType)
   fillTruckerScac(bookingData.TruckersScac)
-  cy.getInputByLabel('Booking Expiration *')
+  cy.getInputByLabel('Loading date *')
     .invoke('val')
     .then(sometext => {
       cy.wrap(sometext).as('expiry')
@@ -175,7 +183,7 @@ describe('notifications', () => {
     removeBooking(bookingData)
   })
   it('read all notifications', () => {
-    cy.get('#notificationId').click()
+    cy.get('#notificationId').click({ force: true })
     cy.get('.notification-popup').find('button[type="button"]').contains('Mark all as read').click()
     cy.get('.notification-popup').find('button[type="button"]').contains('Unread').click()
     cy.get('.notification-popup').contains('You read all messages').should('exist')

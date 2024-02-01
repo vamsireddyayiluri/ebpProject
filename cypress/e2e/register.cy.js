@@ -43,9 +43,9 @@ const fillInviteTeam = data => {
 // filling trucker requirments
 const fillTruckerRequirments = data => {
   data?.truckerScac?.forEach(scac => {
-    cy.xpath('//*[@id="app"]/div/div/div[2]/form/div[2]/div[1]/div[3]/div/div')
-      .type(scac)
-      .type('{downarrow}{enter}')
+    cy.xpath('//*[@id="app"]/div/div/div[2]/form/div[2]/div[1]/div[3]/div/div').type(scac)
+
+    cy.get('.v-overlay__content').contains(scac).click()
   })
   data?.additionalInfo?.forEach(info => {
     cy.getInputByLabel(info).check()
@@ -60,9 +60,8 @@ const fillTruckerRequirments = data => {
 const onBoardDocuments = data => {
   data?.documents?.forEach(doc => {
     cy.xpath('//*[@id="app"]/div/div/div[2]/form/div[2]/div[1]/label').selectFile(doc.file)
-    cy.xpath('/html/body/div[2]/div/div[2]/div/div[2]/div/div[2]/div')
-      .contains('Rename file')
-      .should('be.visible')
+
+    cy.get('.v-dialog').contains('Rename file').should('be.visible')
     if (doc.rename) {
       cy.getInputByLabel('File name').clear().type(doc.rename)
     }
@@ -148,12 +147,12 @@ describe('new user registration', () => {
       cy.get('@next').click()
       data.inviteTeam?.forEach(val => {
         cy.getInputByLabel('Worker ID').type(val.workerId)
-        cy.contains('button', ' add member ').should('be.disabled')
+        cy.contains('button', 'add member').should('be.disabled')
         cy.getInputByLabel('Worker ID').clear()
       })
       data.inviteTeam?.forEach(val => {
         cy.getInputByLabel('Email').type(val.email)
-        cy.contains('button', ' add member ').should('be.disabled')
+        cy.contains('button', ' add member ').should('be.enabled')
         cy.getInputByLabel('Email').clear()
       })
       cy.getInputByLabel('Email').clear()
@@ -185,7 +184,7 @@ describe('new user registration', () => {
       cy.get('@next').click()
 
       cy.xpath('//*[@id="app"]/div/div/div[2]/form/div[1]')
-        .contains('Work details')
+        .contains('Yard details')
         .should('be.visible')
       cy.get('@next').should('be.enabled')
 
@@ -254,7 +253,7 @@ describe('new user registration', () => {
       cy.get('@next').click()
 
       cy.xpath('//*[@id="app"]/div/div/div[2]/form/div[1]')
-        .contains('Work details')
+        .contains('Yard details')
         .should('be.visible')
       cy.get('@next').should('be.enabled')
 
