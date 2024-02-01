@@ -13,7 +13,16 @@ export const useAlertStore = defineStore('alert', () => {
   }
   const info = ({ title, content, timeout = defaultTimeout, button, addDeclineButtons }) => {
     const id = title + content
-    alertList.value.push({id, title, content, type: 'info', button, addDeclineButtons, timeout, close})
+    alertList.value.push({
+      id,
+      title,
+      content,
+      type: 'info',
+      button,
+      addDeclineButtons,
+      timeout,
+      close,
+    })
     show.value = true
     close(id, timeout)
   }

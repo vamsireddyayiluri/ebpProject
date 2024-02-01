@@ -20,9 +20,7 @@ const sendVerifyEmail = () => {
     >
       We sent a verification link to the registered email<b />
     </Typography>
-    <Button
-      class="w-100 mx-auto"
-    >
+    <Button class="w-100 mx-auto">
       Open mailbox
     </Button>
 

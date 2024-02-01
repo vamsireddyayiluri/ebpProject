@@ -15,9 +15,9 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore'
-import {db, storage} from '~/firebase'
+import { db, storage } from '~/firebase'
 import { uid } from 'uid'
-import {getDownloadURL, ref as firebaseRef, uploadBytes} from "firebase/storage"
+import { getDownloadURL, ref as firebaseRef, uploadBytes } from 'firebase/storage'
 
 export const useChatStore = defineStore('chat', () => {
   const alertStore = useAlertStore()
@@ -110,9 +110,9 @@ export const useChatStore = defineStore('chat', () => {
           const url = await getDownloadURL(fileRef)
           const fileData = {
             localUrl: url,
-            "name": file.name,
-            "size": file.size,
-            "type": file.type,
+            name: file.name,
+            size: file.size,
+            type: file.type,
           }
           fileUrls.push(fileData)
         }),

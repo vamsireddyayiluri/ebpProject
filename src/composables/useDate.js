@@ -1,4 +1,4 @@
-import moment, {utc} from 'moment-timezone'
+import moment, { utc } from 'moment-timezone'
 
 export const getFormattedDateTime = date => {
   if (!date) return null
