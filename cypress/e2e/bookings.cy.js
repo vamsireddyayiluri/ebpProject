@@ -26,6 +26,7 @@ describe('Creating new Bookings', () => {
       if (!url.includes('/dashboard')) {
         // If the URL doesn't contain '/dashboard', navigate to the dashboard route
         cy.visit('/login')
+
         // cy.userLogin(register[0].email, register[0].password)
 
         cy.userLogin('sravanthi.gorantla@cognine.com', '123456789')
@@ -443,6 +444,7 @@ describe('Creating new Bookings', () => {
       fillAverageWeight(data.averageWeight)
       fillTargetRate(data.targetRate)
       selectTargetRateType(data.targetRateType)
+
       // fillTruckerScac(data.TruckersScac)
 
       cy.getInputByLabel('Loading date *')

@@ -22,7 +22,6 @@ import {
 } from '~/helpers/validations-functions'
 import { insuranceTypes } from '~/constants/settings'
 
-
 const authStore = useAuthStore()
 const alertStore = useAlertStore()
 
@@ -51,7 +50,7 @@ const loading = ref(null)
 const currentDate = ref(new Date())
 const form = ref(null)
 const validExpiryDate = ref(false)
-const insuranceItems= ref(insuranceTypes)
+const insuranceItems = ref(insuranceTypes)
 const rules = {
   containers: value => checkPositiveInteger(value),
 }
@@ -409,14 +408,14 @@ onMounted(async () => {
             :disabled="expired || completed"
           />
           <Autocomplete
-          v-model="booking.insurance"
-          :items="insuranceItems"
-          label="Minimum Insurance"
-          required
-          item-title="label"
-          item-value="id"
-          return-object
-        />
+            v-model="booking.insurance"
+            :items="insuranceItems"
+            label="Minimum Insurance"
+            required
+            item-title="label"
+            item-value="id"
+            return-object
+          />
           <Textfield
             v-model.number="booking.targetRate"
             label="Target Rate*"

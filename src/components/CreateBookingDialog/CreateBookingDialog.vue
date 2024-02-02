@@ -31,7 +31,7 @@ const { yards } = storeToRefs(workDetailsStore)
 const { bookings } = storeToRefs(bookingsStore)
 const form = ref(null)
 const validExpiryDate = ref(false)
-const insuranceItems= ref(insuranceTypes)
+const insuranceItems = ref(insuranceTypes)
 
 const computedEntities = computed(() => bookings.value)
 
@@ -49,7 +49,7 @@ const booking = ref({
   flexibleBooking: false,
   size: null,
   scacList: bookingRulesStore.rules.truckers,
-  insurance:'100,000'
+  insurance: '100,000',
 })
 
 const confirmDraftsDialog = ref(null)

@@ -2,8 +2,8 @@
 import { Main } from '@layouts'
 import { useChatStore } from '~/stores/chat.store'
 import { storeToRefs } from 'pinia'
-import { useAuthStore } from "~/stores/auth.store"
-import {useAlertStore} from "~/stores/alert.store"
+import { useAuthStore } from '~/stores/auth.store'
+import { useAlertStore } from '~/stores/alert.store'
 
 const messageActions = [
   {
