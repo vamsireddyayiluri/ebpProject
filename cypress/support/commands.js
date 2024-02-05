@@ -46,20 +46,31 @@ Cypress.Commands.add('logout', () => {
 })
 
 import { auth, db } from './firebase'
-import { deleteDoc, getDoc, query, where, collection, getDocs, doc } from 'firebase/firestore'
+import {
+  deleteDoc,
+  getDoc,
+  query,
+  where,
+  collection,
+  getDocs,
+  doc,
+  setDoc,
+} from 'firebase/firestore'
 import moment from 'moment-timezone'
+import { uid } from 'uid'
+import { getLocalTime } from '@qualle-admin/qutil/dist/date'
 
 Cypress.Commands.add('getUsersData', async email => {
   const q = query(collection(db, 'users'), where('email', '==', email))
   const docData = await getDocs(q)
-  
+
   return docData.docs
 })
 
 Cypress.Commands.add('searchDocData', async (coll, label, value) => {
   const q = query(collection(db, coll), where(label, '==', value))
   const docData = await getDocs(q)
-  
+
   return docData.docs
 })
 
@@ -69,14 +80,14 @@ Cypress.Commands.add('searchDataWithTwoLables', async (coll, label1, value1, lab
   }
   const q = query(collection(db, coll), where(label1, '==', value1), where(label2, '==', value2))
   const docData = await getDocs(q)
-  
+
   return docData.docs
 })
 
 Cypress.Commands.add('getDocData', async (coll, document) => {
   const q = query(doc(db, coll, document))
   const docData = await getDoc(q)
-  
+
   return docData.data()
 })
 
@@ -103,7 +114,6 @@ Cypress.Commands.add('verifyEmail', async email => {
     const parsedHTML = parser.parseFromString(message.htmlBody, 'text/html')
     const anchorElement = parsedHTML.querySelector('a')
     const hrefValue = anchorElement.getAttribute('href')
-    
     return hrefValue
   } catch (error) {
     console.log('error', error)
@@ -130,4 +140,49 @@ Cypress.Commands.add('removeUser', email => {
     .catch(error => {
       console.log('error', error)
     })
+})
+
+Cypress.Commands.add('createCommitment', async data => {
+  const { bookingRef, expiry, committedCount } = data
+  const q = query(
+    collection(db, 'bookings'),
+    where('ref', '==', bookingRef),
+    where('bookingExpiry', '==', moment(expiry).format()),
+  )
+  const docData = await getDocs(q)
+  if (!docData.empty) {
+    const booking = docData.docs[0].data()
+    const id = uid(16)
+    const commitmentDate = getLocalTime().format()
+    const commit = {
+      id,
+      bookingId: booking.id,
+      orgId: data.truckerOrgId,
+      ref: booking.ref,
+      committed: committedCount,
+      company: data.truckerCompany,
+      email: data.truckerEmail,
+      truckerId: data.truckerId,
+      scac: data.truckerScac,
+      commitmentDate: commitmentDate,
+      bookingOrgId: booking.orgId,
+      status: 'pending',
+      timeline: [
+        {
+          title: `${data.truckerScac} committed ${booking.committedCount} containers`,
+          data: commitmentDate,
+        },
+        {
+          title: 'Commitment is pending',
+          data: commitmentDate,
+        },
+      ],
+    }
+
+    try {
+      await setDoc(doc(db, 'commitments', id), commit)
+    } catch ({ message }) {
+      console.log('message', message)
+    }
+  }
 })

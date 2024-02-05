@@ -10,8 +10,14 @@ export const bookingsHeaders = userType => {
       width: 1,
     },
     {
+      text: 'Committed/Total',
+      value: 'containers',
+      align: 'center',
+    },
+    {
       text: 'Yard label',
       value: 'yardLabel',
+      align: 'center',
       width: 2,
     },
     {

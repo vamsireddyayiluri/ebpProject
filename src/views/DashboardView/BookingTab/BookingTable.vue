@@ -138,6 +138,9 @@ onMounted(() => {
         </template>
       </FlexTypography>
     </template>
+    <template #containers="{item}">  <Typography>
+        {{ item.committed}}/{{item.containers }}
+      </Typography></template>
     <template #yardLabel="{ item }">
       <FlexTypography type="text-body-m-regular">
         {{ item.location.label || '--' }}
