@@ -3,7 +3,7 @@ import { doc, updateDoc } from 'firebase/firestore'
 import { useAlertStore } from '~/stores/alert.store'
 import { useAuthStore } from '~/stores/auth.store'
 import { useDate } from '~/composables'
-import { getDownloadURL, ref as firebaseRef, uploadBytes } from 'firebase/storage'
+import { getDownloadURL, ref as firebaseRef, uploadBytes, deleteObject, list } from 'firebase/storage'
 import {
   EmailAuthProvider,
   reauthenticateWithCredential,
@@ -32,8 +32,13 @@ export const useProfileStore = defineStore('profile', () => {
   // Uploading user profile image into firebase storage
   const updateUserAvatar = async file => {
     try {
-      const storageRef = firebaseRef(storage, 'avatar')
-      const url = await uploadBytes(storageRef, file).then(async snapshot => {
+      // remove old
+      const folderRef = firebaseRef(storage, `avatar/${userData.userId}`)
+      const filesList = await list(folderRef)
+      await Promise.all(filesList.items.map(file => deleteObject(file)))
+
+      const fileRef = firebaseRef(storage, `avatar/${userData.userId}/${file.name}`)
+      const url = await uploadBytes(fileRef, file).then(async snapshot => {
         return await getDownloadURL(snapshot.ref)
       })
       await updateProfile(auth.currentUser, { photoURL: url })
