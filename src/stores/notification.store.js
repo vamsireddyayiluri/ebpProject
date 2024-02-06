@@ -16,6 +16,7 @@ import { useAuthStore } from '~/stores/auth.store'
 export const useNotificationStore = defineStore('notification', () => {
   const alertStore = useAlertStore()
   const authStore = useAuthStore()
+  const { userData } = useAuthStore()
   const notifications = ref([])
   const defaultSettings = {
     newsAndUpdates: {

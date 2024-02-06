@@ -10,14 +10,13 @@ const props = defineProps({
   reasonList: Array,
 })
 
-const emit = defineEmits(['close', 'onClickBtn'])
+const emit = defineEmits(['onClickBtn'])
 
 const reportReason = ref(null)
 const yourReason = ref()
 const extended = computed(
   () =>
-    reportReason.value === onboardingCodes.neverOnboarded ||
-    reportReason.value === onboardingCodes.other,
+    reportReason.value === onboardingCodes.neverOnboarded || reportReason.value === onboardingCodes.other,
 )
 
 const onReport = () => {

@@ -1,5 +1,5 @@
-import moment from 'moment-timezone'
-import { useAlertStore } from '~/stores/alert.store'
+import moment from "moment-timezone"
+import {useAlertStore} from "~/stores/alert.store"
 
 const alertStore = useAlertStore()
 export const checkPositiveInteger = value => {
