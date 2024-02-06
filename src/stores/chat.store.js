@@ -193,6 +193,9 @@ export const useChatStore = defineStore('chat', () => {
         }
         alertStore.info(toasty)
       }
+      if (activeChat.value?.chatId === message.chatId && isChatPage) {
+        await markAsRead(message.chatId)
+      }
     }
   }
   const markUserAsOnlineOffline = async status => {

@@ -110,6 +110,8 @@ module.exports = {
     'vue/require-default-prop': 'off',
     'vue/no-empty-component-block': 'off',
     'vue/no-side-effects-in-computed-properties': 'off',
+    'vue/no-v-text-v-html-on-component': 'off',
+    'vue/no-v-html': 'off',
 
     // -- Extension Rules
     'vue/no-irregular-whitespace': 'error',

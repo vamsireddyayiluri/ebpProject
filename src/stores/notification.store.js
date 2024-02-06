@@ -92,7 +92,7 @@ export const useNotificationStore = defineStore('notification', () => {
 
   // get and subscribe notifications and show alert if was added new notification
   let unsubscribeNotification
-  const getNotifications = async id => {
+  const getNotifications = async () => {
     if (unsubscribeNotification) {
       unsubscribeNotification()
     }
