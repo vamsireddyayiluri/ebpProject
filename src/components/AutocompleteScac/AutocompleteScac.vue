@@ -5,9 +5,7 @@ import truckers from '~/fixtures/truckers.json'
 const props = defineProps({
   scacList: {
     type: Object,
-    default: () => {
-      list: []
-    },
+    default: () => {list: []},
   },
   menuBtn: {
     type: Boolean,

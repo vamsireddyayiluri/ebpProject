@@ -15,7 +15,7 @@ export const bookingsActions = status => {
     },
   ]
   if (status !== statuses.paused) {
-    const pauseAction = {
+    const pauseAction =  {
       icon: 'mdi-pause',
       label: 'Pause booking',
       action: 'pause-booking',

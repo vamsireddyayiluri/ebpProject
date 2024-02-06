@@ -5,7 +5,7 @@ import { auth } from '~/firebase'
 import { confirmPasswordReset } from 'firebase/auth'
 import { useAlertStore } from '~/stores/alert.store'
 import { getUserIdByEmail } from '~/stores/helpers'
-import { useProfileStore } from '~/stores/profile.store'
+import { useProfileStore } from "~/stores/profile.store"
 
 const form = reactive({
   password: '',
