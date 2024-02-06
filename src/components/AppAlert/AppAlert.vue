@@ -23,7 +23,7 @@ const handleLinkClick = async callback => {
         class="mb-2"
       >
         <AlertTitle>{{ a.title }}</AlertTitle>
-        <AlertText>{{ a.content }}</AlertText>
+        <AlertText v-html="a.content" />
         <Button
           v-if="a.button"
           variant="plain"

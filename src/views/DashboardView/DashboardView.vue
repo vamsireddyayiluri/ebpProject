@@ -4,7 +4,6 @@ import { useAuthStore } from '~/stores/auth.store'
 import { storeToRefs } from 'pinia'
 
 const authStore = useAuthStore()
-const { currentUser } = storeToRefs(authStore)
 const tab = ref(0)
 const tabs = [
   {
@@ -20,12 +19,12 @@ const tabs = [
     label: 'Booking history',
   },
 ]
-const mapToggled = ref(true)
+const mapToggled = ref(false)
 
 const toggleMap = () => {
   mapToggled.value = !mapToggled.value
 }
-watch(tab, () => (mapToggled.value = true))
+watch(tab, () => (mapToggled.value = false))
 </script>
 
 <template>

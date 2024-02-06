@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia'
+import {defineStore, storeToRefs} from 'pinia'
 import {
   collection,
   doc,
@@ -92,11 +92,15 @@ export const useNotificationStore = defineStore('notification', () => {
   }
 
   // get and subscribe notifications and show alert if was added new notification
+  let unsubscribeNotification
   const getNotifications = async () => {
+    if (unsubscribeNotification) {
+      unsubscribeNotification()
+    }
     try {
       const notificationsRef = collection(db, 'notifications')
       const dataQuery = query(notificationsRef, where('orgId', '==', authStore.userData.orgId))
-      await onSnapshot(dataQuery, snapshot => {
+      unsubscribeNotification = await onSnapshot(dataQuery, snapshot => {
         const list = snapshot.docs[0]?.data()?.list
         snapshot.docChanges().forEach(change => {
           if (change.type === 'modified' && list.length !== notifications.value.length) {
@@ -104,7 +108,7 @@ export const useNotificationStore = defineStore('notification', () => {
             showAlert(change.doc.data().list.at(-1))
           }
         })
-        notifications.value = list || []
+        notifications.value = list.reverse() || []
       })
     } catch ({ message }) {
       alertStore.warning({ content: message })
