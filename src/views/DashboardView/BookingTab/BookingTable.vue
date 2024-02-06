@@ -126,7 +126,7 @@ onMounted(() => {
     @onSelectRow="onSelectRow"
   >
     <template #ref="{ item }">
-      <Typography type="text-body-m-regular">
+      <FlexTypography type="text-body-m-regular">
         <Highlighter
           v-if="searchValue"
           :query="searchValue"
@@ -136,7 +136,7 @@ onMounted(() => {
         <template v-else>
           {{ item.ref }}
         </template>
-      </Typography>
+      </FlexTypography>
     </template>
     <template #yardLabel="{ item }">
       <FlexTypography type="text-body-m-regular">

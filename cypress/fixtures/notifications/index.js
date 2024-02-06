@@ -9,9 +9,13 @@ export const bookingData = {
   expiry: { date: moment().format('DD') },
   pcw: { date: moment().format('DD') },
   yard: 'test1',
-  equipmentType: '20 Foot Flat Rack',
+  equipmentType: { flexibleBooking: false, size: '20 Foot Flat Rack' },
   TruckersScac: 'NUSB',
   expiryDate: moment().startOf('day').format('MM/DD/YYYY hh:mm:ss a'),
+  commodity: 'test',
+  averageWeight: '30000',
+  targetRate: '500',
+  targetRateType: 'All in rate',
 }
 
 export const bookingDatawithoutNotification = {
@@ -21,6 +25,10 @@ export const bookingDatawithoutNotification = {
   expiry: { date: moment().format('DD') },
   pcw: { date: moment().format('DD') },
   yard: 'test1',
-  equipmentType: '20 Foot Flat Rack',
+  equipmentType: { flexibleBooking: false, size: '20 Foot Flat Rack' },
   expiryDate: moment().startOf('day').format('MM/DD/YYYY hh:mm:ss a'),
+  commodity: 'test',
+  averageWeight: '30000',
+  targetRate: '500',
+  targetRateType: 'All in rate',
 }

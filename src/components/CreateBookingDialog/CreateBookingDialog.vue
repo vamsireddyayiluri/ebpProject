@@ -13,6 +13,7 @@ import {
   validateExpiryDate,
   validateFlexibleSizes,
 } from '~/helpers/validations-functions'
+import { insuranceTypes } from '~/constants/settings'
 
 const props = defineProps({
   clickedOutside: Boolean,
@@ -30,6 +31,7 @@ const { yards } = storeToRefs(workDetailsStore)
 const { bookings } = storeToRefs(bookingsStore)
 const form = ref(null)
 const validExpiryDate = ref(false)
+const insuranceItems = ref(insuranceTypes)
 
 const computedEntities = computed(() => bookings.value)
 
@@ -47,6 +49,7 @@ const booking = ref({
   flexibleBooking: false,
   size: null,
   scacList: bookingRulesStore.rules.truckers,
+  insurance: '100,000',
 })
 
 const confirmDraftsDialog = ref(null)
@@ -210,7 +213,7 @@ onMounted(async () => {
         @onUpdate="updatePreferredDate"
       />
       <Textfield
-        v-model="booking.commodity"
+        v-model.trim="booking.commodity"
         label="Commodity*"
         required
       />
@@ -221,7 +224,16 @@ onMounted(async () => {
         :rules="[rules.containers]"
         required
       />
-
+      <Autocomplete
+        v-model="booking.insurance"
+        :items="insuranceItems"
+        label="Minimum Insurance"
+        required
+        item-title="label"
+        item-value="id"
+        return-object
+        class="h-fit"
+      />
       <div class="grid grid-cols-subgrid gap-6 col-span-2 md:col-span-3">
         <Typography type="text-body-xs-semibold col-span-2 md:col-span-3 -mb-3">
           Target rate

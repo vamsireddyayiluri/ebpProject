@@ -8,7 +8,11 @@ export const validData = [
     expiry: { date: moment().add(1, 'days').format('DD') },
     pcw: { date: moment().format('DD') },
     yard: 'test1',
-    equipmentType: '20 Foot Flat Rack',
+    equipmentType: { flexibleBooking: false, size: '20 Foot Flat Rack' },
     TruckersScac: 'NUSB',
+    commodity: 'test',
+    averageWeight: '30000',
+    targetRate: '500',
+    targetRateType: 'All in rate',
   },
 ]
