@@ -14,7 +14,7 @@ const messageActions = [
 
 const { userData } = useAuthStore()
 const alertStore = useAlertStore()
-const { openChat, sendNewMessage, markAsRead } = useChatStore()
+const { openChat, sendNewMessage, markAsRead, markUserAsOnlineOffline } = useChatStore()
 const { chats, activeChat } = storeToRefs(useChatStore())
 const currentUserId = ref(userData.userId)
 
@@ -31,6 +31,12 @@ const onChatArea = async chat => {
     await markAsRead(chat.chatId)
   }
 }
+onMounted(async () => {
+  await markUserAsOnlineOffline('online')
+})
+onBeforeUnmount(async () => {
+  await markUserAsOnlineOffline('offline')
+})
 </script>
 
 <template>

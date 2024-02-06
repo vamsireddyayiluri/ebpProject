@@ -162,18 +162,19 @@ export const useChatStore = defineStore('chat', () => {
       where('userIds', 'array-contains', authStore.userData.userId),
     )
 
-    // suscribe on chats
+    // subscribe on chats
     unsubscribeChats = await onSnapshot(queryByPartialId, async snapshot => {
       const arr = []
       await snapshot.docs.map(async doc => {
         arr.push(doc.data())
       })
 
-      // // message listener
+      // messages listener
       snapshot.docChanges().forEach(change => {
         if (change.type === 'modified') {
-          const lastMessage = change.doc.data().messages.at(-1)
-          handleNewMessage(lastMessage)
+          const chatData = change.doc.data()
+          const lastMessage = chatData.messages.at(-1)
+          chatData.unreadCount && handleNewMessage(lastMessage)
         }
       })
       chats.value = arr
@@ -191,9 +192,30 @@ export const useChatStore = defineStore('chat', () => {
           button: { name: 'Go to chat', callback: async () => await goToChat(message.receiverId) },
         }
         alertStore.info(toasty)
-      } else {
-        await markAsRead(message.chatId)
       }
+    }
+  }
+  const markUserAsOnlineOffline = async status => {
+    const queryByPartialId = await query(
+      collection(db, 'chats'),
+      where('userIds', 'array-contains', authStore.userData.userId),
+    )
+    try {
+      const chatsSnapshot = await getDocs(queryByPartialId)
+      for (const doc of chatsSnapshot.docs) {
+        const arr = doc.data().users.map(i => {
+          if (i.id === authStore.userData.userId) {
+            return {...i, status}
+          }
+          else return i
+        })
+        const chatRef = doc.ref
+        await updateDoc(chatRef,{
+          users: arr,
+        })
+      }
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
     }
   }
   const getUserPhoto = async id => {
@@ -221,5 +243,6 @@ export const useChatStore = defineStore('chat', () => {
     getChats,
     sendNewMessage,
     markAsRead,
+    markUserAsOnlineOffline,
   }
 })
