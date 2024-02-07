@@ -14,10 +14,11 @@ import {
   setDoc,
   updateDoc,
   where,
+  increment,
 } from 'firebase/firestore'
 import { db, storage } from '~/firebase'
 import { uid } from 'uid'
-import { getDownloadURL, ref as firebaseRef, uploadBytes } from 'firebase/storage'
+import { getDownloadURL, ref as firebaseRef, list, uploadBytes } from 'firebase/storage'
 
 export const useChatStore = defineStore('chat', () => {
   const alertStore = useAlertStore()
@@ -25,24 +26,34 @@ export const useChatStore = defineStore('chat', () => {
   const router = useRouter()
   const formatDate = useDate()
   const chats = ref([])
-  const activeChatId = ref()
-  const isNewMessage = computed(() => chats.value?.some(i => i.unreadCount))
+  const activeChat = ref(null)
+
+  const currentParticipant = computed(() => activeChat.value?.users?.find(i => i.id !== authStore?.userData?.userId))
+  const isNewMessage = computed(() => chats.value?.some(i => i.unreadCount && i.messages.at(-1).senderId !== authStore.userData.userId))
   const today = moment()
 
-  //check if chat exist and return id
+  // check if chat exist and return id
   const checkIfExist = async userId => {
     const chatsQuery = await query(
       collection(db, 'chats'),
-      where('users', 'array-contains', userId),
+      where('userIds', 'array-contains', userId),
     )
     const chatDocs = await getDocs(chatsQuery)
 
-    return chatDocs.docs[0].id
+    return chatDocs.docs[0]?.id
   }
 
-  //open chat
+  //open chat and mark all message as read
   const openChat = async chatId => {
-    activeChatId.value = chatId
+    activeChat.value = chats.value.find(i => i.chatId === chatId)
+    await markAsRead(chatId)
+  }
+
+  // mark all message as read
+  const markAsRead = async chatId => {
+    await updateDoc(doc(db, 'chats', chatId), {
+      unreadCount: 0,
+    })
   }
 
   // got to chat page and open or create chat
@@ -67,18 +78,27 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   const createNewChat = async (chatId, user) => {
+    const receiverAvatar = await getUserPhoto(user.userId)
     const newChat = {
       chatId,
-      user: {
-        id: user.userId,
-        avatar: authStore.currentUser.photoURL,
-        username: `${user.fullName}`,
-        status: 'online',
-      },
+      users: [
+        {
+          id: user.userId,
+          avatar: receiverAvatar,
+          username: user.fullName,
+          status: 'online',
+        },
+        {
+          id: authStore.userData.userId,
+          avatar: authStore.currentUser.photoURL,
+          username: authStore.userData.fullName,
+          status: 'online',
+        },
+      ],
       lastMessage: {},
       messages: [],
       unreadCount: 0,
-      users: [authStore.userData.userId, user.userId],
+      userIds: [authStore.userData.userId, user.userId],
     }
     try {
       await setDoc(doc(db, 'chats', chatId), newChat)
@@ -90,7 +110,8 @@ export const useChatStore = defineStore('chat', () => {
 
   const sendNewMessage = async ({ content, chatId, files, replyMessage }) => {
     const newMessage = {
-      id: chatId,
+      chatId: chatId,
+      receiverId: currentParticipant.value.id,
       senderId: authStore.userData.userId,
       content,
       date: today.format('MM/DD/YYYY'),
@@ -98,9 +119,7 @@ export const useChatStore = defineStore('chat', () => {
       isEditedMessage: false,
       ...(replyMessage && { replyMessage }),
     }
-
     const fileUrls = []
-
     try {
       await Promise.all(
         files.map(async blob => {
@@ -110,9 +129,9 @@ export const useChatStore = defineStore('chat', () => {
           const url = await getDownloadURL(fileRef)
           const fileData = {
             localUrl: url,
-            name: file.name,
-            size: file.size,
-            type: file.type,
+            "name": file.name,
+            "size": file.size,
+            "type": file.type,
           }
           fileUrls.push(fileData)
         }),
@@ -126,6 +145,7 @@ export const useChatStore = defineStore('chat', () => {
           content: newMessage.content,
           timestamp: newMessage.timestamp,
         },
+        unreadCount: increment(1),
       })
     } catch (error) {
       alertStore.warning({ content: error.message })
@@ -139,38 +159,93 @@ export const useChatStore = defineStore('chat', () => {
     }
     const queryByPartialId = await query(
       collection(db, 'chats'),
-      where('users', 'array-contains', authStore.userData.userId),
+      where('userIds', 'array-contains', authStore.userData.userId),
     )
+
+    // subscribe on chats
     unsubscribeChats = await onSnapshot(queryByPartialId, async snapshot => {
       const arr = []
       await snapshot.docs.map(async doc => {
         arr.push(doc.data())
       })
+
+      // messages listener
       snapshot.docChanges().forEach(change => {
         if (change.type === 'modified') {
-          const isChatPage = router.currentRoute.value.name === 'chat'
-          if (!isChatPage) {
-            const lastMessage = change.doc.data().messages.at(-1)
-            const toasty = {
-              title: 'New message',
-              content: lastMessage.content,
-              button: { name: 'Go to chat', callback: async () => await router.push('chat') },
-            }
-            alertStore.info(toasty)
-          }
+          const chatData = change.doc.data()
+          const lastMessage = chatData.messages.at(-1)
+          chatData.unreadCount && handleNewMessage(lastMessage)
         }
       })
       chats.value = arr
     })
   }
 
+  const handleNewMessage = async message => {
+    const isChatPage = router.currentRoute.value.name === 'chat'
+    if (authStore.userData.userId !== message.senderId) {
+      // notify if user is not on chat page
+      if (!isChatPage) {
+        const toasty = {
+          title: 'New message',
+          content: message.content,
+          button: { name: 'Go to chat', callback: async () => await goToChat(message.receiverId) },
+        }
+        alertStore.info(toasty)
+      }
+      if (activeChat.value?.chatId === message.chatId && isChatPage) {
+        await markAsRead(message.chatId)
+      }
+    }
+  }
+  const markUserAsOnlineOffline = async status => {
+    const queryByPartialId = await query(
+      collection(db, 'chats'),
+      where('userIds', 'array-contains', authStore.userData.userId),
+    )
+    try {
+      const chatsSnapshot = await getDocs(queryByPartialId)
+      for (const doc of chatsSnapshot.docs) {
+        const arr = doc.data().users.map(i => {
+          if (i.id === authStore.userData.userId) {
+            return {...i, status}
+          }
+          else return i
+        })
+        const chatRef = doc.ref
+        await updateDoc(chatRef,{
+          users: arr,
+        })
+      }
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
+  const getUserPhoto = async id => {
+    const fileRef = await firebaseRef(storage, `avatar/${id}`)
+    try {
+      const filesList = await list(fileRef)
+      if (filesList.items.length > 0) {
+        const firstFileRef = filesList.items[0]
+
+        return await getDownloadURL(firstFileRef)
+      } else {
+        return ''
+      }
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
+
   return {
     chats,
-    activeChatId,
+    activeChat,
     isNewMessage,
     openChat,
     goToChat,
     getChats,
     sendNewMessage,
+    markAsRead,
+    markUserAsOnlineOffline,
   }
 })

@@ -14,18 +14,29 @@ const messageActions = [
 
 const { userData } = useAuthStore()
 const alertStore = useAlertStore()
-const { openChat, sendNewMessage } = useChatStore()
-const { chats, activeChatId } = storeToRefs(useChatStore())
+const { openChat, sendNewMessage, markAsRead, markUserAsOnlineOffline } = useChatStore()
+const { chats, activeChat } = storeToRefs(useChatStore())
 const currentUserId = ref(userData.userId)
 
 const messageActionHandler = ({ action, message }) => {
   console.log('action ', action, message)
 }
 
-const computedChat = computed(() => chats.value.find(c => c.chatId === activeChatId.value))
+const computedChat = computed(() => chats.value.find(c => c.chatId === activeChat.value?.chatId))
 const sendMessage = async message => {
   await sendNewMessage(message)
 }
+const onChatArea = async chat => {
+  if (chat.unreadCount) {
+    await markAsRead(chat.chatId)
+  }
+}
+onMounted(async () => {
+  await markUserAsOnlineOffline('online')
+})
+onBeforeUnmount(async () => {
+  await markUserAsOnlineOffline('offline')
+})
 </script>
 
 <template>
@@ -35,10 +46,11 @@ const sendMessage = async message => {
       :messages="computedChat?.messages"
       :menu-action="messageActions"
       :chats="chats"
-      :active-chat-id="activeChatId"
+      :active-chat-id="activeChat?.chatId"
       @messageActionHandler="messageActionHandler"
       @openChat="openChat"
       @sendMessage="sendMessage"
+      @onChatArea="onChatArea"
     />
   </Main>
 </template>

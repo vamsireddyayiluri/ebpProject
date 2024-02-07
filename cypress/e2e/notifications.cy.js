@@ -165,7 +165,6 @@ describe('notifications', () => {
 
     createBooking(bookingData)
     cy.get('.v-alert').contains(`Booking ${bookingData.ref} has been created`)
-
     // Check notification
     cy.get('#notificationId').click({ force: true })
     cy.get('.notification-popup').should('be.visible')
@@ -178,7 +177,6 @@ describe('notifications', () => {
       .should('be.gte', 0)
     cy.get('@notifications').contains(`Booking ${bookingData.ref} has been created`).should('exist')
     cy.get('#notificationId').click()
-
     // Removing booking
     removeBooking(bookingData)
   })
@@ -230,7 +228,6 @@ describe('notifications', () => {
 
     createBooking(bookingDatawithoutNotification)
     cy.get('.v-alert').should('not.exist')
-
     // Check notification
     cy.get('#notificationId').click({ force: true })
     cy.get('.notification-popup').should('be.visible')
@@ -240,7 +237,6 @@ describe('notifications', () => {
       .contains(`Booking ${bookingDatawithoutNotification.ref} has been created`)
       .should('not.exist')
     cy.get('#notificationId').click()
-
     // Removing booking
     removeBooking(bookingDatawithoutNotification)
   })

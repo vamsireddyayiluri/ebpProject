@@ -103,7 +103,7 @@ const isDirty = computed(() => {
   const values = Object.values(booking.value)
   values.pop()
   values.splice(10, 1)
-
+  
   return !values.some(i => !i) && booking.value.scacList?.list.length > 0
 })
 
