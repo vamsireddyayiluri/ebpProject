@@ -10,6 +10,7 @@ import { Main } from '@layouts'
 import { useAuthStore } from '~/stores/auth.store'
 import { uid } from 'uid'
 import { statuses } from '~/constants/statuses'
+
 const alertStore = useAlertStore()
 const authStore = useAuthStore()
 const bookingStore = useBookingsStore()
@@ -23,6 +24,7 @@ const trucker = ref({
   email: 'email@.gmail.com',
 })
 const cancelCommitDialog = ref(null)
+
 const commitBooking = async booking => {
   const id = uid(16)
   const commitmentDate = getLocalTime().format()
@@ -82,6 +84,7 @@ onMounted(async () => {
   })
 })
 </script>
+
 <template>
   <Main>
     <div class="mt-10 mx-8 mb-8">
@@ -113,6 +116,7 @@ onMounted(async () => {
           required
         />
       </div>
+
       <div class="my-5">
         <Typography
           type="text-h3"
@@ -125,13 +129,17 @@ onMounted(async () => {
           :key="b.id"
           class="grid sm:grid-cols-4 grid-cols-2 gap-x-5 px-2 py-1.5 my-2"
         >
-          <Typography class="leading-10"> <b>Ref</b> {{ b.ref }} </Typography>
+          <Typography class="leading-10">
+            <b>Ref</b> {{ b.ref }}
+          </Typography>
           <Textfield
             v-model="b.committed"
             label="Committed"
             required
           />
-          <Button @click="commitBooking(b)"> commit </Button>
+          <Button @click="commitBooking(b)">
+            commit
+          </Button>
         </Card>
       </div>
       <div class="w-5/6">
@@ -146,10 +154,18 @@ onMounted(async () => {
           :key="c.id"
           class="grid grid-cols-4 gap-x-5 px-2 py-1.5 my-2"
         >
-          <Typography class="leading-10"> <b>trucker id</b> {{ c.id }} </Typography>
-          <Typography class="leading-10"> <b>status</b>: {{ c.status }} </Typography>
-          <Typography class="leading-10"> <b>ref</b>: {{ c.ref }} </Typography>
-          <Button @click="openCancelDialog(c)"> cancel </Button>
+          <Typography class="leading-10">
+            <b>trucker id</b> {{ c.id }}
+          </Typography>
+          <Typography class="leading-10">
+            <b>status</b>: {{ c.status }}
+          </Typography>
+          <Typography class="leading-10">
+            <b>ref</b>: {{ c.ref }}
+          </Typography>
+          <Button @click="openCancelDialog(c)">
+            cancel
+          </Button>
         </Card>
       </div>
     </div>
@@ -170,6 +186,7 @@ onMounted(async () => {
     </template>
   </Dialog>
 </template>
+
 <route lang="yaml">
 meta:
 requiresAuth: true
