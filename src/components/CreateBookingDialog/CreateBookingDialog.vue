@@ -118,6 +118,8 @@ const saveDraft = () => {
   emit('close')
 }
 const saveBooking = async () => {
+  booking.value.bookingExpiry = moment(booking.value.bookingExpiry).endOf('day').format()
+  booking.value.preferredDate = moment(booking.value.preferredDate).endOf('day').format()
   createBooking(booking.value)
   emit('close')
 }

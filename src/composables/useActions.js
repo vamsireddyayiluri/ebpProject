@@ -82,7 +82,7 @@ export const bookingHistoryActions = item => {
     ]
   }
 }
-export const commitmentsActions = status => {
+export const commitmentsActions = (status, bstatus) => {
   const viewDetailsAction = [
     {
       icon: 'mdi-information',
@@ -90,15 +90,8 @@ export const commitmentsActions = status => {
       action: 'view-trucker-details',
     },
   ]
-  const declineAction = [
-    {
-      icon: 'mdi-cancel',
-      label: 'Decline',
-      action: 'decline-commitment',
-      color: 'functionalError',
-    },
-  ]
-  if (status === statuses.pending) {
+
+  if (status === statuses.pending && bstatus !== statuses.paused) {
     return [
       {
         icon: 'mdi-check',
@@ -106,10 +99,15 @@ export const commitmentsActions = status => {
         action: 'approve-commitment',
       },
       ...viewDetailsAction,
-      ...declineAction,
+      {
+        icon: 'mdi-cancel',
+        label: 'Decline',
+        action: 'decline-commitment',
+        color: 'functionalError',
+      },
     ]
   }
-  if (status === statuses.approved) {
+  if (status === statuses.approved && bstatus !== statuses.paused) {
     return [
       {
         icon: 'mdi-check-underline',

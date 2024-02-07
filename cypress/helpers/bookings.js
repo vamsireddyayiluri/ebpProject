@@ -102,6 +102,13 @@ export function selectTargetRateType(rateType) {
   }
 }
 
+export function fillInsurance(insurance) {
+  cy.getInputByLabel('Minimum Insurance').click({ force: true })
+  cy.get('.v-overlay__content > .v-list > .v-list-item > .v-list-item__content')
+    .contains(insurance)
+    .click()
+}
+
 export function clearFieldData(field) {
   cy.getInputByLabel(field).clear()
 }

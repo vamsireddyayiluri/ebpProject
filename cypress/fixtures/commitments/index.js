@@ -1,7 +1,9 @@
+import moment from 'moment-timezone'
+
 export const commitmentData = {
-  bookingRef: 'ref1',
-  expiry: '02/09/2024  12:00:00 am',
-  expiryDate: '02/09/2024',
+  bookingRef: 'ref01',
+  expiry: moment().endOf('day').format('MM/D/YYYY hh:mm:ss a'),
+  expiryDate: moment().format('MM/DD/YYYY'),
   committedCount: 1,
 }
 
@@ -19,4 +21,9 @@ export const truckerCompany2 = {
   truckerId: '1234555',
   truckerScac: 'ABCD',
   truckerOrgId: '987456230',
+}
+
+export const reasonCode = {
+  incompleteReason: 'Not working',
+  declineReason: 'Booking rolled',
 }
