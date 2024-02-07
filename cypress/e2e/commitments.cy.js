@@ -2,7 +2,6 @@ import {
   commitmentData,
   truckerCompany1,
   truckerCompany2,
-  filterData,
 } from '../fixtures/commitments'
 
 const getSelectedCommitmentRow = (commitmentData, truckerCompany) => {
@@ -37,6 +36,7 @@ describe('Create commitments to booking', () => {
       if (!url.includes('/dashboard')) {
         // If the URL doesn't contain '/dashboard', navigate to the dashboard route
         cy.visit('/login')
+
         // cy.userLogin(register[0].email, register[0].password)
 
         cy.userLogin('sravanthi.gorantla@cognine.com', '1234567890')

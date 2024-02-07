@@ -114,6 +114,7 @@ Cypress.Commands.add('verifyEmail', async email => {
     const parsedHTML = parser.parseFromString(message.htmlBody, 'text/html')
     const anchorElement = parsedHTML.querySelector('a')
     const hrefValue = anchorElement.getAttribute('href')
+    
     return hrefValue
   } catch (error) {
     console.log('error', error)
