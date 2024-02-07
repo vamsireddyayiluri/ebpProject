@@ -4,7 +4,7 @@ import { getLineAvatar } from '~/firebase/getLineAvatar'
 import { useDisplay } from 'vuetify'
 import { getYardBookingLoad, getBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
-import { useAuthStore } from '~/stores/auth.store'
+import { useAuthStore } from "~/stores/auth.store"
 
 const props = defineProps({
   computedEntities: Array,
