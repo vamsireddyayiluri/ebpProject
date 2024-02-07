@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia'
+import { defineStore, getActivePinia } from 'pinia'
 import { auth, db } from '~/firebase'
 import {
   addDoc,
@@ -27,12 +27,14 @@ import { userTypes } from '~/constants/userTypes'
 import firebase from 'firebase/compat/app'
 import { useInvitationStore } from '~/stores/invitation.store'
 import { useNotificationStore } from '~/stores/notification.store'
+import { useBookingsStore } from "~/stores/bookings.store";
 
 export const useAuthStore = defineStore('auth', () => {
   const router = useRouter()
   const alertStore = useAlertStore()
   const invitationStore = useInvitationStore()
   const notificationStore = useNotificationStore()
+  const bookingsStore = useBookingsStore()
   const currentUser = ref(null)
   const storage = getStorage()
   const userData = ref(null)
@@ -70,8 +72,8 @@ export const useAuthStore = defineStore('auth', () => {
     currentUser.value = null
     userData.value = null
     orgData.value = null
-
-    router.push({ name: 'login' })
+    await bookingsStore.reset()
+    await router.push({ name: 'login' })
   }
 
   const register = async ({

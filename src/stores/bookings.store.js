@@ -23,7 +23,7 @@ import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
 
 export const useBookingsStore = defineStore('bookings', () => {
   const alertStore = useAlertStore()
-  const { userData } = useAuthStore()
+  const authStore = useAuthStore()
   const { preferredTruckers } = usePreferredTruckersStore()
   const bookings = ref([])
   const drafts = ref([])
@@ -31,7 +31,7 @@ export const useBookingsStore = defineStore('bookings', () => {
 
   const getBookings = async ({ draft = false }) => {
     loading.value = true
-    const { orgId } = userData
+    const { orgId } = authStore.userData
     if (draft) {
       const draftsQuery = query(collection(db, 'drafts'), where('orgId', '==', orgId))
       const querySnapshot = await getDocs(draftsQuery)
@@ -108,7 +108,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     }
   }
   const createBookingObj = booking => {
-    const { userId, fullName, orgId, type } = userData
+    const { userId, fullName, orgId, type } = authStore.userData
     const bookingId = uid(28)
 
     return {
@@ -126,7 +126,7 @@ export const useBookingsStore = defineStore('bookings', () => {
         userId,
         fullName,
         type,
-        ...(userData?.workerId ? { workerId: userData.workerId } : {}),
+        ...(authStore.userData?.workerId ? { workerId: authStore.userData.workerId } : {}),
       },
     }
   }
@@ -217,6 +217,11 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.warning({ content: message })
     }
   }
+  const reset = () => {
+    bookings.value = []
+    drafts.value = []
+    loading.value = false
+  }
 
   return {
     bookings,
@@ -231,5 +236,6 @@ export const useBookingsStore = defineStore('bookings', () => {
     removeFromNetwork,
     updateBooking,
     updateBookingStatus,
+    reset,
   }
 })
