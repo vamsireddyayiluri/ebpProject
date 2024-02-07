@@ -58,7 +58,7 @@ export const useBookingsStore = defineStore('bookings', () => {
   const validateBookingsExpiry = async bookings => {
     const today = getLocalServerTime(moment(), 'America/Los_Angeles')
     for (const b of bookings) {
-      if (moment(b.bookingExpiry).isBefore(moment(today))) {
+      if (moment(b.bookingExpiry).isBefore(moment(today)) || b.status === 'completed') {
         await moveToHistory(b)
       }
     }
@@ -68,7 +68,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       await deleteDoc(doc(db, 'bookings', booking.id))
       await setDoc(doc(collection(db, 'booking_history'), booking.id), {
         ...booking,
-        status: statuses.expired,
+        status: booking?.status === 'completed' ? booking?.status : statuses.expired,
         updatedAt: getLocalTime().format(),
       })
     } catch ({ message }) {

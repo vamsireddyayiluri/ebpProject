@@ -13,19 +13,32 @@ const emit = defineEmits(['close', 'approveCommitment', 'completeCommitment', 'd
 const { bookings } = useBookingsStore()
 const { getFormattedDate } = useDate()
 const { goToChat } = useChatStore()
-const details = ref([
-  { name: 'Company name', value: 'FedEx Freight' },
-  { name: 'SCAC', value: 'ABCD' },
-  { name: 'Name', value: 'Vitaliy' },
-  { name: 'Contact number', value: '0123456789' },
-  { name: 'Secondary name', value: '0123456789' },
-  { name: 'Secondary number', value: '--' },
-  { name: 'Email', value: 'fedex.freight@mail.com' },
-  { name: 'Safer link', value: '2' },
-  { name: 'Number of truckers', value: '20' },
-  { name: 'Insurance amount', value: '250.000-500.000' },
-  { name: 'Authorized for Overweight', value: 'No' },
-])
+const checkCommitmentStatus = () => {
+  return props.commitment?.timeline?.some(({ title }) => title.includes('approved'))
+}
+const details = checkCommitmentStatus()
+  ? ref([
+      { name: 'Company name', value: 'FedEx Freight' },
+      { name: 'SCAC', value: 'ABCD' },
+      { name: 'Name', value: 'Vitaliy' },
+      { name: 'Contact number', value: '0123456789' },
+      { name: 'Secondary name', value: '0123456789' },
+      { name: 'Secondary number', value: '--' },
+      { name: 'Email', value: 'fedex.freight@mail.com' },
+      { name: 'Safer link', value: '2' },
+      { name: 'Number of truckers', value: '20' },
+      { name: 'Insurance amount', value: '250.000-500.000' },
+      { name: 'Authorized for Overweight', value: 'No' },
+    ])
+  : ref([
+      { name: 'Company name', value: 'FedEx Freight' },
+      { name: 'SCAC', value: 'ABCD' },
+      { name: 'Email', value: 'fedex.freight@mail.com' },
+      { name: 'Safer link', value: '2' },
+      { name: 'Number of truckers', value: '20' },
+      { name: 'Insurance amount', value: '250.000-500.000' },
+      { name: 'Authorized for Overweight', value: 'No' },
+    ])
 const openedPanel = ref([0])
 const {
   ref: bookingRef,
@@ -42,20 +55,14 @@ const {
 
 <template>
   <div class="flex justify-between items-center mb-8 pt-2">
-    <Typography type="text-h1">
-      Commitment
-    </Typography>
-    <div
-      class="ml-auto"
-    >
+    <Typography type="text-h1"> Commitment </Typography>
+    <div class="ml-auto">
       <IconButton
         icon="mdi-message-text"
         class="mr-2"
         @click="goToChat('6srEzErbjIW4bL9gQUNbI51BGlE3')"
       >
-        <Tooltip>
-          Go go chat
-        </Tooltip>
+        <Tooltip> Go go chat </Tooltip>
       </IconButton>
       <IconButton
         icon="mdi-close"
@@ -121,7 +128,7 @@ const {
               </VRow>
             </ExpansionPanelText>
           </ExpansionPanel>
-          <ExpansionPanel v-if="openedPanel.includes(0)">
+          <ExpansionPanel>
             <ExpansionPanelTitle>
               <Typography
                 type="text-body-xs-regular"
@@ -167,10 +174,13 @@ const {
                   :value="commitment.status"
                   class="w-min h-fit ml-auto"
                 />
-                <template v-if="commitment.status === statuses.declined || commitment.status === statuses.incomplete">
-                  <Typography type="text-body-s-regular">
-                    Reason
-                  </Typography>
+                <template
+                  v-if="
+                    commitment.status === statuses.declined ||
+                    commitment.status === statuses.incomplete
+                  "
+                >
+                  <Typography type="text-body-s-regular"> Reason </Typography>
                   <Typography
                     type="text-body-s-regular text-end"
                     :color="getColor('textSecondary')"
@@ -248,9 +258,7 @@ const {
         variant="vertical"
         class="scrollbar overflow-auto md:mb-10"
       />
-      <div
-        class="styledCommitActionsBtns static md:fixed bottom-8 flex pt-8 gap-4"
-      >
+      <div class="styledCommitActionsBtns static md:fixed bottom-8 flex pt-8 gap-4">
         <Button
           v-if="commitment.status === statuses.approved"
           @click="emit('completeCommitment', commitment.id)"
@@ -258,9 +266,7 @@ const {
           complete
         </Button>
         <template v-if="commitment.status === statuses.pending">
-          <Button @click="emit('approveCommitment', commitment)">
-            approve
-          </Button>
+          <Button @click="emit('approveCommitment', commitment)"> approve </Button>
           <Button
             variant="outlined"
             data="secondary1"

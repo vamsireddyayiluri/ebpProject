@@ -229,7 +229,7 @@ onMounted(async () => {
       <Autocomplete
         v-model="booking.insurance"
         :items="insuranceItems"
-        label="Minimum Insurance"
+        label="Minimum Insurance*"
         required
         item-title="label"
         item-value="id"

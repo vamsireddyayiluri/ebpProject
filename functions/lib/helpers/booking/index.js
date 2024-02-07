@@ -54,12 +54,16 @@ export const updateBookingStatus = async (id, status) => {
 }
 
 export const checkAllBookingCommitments = async bookingId => {
+  const booking = await getBooking(bookingId)
   const snapshot = await getBookingCommitments(bookingId)
-  const pendingCommitments = snapshot?.docs.filter(
-    doc => doc.data().status === 'pending' || doc.data().status === 'approved',
-  )
-  if (!pendingCommitments?.length) {
-    updateBookingStatus(bookingId, 'completed')
+
+  if (booking?.containers === booking?.committed) {
+    const pendingCommitments = snapshot?.docs?.filter(
+      doc => doc.data().status === 'pending' || doc.data().status === 'approved',
+    )
+    if (!pendingCommitments?.length) {
+      updateBookingStatus(bookingId, 'completed')
+    }
   }
 }
 
@@ -72,7 +76,7 @@ export const updateBookingFull = async bookingId => {
     await Promise.all(
       pendingCommitments.map(doc => {
         batch.update(doc.ref, {
-          status: 'booking_full',
+          status: 'Booking full',
           // updated: getLocalServerTime(moment(), timezone).format(),
         })
       }),

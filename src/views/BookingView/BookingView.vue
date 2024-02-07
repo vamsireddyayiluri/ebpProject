@@ -52,7 +52,7 @@ const form = ref(null)
 const validExpiryDate = ref(false)
 const insuranceItems = ref(insuranceTypes)
 const rules = {
-  containers: value => checkPositiveInteger(value),
+  containers: value => checkPositiveInteger(value,booking.value,fromEdit),
 }
 
 const updateExpiryDate = value => {
@@ -74,6 +74,7 @@ const toggleFlyoutPosition = () => {
 const queryParams = router.currentRoute.value.query
 const fromDraft = queryParams.from === 'draft'
 const fromHistory = queryParams.from === 'history'
+const fromEdit = !fromDraft && !fromHistory
 const completed = computed(() => booking.value?.status === statuses.completed)
 const expired = computed(() => booking.value?.status === statuses.expired)
 
@@ -150,7 +151,11 @@ const isDisabledPublish = computed(() => {
 })
 
 const validateBooking = computed(() => {
-  let condition = isEqual(
+if (fromEdit) {
+    const selectedBooking = bookings.value.find(i => i.id === booking.value.id)
+    booking.value.entities = selectedBooking.entities
+  }
+let condition = isEqual(
     booking.value,
     fromDraft
       ? drafts.value.find(i => i.id === booking.value.id)
@@ -165,7 +170,9 @@ const validateBooking = computed(() => {
   if (!fromDraft) {
     condition = condition || !validExpiryDate.value
   }
-
+  if(!fromDraft && !fromHistory && !condition){
+    condition = condition || (booking.value.containers < booking.value.committed)
+  }
   return condition
 })
 const cancelChanges = async () => {
@@ -414,11 +421,12 @@ onMounted(async () => {
           <Autocomplete
             v-model="booking.insurance"
             :items="insuranceItems"
-            label="Minimum Insurance"
+            label="Minimum Insurance*"
             required
             item-title="label"
             item-value="id"
             return-object
+            :disabled="expired || completed"
           />
           <Textfield
             v-model.number="booking.targetRate"
