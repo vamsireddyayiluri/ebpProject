@@ -45,6 +45,7 @@ const commitmentDetailsDialog = ref(null)
 const bookingStatus = id => {
   const bookings = computedEntities.value
   const booking = bookings.find(i => i.id === id)
+
   return booking.status
 }
 const containerActionHandler = async ({ action, e }) => {
@@ -144,8 +145,8 @@ onMounted(() => {
       </FlexTypography>
     </template>
     <template #containers="{ item }">
-      <Typography> {{ item.committed }}/{{ item.containers }} </Typography></template
-    >
+      <Typography> {{ item.committed }}/{{ item.containers }} </Typography>
+    </template>
     <template #yardLabel="{ item }">
       <FlexTypography type="text-body-m-regular">
         {{ item.location.label || '--' }}
@@ -160,7 +161,15 @@ onMounted(() => {
     </template>
     <template #size="{ item }">
       <Typography>
-        {{ item.size }}
+        <template v-if="item.flexibleBooking">
+          <template v-for="i in item.size" :key="i">
+            {{ i }}
+            <br>
+          </template>
+        </template>
+        <template v-else>
+          {{ item.size }}
+        </template>
       </Typography>
     </template>
     <template #status="{ item }">

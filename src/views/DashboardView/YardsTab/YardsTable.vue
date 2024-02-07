@@ -106,7 +106,7 @@ onMounted(() => {
         class="pl-16"
       >
         <template #ref="{ item }">
-          <Typography type="text-body-m-regular">
+          <FlexTypography type="text-body-m-regular">
             <Highlighter
               v-if="searchValue"
               :query="searchValue"
@@ -116,7 +116,10 @@ onMounted(() => {
             <template v-else>
               {{ item.ref }}
             </template>
-          </Typography>
+          </FlexTypography>
+        </template>
+        <template #containers="{ item }">
+          <Typography> {{ item.committed }}/{{ item.containers }} </Typography>
         </template>
         <template #yardLabel="{ item }">
           <FlexTypography type="text-body-m-regular">
@@ -129,6 +132,25 @@ onMounted(() => {
             :alt="item.line.label"
             class="h-8"
           >
+        </template>
+        <template #size="{ item }">
+          <Typography>
+            <template v-if="item.flexibleBooking">
+              <template v-for="i in item.size" :key="i">
+                {{ i }}
+                <br>
+              </template>
+            </template>
+            <template v-else>
+              {{ item.size }}
+            </template>
+          </Typography>
+        </template>
+        <template #status="{ item }">
+          <Classification
+            type="status"
+            :value="item.status"
+          />
         </template>
         <template #bookingExpiry="{ item }">
           <Typography type="text-body-m-regular">
