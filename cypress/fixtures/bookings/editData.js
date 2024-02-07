@@ -2,8 +2,8 @@ import moment from 'moment-timezone'
 
 export const editRowData = {
   ref: 'ref04',
-  expiry: moment().add(1, 'days').startOf('day').format('MM/DD/YYYY hh:mm:ss a'),
-  currentDate: moment().startOf('day').format('MM/DD/YYYY hh:mm:ss a'),
+  expiry: moment().endOf('day').format('MM/DD/YYYY hh:mm:ss a'),
+  currentDate: moment().format('MM/DD/YYYY hh:mm:ss a'),
 }
 
 export const editBookingData = {

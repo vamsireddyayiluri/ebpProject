@@ -10,7 +10,7 @@ import {
   addCommitmentDeclining,
   addCommitmentOnboarding,
 } from '~/helpers/timelinesUpdater'
-import { updateBookingCommit, updateBookingStatus } from "~/helpers/booking"
+import { updateBookingCommit, checkAllBookingCommitments } from '~/helpers/booking'
 
 export const updateCommitmentListener = async (currentData, previousData) => {
   try {
@@ -44,14 +44,15 @@ const commitmentApproveAction = async data => {
 }
 const commitmentOnboardedAction = async data => {
   await addCommitmentOnboarding(data)
-  await updateBookingStatus(data.bookingId, 'completed')
+  await checkAllBookingCommitments(data.bookingId)
 }
 const commitmentIncompleteAction = async data => {
   await commitIncompleteNotifier(data)
   await addCommitmentApproving(data)
-  await updateBookingStatus(data.bookingId, 'completed')
+  await checkAllBookingCommitments(data.bookingId)
 }
 const commitmentDeclineAction = async data => {
   await commitDeclinedNotifier(data)
   await addCommitmentDeclining(data)
 }
+

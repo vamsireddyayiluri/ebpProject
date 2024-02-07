@@ -52,7 +52,7 @@ const form = ref(null)
 const validExpiryDate = ref(false)
 const insuranceItems = ref(insuranceTypes)
 const rules = {
-  containers: value => checkPositiveInteger(value),
+  containers: value => checkPositiveInteger(value,booking.value,fromEdit),
 }
 
 const updateExpiryDate = value => {
@@ -74,11 +74,14 @@ const toggleFlyoutPosition = () => {
 const queryParams = router.currentRoute.value.query
 const fromDraft = queryParams.from === 'draft'
 const fromHistory = queryParams.from === 'history'
+const fromEdit = !fromDraft && !fromHistory
 const completed = computed(() => booking.value?.status === statuses.completed)
 const expired = computed(() => booking.value?.status === statuses.expired)
 
 const handleBookingChanges = async () => {
   if (fromDraft) {
+    booking.value.bookingExpiry = moment(booking.value.bookingExpiry).endOf('day').format()
+    booking.value.preferredDate = moment(booking.value.preferredDate).endOf('day').format()
     const res = await publishDraft(booking.value)
     if (res === 'published') {
       router.push('/dashboard')
@@ -148,7 +151,11 @@ const isDisabledPublish = computed(() => {
 })
 
 const validateBooking = computed(() => {
-  let condition = isEqual(
+if (fromEdit) {
+    const selectedBooking = bookings.value.find(i => i.id === booking.value.id)
+    booking.value.entities = selectedBooking.entities
+  }
+let condition = isEqual(
     booking.value,
     fromDraft
       ? drafts.value.find(i => i.id === booking.value.id)
@@ -163,7 +170,9 @@ const validateBooking = computed(() => {
   if (!fromDraft) {
     condition = condition || !validExpiryDate.value
   }
-
+  if(!fromDraft && !fromHistory && !condition){
+    condition = condition || (booking.value.containers < booking.value.committed)
+  }
   return condition
 })
 const cancelChanges = async () => {
@@ -179,6 +188,8 @@ const cancelChanges = async () => {
   )
 }
 const onSave = async () => {
+  booking.value.bookingExpiry = moment(booking.value.bookingExpiry).endOf('day').format()
+  booking.value.preferredDate = moment(booking.value.preferredDate).endOf('day').format()
   if (activated) {
     if (expired.value) {
       await reactivateBooking(booking.value)
@@ -410,11 +421,12 @@ onMounted(async () => {
           <Autocomplete
             v-model="booking.insurance"
             :items="insuranceItems"
-            label="Minimum Insurance"
+            label="Minimum Insurance*"
             required
             item-title="label"
             item-value="id"
             return-object
+            :disabled="expired || completed"
           />
           <Textfield
             v-model.number="booking.targetRate"
@@ -479,9 +491,7 @@ onMounted(async () => {
         :class="[flyoutBottom || smAndDown ? 'bottom' : 'right', drawer ? 'active' : '']"
       >
         <div class="flex justify-between items-center">
-          <Typography type="text-h1">
-            Statistics
-          </Typography>
+          <Typography type="text-h1"> Statistics </Typography>
           <IconButton
             v-if="!smAndDown"
             :icon="!flyoutBottom ? 'mdi-dock-bottom' : 'mdi-dock-right'"
@@ -491,9 +501,7 @@ onMounted(async () => {
         </div>
         <div class="statisticsContent">
           <div class="statisticsProgress">
-            <Typography type="text-h4">
-              Fulfillment progress
-            </Typography>
+            <Typography type="text-h4"> Fulfillment progress </Typography>
             <ProgressCircular
               :size="260"
               :value="getBookingLoad(booking.committed, booking.containers)"
@@ -504,9 +512,7 @@ onMounted(async () => {
             </ProgressCircular>
           </div>
           <div class="statisticsTimeline">
-            <Typography type="text-h4">
-              Booking timeline
-            </Typography>
+            <Typography type="text-h4"> Booking timeline </Typography>
             <div class="timeline scrollbar">
               <Timeline
                 :items="booking.timeline"
@@ -526,7 +532,7 @@ onMounted(async () => {
         :src="container"
         class="container-img"
         alt="qualle container"
-      >
+      />
       <Typography
         type="text-h1"
         class="!text-7xl mb-4 text-center"

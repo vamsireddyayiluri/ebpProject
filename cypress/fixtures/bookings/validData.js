@@ -2,10 +2,10 @@ import moment from 'moment-timezone'
 
 export const validData = [
   {
-    ref: 'ref04',
-    noOfContainers: 23,
+    ref: 'ref01',
+    noOfContainers: 2,
     ssl: 'APL',
-    expiry: { date: moment().add(1, 'days').format('DD') },
+    expiry: { date: moment().format('DD') },
     pcw: { date: moment().format('DD') },
     yard: 'test1',
     equipmentType: { flexibleBooking: false, size: '20 Foot Flat Rack' },
@@ -14,5 +14,6 @@ export const validData = [
     averageWeight: '30000',
     targetRate: '500',
     targetRateType: 'All in rate',
+    insurance: '500,000+',
   },
 ]

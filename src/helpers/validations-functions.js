@@ -1,8 +1,15 @@
-import moment from "moment-timezone"
-import {useAlertStore} from "~/stores/alert.store"
+import moment from 'moment-timezone'
+import { useAlertStore } from '~/stores/alert.store'
 
 const alertStore = useAlertStore()
-export const checkPositiveInteger = value => {
+export const checkPositiveInteger = (value, booking, fromEdit = false) => {
+  if (fromEdit) {
+    if (value < booking.committed) {
+      return `Value should not be less than ${booking.committed}`
+    } else {
+      return true
+    }
+  }
   if ((value && (value <= 0 || !Number.isInteger(value))) || value === 0) {
     return 'Value should be positive integer'
   } else {
