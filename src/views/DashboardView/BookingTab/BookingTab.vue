@@ -201,7 +201,7 @@ watch(searchValue, value => {
             Create booking
           </Button>
         </div>
-        <div class="flex gap-4 mb-5">
+        <div class="flex gap-4 flex-wrap mb-5">
           <Textfield
             v-model="searchValue"
             type="text"
@@ -215,7 +215,7 @@ watch(searchValue, value => {
             v-model="filters.loadingDate"
             label="Loading date"
             clearable
-            class="w-full max-w-[224px]"
+            class="w-full max-w-[280px]"
             @onUpdate="applyFilter"
             @clearDate="clearDateFilter"
           />
@@ -226,7 +226,7 @@ watch(searchValue, value => {
             item-title="label"
             item-value="type"
             clearable
-            class="max-w-[224px]"
+            class="max-w-[280px] min-w-[160px]"
             @update:modelValue="applyFilter"
           />
         </div>
