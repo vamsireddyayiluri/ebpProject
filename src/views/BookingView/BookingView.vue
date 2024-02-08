@@ -56,10 +56,10 @@ const rules = {
 }
 
 const updateExpiryDate = value => {
-  booking.value.bookingExpiry = value
+  booking.value.bookingExpiry = moment(value).endOf('day').format()
 }
 const updatePreferredDate = value => {
-  booking.value.preferredDate = value
+  booking.value.preferredDate = moment(value).endOf('day').format()
 }
 const updateSize = () => {
   booking.value.size = null
@@ -153,7 +153,7 @@ const isDisabledPublish = computed(() => {
 const validateBooking = computed(() => {
 if (fromEdit) {
     const selectedBooking = bookings.value.find(i => i.id === booking.value.id)
-    booking.value.entities = selectedBooking.entities
+    booking.value.entities = selectedBooking?.entities
   }
 let condition = isEqual(
     booking.value,
@@ -170,7 +170,7 @@ let condition = isEqual(
   if (!fromDraft) {
     condition = condition || !validExpiryDate.value
   }
-  if(!fromDraft && !fromHistory && !condition){
+  if (!fromDraft && !fromHistory && !condition) {
     condition = condition || (booking.value.containers < booking.value.committed)
   }
   return condition

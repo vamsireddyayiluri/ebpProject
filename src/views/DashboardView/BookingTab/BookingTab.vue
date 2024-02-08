@@ -8,13 +8,13 @@ import { getColor } from '~/helpers/colors'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth.store'
-import { userTypes } from '~/constants/userTypes'
+import moment from 'moment-timezone'
 const props = defineProps({
   mapToggled: Boolean,
 })
 const emit = defineEmits(['closeMap', 'selectRow'])
 const bookingsStore = useBookingsStore()
-const { workers, userData } = useAuthStore()
+const { userData } = useAuthStore()
 const { loading } = storeToRefs(bookingsStore)
 const { smAndDown } = useDisplay()
 const router = useRouter()
@@ -41,7 +41,7 @@ const newId = ref(uid(8))
 const bookingStatisticsDialog = ref(null)
 const filters = ref({
   line: null,
-  workers: null,
+  loadingDate: null,
 })
 const selectLine = ref(getAllLines())
 const createBookingDialog = ref(null)
@@ -143,13 +143,14 @@ const applyFilter = () => {
       booking => booking.line.label === filters.value.line,
     ).value
   }
-  if (filters.value.workers) {
-    filteredData = useArrayFilter(
-      filteredData,
-      booking => booking.createdBy.userId === filters.value.workers.userId,
-    ).value
+  if (filters.value.loadingDate) {
+    filteredData = useArrayFilter(filteredData, booking => booking.bookingExpiry === moment(filters.value.loadingDate).endOf('day').format()).value
   }
   computedFilteredEntities.value = filteredData
+}
+const clearDateFilter = () => {
+  filters.value.loadingDate = null
+  applyFilter()
 }
 const onClickOutsideDialog = () => {
   clickedOutside.value = true
@@ -210,24 +211,20 @@ watch(searchValue, value => {
             class="max-w-[280px] min-w-[160px]"
             @click:clear="onClearSearch"
           />
+          <Datepicker
+            v-model="filters.loadingDate"
+            label="Loading date"
+            clearable
+            class="w-full max-w-[224px]"
+            @onUpdate="applyFilter"
+            @clearDate="clearDateFilter"
+          />
           <Select
             v-model="filters.line"
             :items="selectLine"
             label="SSL"
             item-title="label"
             item-value="type"
-            clearable
-            class="max-w-[224px]"
-            @update:modelValue="applyFilter"
-          />
-          <Select
-            v-if="userData.type === userTypes.admin"
-            v-model="filters.workers"
-            :items="workers"
-            label="Workers"
-            item-title="fullName"
-            item-value="id"
-            return-object
             clearable
             class="max-w-[224px]"
             @update:modelValue="applyFilter"
