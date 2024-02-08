@@ -62,7 +62,7 @@ const {
         class="mr-2"
         @click="goToChat('6srEzErbjIW4bL9gQUNbI51BGlE3')"
       >
-        <Tooltip> Go go chat </Tooltip>
+        <Tooltip> Go to chat </Tooltip>
       </IconButton>
       <IconButton
         icon="mdi-close"
