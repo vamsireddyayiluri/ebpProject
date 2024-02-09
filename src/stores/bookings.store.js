@@ -25,7 +25,7 @@ export const useBookingsStore = defineStore('bookings', () => {
   const alertStore = useAlertStore()
   const authStore = useAuthStore()
   const { preferredTruckers } = usePreferredTruckersStore()
-  const bookings = ref([])
+  let bookings = ref([])
   const drafts = ref([])
   const loading = ref(false)
 
@@ -43,31 +43,33 @@ export const useBookingsStore = defineStore('bookings', () => {
 
         return
       }
-      await onSnapshot(bookingsQuery, snapshot => {
-        snapshot.docChanges().forEach(async change => {
-          const bookingData = change.doc.data()
-          if (change.type === 'added') {
-            const commitments = await getCommitments(bookingData.id)
-            bookings.value.push({ ...bookingData, entities: commitments })
-          }
-          if (change.type === 'modified') {
-            const index = bookings.value.findIndex(b => b.id === bookingData.id)
-            if (index !== -1) {
-              const commitments = await getCommitments(bookingData.id)
-              bookings.value[index] = {...bookingData, entities: commitments}
-            }
-          }
-        })
+      const querySnapshot = await getDocs(bookingsQuery)
+      const dataPromises = querySnapshot.docs.map(async doc => {
+        // const commitments = await getCommitments(doc.data().id)
+        return { ...doc.data(), entities: [] }
       })
-      await validateBookingsExpiry(bookings.value)
+      const data = await Promise.all(dataPromises)
+      await validateBookingsExpiry(data)
+      bookings.value = data
     }
     loading.value = false
   }
-  const getCommitments = async bookingId => {
+  const getCommitmentsByBookingId = async bookingId => {
     const q = await query(collection(db, 'commitments'), where('bookingId', '==', bookingId))
     const docData = await getDocs(q)
-
-    return docData.docs.map(doc => doc.data())
+    const commitments = docData.docs.map(doc => doc.data())
+    updateBookingCommitments(bookingId, commitments)
+    return commitments
+  }
+  const updateBookingCommitments = async (bookingId, commitments) => {
+    bookings.value.forEach(b => {
+      if (b.id == bookingId) {
+        bookings.value[index]['entities'] = commitments
+        bookings.value[index].expand = true
+      } else {
+        bookings.value[index].expand = false
+      }
+    })
   }
   const validateBookingsExpiry = async bookings => {
     const today = getLocalServerTime(moment(), 'America/Los_Angeles')
@@ -135,7 +137,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     try {
       await setDoc(doc(collection(db, 'bookings'), newBooking.id), newBooking)
 
-      // bookings.value.push(newBooking)
+      bookings.value.push(newBooking)
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
@@ -217,6 +219,20 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.warning({ content: message })
     }
   }
+  const updateBookingStore = async bookingId => {
+    try {
+      setTimeout(async () => {
+        const updatedBooking = await getBooking({ id: bookingId, draft: false })
+        bookings.value.forEach(booking => {
+          if (booking.id === bookingId) {
+            booking.committed = toRaw(updatedBooking.committed)
+          }
+        })
+      }, 2000)
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
   const reset = () => {
     bookings.value = []
     drafts.value = []
@@ -228,6 +244,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     drafts,
     loading,
     getBookings,
+    getCommitmentsByBookingId,
     getBooking,
     createBooking,
     deleteBooking,
@@ -236,6 +253,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     removeFromNetwork,
     updateBooking,
     updateBookingStatus,
+    updateBookingStore,
     reset,
   }
 })

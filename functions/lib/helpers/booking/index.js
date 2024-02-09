@@ -76,7 +76,7 @@ export const updateBookingFull = async bookingId => {
     await Promise.all(
       pendingCommitments.map(doc => {
         batch.update(doc.ref, {
-          status: 'Booking full',
+          status: 'booking full',
           // updated: getLocalServerTime(moment(), timezone).format(),
         })
       }),

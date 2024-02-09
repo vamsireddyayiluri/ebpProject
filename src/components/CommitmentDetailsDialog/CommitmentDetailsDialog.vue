@@ -10,35 +10,21 @@ const props = defineProps({
   commitment: Object,
 })
 const emit = defineEmits(['close', 'approveCommitment', 'completeCommitment', 'declineCommitment'])
-const { bookings } = useBookingsStore()
+const bookingStore = useBookingsStore()
 const { getFormattedDate } = useDate()
 const { goToChat } = useChatStore()
 const checkCommitmentStatus = () => {
   return props.commitment?.timeline?.some(({ title }) => title.includes('approved'))
 }
-const details = checkCommitmentStatus()
-  ? ref([
-      { name: 'Company name', value: 'FedEx Freight' },
-      { name: 'SCAC', value: 'ABCD' },
-      { name: 'Name', value: 'Vitaliy' },
-      { name: 'Contact number', value: '0123456789' },
-      { name: 'Secondary name', value: '0123456789' },
-      { name: 'Secondary number', value: '--' },
-      { name: 'Email', value: 'fedex.freight@mail.com' },
-      { name: 'Safer link', value: '2' },
-      { name: 'Number of truckers', value: '20' },
-      { name: 'Insurance amount', value: '250.000-500.000' },
-      { name: 'Authorized for Overweight', value: 'No' },
-    ])
-  : ref([
-      { name: 'Company name', value: 'FedEx Freight' },
-      { name: 'SCAC', value: 'ABCD' },
-      { name: 'Email', value: 'fedex.freight@mail.com' },
-      { name: 'Safer link', value: '2' },
-      { name: 'Number of truckers', value: '20' },
-      { name: 'Insurance amount', value: '250.000-500.000' },
-      { name: 'Authorized for Overweight', value: 'No' },
-    ])
+const details = ref([
+  { name: 'Company name', value: 'FedEx Freight' },
+  { name: 'SCAC', value: 'ABCD' },
+  { name: 'Email', value: 'fedex.freight@mail.com' },
+  { name: 'Safer link', value: '2' },
+  { name: 'Number of truckers', value: '20' },
+  { name: 'Insurance amount', value: '250.000-500.000' },
+  { name: 'Authorized for Overweight', value: 'No' },
+])
 const openedPanel = ref([0])
 const {
   ref: bookingRef,
@@ -50,7 +36,17 @@ const {
   line,
   size,
   location,
-} = bookings.find(i => i.id === props.commitment.bookingId)
+} = bookingStore.bookings.find(i => i.id === props.commitment.bookingId)
+
+onMounted(async () => {
+  if (checkCommitmentStatus()) {
+    details.value.push({ name: 'Email', value: 'fedex.freight@mail.com' })
+    details.value.push({ name: 'Name', value: 'Vitaliy' })
+    details.value.push({ name: 'Contact number', value: '0123456789' })
+    details.value.push({ name: 'Secondary name', value: '0123456789' })
+    details.value.push({ name: 'Secondary number', value: '--' })
+  }
+})
 </script>
 
 <template>
@@ -139,36 +135,28 @@ const {
             </ExpansionPanelTitle>
             <ExpansionPanelText class="pa-0">
               <div class="grid grid-cols-2 items-center [&>div]:py-2.5">
-                <Typography type="text-body-s-regular">
-                  Ref
-                </Typography>
+                <Typography type="text-body-s-regular"> Ref </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ bookingRef }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Containers
-                </Typography>
+                <Typography type="text-body-s-regular"> Containers </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ containers }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Committed
-                </Typography>
+                <Typography type="text-body-s-regular"> Committed </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ committed }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Status
-                </Typography>
+                <Typography type="text-body-s-regular"> Status </Typography>
                 <Classification
                   type="status"
                   :value="commitment.status"
@@ -188,44 +176,34 @@ const {
                     {{ commitment.reason }}
                   </Typography>
                 </template>
-                <Typography type="text-body-s-regular">
-                  Loading date
-                </Typography>
+                <Typography type="text-body-s-regular"> Loading date </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ getFormattedDate(bookingExpiry) }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Commodity
-                </Typography>
+                <Typography type="text-body-s-regular"> Commodity </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ commodity }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Line
-                </Typography>
+                <Typography type="text-body-s-regular"> Line </Typography>
                 <img
                   :src="getLineAvatar(line.id)"
                   :alt="line.label"
                   class="h-8 ml-auto"
-                >
-                <Typography type="text-body-s-regular">
-                  Size
-                </Typography>
+                />
+                <Typography type="text-body-s-regular"> Size </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ size }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Export facility
-                </Typography>
+                <Typography type="text-body-s-regular"> Export facility </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
@@ -260,12 +238,12 @@ const {
       />
       <div class="styledCommitActionsBtns static md:fixed bottom-8 flex pt-8 gap-4">
         <Button
-          v-if="commitment.status === statuses.approved"
+          v-if="commitment.status === statuses.approved && status !== statuses.paused"
           @click="emit('completeCommitment', commitment.id)"
         >
           complete
         </Button>
-        <template v-if="commitment.status === statuses.pending">
+        <template v-if="commitment.status === statuses.pending && status !== statuses.paused">
           <Button @click="emit('approveCommitment', commitment)"> approve </Button>
           <Button
             variant="outlined"
