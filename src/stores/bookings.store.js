@@ -38,7 +38,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       drafts.value = querySnapshot.docs.map(doc => doc.data())
     } else {
       const bookingsQuery = query(collection(db, 'bookings'), where('orgId', '==', orgId))
-      if (bookings.value.length) {
+      if (bookings.value?.length) {
         loading.value = false
 
         return
@@ -66,8 +66,6 @@ export const useBookingsStore = defineStore('bookings', () => {
       if (b.id == bookingId) {
         b['entities'] = commitments
         b.expand = true
-      } else {
-        b.expand = false
       }
     })
   }
@@ -226,12 +224,17 @@ export const useBookingsStore = defineStore('bookings', () => {
         bookings.value.forEach(booking => {
           if (booking.id === bookingId) {
             booking.committed = toRaw(updatedBooking.committed)
+            booking.status = toRaw(updatedBooking.status)
           }
         })
       }, 2000)
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
+  }
+  const closeBookingExpansion = async bookingId => {
+    const index = bookings.value.findIndex(val => val.id === bookingId)
+    bookings.value[index].expand = false
   }
   const reset = () => {
     bookings.value = []
@@ -255,5 +258,6 @@ export const useBookingsStore = defineStore('bookings', () => {
     updateBookingStatus,
     updateBookingStore,
     reset,
+    closeBookingExpansion,
   }
 })

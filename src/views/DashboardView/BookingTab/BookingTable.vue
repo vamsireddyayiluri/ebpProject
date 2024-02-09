@@ -15,8 +15,14 @@ const props = defineProps({
   loading: Boolean,
 })
 const emit = defineEmits(['selectTableRow', 'editBooking'])
-const { deleteBooking, pauseBooking, createDraft, updateBookingStatus, getCommitmentsByBookingId } =
-  useBookingsStore()
+const {
+  deleteBooking,
+  pauseBooking,
+  createDraft,
+  updateBookingStatus,
+  getCommitmentsByBookingId,
+  closeBookingExpansion,
+} = useBookingsStore()
 const { approveCommitment, declineCommitment, completeCommitment } = useCommitmentsStore()
 const { computedEntities } = toRefs(props)
 const { userData } = useAuthStore()
@@ -78,9 +84,11 @@ const onSelectRow = e => {
   emit('selectTableRow', e)
 }
 const rowExpanded = async (event, data) => {
+  const { id } = toRaw(data.value)
   if (event) {
-    const { id } = toRaw(data.value)
     await getCommitmentsByBookingId(id)
+  } else {
+    await closeBookingExpansion(id)
   }
 }
 const onApproveCommitment = async commitment => {
