@@ -16,6 +16,7 @@ const { goToChat } = useChatStore()
 const checkCommitmentStatus = () => {
   return props.commitment?.timeline?.some(({ title }) => title.includes('approved'))
 }
+const isPending = props.commitment?.status === statuses.pending
 const details = checkCommitmentStatus()
   ? ref([
     { name: 'Company name', value: 'FedEx Freight' },
@@ -33,7 +34,7 @@ const details = checkCommitmentStatus()
   : ref([
     { name: 'Company name', value: 'FedEx Freight' },
     { name: 'SCAC', value: 'ABCD' },
-    { name: 'Email', value: 'fedex.freight@mail.com' },
+    ...(!isPending? [{ name: 'Email', value: 'fedex.freight@mail.com' }]: []),
     { name: 'Safer link', value: '2' },
     { name: 'Number of truckers', value: '20' },
     { name: 'Insurance amount', value: '250.000-500.000' },
@@ -269,7 +270,7 @@ const {
         >
           complete
         </Button>
-        <template v-if="commitment.status === statuses.pending">
+        <template v-if="isPending">
           <Button @click="emit('approveCommitment', commitment)">
             approve
           </Button>

@@ -10,7 +10,13 @@ export const declineCodes = {
   tenderedElsewhere: 'Tendered elsewhere',
   other: 'Other',
 }
+export const canceledCodes = {
+  capacityNotAvailable: 'Capacity not available',
+  equipmentNotAvailable: 'Equipment not available',
+  other: 'Other',
+}
 export default () => ({
   onboardingCodes,
   declineCodes,
+  canceledCodes,
 })
