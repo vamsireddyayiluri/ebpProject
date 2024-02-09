@@ -56,10 +56,10 @@ const rules = {
 }
 
 const updateExpiryDate = value => {
-  booking.value.bookingExpiry = value
+  booking.value.bookingExpiry = moment(value).endOf('day').format()
 }
 const updatePreferredDate = value => {
-  booking.value.preferredDate = value
+  booking.value.preferredDate = moment(value).endOf('day').format()
 }
 const updateSize = () => {
   booking.value.size = null
@@ -151,11 +151,11 @@ const isDisabledPublish = computed(() => {
 })
 
 const validateBooking = computed(() => {
-if (fromEdit) {
+  if (fromEdit) {
     const selectedBooking = bookings.value.find(i => i.id === booking.value.id)
-    booking.value.entities = selectedBooking.entities
+    booking.value.entities = selectedBooking?.entities
   }
-let condition = isEqual(
+  let condition = isEqual(
     booking.value,
     fromDraft
       ? drafts.value.find(i => i.id === booking.value.id)
@@ -170,9 +170,10 @@ let condition = isEqual(
   if (!fromDraft) {
     condition = condition || !validExpiryDate.value
   }
-  if(!fromDraft && !fromHistory && !condition){
+  if (!fromDraft && !fromHistory && !condition) {
     condition = condition || (booking.value.containers < booking.value.committed)
   }
+  
   return condition
 })
 const cancelChanges = async () => {
@@ -491,7 +492,9 @@ onMounted(async () => {
         :class="[flyoutBottom || smAndDown ? 'bottom' : 'right', drawer ? 'active' : '']"
       >
         <div class="flex justify-between items-center">
-          <Typography type="text-h1"> Statistics </Typography>
+          <Typography type="text-h1">
+            Statistics
+          </Typography>
           <IconButton
             v-if="!smAndDown"
             :icon="!flyoutBottom ? 'mdi-dock-bottom' : 'mdi-dock-right'"
@@ -501,7 +504,9 @@ onMounted(async () => {
         </div>
         <div class="statisticsContent">
           <div class="statisticsProgress">
-            <Typography type="text-h4"> Fulfillment progress </Typography>
+            <Typography type="text-h4">
+              Fulfillment progress
+            </Typography>
             <ProgressCircular
               :size="260"
               :value="getBookingLoad(booking.committed, booking.containers)"
@@ -512,7 +517,9 @@ onMounted(async () => {
             </ProgressCircular>
           </div>
           <div class="statisticsTimeline">
-            <Typography type="text-h4"> Booking timeline </Typography>
+            <Typography type="text-h4">
+              Booking timeline
+            </Typography>
             <div class="timeline scrollbar">
               <Timeline
                 :items="booking.timeline"
@@ -532,7 +539,7 @@ onMounted(async () => {
         :src="container"
         class="container-img"
         alt="qualle container"
-      />
+      >
       <Typography
         type="text-h1"
         class="!text-7xl mb-4 text-center"

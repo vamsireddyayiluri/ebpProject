@@ -16,29 +16,30 @@ const { goToChat } = useChatStore()
 const checkCommitmentStatus = () => {
   return props.commitment?.timeline?.some(({ title }) => title.includes('approved'))
 }
+const isPending = props.commitment?.status === statuses.pending
 const details = checkCommitmentStatus()
   ? ref([
-      { name: 'Company name', value: 'FedEx Freight' },
-      { name: 'SCAC', value: 'ABCD' },
-      { name: 'Name', value: 'Vitaliy' },
-      { name: 'Contact number', value: '0123456789' },
-      { name: 'Secondary name', value: '0123456789' },
-      { name: 'Secondary number', value: '--' },
-      { name: 'Email', value: 'fedex.freight@mail.com' },
-      { name: 'Safer link', value: '2' },
-      { name: 'Number of truckers', value: '20' },
-      { name: 'Insurance amount', value: '250.000-500.000' },
-      { name: 'Authorized for Overweight', value: 'No' },
-    ])
+    { name: 'Company name', value: 'FedEx Freight' },
+    { name: 'SCAC', value: 'ABCD' },
+    { name: 'Name', value: 'Vitaliy' },
+    { name: 'Contact number', value: '0123456789' },
+    { name: 'Secondary name', value: '0123456789' },
+    { name: 'Secondary number', value: '--' },
+    { name: 'Email', value: 'fedex.freight@mail.com' },
+    { name: 'Safer link', value: '2' },
+    { name: 'Number of truckers', value: '20' },
+    { name: 'Insurance amount', value: '250.000-500.000' },
+    { name: 'Authorized for Overweight', value: 'No' },
+  ])
   : ref([
-      { name: 'Company name', value: 'FedEx Freight' },
-      { name: 'SCAC', value: 'ABCD' },
-      { name: 'Email', value: 'fedex.freight@mail.com' },
-      { name: 'Safer link', value: '2' },
-      { name: 'Number of truckers', value: '20' },
-      { name: 'Insurance amount', value: '250.000-500.000' },
-      { name: 'Authorized for Overweight', value: 'No' },
-    ])
+    { name: 'Company name', value: 'FedEx Freight' },
+    { name: 'SCAC', value: 'ABCD' },
+    ...(!isPending? [{ name: 'Email', value: 'fedex.freight@mail.com' }]: []),
+    { name: 'Safer link', value: '2' },
+    { name: 'Number of truckers', value: '20' },
+    { name: 'Insurance amount', value: '250.000-500.000' },
+    { name: 'Authorized for Overweight', value: 'No' },
+  ])
 const openedPanel = ref([0])
 const {
   ref: bookingRef,
@@ -55,14 +56,16 @@ const {
 
 <template>
   <div class="flex justify-between items-center mb-8 pt-2">
-    <Typography type="text-h1"> Commitment </Typography>
+    <Typography type="text-h1">
+      Commitment
+    </Typography>
     <div class="ml-auto">
       <IconButton
         icon="mdi-message-text"
         class="mr-2"
         @click="goToChat('6srEzErbjIW4bL9gQUNbI51BGlE3')"
       >
-        <Tooltip> Go go chat </Tooltip>
+        <Tooltip> Go to chat </Tooltip>
       </IconButton>
       <IconButton
         icon="mdi-close"
@@ -177,10 +180,12 @@ const {
                 <template
                   v-if="
                     commitment.status === statuses.declined ||
-                    commitment.status === statuses.incomplete
+                      commitment.status === statuses.incomplete
                   "
                 >
-                  <Typography type="text-body-s-regular"> Reason </Typography>
+                  <Typography type="text-body-s-regular">
+                    Reason
+                  </Typography>
                   <Typography
                     type="text-body-s-regular text-end"
                     :color="getColor('textSecondary')"
@@ -265,8 +270,10 @@ const {
         >
           complete
         </Button>
-        <template v-if="commitment.status === statuses.pending">
-          <Button @click="emit('approveCommitment', commitment)"> approve </Button>
+        <template v-if="isPending">
+          <Button @click="emit('approveCommitment', commitment)">
+            approve
+          </Button>
           <Button
             variant="outlined"
             data="secondary1"
