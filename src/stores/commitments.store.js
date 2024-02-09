@@ -18,7 +18,10 @@ export const useCommitmentsStore = defineStore('commitments', () => {
     const availableContainers = booking.containers - booking.committed
 
     //throw error if commitment capacity is not available
-    if (availableContainers < +commitment.committed) {
+    if (!availableContainers) {
+      alertStore.warning({ content: `Your booking is full.` })
+      return
+    } else if (availableContainers < +commitment.committed) {
       alertStore.warning({ content: `You can only commit ${availableContainers} containers` })
 
       return

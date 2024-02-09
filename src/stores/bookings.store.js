@@ -64,10 +64,10 @@ export const useBookingsStore = defineStore('bookings', () => {
   const updateBookingCommitments = async (bookingId, commitments) => {
     bookings.value.forEach(b => {
       if (b.id == bookingId) {
-        bookings.value[index]['entities'] = commitments
-        bookings.value[index].expand = true
+        b['entities'] = commitments
+        b.expand = true
       } else {
-        bookings.value[index].expand = false
+        b.expand = false
       }
     })
   }
