@@ -9,6 +9,8 @@ import { useBookingsStore } from '~/stores/bookings.store'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth.store'
 import moment from 'moment-timezone'
+import { some } from "lodash"
+
 const props = defineProps({
   mapToggled: Boolean,
 })
@@ -111,10 +113,8 @@ const viewStatistics = e => {
 
 const onClearSearch = () => {
   loading.value = true
-
   setTimeout(() => {
-    computedSearchedEntities.value = computedFilteredEntities.value
-
+    computedSearchedEntities.value = bookingsStore.bookings
     loading.value = false
   }, 1000)
 }
@@ -144,7 +144,13 @@ const applyFilter = () => {
     ).value
   }
   if (filters.value.loadingDate) {
-    filteredData = useArrayFilter(filteredData, booking => booking.bookingExpiry === moment(filters.value.loadingDate).endOf('day').format()).value
+    filteredData = useArrayFilter(
+      filteredData,
+      booking => booking.bookingExpiry === moment(filters.value.loadingDate).endOf('day').format()).value
+  }
+  const isFiltered = some(filters.value, value => !!value)
+  if (!isFiltered && !searchValue.value) {
+    computedSearchedEntities.value = filteredData
   }
   computedFilteredEntities.value = filteredData
 }
