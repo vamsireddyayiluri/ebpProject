@@ -11,6 +11,7 @@ import {
   setDoc,
   updateDoc,
   where,
+  onSnapshot,
 } from 'firebase/firestore'
 import { db } from '~/firebase'
 import { useAuthStore } from '~/stores/auth.store'
@@ -37,15 +38,28 @@ export const useBookingsStore = defineStore('bookings', () => {
       drafts.value = querySnapshot.docs.map(doc => doc.data())
     } else {
       const bookingsQuery = query(collection(db, 'bookings'), where('orgId', '==', orgId))
-      const querySnapshot = await getDocs(bookingsQuery)
-      const dataPromises = querySnapshot.docs.map(async doc => {
-        const commitments = await getCommitments(doc.data().id)
+      if (bookings.value.length) {
+        loading.value = false
 
-        return { ...doc.data(), entities: commitments }
+        return
+      }
+      await onSnapshot(bookingsQuery, snapshot => {
+        snapshot.docChanges().forEach(async change => {
+          const bookingData = change.doc.data()
+          if (change.type === 'added') {
+            const commitments = await getCommitments(bookingData.id)
+            bookings.value.push({ ...bookingData, entities: commitments })
+          }
+          if (change.type === 'modified') {
+            const index = bookings.value.findIndex(b => b.id === bookingData.id)
+            if (index !== -1) {
+              const commitments = await getCommitments(bookingData.id)
+              bookings.value[index] = {...bookingData, entities: commitments}
+            }
+          }
+        })
       })
-      const data = await Promise.all(dataPromises)
-      await validateBookingsExpiry(data)
-      bookings.value = data
+      await validateBookingsExpiry(bookings.value)
     }
     loading.value = false
   }
@@ -58,7 +72,7 @@ export const useBookingsStore = defineStore('bookings', () => {
   const validateBookingsExpiry = async bookings => {
     const today = getLocalServerTime(moment(), 'America/Los_Angeles')
     for (const b of bookings) {
-      if (moment(b.bookingExpiry).isBefore(moment(today))) {
+      if (moment(b.bookingExpiry).isBefore(moment(today)) || b.status === 'completed') {
         await moveToHistory(b)
       }
     }
@@ -68,7 +82,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       await deleteDoc(doc(db, 'bookings', booking.id))
       await setDoc(doc(collection(db, 'booking_history'), booking.id), {
         ...booking,
-        status: statuses.expired,
+        status: booking?.status === 'completed' ? booking?.status : statuses.expired,
         updatedAt: getLocalTime().format(),
       })
     } catch ({ message }) {
@@ -120,7 +134,8 @@ export const useBookingsStore = defineStore('bookings', () => {
     const newBooking = createBookingObj(booking)
     try {
       await setDoc(doc(collection(db, 'bookings'), newBooking.id), newBooking)
-      bookings.value.push(newBooking)
+
+      // bookings.value.push(newBooking)
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
@@ -140,7 +155,8 @@ export const useBookingsStore = defineStore('bookings', () => {
       await updateDoc(doc(db, 'bookings', id), {
         status,
       })
-      bookings.value.find(i => i.id === id).status = status
+
+      // bookings.value.find(i => i.id === id).status = status
       alertStore.info({ content: `Booking ${status}!` })
     } catch ({ message }) {
       alertStore.warning({ content: message })

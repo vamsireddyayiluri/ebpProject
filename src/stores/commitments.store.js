@@ -27,12 +27,13 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       })
       bookingsStore.bookings.forEach(i => {
         i.entities.forEach(j => {
-          i.expand = true
+          // i.expand = true
           if (j.id === commitment.id) {
             j.status = statuses.approved
           }
         })
       })
+      alertStore.info({ content: 'Booking approved' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
@@ -51,13 +52,14 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       })
       bookingsStore.bookings.forEach(i => {
         i.entities.forEach(j => {
-          i.expand = true
+          // i.expand = true
           if (j.id === id) {
             j.status = obj.status,
             (obj.reason? obj.reason: {})
           }
         })
       })
+      alertStore.info({ content: 'Booking completed' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
@@ -71,13 +73,14 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       })
       bookingsStore.bookings.forEach(i => {
         i.entities.forEach(j => {
-          i.expand = true
+          // i.expand = true
           if (j.id === id) {
             j.status = statuses.declined,
             reason
           }
         })
       })
+      alertStore.info({ content: 'Booking declined' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }

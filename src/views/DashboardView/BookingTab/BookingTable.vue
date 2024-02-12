@@ -17,6 +17,7 @@ const props = defineProps({
 const emit = defineEmits(['selectTableRow', 'editBooking'])
 const { deleteBooking, pauseBooking, createDraft, updateBookingStatus } = useBookingsStore()
 const { approveCommitment, declineCommitment, completeCommitment } = useCommitmentsStore()
+const { computedEntities } = toRefs(props)
 const { userData } = useAuthStore()
 const { smAndDown } = useDisplay()
 const showActions = ref(true)
@@ -41,7 +42,12 @@ const { bookingsHeaders, commitmentsHeaders } = useHeaders()
 const { bookingsActions, commitmentsActions } = useActions()
 const { getFormattedDateTime, getFormattedDate } = useDate()
 const commitmentDetailsDialog = ref(null)
-
+const bookingStatus = id => {
+  const bookings = computedEntities.value
+  const booking = bookings.find(i => i.id === id)
+  
+  return booking.status
+}
 const containerActionHandler = async ({ action, e }) => {
   if (action === 'edit-booking') emit('editBooking', e[0].id)
   if (action === 'remove-booking') {
@@ -138,6 +144,9 @@ onMounted(() => {
         </template>
       </FlexTypography>
     </template>
+    <template #containers="{ item }">
+      <Typography> {{ item.committed }}/{{ item.containers }} </Typography>
+    </template>
     <template #yardLabel="{ item }">
       <FlexTypography type="text-body-m-regular">
         {{ item.location.label || '--' }}
@@ -221,7 +230,7 @@ onMounted(() => {
         </template>
         <template #actions="{ item, selected }">
           <MenuActions
-            :actions="() => commitmentsActions(item.status)"
+            :actions="() => commitmentsActions(item.status, bookingStatus(item.bookingId))"
             :selected="selected"
             :container="item"
             @containerActionHandler="containerActionHandler"

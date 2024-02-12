@@ -52,14 +52,14 @@ const form = ref(null)
 const validExpiryDate = ref(false)
 const insuranceItems = ref(insuranceTypes)
 const rules = {
-  containers: value => checkPositiveInteger(value),
+  containers: value => checkPositiveInteger(value,booking.value,fromEdit),
 }
 
 const updateExpiryDate = value => {
-  booking.value.bookingExpiry = value
+  booking.value.bookingExpiry = moment(value).endOf('day').format()
 }
 const updatePreferredDate = value => {
-  booking.value.preferredDate = value
+  booking.value.preferredDate = moment(value).endOf('day').format()
 }
 const updateSize = () => {
   booking.value.size = null
@@ -74,11 +74,14 @@ const toggleFlyoutPosition = () => {
 const queryParams = router.currentRoute.value.query
 const fromDraft = queryParams.from === 'draft'
 const fromHistory = queryParams.from === 'history'
+const fromEdit = !fromDraft && !fromHistory
 const completed = computed(() => booking.value?.status === statuses.completed)
 const expired = computed(() => booking.value?.status === statuses.expired)
 
 const handleBookingChanges = async () => {
   if (fromDraft) {
+    booking.value.bookingExpiry = moment(booking.value.bookingExpiry).endOf('day').format()
+    booking.value.preferredDate = moment(booking.value.preferredDate).endOf('day').format()
     const res = await publishDraft(booking.value)
     if (res === 'published') {
       router.push('/dashboard')
@@ -148,6 +151,10 @@ const isDisabledPublish = computed(() => {
 })
 
 const validateBooking = computed(() => {
+  if (fromEdit) {
+    const selectedBooking = bookings.value.find(i => i.id === booking.value.id)
+    booking.value.entities = selectedBooking?.entities
+  }
   let condition = isEqual(
     booking.value,
     fromDraft
@@ -163,7 +170,10 @@ const validateBooking = computed(() => {
   if (!fromDraft) {
     condition = condition || !validExpiryDate.value
   }
-
+  if (!fromDraft && !fromHistory && !condition) {
+    condition = condition || (booking.value.containers < booking.value.committed)
+  }
+  
   return condition
 })
 const cancelChanges = async () => {
@@ -179,6 +189,8 @@ const cancelChanges = async () => {
   )
 }
 const onSave = async () => {
+  booking.value.bookingExpiry = moment(booking.value.bookingExpiry).endOf('day').format()
+  booking.value.preferredDate = moment(booking.value.preferredDate).endOf('day').format()
   if (activated) {
     if (expired.value) {
       await reactivateBooking(booking.value)
@@ -410,11 +422,12 @@ onMounted(async () => {
           <Autocomplete
             v-model="booking.insurance"
             :items="insuranceItems"
-            label="Minimum Insurance"
+            label="Minimum Insurance*"
             required
             item-title="label"
             item-value="id"
             return-object
+            :disabled="expired || completed"
           />
           <Textfield
             v-model.number="booking.targetRate"
