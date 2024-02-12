@@ -77,11 +77,7 @@ onMounted(() => {
       </Typography>
     </template>
     <template #ssl="{ item }">
-      <img
-        :src="getLineAvatar(item.line?.id)"
-        :alt="item.line?.label"
-        class="h-8"
-      >
+      <LineAvatar :line="item.line" />
     </template>
     <template #yardLabel="{ item }">
       <FlexTypography type="text-body-m-regular">

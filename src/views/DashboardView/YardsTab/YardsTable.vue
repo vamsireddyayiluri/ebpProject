@@ -124,11 +124,7 @@ onMounted(() => {
           </FlexTypography>
         </template>
         <template #ssl="{ item }">
-          <img
-            :src="getLineAvatar(item.line.id)"
-            :alt="item.line.label"
-            class="h-8"
-          >
+          <LineAvatar :line="item.line" />
         </template>
         <template #bookingExpiry="{ item }">
           <Typography type="text-body-m-regular">

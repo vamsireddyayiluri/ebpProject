@@ -23,6 +23,7 @@ export const bookingsHeaders = userType => {
     {
       text: 'SSL',
       value: 'ssl',
+      align: 'center',
     },
     {
       text: 'Size',
