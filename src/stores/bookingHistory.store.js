@@ -13,21 +13,40 @@ import {
 import { db } from '~/firebase'
 import { useAuthStore } from '~/stores/auth.store'
 import { getLocalTime } from '@qualle-admin/qutil/dist/date'
+import { statuses } from '~/constants/statuses'
+import moment from 'moment-timezone'
 
 export const useBookingHistoryStore = defineStore('bookingHistory', () => {
   const alertStore = useAlertStore()
   const authStore = useAuthStore()
-  const { userData } = storeToRefs(authStore)
   const bookings = ref([])
   const loading = ref(false)
 
   const getBookingHistory = async () => {
     loading.value = true
-    const { orgId } = userData.value
+    const { orgId } = authStore.userData
     const bookingsQuery = query(collection(db, 'booking_history'), where('orgId', '==', orgId))
     const querySnapshot = await getDocs(bookingsQuery)
-    bookings.value = querySnapshot.docs.map(doc => doc.data())
+    bookings.value = querySnapshot.docs
+      .map(doc => doc.data())
+      .sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
     loading.value = false
+  }
+  const setBooking = async booking => {
+    try {
+      await setDoc(doc(collection(db, 'booking_history'), booking.id), {
+        ...booking,
+        status: booking?.status === 'completed' ? booking?.status : statuses.expired,
+        updatedAt: getLocalTime().format(),
+      })
+      bookings.value.push({
+        ...booking,
+        status: booking?.status === 'completed' ? booking?.status : statuses.expired,
+        updatedAt: getLocalTime().format(),
+      })
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
   }
   const getBooking = async id => {
     loading.value = true
@@ -88,6 +107,7 @@ export const useBookingHistoryStore = defineStore('bookingHistory', () => {
     loading,
     getBookingHistory,
     getBooking,
+    setBooking,
     deleteHistoryBooking,
     reactivateBooking,
     duplicateBooking,

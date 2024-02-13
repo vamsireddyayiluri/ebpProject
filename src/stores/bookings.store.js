@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 import { useAlertStore } from '~/stores/alert.store'
+import { useBookingHistoryStore } from '~/stores/bookingHistory.store'
+
 import { uid } from 'uid'
 import {
   collection,
@@ -24,6 +26,7 @@ import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
 export const useBookingsStore = defineStore('bookings', () => {
   const alertStore = useAlertStore()
   const authStore = useAuthStore()
+  const { setBooking } = useBookingHistoryStore()
   const { preferredTruckers } = usePreferredTruckersStore()
   let bookings = ref([])
   const drafts = ref([])
@@ -35,29 +38,30 @@ export const useBookingsStore = defineStore('bookings', () => {
     if (draft) {
       const draftsQuery = query(collection(db, 'drafts'), where('orgId', '==', orgId))
       const querySnapshot = await getDocs(draftsQuery)
-      drafts.value = querySnapshot.docs.map(doc => doc.data())
+      drafts.value = querySnapshot.docs
+        .map(doc => doc.data())
+        .sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
     } else {
       const bookingsQuery = query(collection(db, 'bookings'), where('orgId', '==', orgId))
-      if (bookings.value?.length) {
-        loading.value = false
 
-        return
-      }
       const querySnapshot = await getDocs(bookingsQuery)
       const dataPromises = querySnapshot.docs.map(async doc => {
         // const commitments = await getCommitments(doc.data().id)
         return { ...doc.data(), entities: [] }
       })
       const data = await Promise.all(dataPromises)
+      bookings.value = data.sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
+
       await validateBookingsExpiry(data)
-      bookings.value = data
     }
     loading.value = false
   }
   const getCommitmentsByBookingId = async bookingId => {
     const q = await query(collection(db, 'commitments'), where('bookingId', '==', bookingId))
     const docData = await getDocs(q)
-    const commitments = docData.docs.map(doc => doc.data())
+    const commitments = docData.docs
+      .map(doc => doc.data())
+      .sort((a, b) => moment(b.commitmentDate).diff(moment(a.commitmentDate)))
     updateBookingCommitments(bookingId, commitments)
     return commitments
   }
@@ -80,11 +84,9 @@ export const useBookingsStore = defineStore('bookings', () => {
   const moveToHistory = async booking => {
     try {
       await deleteDoc(doc(db, 'bookings', booking.id))
-      await setDoc(doc(collection(db, 'booking_history'), booking.id), {
-        ...booking,
-        status: booking?.status === 'completed' ? booking?.status : statuses.expired,
-        updatedAt: getLocalTime().format(),
-      })
+      let indexToDelete = bookings.value.findIndex(bookingobj => bookingobj.id === booking.id)
+      bookings.value.splice(indexToDelete, 1)
+      setBooking(booking)
     } catch ({ message }) {
       alertStore.warning({ content: 'Did not move to history' + message })
     }
@@ -184,11 +186,12 @@ export const useBookingsStore = defineStore('bookings', () => {
     }
   }
   const publishDraft = async booking => {
+    const newBooking = createBookingObj(booking)
     try {
       await deleteBooking(booking.id, true)
-      await setDoc(doc(collection(db, 'bookings'), booking.id), booking)
-      bookings.value.push(booking)
-      alertStore.info({ content: `Booking Ref#${booking.id} was published` })
+      await setDoc(doc(collection(db, 'bookings'), newBooking.id), newBooking)
+      bookings.value.unshift(newBooking)
+      alertStore.info({ content: `Booking Ref#${newBooking.id} was published` })
 
       return 'published'
     } catch ({ message }) {
@@ -217,6 +220,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.warning({ content: message })
     }
   }
+  // Updating booking store data after performing action
   const updateBookingStore = async bookingId => {
     try {
       setTimeout(async () => {
@@ -227,6 +231,7 @@ export const useBookingsStore = defineStore('bookings', () => {
             booking.status = toRaw(updatedBooking.status)
           }
         })
+        await getCommitmentsByBookingId(bookingId)
       }, 2000)
     } catch ({ message }) {
       alertStore.warning({ content: message })

@@ -17,10 +17,9 @@ const checkCommitmentStatus = () => {
   return props.commitment?.timeline?.some(({ title }) => title.includes('approved'))
 }
 const isPending = props.commitment?.status === statuses.pending
-const details = ref([
+let details = ref([
   { name: 'Company name', value: 'FedEx Freight' },
   { name: 'SCAC', value: 'ABCD' },
-  { name: 'Email', value: 'fedex.freight@mail.com' },
   { name: 'Safer link', value: '2' },
   { name: 'Number of truckers', value: '20' },
   { name: 'Insurance amount', value: '250.000-500.000' },
@@ -41,8 +40,8 @@ const {
 
 onMounted(async () => {
   if (checkCommitmentStatus()) {
-    details = [
-      details,
+    details.value = [
+      ...details.value,
       ...[
         { name: 'Email', value: 'fedex.freight@mail.com' },
         { name: 'Name', value: 'Vitaliy' },
@@ -51,11 +50,6 @@ onMounted(async () => {
         { name: 'Secondary number', value: '--' },
       ],
     ]
-    // details.value.push({ name: 'Email', value: 'fedex.freight@mail.com' })
-    // details.value.push({ name: 'Name', value: 'Vitaliy' })
-    // details.value.push({ name: 'Contact number', value: '0123456789' })
-    // details.value.push({ name: 'Secondary name', value: '0123456789' })
-    // details.value.push({ name: 'Secondary number', value: '--' })
   }
 })
 </script>
@@ -170,23 +164,18 @@ onMounted(async () => {
                 <Typography type="text-body-s-regular"> Status </Typography>
                 <Classification
                   type="status"
-                  :value="commitment.status"
+                  :value="status"
                   class="w-min h-fit ml-auto"
                 />
-                <template
-                  v-if="
-                    commitment.status === statuses.declined ||
-                    commitment.status === statuses.incomplete
-                  "
-                >
+                <!-- <template v-if="reason">
                   <Typography type="text-body-s-regular"> Reason </Typography>
                   <Typography
                     type="text-body-s-regular text-end"
                     :color="getColor('textSecondary')"
                   >
-                    {{ commitment.reason }}
+                    {{ reason }}
                   </Typography>
-                </template>
+                </template> -->
                 <Typography type="text-body-s-regular"> Loading date </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
