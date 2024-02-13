@@ -15,7 +15,14 @@ const props = defineProps({
   loading: Boolean,
 })
 const emit = defineEmits(['selectTableRow', 'editBooking'])
-const { deleteBooking, pauseBooking, createDraft, updateBookingStatus } = useBookingsStore()
+const {
+  deleteBooking,
+  pauseBooking,
+  createDraft,
+  updateBookingStatus,
+  getCommitmentsByBookingId,
+  closeBookingExpansion,
+} = useBookingsStore()
 const { approveCommitment, declineCommitment, completeCommitment } = useCommitmentsStore()
 const { computedEntities } = toRefs(props)
 const { userData } = useAuthStore()
@@ -37,7 +44,6 @@ const declineReasonList = [
   declineCodes.tenderedElsewhere,
   declineCodes.other,
 ]
-
 const { bookingsHeaders, commitmentsHeaders } = useHeaders()
 const { bookingsActions, commitmentsActions } = useActions()
 const { getFormattedDateTime, getFormattedDate } = useDate()
@@ -45,7 +51,6 @@ const commitmentDetailsDialog = ref(null)
 const bookingStatus = id => {
   const bookings = computedEntities.value
   const booking = bookings.find(i => i.id === id)
-  
   return booking.status
 }
 const containerActionHandler = async ({ action, e }) => {
@@ -76,6 +81,14 @@ const containerActionHandler = async ({ action, e }) => {
 }
 const onSelectRow = e => {
   emit('selectTableRow', e)
+}
+const rowExpanded = async (event, data) => {
+  const { id } = toRaw(data.value)
+  if (event) {
+    await getCommitmentsByBookingId(id)
+  } else {
+    await closeBookingExpansion(id)
+  }
 }
 const onApproveCommitment = async commitment => {
   commitmentDetailsDialog.value.show(false)
@@ -130,6 +143,7 @@ onMounted(() => {
       expansionRow: true,
     }"
     @onSelectRow="onSelectRow"
+    @onRowExpanded="rowExpanded"
   >
     <template #ref="{ item }">
       <FlexTypography type="text-body-m-regular">
@@ -139,9 +153,7 @@ onMounted(() => {
         >
           {{ item.ref }}
         </Highlighter>
-        <template v-else>
-          {{ item.ref }}
-        </template>
+        <template v-else> {{ item.ref }} </template>
       </FlexTypography>
     </template>
     <template #containers="{ item }">
@@ -161,7 +173,18 @@ onMounted(() => {
     </template>
     <template #size="{ item }">
       <Typography>
-        {{ item.size }}
+        <template v-if="item.flexibleBooking">
+          <template
+            v-for="i in item.size"
+            :key="i"
+          >
+            {{ i }}
+            <br />
+          </template>
+        </template>
+        <template v-else>
+          {{ item.size }}
+        </template>
       </Typography>
     </template>
     <template #status="{ item }">

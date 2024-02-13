@@ -57,7 +57,7 @@ const onReport = () => {
     />
     <template v-if="extended">
       <Textarea
-        v-model="yourReason"
+        v-model.trim="yourReason"
         label="Add your reason *"
         rows="3"
         maxlength="150"
