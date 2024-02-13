@@ -1,6 +1,5 @@
 <script setup>
 import { useActions, useDate, useHeaders } from '~/composables'
-import { getLineAvatar } from '~/firebase/getLineAvatar'
 import { useDisplay } from 'vuetify'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { useAuthStore } from "~/stores/auth.store"

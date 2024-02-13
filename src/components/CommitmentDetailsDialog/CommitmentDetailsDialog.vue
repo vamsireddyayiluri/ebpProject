@@ -1,6 +1,5 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
-import { getLineAvatar } from '~/firebase/getLineAvatar'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { useDate } from '~/composables'
 import { statuses } from '~/constants/statuses'

@@ -1,6 +1,5 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
-import { getLineAvatar } from '~/firebase/getLineAvatar'
 import truckersData from '~/fixtures/statistics.json'
 
 const statistics = ref(truckersData)
