@@ -125,8 +125,6 @@ onMounted(async () => {
           type="text-h3"
           class="mb-5"
         >
-
-        
           Bookings
         </Typography>
         <Card
@@ -153,9 +151,6 @@ onMounted(async () => {
           class="mb-5"
         >
           Commitments
-
-
-
         </Typography>
         <Card
           v-for="c in commitments"
@@ -171,7 +166,10 @@ onMounted(async () => {
           <Typography class="leading-10">
             <b>ref</b>: {{ c.ref }}
           </Typography>
-          <Button v-if="c.status === statuses.pending" @click="openCancelDialog(c)">
+          <Button
+            v-if="c.status === statuses.pending"
+            @click="openCancelDialog(c)"
+          >
             cancel
           </Button>
         </Card>

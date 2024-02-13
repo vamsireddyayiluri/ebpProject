@@ -32,6 +32,28 @@ export const useBookingHistoryStore = defineStore('bookingHistory', () => {
       .sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
     loading.value = false
   }
+  const getCommitmentsByBookingId = async bookingId => {
+    const q = await query(collection(db, 'commitments'), where('bookingId', '==', bookingId))
+    const docData = await getDocs(q)
+    const commitments = docData.docs
+      .map(doc => doc.data())
+      .sort((a, b) => moment(b.commitmentDate).diff(moment(a.commitmentDate)))
+    await updateBookingCommitments(bookingId, commitments)
+
+    return commitments
+  }
+  const updateBookingCommitments = async (bookingId, commitments) => {
+    bookings.value.forEach(b => {
+      if (b.id == bookingId) {
+        b['entities'] = commitments
+        b.expand = true
+      }
+    })
+  }
+  const closeBookingExpansion = async bookingId => {
+    const index = bookings.value.findIndex(val => val.id === bookingId)
+    bookings.value[index].expand = false
+  }
   const setBooking = async booking => {
     try {
       await setDoc(doc(collection(db, 'booking_history'), booking.id), {
@@ -106,6 +128,8 @@ export const useBookingHistoryStore = defineStore('bookingHistory', () => {
     bookings,
     loading,
     getBookingHistory,
+    getCommitmentsByBookingId,
+    closeBookingExpansion,
     getBooking,
     setBooking,
     deleteHistoryBooking,

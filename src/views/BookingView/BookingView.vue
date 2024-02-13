@@ -497,7 +497,9 @@ onMounted(async () => {
         :class="[flyoutBottom || smAndDown ? 'bottom' : 'right', drawer ? 'active' : '']"
       >
         <div class="flex justify-between items-center">
-          <Typography type="text-h1"> Statistics </Typography>
+          <Typography type="text-h1">
+            Statistics
+          </Typography>
           <IconButton
             v-if="!smAndDown"
             :icon="!flyoutBottom ? 'mdi-dock-bottom' : 'mdi-dock-right'"
@@ -507,7 +509,9 @@ onMounted(async () => {
         </div>
         <div class="statisticsContent">
           <div class="statisticsProgress">
-            <Typography type="text-h4"> Fulfillment progress </Typography>
+            <Typography type="text-h4">
+              Fulfillment progress
+            </Typography>
             <ProgressCircular
               :size="260"
               :value="getBookingLoad(booking.committed, booking.containers)"
@@ -518,7 +522,9 @@ onMounted(async () => {
             </ProgressCircular>
           </div>
           <div class="statisticsTimeline">
-            <Typography type="text-h4"> Booking timeline </Typography>
+            <Typography type="text-h4">
+              Booking timeline
+            </Typography>
             <div class="timeline scrollbar">
               <Timeline
                 :items="booking.timeline"
@@ -538,7 +544,7 @@ onMounted(async () => {
         :src="container"
         class="container-img"
         alt="qualle container"
-      />
+      >
       <Typography
         type="text-h1"
         class="!text-7xl mb-4 text-center"

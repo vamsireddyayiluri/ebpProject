@@ -20,6 +20,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
     //throw error if commitment capacity is not available
     if (!availableContainers) {
       alertStore.warning({ content: `Your booking is full.` })
+      
       return
     } else if (availableContainers < +commitment.committed) {
       alertStore.warning({ content: `You can only commit ${availableContainers} containers` })
@@ -98,6 +99,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
   const getcommitment = async id => {
     try {
       const docData = await getDoc(doc(db, 'commitments', id))
+      
       return docData.data()
     } catch ({ message }) {
       alertStore.warning({ content: message })

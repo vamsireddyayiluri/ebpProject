@@ -13,7 +13,6 @@ import {
   setDoc,
   updateDoc,
   where,
-  onSnapshot,
 } from 'firebase/firestore'
 import { db } from '~/firebase'
 import { useAuthStore } from '~/stores/auth.store'
@@ -62,7 +61,8 @@ export const useBookingsStore = defineStore('bookings', () => {
     const commitments = docData.docs
       .map(doc => doc.data())
       .sort((a, b) => moment(b.commitmentDate).diff(moment(a.commitmentDate)))
-    updateBookingCommitments(bookingId, commitments)
+    await updateBookingCommitments(bookingId, commitments)
+
     return commitments
   }
   const updateBookingCommitments = async (bookingId, commitments) => {
@@ -219,6 +219,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.warning({ content: message })
     }
   }
+
   // Updating booking store data after performing action
   const updateBookingStore = async bookingId => {
     try {
