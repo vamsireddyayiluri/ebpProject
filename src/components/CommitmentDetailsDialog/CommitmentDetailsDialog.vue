@@ -16,6 +16,7 @@ const { goToChat } = useChatStore()
 const checkCommitmentStatus = () => {
   return props.commitment?.timeline?.some(({ title }) => title.includes('approved'))
 }
+const isPending = props.commitment?.status === statuses.pending
 const details = ref([
   { name: 'Company name', value: 'FedEx Freight' },
   { name: 'SCAC', value: 'ABCD' },
@@ -40,11 +41,21 @@ const {
 
 onMounted(async () => {
   if (checkCommitmentStatus()) {
-    details.value.push({ name: 'Email', value: 'fedex.freight@mail.com' })
-    details.value.push({ name: 'Name', value: 'Vitaliy' })
-    details.value.push({ name: 'Contact number', value: '0123456789' })
-    details.value.push({ name: 'Secondary name', value: '0123456789' })
-    details.value.push({ name: 'Secondary number', value: '--' })
+    details = [
+      details,
+      ...[
+        { name: 'Email', value: 'fedex.freight@mail.com' },
+        { name: 'Name', value: 'Vitaliy' },
+        { name: 'Contact number', value: '0123456789' },
+        { name: 'Secondary name', value: '0123456789' },
+        { name: 'Secondary number', value: '--' },
+      ],
+    ]
+    // details.value.push({ name: 'Email', value: 'fedex.freight@mail.com' })
+    // details.value.push({ name: 'Name', value: 'Vitaliy' })
+    // details.value.push({ name: 'Contact number', value: '0123456789' })
+    // details.value.push({ name: 'Secondary name', value: '0123456789' })
+    // details.value.push({ name: 'Secondary number', value: '--' })
   }
 })
 </script>
@@ -58,7 +69,7 @@ onMounted(async () => {
         class="mr-2"
         @click="goToChat('6srEzErbjIW4bL9gQUNbI51BGlE3')"
       >
-        <Tooltip> Go go chat </Tooltip>
+        <Tooltip> Go to chat </Tooltip>
       </IconButton>
       <IconButton
         icon="mdi-close"
@@ -243,7 +254,7 @@ onMounted(async () => {
         >
           complete
         </Button>
-        <template v-if="commitment.status === statuses.pending && status !== statuses.paused">
+        <template v-if="isPending && status !== statuses.paused">
           <Button @click="emit('approveCommitment', commitment)"> approve </Button>
           <Button
             variant="outlined"

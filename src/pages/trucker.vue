@@ -10,6 +10,7 @@ import { Main } from '@layouts'
 import { useAuthStore } from '~/stores/auth.store'
 import { uid } from 'uid'
 import { statuses } from '~/constants/statuses'
+import { canceledCodes } from '~/constants/reasonCodes'
 
 const alertStore = useAlertStore()
 const authStore = useAuthStore()
@@ -62,11 +63,12 @@ const openCancelDialog = async commit => {
   cancelCommitDialog.value.show(true)
   cancelCommitDialog.value.data = commit
 }
-const cancelCommit = async () => {
+const cancelCommit = async reason => {
   await updateDoc(doc(db, 'commitments', cancelCommitDialog.value.data.id), {
     status: statuses.canceled,
-    cancelReason: 'Capacity not available',
+    cancelReason: reason,
   })
+  cancelCommitDialog.value.show(false)
 }
 onMounted(async () => {
   await bookingStore.getBookings({ draft: false })
@@ -163,7 +165,7 @@ onMounted(async () => {
           <Typography class="leading-10">
             <b>ref</b>: {{ c.ref }}
           </Typography>
-          <Button @click="openCancelDialog(c)">
+          <Button v-if="c.status === statuses.pending" @click="openCancelDialog(c)">
             cancel
           </Button>
         </Card>
@@ -180,8 +182,9 @@ onMounted(async () => {
         sub-title="Choose the reason why you want to cancel reservation for container "
         select-label="Cancellation reason *"
         btn-name="Cancel"
-        :reason-list="['Capacity not available', 'Equipment not available', 'Other']"
-        @close="cancelCommit"
+        :reason-list="[canceledCodes.capacityNotAvailable, canceledCodes.equipmentNotAvailable, canceledCodes.other]"
+        @close="cancelCommitDialog.show(false)"
+        @onReport="cancelCommit"
       />
     </template>
   </Dialog>

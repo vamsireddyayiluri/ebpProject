@@ -28,9 +28,20 @@ export const updateBookingCommit = async (type, data) => {
     const committed = +data.committed
     if (type === 'increase') {
       const updatedCount = admin.firestore.FieldValue.increment(committed)
+      const carrierIndex = booking.carriers.findIndex(carrier => carrier.scac === data.scac)
+      if (carrierIndex !== -1) {
+        booking.carriers[carrierIndex].total = booking.carriers[carrierIndex].total + committed
+      } else {
+        booking.carriers.push({
+          scac: data.scac,
+          fulfilled: 0,
+          total: committed,
+        })
+      }
       await docRef.update({
         committed: updatedCount,
-      })
+        carriers: booking.carriers,
+      }, { merge: true })
       if (parseInt(booking.committed + updatedCount.operand) === parseInt(booking.containers)) {
         await updateBookingStatus(data.bookingId, 'pending')
 

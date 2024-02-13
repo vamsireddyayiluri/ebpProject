@@ -103,7 +103,7 @@ const isDirty = computed(() => {
   const values = Object.values(booking.value)
   values.pop()
   values.splice(10, 1)
-  
+
   return !values.some(i => !i) && booking.value.scacList?.list.length > 0
 })
 
@@ -179,6 +179,22 @@ onMounted(async () => {
         return-object
         class="h-fit"
       />
+      <Datepicker
+        :picked="booking.bookingExpiry"
+        label="Loading date *"
+        typeable
+        :lower-limit="(booking.preferredDate && new Date(booking.preferredDate)) || currentDate"
+        :error-messages="validateExpiryDates()"
+        @onUpdate="updateExpiryDate"
+      />
+      <Datepicker
+        :key="booking.preferredDate"
+        :picked="booking.preferredDate"
+        label="Preferred carrier window"
+        :upper-limit="booking.bookingExpiry && new Date(booking.bookingExpiry)"
+        :lower-limit="currentDate"
+        @onUpdate="updatePreferredDate"
+      />
       <Autocomplete
         v-model="booking.location"
         :items="
@@ -196,23 +212,6 @@ onMounted(async () => {
         item-value="address"
         return-object
         class="h-fit"
-      />
-      <Datepicker
-        :picked="booking.bookingExpiry"
-        label="Loading date *"
-        typeable
-        clearable
-        :lower-limit="(booking.preferredDate && new Date(booking.preferredDate)) || currentDate"
-        :error-messages="validateExpiryDates()"
-        @onUpdate="updateExpiryDate"
-      />
-      <Datepicker
-        :key="booking.preferredDate"
-        :picked="booking.preferredDate"
-        label="Preferred carrier window"
-        :upper-limit="booking.bookingExpiry && new Date(booking.bookingExpiry)"
-        :lower-limit="currentDate"
-        @onUpdate="updatePreferredDate"
       />
       <Textfield
         v-model.trim="booking.commodity"
