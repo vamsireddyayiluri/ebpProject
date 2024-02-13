@@ -39,7 +39,7 @@ export const useBookingHistoryStore = defineStore('bookingHistory', () => {
         status: booking?.status === 'completed' ? booking?.status : statuses.expired,
         updatedAt: getLocalTime().format(),
       })
-      bookings.value.push({
+      bookings.value.unshift({
         ...booking,
         status: booking?.status === 'completed' ? booking?.status : statuses.expired,
         updatedAt: getLocalTime().format(),

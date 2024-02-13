@@ -137,7 +137,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     try {
       await setDoc(doc(collection(db, 'bookings'), newBooking.id), newBooking)
 
-      bookings.value.push(newBooking)
+      bookings.value.unshift(newBooking)
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
@@ -146,7 +146,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     const newDraft = createBookingObj(draft)
     try {
       await setDoc(doc(collection(db, 'drafts'), newDraft.id), newDraft)
-      drafts.value.push(newDraft)
+      drafts.value.unshift(newDraft)
       alertStore.info({ content: 'Draft created' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
@@ -186,12 +186,11 @@ export const useBookingsStore = defineStore('bookings', () => {
     }
   }
   const publishDraft = async booking => {
-    const newBooking = createBookingObj(booking)
     try {
       await deleteBooking(booking.id, true)
-      await setDoc(doc(collection(db, 'bookings'), newBooking.id), newBooking)
-      bookings.value.unshift(newBooking)
-      alertStore.info({ content: `Booking Ref#${newBooking.id} was published` })
+      await setDoc(doc(collection(db, 'bookings'), booking.id), booking)
+      bookings.value.unshift(booking)
+      alertStore.info({ content: `Booking Ref#${booking.id} was published` })
 
       return 'published'
     } catch ({ message }) {
@@ -200,9 +199,9 @@ export const useBookingsStore = defineStore('bookings', () => {
   }
   const removeFromNetwork = async booking => {
     try {
-      await deleteBooking(booking.id)
       await setDoc(doc(collection(db, 'drafts'), booking.id), booking)
-      drafts.value.push(booking)
+      await deleteBooking(booking.id)
+      drafts.value.unshift(booking)
       alertStore.info({ content: `Booking Ref#${booking.id} moved to the draft` })
 
       return 'deleted'
