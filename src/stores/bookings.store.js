@@ -158,7 +158,7 @@ export const useBookingsStore = defineStore('bookings', () => {
         status,
       })
 
-      // bookings.value.find(i => i.id === id).status = status
+      bookings.value.find(i => i.id === id).status = status
       alertStore.info({ content: `Booking ${status}!` })
     } catch ({ message }) {
       alertStore.warning({ content: message })
