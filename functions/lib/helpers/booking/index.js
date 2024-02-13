@@ -38,14 +38,17 @@ export const updateBookingCommit = async (type, data) => {
           total: committed,
         })
       }
-      await docRef.update({
-        committed: updatedCount,
-        carriers: booking.carriers,
-      }, { merge: true })
+      await docRef.update(
+        {
+          committed: updatedCount,
+          carriers: booking.carriers,
+        },
+        { merge: true },
+      )
       if (parseInt(booking.committed + updatedCount.operand) === parseInt(booking.containers)) {
         await updateBookingStatus(data.bookingId, 'pending')
 
-        await updateBookingFull(data.bookingId)
+        // await updateBookingFull(data.bookingId)
       }
     }
   } catch ({ message }) {
@@ -74,6 +77,8 @@ export const checkAllBookingCommitments = async bookingId => {
     )
     if (!pendingCommitments?.length) {
       updateBookingStatus(bookingId, 'completed')
+    } else if (booking?.status !== 'pending' && booking.status !== 'paused') {
+      updateBookingStatus(bookingId, 'pending')
     }
   }
 }
