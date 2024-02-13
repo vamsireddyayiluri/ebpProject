@@ -9,6 +9,7 @@ import { statuses } from '~/constants/statuses'
 import { getAllLines } from '@qualle-admin/qutil/dist/ssl'
 import { filterMatchingObjects } from '~/helpers/filters'
 import moment from 'moment-timezone'
+import { json2csv } from 'json-2-csv'
 
 const bookingsStore = useBookingHistoryStore()
 const { loading } = storeToRefs(bookingsStore)
@@ -131,7 +132,16 @@ const rowExpanded = async (event, data) => {
   }
 }
 const downloadData = async () => {
-
+  const options = {}
+  const csv = await json2csv(bookingsStore.bookings, options)
+  const csvContent = 'data:text/csv;charset=utf-8,' + csv
+  const encodedUri = encodeURI(csvContent)
+  const link = document.createElement('a')
+  link.setAttribute('href', encodedUri)
+  link.setAttribute('download', `booking-history-${getFormattedDate(moment())}.csv`)
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
 }
 onMounted(async () => {
   await bookingsStore.getBookingHistory()
