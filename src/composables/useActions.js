@@ -15,7 +15,7 @@ export const bookingsActions = item => {
     },
   ]
   if (item.status !== statuses.paused) {
-    const pauseAction =  {
+    const pauseAction = {
       icon: 'mdi-pause',
       label: 'Pause booking',
       action: 'pause-booking',
@@ -24,7 +24,6 @@ export const bookingsActions = item => {
     actions.splice(secondToLastIndex, 0, pauseAction)
   }
   if (item.status === statuses.paused) {
-
     return [
       {
         icon: 'mdi-reload',
@@ -34,9 +33,10 @@ export const bookingsActions = item => {
       ...actions,
     ]
   }
-  if(item.committed === item.containers){
+  if (item.committed === item.containers) {
     return []
   }
+  
   return actions
 }
 export const draftsActions = () => [

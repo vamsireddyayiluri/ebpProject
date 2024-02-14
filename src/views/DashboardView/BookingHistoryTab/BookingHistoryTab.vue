@@ -32,7 +32,6 @@ const filters = ref({
 })
 const selectLine = ref(getAllLines())
 
-
 const computedSearchedEntities = computed({
   get() {
     return mutableSearchedEntities.value
@@ -93,7 +92,10 @@ const applyFilter = () => {
     ).value
   }
   if (filters.value.loadingDate) {
-    filteredData = useArrayFilter(filteredData, booking => booking.bookingExpiry === moment(filters.value.loadingDate).endOf('day').format()).value
+    filteredData = useArrayFilter(
+      filteredData,
+      booking => booking.bookingExpiry === moment(filters.value.loadingDate).endOf('day').format(),
+    ).value
   }
   computedFilteredEntities.value = filteredData
 }

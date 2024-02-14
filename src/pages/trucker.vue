@@ -186,7 +186,11 @@ onMounted(async () => {
         sub-title="Choose the reason why you want to cancel reservation for container "
         select-label="Cancellation reason *"
         btn-name="Cancel"
-        :reason-list="[canceledCodes.capacityNotAvailable, canceledCodes.equipmentNotAvailable, canceledCodes.other]"
+        :reason-list="[
+          canceledCodes.capacityNotAvailable,
+          canceledCodes.equipmentNotAvailable,
+          canceledCodes.other,
+        ]"
         @close="cancelCommitDialog.show(false)"
         @onReport="cancelCommit"
       />

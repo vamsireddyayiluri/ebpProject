@@ -136,7 +136,7 @@ onMounted(() => {
                 :key="i"
               >
                 {{ i }}
-                <br />
+                <br>
               </template>
             </template>
             <template v-else>

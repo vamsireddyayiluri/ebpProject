@@ -35,7 +35,7 @@ const startCounting = () => {
 
 const stopCounting = () => {
   count.value = 100
-  setTimeout(() => (show.value = false, count.value = 0), 200)
+  setTimeout(() => ((show.value = false), (count.value = 0)), 200)
 }
 
 watch(loading, newLoading => {
