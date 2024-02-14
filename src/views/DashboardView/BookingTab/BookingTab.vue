@@ -27,9 +27,9 @@ const { mapToggled } = toRefs(props)
 const getPanes = () => {
   return mapToggled.value
     ? [
-      { name: 'content', size: 60 },
-      { name: 'map', size: 40 },
-    ]
+        { name: 'content', size: 60 },
+        { name: 'map', size: 40 },
+      ]
     : [{ name: 'content', size: 100 }]
 }
 const panes = ref(getPanes())
@@ -102,8 +102,8 @@ const selectTableRow = e => {
   if (!mapToggled.value) {
     emit('selectRow')
   }
-  mapRef.value.setZoom(15)
-  mapRef.value.panTo({ lat: e.location.lat, lng: e.location.lng })
+  mapRef.value?.setZoom(15)
+  mapRef.value?.panTo({ lat: e.location.lat, lng: e.location.lng })
 }
 
 const viewStatistics = e => {
@@ -196,9 +196,7 @@ watch(searchValue, value => {
       >
         <div class="flex flex-wrap items-center gap-4 mb-7">
           <div class="flex justify-between sm:justify-normal items-center gap-4">
-            <Typography type="text-h1 shrink-0">
-              Bookings
-            </Typography>
+            <Typography type="text-h1 shrink-0"> Bookings </Typography>
           </div>
           <Button
             class="ml-auto px-12"

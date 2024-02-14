@@ -1,9 +1,11 @@
 import { defineStore } from 'pinia'
-import { doc, updateDoc } from 'firebase/firestore'
+import { doc, updateDoc, getDoc } from 'firebase/firestore'
 import { db } from '~/firebase'
 import { statuses } from '~/constants/statuses'
 import { useAlertStore } from '~/stores/alert.store'
 import { useBookingsStore } from '~/stores/bookings.store'
+const { updateBookingStore } = useBookingsStore()
+
 import { onboardingCodes } from '~/constants/reasonCodes'
 
 export const useCommitmentsStore = defineStore('commitments', () => {
@@ -16,7 +18,10 @@ export const useCommitmentsStore = defineStore('commitments', () => {
     const availableContainers = booking.containers - booking.committed
 
     //throw error if commitment capacity is not available
-    if (availableContainers < +commitment.committed) {
+    if (!availableContainers) {
+      alertStore.warning({ content: `Your booking is full.` })
+      return
+    } else if (availableContainers < +commitment.committed) {
       alertStore.warning({ content: `You can only commit ${availableContainers} containers` })
 
       return
@@ -25,15 +30,18 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       await updateDoc(doc(db, 'commitments', commitment.id), {
         status: statuses.approved,
       })
-      bookingsStore.bookings.forEach(i => {
-        i.entities.forEach(j => {
-          // i.expand = true
-          if (j.id === commitment.id) {
-            j.status = statuses.approved
-          }
-        })
+
+      const index = bookingsStore.bookings.findIndex(i => i.id === commitment.bookingId)
+
+      bookingsStore.bookings[index].entities.forEach(j => {
+        // i.expand = true
+        if (j.id === commitment.id) {
+          j.status = statuses.approved
+        }
       })
-      alertStore.info({ content: 'Booking approved' })
+      await updateBookingStore(commitment.bookingId)
+
+      alertStore.info({ content: 'Booking commitment approved' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
@@ -54,12 +62,13 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         i.entities.forEach(j => {
           // i.expand = true
           if (j.id === id) {
-            j.status = obj.status,
-            (obj.reason? obj.reason: {})
+            ;(j.status = obj.status), (j.reason = reason)
           }
         })
       })
-      alertStore.info({ content: 'Booking completed' })
+      const commitment = await getcommitment(id)
+      await updateBookingStore(commitment.bookingId)
+      alertStore.info({ content: 'Booking commitment completed' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
@@ -75,12 +84,21 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         i.entities.forEach(j => {
           // i.expand = true
           if (j.id === id) {
-            j.status = statuses.declined,
-            reason
+            ;(j.status = statuses.declined), (j.reason = reason)
           }
         })
       })
-      alertStore.info({ content: 'Booking declined' })
+      const commitment = await getcommitment(id)
+      await updateBookingStore(commitment.bookingId)
+      alertStore.info({ content: 'Booking commitment declined' })
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
+  const getcommitment = async id => {
+    try {
+      const docData = await getDoc(doc(db, 'commitments', id))
+      return docData.data()
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }

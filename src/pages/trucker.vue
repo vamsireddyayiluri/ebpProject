@@ -70,6 +70,7 @@ const cancelCommit = async reason => {
   })
   cancelCommitDialog.value.show(false)
 }
+
 onMounted(async () => {
   await bookingStore.getBookings({ draft: false })
   const q = await query(
@@ -124,6 +125,8 @@ onMounted(async () => {
           type="text-h3"
           class="mb-5"
         >
+
+        
           Bookings
         </Typography>
         <Card
@@ -150,6 +153,9 @@ onMounted(async () => {
           class="mb-5"
         >
           Commitments
+
+
+
         </Typography>
         <Card
           v-for="c in commitments"
