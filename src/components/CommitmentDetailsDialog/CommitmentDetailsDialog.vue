@@ -1,6 +1,5 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
-import { getLineAvatar } from '~/firebase/getLineAvatar'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { useDate } from '~/composables'
 import { statuses } from '~/constants/statuses'
@@ -211,11 +210,10 @@ onMounted(async () => {
                 <Typography type="text-body-s-regular">
                   Line
                 </Typography>
-                <img
-                  :src="getLineAvatar(line.id)"
-                  :alt="line.label"
-                  class="h-8 ml-auto"
-                >
+                <LineAvatar
+                  :line="line"
+                  class="ml-auto"
+                />
                 <Typography type="text-body-s-regular">
                   Size
                 </Typography>
