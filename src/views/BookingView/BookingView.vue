@@ -19,6 +19,7 @@ import {
   checkPositiveInteger,
   validateExpiryDate,
   validateFlexibleSizes,
+  checkCommittedValue,
 } from '~/helpers/validations-functions'
 import { insuranceTypes } from '~/constants/settings'
 
@@ -52,12 +53,8 @@ const form = ref(null)
 const validExpiryDate = ref(false)
 const insuranceItems = ref(insuranceTypes)
 const rules = {
-  containers: value =>
-    checkPositiveInteger(
-      value,
-      booking.value,
-      booking.value?.committed > 0 ? !fromHistory : fromEdit,
-    ),
+  containers: value => checkPositiveInteger(value, booking.value),
+  checkcommitted: value => checkCommittedValue(value, booking.value),
 }
 
 const updateExpiryDate = value => {
@@ -128,7 +125,7 @@ const validateRequiredFields = () => {
   return (
     !(booking.value.ref &&
     booking.value.containers &&
-    rules.containers(booking.value.containers) === true &&
+    rules.checkcommitted(booking.value.containers) === true &&
     booking.value.commodity &&
     booking.value.insurance &&
     booking.value.weight &&
@@ -178,7 +175,7 @@ const validateBooking = computed(() => {
   if (!fromDraft && !fromHistory && !condition) {
     condition = condition || booking.value.containers < booking.value.committed
   }
-  
+
   return condition
 })
 const cancelChanges = async () => {
@@ -358,7 +355,7 @@ onMounted(async () => {
             v-model.number="booking.containers"
             label="Number of containers*"
             type="number"
-            :rules="[rules.containers]"
+            :rules="[rules.checkcommitted]"
             required
             :disabled="expired || completed"
           />
@@ -497,9 +494,7 @@ onMounted(async () => {
         :class="[flyoutBottom || smAndDown ? 'bottom' : 'right', drawer ? 'active' : '']"
       >
         <div class="flex justify-between items-center">
-          <Typography type="text-h1">
-            Statistics
-          </Typography>
+          <Typography type="text-h1"> Statistics </Typography>
           <IconButton
             v-if="!smAndDown"
             :icon="!flyoutBottom ? 'mdi-dock-bottom' : 'mdi-dock-right'"
@@ -509,9 +504,7 @@ onMounted(async () => {
         </div>
         <div class="statisticsContent">
           <div class="statisticsProgress">
-            <Typography type="text-h4">
-              Fulfillment progress
-            </Typography>
+            <Typography type="text-h4"> Fulfillment progress </Typography>
             <ProgressCircular
               :size="260"
               :value="getBookingLoad(booking.committed, booking.containers)"
@@ -522,9 +515,7 @@ onMounted(async () => {
             </ProgressCircular>
           </div>
           <div class="statisticsTimeline">
-            <Typography type="text-h4">
-              Booking timeline
-            </Typography>
+            <Typography type="text-h4"> Booking timeline </Typography>
             <div class="timeline scrollbar">
               <Timeline
                 :items="booking.timeline"
@@ -544,7 +535,7 @@ onMounted(async () => {
         :src="container"
         class="container-img"
         alt="qualle container"
-      >
+      />
       <Typography
         type="text-h1"
         class="!text-7xl mb-4 text-center"

@@ -3,7 +3,7 @@ import { useActions, useDate, useHeaders } from '~/composables'
 import { useDisplay } from 'vuetify'
 import { getYardBookingLoad, getBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
-import { useAuthStore } from "~/stores/auth.store"
+import { useAuthStore } from '~/stores/auth.store'
 
 const props = defineProps({
   computedEntities: Array,
@@ -136,7 +136,7 @@ onMounted(() => {
                 :key="i"
               >
                 {{ i }}
-                <br>
+                <br />
               </template>
             </template>
             <template v-else>
@@ -173,7 +173,8 @@ onMounted(() => {
         </template>
         <template #actions="{ item, selected }">
           <MenuActions
-            :actions="() => bookingsActions(item.status)"
+            :disabled="bookingsActions(item).length > 0 ? false : true"
+            :actions="() => bookingsActions(item)"
             :selected="selected"
             :container="item"
             @containerActionHandler="containerActionHandler"

@@ -1,6 +1,6 @@
 import { statuses } from '~/constants/statuses'
 
-export const bookingsActions = status => {
+export const bookingsActions = item => {
   const actions = [
     {
       icon: 'mdi-pencil',
@@ -14,7 +14,7 @@ export const bookingsActions = status => {
       color: 'functionalError',
     },
   ]
-  if (status !== statuses.paused) {
+  if (item.status !== statuses.paused) {
     const pauseAction =  {
       icon: 'mdi-pause',
       label: 'Pause booking',
@@ -23,7 +23,8 @@ export const bookingsActions = status => {
     const secondToLastIndex = actions.length - 1
     actions.splice(secondToLastIndex, 0, pauseAction)
   }
-  if (status === statuses.paused) {
+  if (item.status === statuses.paused) {
+
     return [
       {
         icon: 'mdi-reload',
@@ -33,7 +34,9 @@ export const bookingsActions = status => {
       ...actions,
     ]
   }
-
+  if(item.committed === item.containers){
+    return []
+  }
   return actions
 }
 export const draftsActions = () => [

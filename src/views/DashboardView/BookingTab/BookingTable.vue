@@ -104,7 +104,6 @@ const openDeclineCommitmentDialog = id => {
 }
 const removeBooking = id => {
   deleteBooking(id)
-  createDraft(removeBookingDialog.value.data)
   removeBookingDialog.value.show(false)
 }
 const onCompleteCommitment = async (id, reason) => {
@@ -177,7 +176,7 @@ onMounted(() => {
             :key="i"
           >
             {{ i }}
-            <br>
+            <br />
           </template>
         </template>
         <template v-else>
@@ -215,7 +214,8 @@ onMounted(() => {
 
     <template #actions="{ item, selected }">
       <MenuActions
-        :actions="() => bookingsActions(item.status)"
+        :disabled="bookingsActions(item).length > 0 ? false : true"
+        :actions="() => bookingsActions(item)"
         :selected="selected"
         :container="item"
         @containerActionHandler="containerActionHandler"

@@ -16,12 +16,16 @@ const reportReason = ref(null)
 const yourReason = ref()
 const extended = computed(
   () =>
-    reportReason.value === onboardingCodes.neverOnboarded || reportReason.value === onboardingCodes.other,
+    reportReason.value === onboardingCodes.neverOnboarded ||
+    reportReason.value === onboardingCodes.other,
 )
 
 const onReport = () => {
   emit('onClickBtn', extended.value ? yourReason.value : reportReason.value)
 }
+watch(reportReason, () => {
+  yourReason.value = ''
+})
 </script>
 
 <template>
