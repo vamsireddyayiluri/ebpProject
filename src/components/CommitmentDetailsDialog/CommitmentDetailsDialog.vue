@@ -5,12 +5,14 @@ import { useBookingsStore } from '~/stores/bookings.store'
 import { useDate } from '~/composables'
 import { statuses } from '~/constants/statuses'
 import { useChatStore } from '~/stores/chat.store'
+import { useBookingHistoryStore } from '~/stores/bookingHistory.store'
 
 const props = defineProps({
   commitment: Object,
 })
 const emit = defineEmits(['close', 'approveCommitment', 'completeCommitment', 'declineCommitment'])
 const bookingStore = useBookingsStore()
+const bookingHistoryStore = useBookingHistoryStore()
 const { getFormattedDate } = useDate()
 const { goToChat } = useChatStore()
 const checkCommitmentStatus = () => {
@@ -36,7 +38,7 @@ const {
   line,
   size,
   location,
-} = bookingStore.bookings.find(i => i.id === props.commitment.bookingId)
+} = bookingStore.bookings.find(i => i.id === props.commitment.bookingId) || bookingHistoryStore.bookings.find(i => i.id === props.commitment.bookingId)
 
 onMounted(async () => {
   if (checkCommitmentStatus()) {
@@ -56,7 +58,9 @@ onMounted(async () => {
 
 <template>
   <div class="flex justify-between items-center mb-8 pt-2">
-    <Typography type="text-h1"> Commitment </Typography>
+    <Typography type="text-h1">
+      Commitment
+    </Typography>
     <div class="ml-auto">
       <IconButton
         icon="mdi-message-text"
@@ -140,70 +144,90 @@ onMounted(async () => {
             </ExpansionPanelTitle>
             <ExpansionPanelText class="pa-0">
               <div class="grid grid-cols-2 items-center [&>div]:py-2.5">
-                <Typography type="text-body-s-regular"> Ref </Typography>
+                <Typography type="text-body-s-regular">
+                  Ref
+                </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ bookingRef }}
                 </Typography>
-                <Typography type="text-body-s-regular"> Containers </Typography>
+                <Typography type="text-body-s-regular">
+                  Containers
+                </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ containers }}
                 </Typography>
-                <Typography type="text-body-s-regular"> Committed </Typography>
+                <Typography type="text-body-s-regular">
+                  Committed
+                </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ committed }}
                 </Typography>
-                <Typography type="text-body-s-regular"> Status </Typography>
+                <Typography type="text-body-s-regular">
+                  Status
+                </Typography>
                 <Classification
                   type="status"
                   :value="status"
                   class="w-min h-fit ml-auto"
                 />
-                <!-- <template v-if="reason">
+                <!--
+                  <template v-if="reason">
                   <Typography type="text-body-s-regular"> Reason </Typography>
                   <Typography
-                    type="text-body-s-regular text-end"
-                    :color="getColor('textSecondary')"
+                  type="text-body-s-regular text-end"
+                  :color="getColor('textSecondary')"
                   >
-                    {{ reason }}
+                  {{ reason }}
                   </Typography>
-                </template> -->
-                <Typography type="text-body-s-regular"> Loading date </Typography>
+                  </template>
+                -->
+                <Typography type="text-body-s-regular">
+                  Loading date
+                </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ getFormattedDate(bookingExpiry) }}
                 </Typography>
-                <Typography type="text-body-s-regular"> Commodity </Typography>
+                <Typography type="text-body-s-regular">
+                  Commodity
+                </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ commodity }}
                 </Typography>
-                <Typography type="text-body-s-regular"> Line </Typography>
+                <Typography type="text-body-s-regular">
+                  Line
+                </Typography>
                 <img
                   :src="getLineAvatar(line.id)"
                   :alt="line.label"
                   class="h-8 ml-auto"
-                />
-                <Typography type="text-body-s-regular"> Size </Typography>
+                >
+                <Typography type="text-body-s-regular">
+                  Size
+                </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ size }}
                 </Typography>
-                <Typography type="text-body-s-regular"> Export facility </Typography>
+                <Typography type="text-body-s-regular">
+                  Export facility
+                </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
@@ -244,7 +268,9 @@ onMounted(async () => {
           complete
         </Button>
         <template v-if="isPending && status !== statuses.paused">
-          <Button @click="emit('approveCommitment', commitment)"> approve </Button>
+          <Button @click="emit('approveCommitment', commitment)">
+            approve
+          </Button>
           <Button
             variant="outlined"
             data="secondary1"

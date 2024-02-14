@@ -131,7 +131,10 @@ onMounted(() => {
         <template #size="{ item }">
           <Typography>
             <template v-if="item.flexibleBooking">
-              <template v-for="i in item.size" :key="i">
+              <template
+                v-for="i in item.size"
+                :key="i"
+              >
                 {{ i }}
                 <br>
               </template>

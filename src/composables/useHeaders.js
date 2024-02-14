@@ -181,6 +181,7 @@ export const bookingsHistoryHeaders = [
   {
     text: 'SSL',
     value: 'ssl',
+    align: 'center',
   },
   {
     text: 'Loading date',

@@ -51,6 +51,7 @@ const commitmentDetailsDialog = ref(null)
 const bookingStatus = id => {
   const bookings = computedEntities.value
   const booking = bookings.find(i => i.id === id)
+  
   return booking.status
 }
 const containerActionHandler = async ({ action, e }) => {
@@ -153,7 +154,9 @@ onMounted(() => {
         >
           {{ item.ref }}
         </Highlighter>
-        <template v-else> {{ item.ref }} </template>
+        <template v-else>
+          {{ item.ref }}
+        </template>
       </FlexTypography>
     </template>
     <template #containers="{ item }">
@@ -175,7 +178,7 @@ onMounted(() => {
             :key="i"
           >
             {{ i }}
-            <br />
+            <br>
           </template>
         </template>
         <template v-else>
