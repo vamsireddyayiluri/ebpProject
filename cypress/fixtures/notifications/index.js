@@ -14,8 +14,8 @@ export const bookingData = {
   expiryDate: moment().startOf('day').format('MM/DD/YYYY hh:mm:ss a'),
   commodity: 'test',
   averageWeight: '30000',
-  targetRate: '500',
-  targetRateType: 'All in rate',
+  estimatedRate: '500',
+  estimatedRateType: 'All in rate',
 }
 
 export const bookingDatawithoutNotification = {
@@ -29,6 +29,6 @@ export const bookingDatawithoutNotification = {
   expiryDate: moment().startOf('day').format('MM/DD/YYYY hh:mm:ss a'),
   commodity: 'test',
   averageWeight: '30000',
-  targetRate: '500',
-  targetRateType: 'All in rate',
+  estimatedRate: '500',
+  estimatedRateType: 'All in rate',
 }

@@ -22,7 +22,7 @@ export const validateExpiryDate = (entities, entity) => {
   if (
     entities.find(
       val =>
-        moment(val?.bookingExpiry).startOf('day').isSame(entity.bookingExpiry) &&
+        moment(val?.loadingDate).startOf('day').isSame(entity.loadingDate) &&
         val?.ref?.trim() === entity.ref?.trim() &&
         val.id !== entity.id,
     )

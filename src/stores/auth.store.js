@@ -87,7 +87,7 @@ export const useAuthStore = defineStore('auth', () => {
       await signInWithEmailAndPassword(auth, form.email, form.password)
       const orgId = await getOrgId(form.email)
       await addDoc(collection(db, 'pending_verifications'), {
-        fullName: form.fullName,
+        name: form.fullName,
         email: form.email,
         orgId,
         cell: form.cell,
@@ -112,20 +112,20 @@ export const useAuthStore = defineStore('auth', () => {
       await sendVerificationEmail()
     } catch (error) {
       switch (error.code) {
-      case 'auth/email-already-in-use':
-        alertStore.warning({ content: 'Email already in use' })
-        break
-      case 'auth/invalid-email':
-        alertStore.warning({ content: 'Invalid email' })
-        break
-      case 'auth/operation-not-allowed':
-        alertStore.warning({ content: 'Operation not allowed' })
-        break
-      case 'auth/weak-password':
-        alertStore.warning({ content: 'Weak password' })
-        break
-      default:
-        alertStore.warning({ content: 'Something went wrong' })
+        case 'auth/email-already-in-use':
+          alertStore.warning({ content: 'Email already in use' })
+          break
+        case 'auth/invalid-email':
+          alertStore.warning({ content: 'Invalid email' })
+          break
+        case 'auth/operation-not-allowed':
+          alertStore.warning({ content: 'Operation not allowed' })
+          break
+        case 'auth/weak-password':
+          alertStore.warning({ content: 'Weak password' })
+          break
+        default:
+          alertStore.warning({ content: 'Something went wrong' })
       }
       isLoading.value = false
     }
@@ -178,7 +178,7 @@ export const useAuthStore = defineStore('auth', () => {
       auth.currentUser.emailVerified = true
       const { uid: userId } = user
       let newUser = {
-        fullName: data.fullName,
+        name: data.name,
         email: data.email,
         cell: data.cell,
         createdAt: getLocalTime().format(),
@@ -204,6 +204,7 @@ export const useAuthStore = defineStore('auth', () => {
           updatedAt: getLocalTime().format(),
           workDetails: data.yards,
           bookingRules: {},
+          type: 'exporter',
         }
         await setDoc(docRef, orgData)
       }

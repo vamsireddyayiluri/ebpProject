@@ -7,8 +7,8 @@ import { getColor } from '~/helpers/colors'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { storeToRefs } from 'pinia'
 import { groupedBookingLocations } from '~/stores/helpers'
-import { useAuthStore } from "~/stores/auth.store"
-import moment from "moment-timezone"
+import { useAuthStore } from '~/stores/auth.store'
+import moment from 'moment-timezone'
 
 const props = defineProps({
   mapToggled: Boolean,
@@ -25,9 +25,9 @@ const { mapToggled } = toRefs(props)
 const getPanes = () => {
   return mapToggled.value
     ? [
-      { name: 'content', size: 60 },
-      { name: 'map', size: 40 },
-    ]
+        { name: 'content', size: 60 },
+        { name: 'map', size: 40 },
+      ]
     : [{ name: 'content', size: 100 }]
 }
 const panes = ref(getPanes())
@@ -148,7 +148,10 @@ const applyFilter = () => {
     ).value
   }
   if (filters.value.loadingDate) {
-    filteredData = useArrayFilter(filteredData, booking => booking.bookingExpiry === moment(filters.value.loadingDate).endOf('day').format()).value
+    filteredData = useArrayFilter(
+      filteredData,
+      booking => booking.loadingDate === moment(filters.value.loadingDate).endOf('day').format(),
+    ).value
   }
   computedFilteredEntities.value = filteredData
 }
@@ -189,9 +192,7 @@ watch(searchValue, value => {
       >
         <div class="flex flex-wrap items-center gap-4 mb-7">
           <div class="flex justify-between sm:justify-normal items-center gap-4">
-            <Typography type="text-h1 shrink-0">
-              Yards
-            </Typography>
+            <Typography type="text-h1 shrink-0"> Yards </Typography>
           </div>
           <Button
             class="ml-auto px-12"

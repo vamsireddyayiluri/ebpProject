@@ -4,7 +4,7 @@ import { getLineAvatar } from '~/firebase/getLineAvatar'
 import { useDisplay } from 'vuetify'
 import { getYardBookingLoad, getBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
-import { useAuthStore } from "~/stores/auth.store"
+import { useAuthStore } from '~/stores/auth.store'
 
 const props = defineProps({
   computedEntities: Array,
@@ -128,13 +128,13 @@ onMounted(() => {
             :src="getLineAvatar(item.line.id)"
             :alt="item.line.label"
             class="h-8"
-          >
+          />
         </template>
         <template #bookingExpiry="{ item }">
           <Typography type="text-body-m-regular">
-            {{ getFormattedDate(item.bookingExpiry) }}
+            {{ getFormattedDate(item.loadingDate) }}
             <Tooltip>
-              {{ getFormattedDateTime(item.bookingExpiry) }}
+              {{ getFormattedDateTime(item.loadingDate) }}
             </Tooltip>
           </Typography>
         </template>

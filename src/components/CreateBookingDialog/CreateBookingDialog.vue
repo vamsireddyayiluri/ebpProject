@@ -40,12 +40,12 @@ const booking = ref({
   containers: null,
   line: null,
   commodity: '',
-  bookingExpiry: null,
+  loadingDate: null,
   preferredDate: null,
   location: bookingRulesStore.rules.yard,
   weight: null,
-  targetRateType: 'All in rate',
-  targetRate: null,
+  estimatedRateType: 'All in rate',
+  estimatedRate: null,
   flexibleBooking: false,
   size: null,
   scacList: bookingRulesStore.rules.truckers,
@@ -61,7 +61,7 @@ const rules = {
   containers: value => checkPositiveInteger(value),
 }
 const updateExpiryDate = value => {
-  booking.value.bookingExpiry = value
+  booking.value.loadingDate = value
   if (bookingRulesStore?.rules?.timeForTruckersFromMarketplace) {
     booking.value.preferredDate = moment(value)
       .subtract(bookingRulesStore?.rules?.timeForTruckersFromMarketplace, 'day')
@@ -84,17 +84,21 @@ const validateExpiryDates = () => {
 }
 
 const isDisabled = computed(() => {
+  console.log('bokking', booking)
   const values = Object.values(booking.value)
   values.pop()
   values.splice(10, 1)
+  console.log('values', values)
   let condition = values.some(i => !i) || !booking.value.scacList?.list?.length
+  console.log('condition', condition)
   if (!condition) {
+    console.log('inside the if condition')
     condition =
       form.value?.errors.length ||
       !validExpiryDate.value ||
       validateFlexibleSizes(booking.value.size, booking.value.flexibleBooking)?.length > 0
   }
-
+  console.log('condition test validare', condition)
   return condition
 })
 
@@ -118,7 +122,7 @@ const saveDraft = () => {
   emit('close')
 }
 const saveBooking = async () => {
-  booking.value.bookingExpiry = moment(booking.value.bookingExpiry).endOf('day').format()
+  booking.value.loadingDate = moment(booking.value.loadingDate).endOf('day').format()
   booking.value.preferredDate = moment(booking.value.preferredDate).endOf('day').format()
   createBooking(booking.value)
   emit('close')
@@ -180,7 +184,7 @@ onMounted(async () => {
         class="h-fit"
       />
       <Datepicker
-        :picked="booking.bookingExpiry"
+        :picked="booking.loadingDate"
         label="Loading date *"
         typeable
         :lower-limit="(booking.preferredDate && new Date(booking.preferredDate)) || currentDate"
@@ -191,7 +195,7 @@ onMounted(async () => {
         :key="booking.preferredDate"
         :picked="booking.preferredDate"
         label="Preferred carrier window"
-        :upper-limit="booking.bookingExpiry && new Date(booking.bookingExpiry)"
+        :upper-limit="booking.loadingDate && new Date(booking.loadingDate)"
         :lower-limit="currentDate"
         @onUpdate="updatePreferredDate"
       />
@@ -240,7 +244,7 @@ onMounted(async () => {
           Target rate
         </Typography>
         <Textfield
-          v-model.number="booking.targetRate"
+          v-model.number="booking.estimatedRate"
           label="Target rate*"
           :rules="[rules.containers]"
           type="number"
@@ -248,7 +252,7 @@ onMounted(async () => {
           class="col-span-1"
         />
         <RadioGroup
-          v-model="booking.targetRateType"
+          v-model="booking.estimatedRateType"
           inline
           class="mt-0 md:mt-3"
         >

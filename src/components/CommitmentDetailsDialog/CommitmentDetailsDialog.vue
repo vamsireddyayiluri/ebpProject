@@ -19,34 +19,34 @@ const checkCommitmentStatus = () => {
 const isPending = props.commitment?.status === statuses.pending
 const details = checkCommitmentStatus()
   ? ref([
-    { name: 'Company name', value: 'FedEx Freight' },
-    { name: 'SCAC', value: 'ABCD' },
-    { name: 'Name', value: 'Vitaliy' },
-    { name: 'Contact number', value: '0123456789' },
-    { name: 'Secondary name', value: '0123456789' },
-    { name: 'Secondary number', value: '--' },
-    { name: 'Email', value: 'fedex.freight@mail.com' },
-    { name: 'Safer link', value: '2' },
-    { name: 'Number of truckers', value: '20' },
-    { name: 'Insurance amount', value: '250.000-500.000' },
-    { name: 'Authorized for Overweight', value: 'No' },
-  ])
+      { name: 'Company name', value: 'FedEx Freight' },
+      { name: 'SCAC', value: 'ABCD' },
+      { name: 'Name', value: 'Vitaliy' },
+      { name: 'Contact number', value: '0123456789' },
+      { name: 'Secondary name', value: '0123456789' },
+      { name: 'Secondary number', value: '--' },
+      { name: 'Email', value: 'fedex.freight@mail.com' },
+      { name: 'Safer link', value: '2' },
+      { name: 'Number of truckers', value: '20' },
+      { name: 'Insurance amount', value: '250.000-500.000' },
+      { name: 'Authorized for Overweight', value: 'No' },
+    ])
   : ref([
-    { name: 'Company name', value: 'FedEx Freight' },
-    { name: 'SCAC', value: 'ABCD' },
-    ...(!isPending? [{ name: 'Email', value: 'fedex.freight@mail.com' }]: []),
-    { name: 'Safer link', value: '2' },
-    { name: 'Number of truckers', value: '20' },
-    { name: 'Insurance amount', value: '250.000-500.000' },
-    { name: 'Authorized for Overweight', value: 'No' },
-  ])
+      { name: 'Company name', value: 'FedEx Freight' },
+      { name: 'SCAC', value: 'ABCD' },
+      ...(!isPending ? [{ name: 'Email', value: 'fedex.freight@mail.com' }] : []),
+      { name: 'Safer link', value: '2' },
+      { name: 'Number of truckers', value: '20' },
+      { name: 'Insurance amount', value: '250.000-500.000' },
+      { name: 'Authorized for Overweight', value: 'No' },
+    ])
 const openedPanel = ref([0])
 const {
   ref: bookingRef,
   containers,
   committed,
   status,
-  bookingExpiry,
+  loadingDate,
   commodity,
   line,
   size,
@@ -56,9 +56,7 @@ const {
 
 <template>
   <div class="flex justify-between items-center mb-8 pt-2">
-    <Typography type="text-h1">
-      Commitment
-    </Typography>
+    <Typography type="text-h1"> Commitment </Typography>
     <div class="ml-auto">
       <IconButton
         icon="mdi-message-text"
@@ -142,36 +140,28 @@ const {
             </ExpansionPanelTitle>
             <ExpansionPanelText class="pa-0">
               <div class="grid grid-cols-2 items-center [&>div]:py-2.5">
-                <Typography type="text-body-s-regular">
-                  Ref
-                </Typography>
+                <Typography type="text-body-s-regular"> Ref </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ bookingRef }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Containers
-                </Typography>
+                <Typography type="text-body-s-regular"> Containers </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ containers }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Committed
-                </Typography>
+                <Typography type="text-body-s-regular"> Committed </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ committed }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Status
-                </Typography>
+                <Typography type="text-body-s-regular"> Status </Typography>
                 <Classification
                   type="status"
                   :value="commitment.status"
@@ -180,12 +170,10 @@ const {
                 <template
                   v-if="
                     commitment.status === statuses.declined ||
-                      commitment.status === statuses.incomplete
+                    commitment.status === statuses.incomplete
                   "
                 >
-                  <Typography type="text-body-s-regular">
-                    Reason
-                  </Typography>
+                  <Typography type="text-body-s-regular"> Reason </Typography>
                   <Typography
                     type="text-body-s-regular text-end"
                     :color="getColor('textSecondary')"
@@ -193,44 +181,34 @@ const {
                     {{ commitment.reason }}
                   </Typography>
                 </template>
-                <Typography type="text-body-s-regular">
-                  Loading date
-                </Typography>
+                <Typography type="text-body-s-regular"> Loading date </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
-                  {{ getFormattedDate(bookingExpiry) }}
+                  {{ getFormattedDate(loadingDate) }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Commodity
-                </Typography>
+                <Typography type="text-body-s-regular"> Commodity </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ commodity }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Line
-                </Typography>
+                <Typography type="text-body-s-regular"> Line </Typography>
                 <img
                   :src="getLineAvatar(line.id)"
                   :alt="line.label"
                   class="h-8 ml-auto"
-                >
-                <Typography type="text-body-s-regular">
-                  Size
-                </Typography>
+                />
+                <Typography type="text-body-s-regular"> Size </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ size }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Export facility
-                </Typography>
+                <Typography type="text-body-s-regular"> Export facility </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
@@ -271,9 +249,7 @@ const {
           complete
         </Button>
         <template v-if="isPending">
-          <Button @click="emit('approveCommitment', commitment)">
-            approve
-          </Button>
+          <Button @click="emit('approveCommitment', commitment)"> approve </Button>
           <Button
             variant="outlined"
             data="secondary1"

@@ -45,7 +45,7 @@ const commitmentDetailsDialog = ref(null)
 const bookingStatus = id => {
   const bookings = computedEntities.value
   const booking = bookings.find(i => i.id === id)
-  
+
   return booking.status
 }
 const containerActionHandler = async ({ action, e }) => {
@@ -157,7 +157,7 @@ onMounted(() => {
         :src="getLineAvatar(item.line.id)"
         :alt="item.line.label"
         class="h-8"
-      >
+      />
     </template>
     <template #size="{ item }">
       <Typography>
@@ -172,9 +172,9 @@ onMounted(() => {
     </template>
     <template #bookingExpiry="{ item }">
       <Typography type="text-body-m-regular">
-        {{ getFormattedDate(item.bookingExpiry) }}
+        {{ getFormattedDate(item.loadingDate) }}
         <Tooltip>
-          {{ getFormattedDateTime(item.bookingExpiry) }}
+          {{ getFormattedDateTime(item.loadingDate) }}
         </Tooltip>
       </Typography>
     </template>
@@ -183,7 +183,7 @@ onMounted(() => {
     </template>
     <template #worker="{ item }">
       <Typography>
-        {{ item.createdBy.fullName }}
+        {{ item.createdBy.name }}
       </Typography>
     </template>
     <template #progress="{ item }">
