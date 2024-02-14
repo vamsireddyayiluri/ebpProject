@@ -61,7 +61,7 @@ const rules = {
   containers: value => checkPositiveInteger(value),
 }
 const updateExpiryDate = value => {
-  booking.value.bookingExpiry = value
+  booking.value.bookingExpiry = moment(value).endOf('day').format()
   if (bookingRulesStore?.rules?.timeForTruckersFromMarketplace) {
     booking.value.preferredDate = moment(value)
       .subtract(bookingRulesStore?.rules?.timeForTruckersFromMarketplace, 'day')
@@ -72,7 +72,7 @@ const updateExpiryDate = value => {
   }
 }
 const updatePreferredDate = value => {
-  booking.value.preferredDate = value
+  booking.value.preferredDate = moment(value).endOf('day').format()
 }
 
 const updateSize = () => {
