@@ -7,8 +7,9 @@ import { getColor } from '~/helpers/colors'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { storeToRefs } from 'pinia'
 import { groupedBookingLocations } from '~/stores/helpers'
-import { useAuthStore } from "~/stores/auth.store"
-import moment from "moment-timezone"
+import { useAuthStore } from '~/stores/auth.store'
+import moment from 'moment-timezone'
+import { some } from 'lodash'
 
 const props = defineProps({
   mapToggled: Boolean,
@@ -114,10 +115,8 @@ const viewStatistics = e => {
 
 const onClearSearch = () => {
   loading.value = true
-
   setTimeout(() => {
-    computedSearchedEntities.value = computedFilteredEntities.value
-
+    computedSearchedEntities.value = bookings.value
     loading.value = false
   }, 1000)
 }
@@ -144,11 +143,18 @@ const applyFilter = () => {
   if (filters.value.line) {
     filteredData = useArrayFilter(
       filteredData,
-      yard => useArraySome(yard.lines, line => line.label === filters.value.line).value,
+      yard => yard.line.label === filters.value.line,
     ).value
   }
   if (filters.value.loadingDate) {
-    filteredData = useArrayFilter(filteredData, booking => booking.bookingExpiry === moment(filters.value.loadingDate).endOf('day').format()).value
+    filteredData = useArrayFilter(
+      filteredData,
+      booking => booking.bookingExpiry === moment(filters.value.loadingDate).endOf('day').format(),
+    ).value
+  }
+  const isFiltered = some(filters.value, value => !!value)
+  if (!isFiltered && !searchValue.value) {
+    computedSearchedEntities.value = filteredData
   }
   computedFilteredEntities.value = filteredData
 }

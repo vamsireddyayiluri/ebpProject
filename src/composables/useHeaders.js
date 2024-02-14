@@ -23,6 +23,7 @@ export const bookingsHeaders = userType => {
     {
       text: 'SSL',
       value: 'ssl',
+      align: 'center',
     },
     {
       text: 'Size',
@@ -180,6 +181,7 @@ export const bookingsHistoryHeaders = [
   {
     text: 'SSL',
     value: 'ssl',
+    align: 'center',
   },
   {
     text: 'Loading date',

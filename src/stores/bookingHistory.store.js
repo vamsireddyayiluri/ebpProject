@@ -13,21 +13,62 @@ import {
 import { db } from '~/firebase'
 import { useAuthStore } from '~/stores/auth.store'
 import { getLocalTime } from '@qualle-admin/qutil/dist/date'
+import { statuses } from '~/constants/statuses'
+import moment from 'moment-timezone'
 
 export const useBookingHistoryStore = defineStore('bookingHistory', () => {
   const alertStore = useAlertStore()
   const authStore = useAuthStore()
-  const { userData } = storeToRefs(authStore)
   const bookings = ref([])
   const loading = ref(false)
 
   const getBookingHistory = async () => {
     loading.value = true
-    const { orgId } = userData.value
+    const { orgId } = authStore.userData
     const bookingsQuery = query(collection(db, 'booking_history'), where('orgId', '==', orgId))
     const querySnapshot = await getDocs(bookingsQuery)
-    bookings.value = querySnapshot.docs.map(doc => doc.data())
+    bookings.value = querySnapshot.docs
+      .map(doc => doc.data())
+      .sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
     loading.value = false
+  }
+  const getCommitmentsByBookingId = async bookingId => {
+    const q = await query(collection(db, 'commitments'), where('bookingId', '==', bookingId))
+    const docData = await getDocs(q)
+    const commitments = docData.docs
+      .map(doc => doc.data())
+      .sort((a, b) => moment(b.commitmentDate).diff(moment(a.commitmentDate)))
+    await updateBookingCommitments(bookingId, commitments)
+
+    return commitments
+  }
+  const updateBookingCommitments = async (bookingId, commitments) => {
+    bookings.value.forEach(b => {
+      if (b.id == bookingId) {
+        b['entities'] = commitments
+        b.expand = true
+      }
+    })
+  }
+  const closeBookingExpansion = async bookingId => {
+    const index = bookings.value.findIndex(val => val.id === bookingId)
+    bookings.value[index].expand = false
+  }
+  const setBooking = async booking => {
+    try {
+      await setDoc(doc(collection(db, 'booking_history'), booking.id), {
+        ...booking,
+        status: booking?.status === 'completed' ? booking?.status : statuses.expired,
+        updatedAt: getLocalTime().format(),
+      })
+      bookings.value.unshift({
+        ...booking,
+        status: booking?.status === 'completed' ? booking?.status : statuses.expired,
+        updatedAt: getLocalTime().format(),
+      })
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
   }
   const getBooking = async id => {
     loading.value = true
@@ -87,7 +128,10 @@ export const useBookingHistoryStore = defineStore('bookingHistory', () => {
     bookings,
     loading,
     getBookingHistory,
+    getCommitmentsByBookingId,
+    closeBookingExpansion,
     getBooking,
+    setBooking,
     deleteHistoryBooking,
     reactivateBooking,
     duplicateBooking,

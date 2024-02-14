@@ -52,7 +52,12 @@ const form = ref(null)
 const validExpiryDate = ref(false)
 const insuranceItems = ref(insuranceTypes)
 const rules = {
-  containers: value => checkPositiveInteger(value,booking.value,fromEdit),
+  containers: value =>
+    checkPositiveInteger(
+      value,
+      booking.value,
+      booking.value?.committed > 0 ? !fromHistory : fromEdit,
+    ),
 }
 
 const updateExpiryDate = value => {
@@ -171,7 +176,7 @@ const validateBooking = computed(() => {
     condition = condition || !validExpiryDate.value
   }
   if (!fromDraft && !fromHistory && !condition) {
-    condition = condition || (booking.value.containers < booking.value.committed)
+    condition = condition || booking.value.containers < booking.value.committed
   }
   
   return condition
