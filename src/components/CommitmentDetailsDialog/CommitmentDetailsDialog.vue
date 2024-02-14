@@ -37,7 +37,8 @@ const {
   line,
   size,
   location,
-} = bookingStore.bookings.find(i => i.id === props.commitment.bookingId) || bookingHistoryStore.bookings.find(i => i.id === props.commitment.bookingId)
+} = bookingStore.bookings.find(i => i.id === props.commitment.bookingId) ||
+bookingHistoryStore.bookings.find(i => i.id === props.commitment.bookingId)
 
 onMounted(async () => {
   if (checkCommitmentStatus()) {

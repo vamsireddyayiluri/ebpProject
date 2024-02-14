@@ -9,7 +9,7 @@ import { useBookingsStore } from '~/stores/bookings.store'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth.store'
 import moment from 'moment-timezone'
-import { some } from "lodash"
+import { some } from 'lodash'
 
 const props = defineProps({
   mapToggled: Boolean,
@@ -146,7 +146,8 @@ const applyFilter = () => {
   if (filters.value.loadingDate) {
     filteredData = useArrayFilter(
       filteredData,
-      booking => booking.bookingExpiry === moment(filters.value.loadingDate).endOf('day').format()).value
+      booking => booking.bookingExpiry === moment(filters.value.loadingDate).endOf('day').format(),
+    ).value
   }
   const isFiltered = some(filters.value, value => !!value)
   if (!isFiltered && !searchValue.value) {

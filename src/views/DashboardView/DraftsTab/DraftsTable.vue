@@ -2,7 +2,7 @@
 import { useActions, useDate, useHeaders } from '~/composables'
 import { useDisplay } from 'vuetify'
 import { useBookingsStore } from '~/stores/bookings.store'
-import { useAuthStore } from "~/stores/auth.store"
+import { useAuthStore } from '~/stores/auth.store'
 
 const props = defineProps({
   computedEntities: Array,

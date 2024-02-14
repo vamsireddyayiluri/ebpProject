@@ -5,7 +5,7 @@ import { capitalize } from 'lodash'
 const props = defineProps({
   doc: Object,
 })
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'download'])
 const comment = ref(null)
 const leaveCommentDialog = ref(null)
 const docxFileUrl = ref(null)

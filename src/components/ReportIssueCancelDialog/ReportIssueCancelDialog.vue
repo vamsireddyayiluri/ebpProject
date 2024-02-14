@@ -10,7 +10,7 @@ const props = defineProps({
   reasonList: Array,
 })
 
-const emit = defineEmits(['onReport'])
+const emit = defineEmits(['close', 'onReport'])
 
 const reportReason = ref()
 const yourReason = ref()
