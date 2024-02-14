@@ -9,6 +9,8 @@ import { useBookingsStore } from '~/stores/bookings.store'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth.store'
 import moment from 'moment-timezone'
+import { some } from "lodash"
+
 const props = defineProps({
   mapToggled: Boolean,
 })
@@ -25,9 +27,9 @@ const { mapToggled } = toRefs(props)
 const getPanes = () => {
   return mapToggled.value
     ? [
-        { name: 'content', size: 60 },
-        { name: 'map', size: 40 },
-      ]
+      { name: 'content', size: 60 },
+      { name: 'map', size: 40 },
+    ]
     : [{ name: 'content', size: 100 }]
 }
 const panes = ref(getPanes())
@@ -111,10 +113,8 @@ const viewStatistics = e => {
 
 const onClearSearch = () => {
   loading.value = true
-
   setTimeout(() => {
-    computedSearchedEntities.value = computedFilteredEntities.value
-
+    computedSearchedEntities.value = bookingsStore.bookings
     loading.value = false
   }, 1000)
 }
@@ -144,7 +144,13 @@ const applyFilter = () => {
     ).value
   }
   if (filters.value.loadingDate) {
-    filteredData = useArrayFilter(filteredData, booking => booking.bookingExpiry === moment(filters.value.loadingDate).endOf('day').format()).value
+    filteredData = useArrayFilter(
+      filteredData,
+      booking => booking.bookingExpiry === moment(filters.value.loadingDate).endOf('day').format()).value
+  }
+  const isFiltered = some(filters.value, value => !!value)
+  if (!isFiltered && !searchValue.value) {
+    computedSearchedEntities.value = filteredData
   }
   computedFilteredEntities.value = filteredData
 }
@@ -190,7 +196,9 @@ watch(searchValue, value => {
       >
         <div class="flex flex-wrap items-center gap-4 mb-7">
           <div class="flex justify-between sm:justify-normal items-center gap-4">
-            <Typography type="text-h1 shrink-0"> Bookings </Typography>
+            <Typography type="text-h1 shrink-0">
+              Bookings
+            </Typography>
           </div>
           <Button
             class="ml-auto px-12"

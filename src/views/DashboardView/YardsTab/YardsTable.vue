@@ -1,6 +1,5 @@
 <script setup>
 import { useActions, useDate, useHeaders } from '~/composables'
-import { getLineAvatar } from '~/firebase/getLineAvatar'
 import { useDisplay } from 'vuetify'
 import { getYardBookingLoad, getBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
@@ -127,16 +126,15 @@ onMounted(() => {
           </FlexTypography>
         </template>
         <template #ssl="{ item }">
-          <img
-            :src="getLineAvatar(item.line.id)"
-            :alt="item.line.label"
-            class="h-8"
-          >
+          <LineAvatar :line="item.line" />
         </template>
         <template #size="{ item }">
           <Typography>
             <template v-if="item.flexibleBooking">
-              <template v-for="i in item.size" :key="i">
+              <template
+                v-for="i in item.size"
+                :key="i"
+              >
                 {{ i }}
                 <br>
               </template>

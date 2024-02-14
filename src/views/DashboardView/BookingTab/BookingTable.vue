@@ -1,6 +1,5 @@
 <script setup>
 import { useActions, useDate, useHeaders } from '~/composables'
-import { getLineAvatar } from '~/firebase/getLineAvatar'
 import { useDisplay } from 'vuetify'
 import { getBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
@@ -51,6 +50,7 @@ const commitmentDetailsDialog = ref(null)
 const bookingStatus = id => {
   const bookings = computedEntities.value
   const booking = bookings.find(i => i.id === id)
+
   return booking.status
 }
 const containerActionHandler = async ({ action, e }) => {
@@ -153,7 +153,9 @@ onMounted(() => {
         >
           {{ item.ref }}
         </Highlighter>
-        <template v-else> {{ item.ref }} </template>
+        <template v-else>
+          {{ item.ref }}
+        </template>
       </FlexTypography>
     </template>
     <template #containers="{ item }">
@@ -165,11 +167,7 @@ onMounted(() => {
       </FlexTypography>
     </template>
     <template #ssl="{ item }">
-      <img
-        :src="getLineAvatar(item.line.id)"
-        :alt="item.line.label"
-        class="h-8"
-      >
+      <LineAvatar :line="item.line" />
     </template>
     <template #size="{ item }">
       <Typography>
@@ -179,7 +177,7 @@ onMounted(() => {
             :key="i"
           >
             {{ i }}
-            <br />
+            <br>
           </template>
         </template>
         <template v-else>
