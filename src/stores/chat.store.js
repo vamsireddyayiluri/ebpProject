@@ -45,6 +45,7 @@ export const useChatStore = defineStore('chat', () => {
 
   //open chat and mark all message as read
   const openChat = async chatId => {
+    await router.push({query: {id: chatId}})
     activeChat.value = chats.value.find(i => i.chatId === chatId)
     await markAsRead(chatId)
   }
@@ -95,7 +96,10 @@ export const useChatStore = defineStore('chat', () => {
           status: 'online',
         },
       ],
-      lastMessage: {},
+      lastMessage: {
+        content: '',
+        timestamp: '',
+      },
       messages: [],
       unreadCount: 0,
       userIds: [authStore.userData.userId, user.userId],
@@ -116,7 +120,6 @@ export const useChatStore = defineStore('chat', () => {
       content,
       date: today.format('MM/DD/YYYY'),
       timestamp: formatDate.todayYesterdayDate(today),
-      isEditedMessage: false,
       ...(replyMessage && { replyMessage }),
     }
     const fileUrls = []
