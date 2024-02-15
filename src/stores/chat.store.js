@@ -29,8 +29,14 @@ export const useChatStore = defineStore('chat', () => {
   const activeChat = ref(null)
   const loading = ref(false)
 
-  const currentParticipant = computed(() => activeChat.value?.users?.find(i => i.id !== authStore?.userData?.userId))
-  const isNewMessage = computed(() => chats.value?.some(i => i.unreadCount && i.messages.at(-1).senderId !== authStore.userData.userId))
+  const currentParticipant = computed(() =>
+    activeChat.value?.users?.find(i => i.id !== authStore?.userData?.userId),
+  )
+  const isNewMessage = computed(() =>
+    chats.value?.some(
+      i => i.unreadCount && i.messages.at(-1).senderId !== authStore.userData.userId,
+    ),
+  )
   const today = moment()
 
   // check if chat exist and return id
@@ -46,7 +52,7 @@ export const useChatStore = defineStore('chat', () => {
 
   //open chat and mark all message as read
   const openChat = async chatId => {
-    await router.push({query: {id: chatId}})
+    await router.push({ query: { id: chatId } })
     activeChat.value = chats.value.find(i => i.chatId === chatId)
     await markAsRead(chatId)
   }
@@ -215,12 +221,11 @@ export const useChatStore = defineStore('chat', () => {
       for (const doc of chatsSnapshot.docs) {
         const arr = doc.data().users.map(i => {
           if (i.id === authStore.userData.userId) {
-            return {...i, status}
-          }
-          else return i
+            return { ...i, status }
+          } else return i
         })
         const chatRef = doc.ref
-        await updateDoc(chatRef,{
+        await updateDoc(chatRef, {
           users: arr,
         })
       }

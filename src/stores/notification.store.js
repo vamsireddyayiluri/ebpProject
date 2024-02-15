@@ -1,4 +1,4 @@
-import {defineStore, storeToRefs} from 'pinia'
+import { defineStore, storeToRefs } from 'pinia'
 import {
   collection,
   doc,

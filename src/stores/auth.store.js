@@ -27,7 +27,7 @@ import { userTypes } from '~/constants/userTypes'
 import firebase from 'firebase/compat/app'
 import { useInvitationStore } from '~/stores/invitation.store'
 import { useNotificationStore } from '~/stores/notification.store'
-import { useBookingsStore } from "~/stores/bookings.store"
+import { useBookingsStore } from '~/stores/bookings.store'
 
 export const useAuthStore = defineStore('auth', () => {
   const router = useRouter()
