@@ -1,7 +1,6 @@
 <script setup>
 import { Main } from '@layouts'
 import { useAuthStore } from '~/stores/auth.store'
-import { storeToRefs } from 'pinia'
 
 const authStore = useAuthStore()
 const tab = ref(0)

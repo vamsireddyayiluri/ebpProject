@@ -1,6 +1,5 @@
 <script setup>
 import { useActions, useDate, useHeaders } from '~/composables'
-import { getLineAvatar } from '~/firebase/getLineAvatar'
 import { useDisplay } from 'vuetify'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { useAuthStore } from '~/stores/auth.store'
@@ -77,11 +76,7 @@ onMounted(() => {
       </Typography>
     </template>
     <template #ssl="{ item }">
-      <img
-        :src="getLineAvatar(item.line?.id)"
-        :alt="item.line?.label"
-        class="h-8"
-      />
+      <LineAvatar :line="item.line" />
     </template>
     <template #yardLabel="{ item }">
       <FlexTypography type="text-body-m-regular">

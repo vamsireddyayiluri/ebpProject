@@ -1,6 +1,5 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
-import { getLineAvatar } from '~/firebase/getLineAvatar'
 import truckersData from '~/fixtures/statistics.json'
 
 const statistics = ref(truckersData)
@@ -22,11 +21,10 @@ const statistics = ref(truckersData)
         class="w-[260px] p-4 rounded flex-shrink-0"
         :style="{ background: getColor('uiSecondary-01') }"
       >
-        <img
-          :src="getLineAvatar(item.id)"
-          :alt="item.label"
-          class="h-8 mx-auto mb-4"
-        >
+        <LineAvatar
+          :line="item"
+          class="w-fit mx-auto mb-4"
+        />
         <div class="flex justify-between gap-8">
           <div class="text-center">
             <Typography type="text-h1">

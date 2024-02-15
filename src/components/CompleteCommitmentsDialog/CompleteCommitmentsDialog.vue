@@ -10,18 +10,22 @@ const props = defineProps({
   reasonList: Array,
 })
 
-const emit = defineEmits(['onClickBtn'])
+const emit = defineEmits(['close', 'onClickBtn'])
 
 const reportReason = ref(null)
 const yourReason = ref()
 const extended = computed(
   () =>
-    reportReason.value === onboardingCodes.neverOnboarded || reportReason.value === onboardingCodes.other,
+    reportReason.value === onboardingCodes.neverOnboarded ||
+    reportReason.value === onboardingCodes.other,
 )
 
 const onReport = () => {
   emit('onClickBtn', extended.value ? yourReason.value : reportReason.value)
 }
+watch(reportReason, () => {
+  yourReason.value = ''
+})
 </script>
 
 <template>
@@ -57,7 +61,7 @@ const onReport = () => {
     />
     <template v-if="extended">
       <Textarea
-        v-model="yourReason"
+        v-model.trim="yourReason"
         label="Add your reason *"
         rows="3"
         maxlength="150"

@@ -71,27 +71,21 @@ onMounted(() => {
         <Typography class="flex-shrink-0">
           3 days
         </Typography>
-        <Tooltip>
-          Average fulfillment time
-        </Tooltip>
+        <Tooltip> Average fulfillment time </Tooltip>
       </div>
       <div class="flex gap-1.5 mx-2">
         <Icon icon="mdi-close-circle" />
         <Typography class="flex-shrink-0">
           25%
         </Typography>
-        <Tooltip>
-          Cancellation rate
-        </Tooltip>
+        <Tooltip> Cancellation rate </Tooltip>
       </div>
       <div class="flex gap-1.5">
         <Icon icon="mdi-timeline-check" />
         <Typography class="flex-shrink-0">
           20 min
         </Typography>
-        <Tooltip>
-          Average acceptance time
-        </Tooltip>
+        <Tooltip> Average acceptance time </Tooltip>
       </div>
     </template>
   </VirtualTable>

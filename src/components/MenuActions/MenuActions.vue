@@ -53,7 +53,7 @@ const onAction = (action, e) => {
         v-for="({ action, color, icon, label, customIcon }, n) in actions()"
         :key="n"
         :color="color"
-        @click="onAction(action,[container])"
+        @click="onAction(action, [container])"
       >
         <template #prepend>
           <template v-if="customIcon">

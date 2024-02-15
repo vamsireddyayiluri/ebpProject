@@ -2,15 +2,16 @@ import moment from 'moment-timezone'
 import { useAlertStore } from '~/stores/alert.store'
 
 const alertStore = useAlertStore()
-export const checkPositiveInteger = (value, booking, fromEdit = false) => {
-  if (fromEdit) {
-    if (value < booking.committed) {
-      return `Value should not be less than ${booking.committed}`
-    } else {
-      return true
-    }
+
+export const checkCommittedValue = (value, booking) => {
+  if (value < booking?.committed) {
+    return `Value should not be less than ${booking?.committed}`
+  } else {
+    return checkPositiveInteger(value, booking)
   }
-  if ((value && (value <= 0 || !Number.isInteger(value))) || value === 0) {
+}
+export const checkPositiveInteger = (value, booking) => {
+  if (value <= 0 || !Number.isInteger(value) || value === 0) {
     return 'Value should be positive integer'
   } else {
     return true
@@ -22,7 +23,7 @@ export const validateExpiryDate = (entities, entity) => {
   if (
     entities.find(
       val =>
-        moment(val?.loadingDate).startOf('day').isSame(entity.loadingDate) &&
+        moment(val?.bookingExpiry).endOf('day').isSame(moment(entity.bookingExpiry).endOf('day')) &&
         val?.ref?.trim() === entity.ref?.trim() &&
         val.id !== entity.id,
     )

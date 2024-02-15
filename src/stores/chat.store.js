@@ -27,9 +27,16 @@ export const useChatStore = defineStore('chat', () => {
   const formatDate = useDate()
   const chats = ref([])
   const activeChat = ref(null)
+  const loading = ref(false)
 
-  const currentParticipant = computed(() => activeChat.value?.users?.find(i => i.id !== authStore?.userData?.userId))
-  const isNewMessage = computed(() => chats.value?.some(i => i.unreadCount && i.messages.at(-1).senderId !== authStore.userData.userId))
+  const currentParticipant = computed(() =>
+    activeChat.value?.users?.find(i => i.id !== authStore?.userData?.userId),
+  )
+  const isNewMessage = computed(() =>
+    chats.value?.some(
+      i => i.unreadCount && i.messages.at(-1).senderId !== authStore.userData.userId,
+    ),
+  )
   const today = moment()
 
   // check if chat exist and return id
@@ -45,6 +52,7 @@ export const useChatStore = defineStore('chat', () => {
 
   //open chat and mark all message as read
   const openChat = async chatId => {
+    await router.push({ query: { id: chatId } })
     activeChat.value = chats.value.find(i => i.chatId === chatId)
     await markAsRead(chatId)
   }
@@ -95,7 +103,10 @@ export const useChatStore = defineStore('chat', () => {
           status: 'online',
         },
       ],
-      lastMessage: {},
+      lastMessage: {
+        content: '',
+        timestamp: '',
+      },
       messages: [],
       unreadCount: 0,
       userIds: [authStore.userData.userId, user.userId],
@@ -110,33 +121,37 @@ export const useChatStore = defineStore('chat', () => {
 
   const sendNewMessage = async ({ content, chatId, files, replyMessage }) => {
     const newMessage = {
+      id: uid(16),
       chatId: chatId,
       receiverId: currentParticipant.value.id,
       senderId: authStore.userData.userId,
       content,
       date: today.format('MM/DD/YYYY'),
       timestamp: formatDate.todayYesterdayDate(today),
-      isEditedMessage: false,
       ...(replyMessage && { replyMessage }),
     }
     const fileUrls = []
     try {
-      await Promise.all(
-        files.map(async blob => {
-          const file = new File([blob.blob], blob.name, { type: blob.type })
-          const fileRef = await firebaseRef(storage, `chats/${chatId}/${file.name}`)
-          await uploadBytes(fileRef, file)
-          const url = await getDownloadURL(fileRef)
-          const fileData = {
-            localUrl: url,
-            "name": file.name,
-            "size": file.size,
-            "type": file.type,
-          }
-          fileUrls.push(fileData)
-        }),
-      )
-      if (fileUrls.length > 0) {
+      if (files.length > 0) {
+        loading.value = true
+        await Promise.all(
+          files.map(async blob => {
+            const file = new File([blob.blob], blob.name, { type: blob.type })
+            const fileRef = await firebaseRef(
+              storage,
+              `chats/${chatId}/${newMessage.id}/${file.name}`,
+            )
+            await uploadBytes(fileRef, file)
+            const url = await getDownloadURL(fileRef)
+            const fileData = {
+              localUrl: url,
+              name: file.name,
+              size: file.size,
+              type: file.type,
+            }
+            fileUrls.push(fileData)
+          }),
+        )
         newMessage.files = fileUrls
       }
       await updateDoc(doc(db, 'chats', chatId), {
@@ -147,6 +162,7 @@ export const useChatStore = defineStore('chat', () => {
         },
         unreadCount: increment(1),
       })
+      loading.value = false
     } catch (error) {
       alertStore.warning({ content: error.message })
     }
@@ -208,12 +224,11 @@ export const useChatStore = defineStore('chat', () => {
       for (const doc of chatsSnapshot.docs) {
         const arr = doc.data().users.map(i => {
           if (i.id === authStore.userData.userId) {
-            return {...i, status}
-          }
-          else return i
+            return { ...i, status }
+          } else return i
         })
         const chatRef = doc.ref
-        await updateDoc(chatRef,{
+        await updateDoc(chatRef, {
           users: arr,
         })
       }
@@ -236,16 +251,34 @@ export const useChatStore = defineStore('chat', () => {
       alertStore.warning({ content: message })
     }
   }
+  const downloadFileFromChat = async file => {
+    const body = document.getElementsByClassName('styleChatWindow')[0]
+    body.style.cursor = 'progress'
+    try {
+      const response = await fetch(file.localUrl)
+      const blob = await response.blob()
+      const link = document.createElement('a')
+      link.href = window.URL.createObjectURL(blob)
+      link.setAttribute('download', file.name)
+      link.click()
+      body.style.cursor = null
+    } catch (error) {
+      console.error('Error downloading file:', error)
+      body.style.cursor = null
+    }
+  }
 
   return {
     chats,
     activeChat,
     isNewMessage,
+    loading,
     openChat,
     goToChat,
     getChats,
     sendNewMessage,
     markAsRead,
     markUserAsOnlineOffline,
+    downloadFileFromChat,
   }
 })

@@ -1,45 +1,31 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
-import { getLineAvatar } from '~/firebase/getLineAvatar'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { useDate } from '~/composables'
 import { statuses } from '~/constants/statuses'
 import { useChatStore } from '~/stores/chat.store'
+import { useBookingHistoryStore } from '~/stores/bookingHistory.store'
 
 const props = defineProps({
   commitment: Object,
 })
 const emit = defineEmits(['close', 'approveCommitment', 'completeCommitment', 'declineCommitment'])
-const { bookings } = useBookingsStore()
+const bookingStore = useBookingsStore()
+const bookingHistoryStore = useBookingHistoryStore()
 const { getFormattedDate } = useDate()
 const { goToChat } = useChatStore()
 const checkCommitmentStatus = () => {
   return props.commitment?.timeline?.some(({ title }) => title.includes('approved'))
 }
 const isPending = props.commitment?.status === statuses.pending
-const details = checkCommitmentStatus()
-  ? ref([
-      { name: 'Company name', value: 'FedEx Freight' },
-      { name: 'SCAC', value: 'ABCD' },
-      { name: 'Name', value: 'Vitaliy' },
-      { name: 'Contact number', value: '0123456789' },
-      { name: 'Secondary name', value: '0123456789' },
-      { name: 'Secondary number', value: '--' },
-      { name: 'Email', value: 'fedex.freight@mail.com' },
-      { name: 'Safer link', value: '2' },
-      { name: 'Number of truckers', value: '20' },
-      { name: 'Insurance amount', value: '250.000-500.000' },
-      { name: 'Authorized for Overweight', value: 'No' },
-    ])
-  : ref([
-      { name: 'Company name', value: 'FedEx Freight' },
-      { name: 'SCAC', value: 'ABCD' },
-      ...(!isPending ? [{ name: 'Email', value: 'fedex.freight@mail.com' }] : []),
-      { name: 'Safer link', value: '2' },
-      { name: 'Number of truckers', value: '20' },
-      { name: 'Insurance amount', value: '250.000-500.000' },
-      { name: 'Authorized for Overweight', value: 'No' },
-    ])
+let details = ref([
+  { name: 'Company name', value: 'FedEx Freight' },
+  { name: 'SCAC', value: 'ABCD' },
+  { name: 'Safer link', value: '2' },
+  { name: 'Number of truckers', value: '20' },
+  { name: 'Insurance amount', value: '250.000-500.000' },
+  { name: 'Authorized for Overweight', value: 'No' },
+])
 const openedPanel = ref([0])
 const {
   ref: bookingRef,
@@ -51,7 +37,23 @@ const {
   line,
   size,
   location,
-} = bookings.find(i => i.id === props.commitment.bookingId)
+} = bookingStore.bookings.find(i => i.id === props.commitment.bookingId) ||
+bookingHistoryStore.bookings.find(i => i.id === props.commitment.bookingId)
+
+onMounted(async () => {
+  if (checkCommitmentStatus()) {
+    details.value = [
+      ...details.value,
+      ...[
+        { name: 'Email', value: 'fedex.freight@mail.com' },
+        { name: 'Name', value: 'Vitaliy' },
+        { name: 'Contact number', value: '0123456789' },
+        { name: 'Secondary name', value: '0123456789' },
+        { name: 'Secondary number', value: '--' },
+      ],
+    ]
+  }
+})
 </script>
 
 <template>
@@ -164,24 +166,23 @@ const {
                 <Typography type="text-body-s-regular"> Status </Typography>
                 <Classification
                   type="status"
-                  :value="commitment.status"
+                  :value="status"
                   class="w-min h-fit ml-auto"
                 />
-                <template
-                  v-if="
-                    commitment.status === statuses.declined ||
-                    commitment.status === statuses.incomplete
-                  "
-                >
+                <!--
+                  <template v-if="reason">
                   <Typography type="text-body-s-regular"> Reason </Typography>
                   <Typography
-                    type="text-body-s-regular text-end"
-                    :color="getColor('textSecondary')"
+                  type="text-body-s-regular text-end"
+                  :color="getColor('textSecondary')"
                   >
-                    {{ commitment.reason }}
+                  {{ reason }}
                   </Typography>
-                </template>
-                <Typography type="text-body-s-regular"> Loading date </Typography>
+                  </template>
+                -->
+                <Typography type="text-body-s-regular">
+                  Loading date
+                </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
@@ -195,13 +196,16 @@ const {
                 >
                   {{ commodity }}
                 </Typography>
-                <Typography type="text-body-s-regular"> Line </Typography>
-                <img
-                  :src="getLineAvatar(line.id)"
-                  :alt="line.label"
-                  class="h-8 ml-auto"
+                <Typography type="text-body-s-regular">
+                  Line
+                </Typography>
+                <LineAvatar
+                  :line="line"
+                  class="ml-auto"
                 />
-                <Typography type="text-body-s-regular"> Size </Typography>
+                <Typography type="text-body-s-regular">
+                  Size
+                </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
@@ -243,13 +247,15 @@ const {
       />
       <div class="styledCommitActionsBtns static md:fixed bottom-8 flex pt-8 gap-4">
         <Button
-          v-if="commitment.status === statuses.approved"
+          v-if="commitment.status === statuses.approved && status !== statuses.paused"
           @click="emit('completeCommitment', commitment.id)"
         >
           complete
         </Button>
-        <template v-if="isPending">
-          <Button @click="emit('approveCommitment', commitment)"> approve </Button>
+        <template v-if="isPending && status !== statuses.paused">
+          <Button @click="emit('approveCommitment', commitment)">
+            approve
+          </Button>
           <Button
             variant="outlined"
             data="secondary1"

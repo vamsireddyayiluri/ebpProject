@@ -3,7 +3,13 @@ import { doc, updateDoc } from 'firebase/firestore'
 import { useAlertStore } from '~/stores/alert.store'
 import { useAuthStore } from '~/stores/auth.store'
 import { useDate } from '~/composables'
-import { getDownloadURL, ref as firebaseRef, uploadBytes, deleteObject, list } from 'firebase/storage'
+import {
+  getDownloadURL,
+  ref as firebaseRef,
+  uploadBytes,
+  deleteObject,
+  list,
+} from 'firebase/storage'
 import {
   EmailAuthProvider,
   reauthenticateWithCredential,

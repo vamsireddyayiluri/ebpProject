@@ -70,6 +70,7 @@ const cancelCommit = async reason => {
   })
   cancelCommitDialog.value.show(false)
 }
+
 onMounted(async () => {
   await bookingStore.getBookings({ draft: false })
   const q = await query(
@@ -165,7 +166,10 @@ onMounted(async () => {
           <Typography class="leading-10">
             <b>ref</b>: {{ c.ref }}
           </Typography>
-          <Button v-if="c.status === statuses.pending" @click="openCancelDialog(c)">
+          <Button
+            v-if="c.status === statuses.pending"
+            @click="openCancelDialog(c)"
+          >
             cancel
           </Button>
         </Card>
@@ -182,7 +186,11 @@ onMounted(async () => {
         sub-title="Choose the reason why you want to cancel reservation for container "
         select-label="Cancellation reason *"
         btn-name="Cancel"
-        :reason-list="[canceledCodes.capacityNotAvailable, canceledCodes.equipmentNotAvailable, canceledCodes.other]"
+        :reason-list="[
+          canceledCodes.capacityNotAvailable,
+          canceledCodes.equipmentNotAvailable,
+          canceledCodes.other,
+        ]"
         @close="cancelCommitDialog.show(false)"
         @onReport="cancelCommit"
       />

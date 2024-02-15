@@ -107,7 +107,7 @@ describe('Create commitments to booking', () => {
 
     getSelectedCommitmentRow(commitmentData, truckerCompany1)
 
-    cy.get('@committmentRow').find(`.v-col[data-column="status"]`).should('contain', 'pending')
+    cy.get('@committmentRow').find(`.v-col[data-column="status"]`).should('contain', 'Pending')
     cy.get('@committmentRow').find('button').find('.mdi-dots-vertical').click()
     cy.get('.v-overlay__content > .v-list > .v-list-item')
       .contains('View trucker details')
@@ -161,7 +161,7 @@ describe('Create commitments to booking', () => {
       .click()
     cy.get('@detailsCard').should('not.exist')
     cy.wait(1000)
-    cy.get('@committmentRow').find(`.v-col[data-column="status"]`).should('contain', 'approved')
+    cy.get('@committmentRow').find(`.v-col[data-column="status"]`).should('contain', 'Approved')
 
     // Complete commitment
     cy.get('@committmentRow').find('button').find('.mdi-dots-vertical').click()
@@ -200,7 +200,7 @@ describe('Create commitments to booking', () => {
     cy.get('@bookingDetails')
       .find('.v-expansion-panel-text')
       .find('.variant-status')
-      .contains('approved', { matchCase: false })
+      .contains('Approved', { matchCase: false })
 
     cy.get('.v-overlay__content > .v-card')
       .as('approveDetailsCard')
@@ -226,7 +226,7 @@ describe('Create commitments to booking', () => {
       .as('confirm')
     cy.get('@completeCommitmentDialog').find('.v-select').should('be.visible').click()
     cy.get('.v-overlay__content > .v-list > .v-list-item')
-      .contains('Never onboarded', { matchCase: false })
+      .contains('Never Onboarded', { matchCase: false })
       .click()
     cy.getInputByLabel('Add your reason *').type(`${reasonCode.declineReason}`)
     cy.get('@completeCommitmentDialog')
@@ -289,7 +289,7 @@ describe('Create commitments to booking', () => {
       .find(`:contains(${truckerCompany1.truckerScac})`)
       .parent()
       .parent()
-      .find(`.v-col[data-column="status"] :contains('pending')`)
+      .find(`.v-col[data-column="status"] :contains('Pending')`)
       .parent()
       .parent()
       .as('committmentRow')
@@ -332,8 +332,7 @@ describe('Create commitments to booking', () => {
       .should('be.visible')
       .click()
     cy.get('.v-dialog').should('have.length', 2).last().as('declineDialog')
-    cy.get('@declineDialog').contains('Decline commitment')
-
+    cy.get('.v-overlay__content > .v-card ').as('declineDialog').contains('Decline commitment')
     cy.get('@declineDialog').find('button[type="button"]').should('be.disabled').contains('decline')
     cy.get('@declineDialog').find('.v-select').click()
     cy.get('.v-overlay__content > .v-list > .v-list-item')
@@ -357,7 +356,7 @@ describe('Create commitments to booking', () => {
       .find(`:contains(${truckerCompany1.truckerScac})`)
       .parent()
       .parent()
-      .find(`.v-col[data-column="status"] :contains('declined')`)
+      .find(`.v-col[data-column="status"] :contains('Declined')`)
       .parent()
       .parent()
       .as('committmentRow')
@@ -382,7 +381,7 @@ describe('Create commitments to booking', () => {
     //   .contains(`${reasonCode.declineReason}`, { matchCase: false })
     //   .and('contain', 'declined')
 
-    cy.get('@bookingDetails').find('div').contains('declined', { matchCase: false })
+    cy.get('@bookingDetails').find('div').contains('Declined', { matchCase: false })
 
     cy.get('@declineDialog').find('.mdi-close').click()
 
@@ -402,7 +401,7 @@ describe('Create commitments to booking', () => {
 
     // cy.get('@selectedRow').find(`.v-col[data-column="progress"]`).first().contains('0%')
 
-    cy.get('@committmentRow').find(`.v-col[data-column="status"] `).should('contain', 'pending')
+    cy.get('@committmentRow').find(`.v-col[data-column="status"] `).should('contain', 'Pending')
 
     cy.get('@committmentRow').find('button').find('.mdi-dots-vertical').click()
 
@@ -413,7 +412,7 @@ describe('Create commitments to booking', () => {
       .and('have.length', 3)
 
     cy.get('.v-overlay__content > .v-list > .v-list-item').contains('Approve').click()
-    cy.get('@committmentRow').find(`.v-col[data-column="status"]`).should('contain', 'approved')
+    cy.get('@committmentRow').find(`.v-col[data-column="status"]`).should('contain', 'Approved')
 
     // cy.get('@selectedRow').find(`.v-col[data-column="status"]`).should('contain', 'pending')
 
@@ -443,7 +442,7 @@ describe('Create commitments to booking', () => {
       .contains('Onboarded', { matchCase: true })
       .click()
     cy.get('@confirm').click()
-    cy.get('@committmentRow').find(`.v-col[data-column="status"] `).should('contain', 'onboarded')
+    cy.get('@committmentRow').find(`.v-col[data-column="status"] `).should('contain', 'Onboarded')
 
     // cy.get('@selectedRow').find(`.v-col[data-column="status"]`).should('contain', 'completed')
   })

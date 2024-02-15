@@ -1,6 +1,5 @@
 <script setup>
 import { useActions, useDate, useHeaders } from '~/composables'
-import { getLineAvatar } from '~/firebase/getLineAvatar'
 import { useDisplay } from 'vuetify'
 import { getYardBookingLoad, getBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
@@ -106,7 +105,7 @@ onMounted(() => {
         class="pl-16"
       >
         <template #ref="{ item }">
-          <Typography type="text-body-m-regular">
+          <FlexTypography type="text-body-m-regular">
             <Highlighter
               v-if="searchValue"
               :query="searchValue"
@@ -116,7 +115,10 @@ onMounted(() => {
             <template v-else>
               {{ item.ref }}
             </template>
-          </Typography>
+          </FlexTypography>
+        </template>
+        <template #containers="{ item }">
+          <Typography> {{ item.committed }}/{{ item.containers }} </Typography>
         </template>
         <template #yardLabel="{ item }">
           <FlexTypography type="text-body-m-regular">
@@ -124,10 +126,28 @@ onMounted(() => {
           </FlexTypography>
         </template>
         <template #ssl="{ item }">
-          <img
-            :src="getLineAvatar(item.line.id)"
-            :alt="item.line.label"
-            class="h-8"
+          <LineAvatar :line="item.line" />
+        </template>
+        <template #size="{ item }">
+          <Typography>
+            <template v-if="item.flexibleBooking">
+              <template
+                v-for="i in item.size"
+                :key="i"
+              >
+                {{ i }}
+                <br>
+              </template>
+            </template>
+            <template v-else>
+              {{ item.size }}
+            </template>
+          </Typography>
+        </template>
+        <template #status="{ item }">
+          <Classification
+            type="status"
+            :value="item.status"
           />
         </template>
         <template #bookingExpiry="{ item }">
@@ -153,7 +173,8 @@ onMounted(() => {
         </template>
         <template #actions="{ item, selected }">
           <MenuActions
-            :actions="() => bookingsActions(item.status)"
+            :disabled="bookingsActions(item).length > 0 ? false : true"
+            :actions="() => bookingsActions(item)"
             :selected="selected"
             :container="item"
             @containerActionHandler="containerActionHandler"
