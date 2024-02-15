@@ -14,8 +14,8 @@ const messageActions = [
 
 const { userData } = useAuthStore()
 const alertStore = useAlertStore()
-const { openChat, sendNewMessage, markAsRead, markUserAsOnlineOffline } = useChatStore()
-const { chats, activeChat } = storeToRefs(useChatStore())
+const { openChat, sendNewMessage, markAsRead, markUserAsOnlineOffline, downloadFileFromChat } = useChatStore()
+const { chats, activeChat, loading } = storeToRefs(useChatStore())
 const currentUserId = ref(userData.userId)
 const router = useRouter()
 
@@ -62,10 +62,12 @@ onBeforeUnmount(async () => {
       :menu-action="messageActions"
       :chats="chats"
       :active-chat-id="activeChat?.chatId"
+      :loading="loading"
       @messageActionHandler="messageActionHandler"
       @openChat="openChat"
       @sendMessage="sendMessage"
       @onChatArea="onChatArea"
+      @downloadFile="downloadFileFromChat"
     />
   </Main>
 </template>
