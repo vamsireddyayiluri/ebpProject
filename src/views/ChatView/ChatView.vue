@@ -14,7 +14,8 @@ const messageActions = [
 
 const { userData } = useAuthStore()
 const alertStore = useAlertStore()
-const { openChat, sendNewMessage, markAsRead, markUserAsOnlineOffline, downloadFileFromChat } = useChatStore()
+const { openChat, sendNewMessage, markAsRead, markUserAsOnlineOffline, downloadFileFromChat } =
+  useChatStore()
 const { chats, activeChat, loading } = storeToRefs(useChatStore())
 const currentUserId = ref(userData.userId)
 const router = useRouter()

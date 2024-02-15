@@ -137,14 +137,17 @@ export const useChatStore = defineStore('chat', () => {
         await Promise.all(
           files.map(async blob => {
             const file = new File([blob.blob], blob.name, { type: blob.type })
-            const fileRef = await firebaseRef(storage, `chats/${chatId}/${newMessage.id}/${file.name}`)
+            const fileRef = await firebaseRef(
+              storage,
+              `chats/${chatId}/${newMessage.id}/${file.name}`,
+            )
             await uploadBytes(fileRef, file)
             const url = await getDownloadURL(fileRef)
             const fileData = {
               localUrl: url,
-              "name": file.name,
-              "size": file.size,
-              "type": file.type,
+              name: file.name,
+              size: file.size,
+              type: file.type,
             }
             fileUrls.push(fileData)
           }),
@@ -250,7 +253,7 @@ export const useChatStore = defineStore('chat', () => {
   }
   const downloadFileFromChat = async file => {
     const body = document.getElementsByClassName('styleChatWindow')[0]
-    body.style.cursor = "progress"
+    body.style.cursor = 'progress'
     try {
       const response = await fetch(file.localUrl)
       const blob = await response.blob()
