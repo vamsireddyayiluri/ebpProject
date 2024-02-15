@@ -36,7 +36,7 @@ export const bookingsActions = item => {
   if (item.committed === item.containers) {
     return []
   }
-  
+
   return actions
 }
 export const draftsActions = () => [
