@@ -3,25 +3,32 @@ import { Main } from '@layouts'
 import { useAuthStore } from '~/stores/auth.store'
 
 const authStore = useAuthStore()
-const tab = ref(0)
+const router = useRouter()
 const tabs = [
   {
     label: 'Booking',
   },
   {
     label: 'Yards',
+    to: 'yards',
   },
   {
     label: 'Drafts',
+    to: 'drafts',
   },
   {
     label: 'Booking history',
+    to: 'bookingHistory',
   },
 ]
 const mapToggled = ref(false)
 
 const toggleMap = () => {
   mapToggled.value = !mapToggled.value
+}
+const tab = computed(() => tabs.findIndex(i => i.to === router.currentRoute.value.query.tab))
+const handleTabChange = async value => {
+  await router.push({ query: { tab: tabs[value].to} })
 }
 watch(tab, () => (mapToggled.value = false))
 </script>
@@ -39,6 +46,7 @@ watch(tab, () => (mapToggled.value = false))
           :items="tabs"
           v-bind="props"
           class="mr-[90px]"
+          @update:modelValue="handleTabChange"
         />
       </template>
       <template
