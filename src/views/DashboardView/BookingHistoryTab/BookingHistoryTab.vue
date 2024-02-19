@@ -3,7 +3,7 @@ import truckersData from '~/fixtures/truckers.json'
 import { useDisplay } from 'vuetify'
 import { useActions, useDate, useHeaders } from '~/composables'
 import { getColor } from '~/helpers/colors'
-import { useBookingHistoryStore } from '~/stores/bookingHistory.store'
+import { useBookingsStore } from '~/stores/bookings.store'
 import { storeToRefs } from 'pinia'
 import { statuses } from '~/constants/statuses'
 import { getAllLines } from '@qualle-admin/qutil/dist/ssl'
@@ -11,7 +11,7 @@ import { filterMatchingObjects } from '~/helpers/filters'
 import moment from 'moment-timezone'
 import { json2csv } from 'json-2-csv'
 
-const bookingsStore = useBookingHistoryStore()
+const bookingsStore = useBookingsStore()
 const { loading } = storeToRefs(bookingsStore)
 const { getCommitmentsByBookingId, closeBookingExpansion } = bookingsStore
 const { smAndDown } = useDisplay()
@@ -22,8 +22,8 @@ const router = useRouter()
 const statistics = ref(truckersData)
 const tableHeight = ref(0)
 const searchValue = ref(null)
-const mutableSearchedEntities = ref(bookingsStore.bookings)
-const mutableFilteredEntities = ref(bookingsStore.bookings)
+const mutableSearchedEntities = ref(bookingsStore.pastBookings)
+const mutableFilteredEntities = ref(bookingsStore.pastBookings)
 const removeBookingDialog = ref(null)
 const commitmentDetailsDialog = ref(null)
 const filters = ref({
@@ -61,7 +61,7 @@ const onClearSearch = () => {
   loading.value = true
 
   setTimeout(() => {
-    computedSearchedEntities.value = bookingsStore.bookings
+    computedSearchedEntities.value = bookingsStore.pastBookings
 
     loading.value = false
   }, 1000)
@@ -72,7 +72,7 @@ const debouncedSearch = useDebounceFn(searchValue => {
     onClearSearch()
   } else {
     computedSearchedEntities.value = useArrayFilter(
-      bookingsStore.bookings,
+      bookingsStore.pastBookings,
       ({ ref, line: { label }, location: { label: address } }) =>
         useArraySome(
           useArrayMap(Object.values({ ref, label, address }), value => String(value).toLowerCase())
@@ -83,7 +83,7 @@ const debouncedSearch = useDebounceFn(searchValue => {
   }
 }, 300)
 const applyFilter = () => {
-  let filteredData = bookingsStore.bookings
+  let filteredData = bookingsStore.pastBookings
 
   if (filters.value.line) {
     filteredData = useArrayFilter(
@@ -119,7 +119,7 @@ const containerActionHandler = ({ action, e }) => {
   }
 }
 const removeBooking = async id => {
-  await bookingsStore.deleteHistoryBooking(id)
+  await bookingsStore.deleteBooking(id, false, true)
   removeBookingDialog.value.show(false)
 }
 const onSelectRow = e => {
@@ -135,7 +135,7 @@ const rowExpanded = async (event, data) => {
 }
 const downloadData = async () => {
   const options = {}
-  const csv = await json2csv(bookingsStore.bookings, options)
+  const csv = await json2csv(bookingsStore.pastBookings, options)
   const csvContent = 'data:text/csv;charset=utf-8,' + csv
   const encodedUri = encodeURI(csvContent)
   const link = document.createElement('a')
@@ -147,8 +147,8 @@ const downloadData = async () => {
 }
 onMounted(async () => {
   await bookingsStore.getBookingHistory()
-  computedSearchedEntities.value = bookingsStore.bookings
-  computedFilteredEntities.value = bookingsStore.bookings
+  computedSearchedEntities.value = bookingsStore.pastBookings
+  computedFilteredEntities.value = bookingsStore.pastBookings
 })
 const tableId = 'bookingsHistoryTable'
 onMounted(() => {

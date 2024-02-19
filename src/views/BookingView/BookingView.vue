@@ -27,14 +27,17 @@ const authStore = useAuthStore()
 const alertStore = useAlertStore()
 
 const { userData } = authStore
-const { getBookings, getBooking, publishDraft, removeFromNetwork, deleteBooking, updateBooking } =
-  useBookingsStore()
 const {
-  getBooking: getBookingInHistory,
-  deleteHistoryBooking,
+  getBookings,
+  getBooking,
+  publishDraft,
+  removeFromNetwork,
+  deleteBooking,
+  updateBooking,
   reactivateBooking,
   duplicateBooking,
-} = useBookingHistoryStore()
+} = useBookingsStore()
+
 const workDetailsStore = useWorkDetailsStore()
 const { yards } = storeToRefs(workDetailsStore)
 const { bookings, drafts } = storeToRefs(useBookingsStore())
@@ -100,11 +103,7 @@ const openRemoveDialog = () => {
   removeBookingDialog.value.data = booking.value
 }
 const deleteFromPlatform = async () => {
-  if (fromHistory) {
-    await deleteHistoryBooking(booking.value.id)
-  } else {
-    await deleteBooking(booking.value.id, fromDraft)
-  }
+  await deleteBooking(booking.value.id, fromDraft, fromHistory)
   router.push('/dashboard')
 }
 const handleAction = async e => {
@@ -182,7 +181,7 @@ const cancelChanges = async () => {
   if (expired.value || completed.value) {
     activated.value = false
     hideChip.value = false
-    booking.value = await getBookingInHistory(route.params.id)
+    booking.value = await getBooking({ id: route.params.id })
 
     return
   }
@@ -219,7 +218,7 @@ const validateExpiryDates = () => {
 onMounted(async () => {
   loading.value = true
   if (fromHistory) {
-    booking.value = await getBookingInHistory(route.params.id)
+    booking.value = await getBooking({ id: route.params.id })
     if (queryParams.activated) {
       animate()
     }

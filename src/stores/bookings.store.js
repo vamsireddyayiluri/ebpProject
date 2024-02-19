@@ -25,34 +25,46 @@ import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
 export const useBookingsStore = defineStore('bookings', () => {
   const alertStore = useAlertStore()
   const authStore = useAuthStore()
-  const { setBooking } = useBookingHistoryStore()
   const { preferredTruckers } = usePreferredTruckersStore()
   let bookings = ref([])
+  let pastBookings = ref([])
   const drafts = ref([])
   const loading = ref(false)
+  const getallBookings = async () => {
+    const { orgId } = authStore.userData
 
+    const bookingsQuery = query(collection(db, 'bookings'), where('orgId', '==', orgId))
+
+    const querySnapshot = await getDocs(bookingsQuery)
+    const dataPromises = querySnapshot.docs.map(async doc => {
+      // const commitments = await getCommitments(doc.data().id)
+      return { ...doc.data(), entities: [] }
+    })
+    const data = await Promise.all(dataPromises)
+    bookings.value = data.sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
+    await validateBookingsExpiry(data)
+  }
   const getBookings = async ({ draft = false }) => {
     loading.value = true
     const { orgId } = authStore.userData
     if (draft) {
       const draftsQuery = query(collection(db, 'drafts'), where('orgId', '==', orgId))
       const querySnapshot = await getDocs(draftsQuery)
-      drafts.value = querySnapshot.docs
-        .map(doc => doc.data())
-        .sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
+      drafts.value = querySnapshot.docs.map(doc => doc.data())
     } else {
-      const bookingsQuery = query(collection(db, 'bookings'), where('orgId', '==', orgId))
-
-      const querySnapshot = await getDocs(bookingsQuery)
-      const dataPromises = querySnapshot.docs.map(async doc => {
-        // const commitments = await getCommitments(doc.data().id)
-        return { ...doc.data(), entities: [] }
-      })
-      const data = await Promise.all(dataPromises)
-      bookings.value = data.sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
-
-      await validateBookingsExpiry(data)
+      await getallBookings()
+      bookings.value = bookings.value.filter(
+        booking => booking.status !== statuses.completed && booking.status !== statuses.expired,
+      )
     }
+    loading.value = false
+  }
+  const getBookingHistory = async () => {
+    loading.value = true
+    await getallBookings()
+    pastBookings.value = bookings.value.filter(
+      booking => booking.status === statuses.completed || booking.status === statuses.expired,
+    )
     loading.value = false
   }
   const getCommitmentsByBookingId = async bookingId => {
@@ -76,21 +88,20 @@ export const useBookingsStore = defineStore('bookings', () => {
   const validateBookingsExpiry = async bookings => {
     const today = getLocalServerTime(moment(), 'America/Los_Angeles')
     for (const b of bookings) {
-      if (moment(b.loadingDate).isBefore(moment(today)) || b.status === 'completed') {
-        await moveToHistory(b)
+      if (moment(b.bookingExpiry).isBefore(moment(today)) || b.status === 'completed') {
+        await updateBooking(
+          {
+            ...b,
+            status: b?.status === 'completed' ? b?.status : statuses.expired,
+            updatedAt: getLocalTime().format(),
+          },
+          'bookings',
+          true,
+        )
       }
     }
   }
-  const moveToHistory = async booking => {
-    try {
-      await deleteDoc(doc(db, 'bookings', booking.id))
-      let indexToDelete = bookings.value.findIndex(bookingobj => bookingobj.id === booking.id)
-      bookings.value.splice(indexToDelete, 1)
-      setBooking(booking)
-    } catch ({ message }) {
-      alertStore.warning({ content: 'Did not move to history' + message })
-    }
-  }
+
   const getBooking = async ({ id, draft = false }) => {
     loading.value = true
     try {
@@ -164,7 +175,26 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.warning({ content: message })
     }
   }
-  const deleteBooking = async (id, draft = false) => {
+  const duplicateBooking = async booking => {
+    const bookingId = uid(28)
+
+    try {
+      await setDoc(doc(collection(db, 'bookings'), bookingId), {
+        ...booking,
+        committed: 0,
+        entities: [],
+        createdAt: getLocalTime().format(),
+        updatedAt: getLocalTime().format(),
+        entities: [],
+        carriers: [],
+        status: '',
+      })
+      alertStore.info({ content: 'Duplicated booking' })
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
+  const deleteBooking = async (id, draft = false, fromHistory = false) => {
     try {
       if (draft) {
         const index = drafts.value.findIndex(i => i.id === id)
@@ -173,6 +203,14 @@ export const useBookingsStore = defineStore('bookings', () => {
           await deleteDoc(doc(db, 'drafts', id))
           alertStore.info({ content: 'Draft was deleted' })
         } else alertStore.warning({ content: 'Draft not found' })
+      } else if (fromHistory) {
+        const index = pastBookings.value.findIndex(i => i.id === id)
+        debugger
+        if (index > -1) {
+          pastBookings.value.splice(index, 1)
+          await deleteDoc(doc(db, 'bookings', id))
+          alertStore.info({ content: 'Bookings removed!' })
+        }
       } else {
         const index = bookings.value.findIndex(i => i.id === id)
         if (index > -1) {
@@ -197,6 +235,23 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.warning({ content: message })
     }
   }
+  const reactivateBooking = async booking => {
+    const bookingId = uid(28)
+    try {
+      await deleteDoc(doc(db, 'bookings', booking.id))
+      await setDoc(doc(collection(db, 'bookings'), bookingId), {
+        ...booking,
+        committed: 0,
+        id: bookingId,
+        status: statuses.active,
+        updatedAt: getLocalTime().format(),
+        carriers: [],
+      })
+      alertStore.info({ content: 'Reactivated booking' })
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
   const removeFromNetwork = async booking => {
     try {
       const newDraft = createBookingObj(booking)
@@ -210,12 +265,14 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.warning({ content: message })
     }
   }
-  const updateBooking = async (booking, collectionName) => {
+  const updateBooking = async (booking, collectionName, completedStatus = false) => {
     try {
       await updateDoc(doc(db, collectionName, booking.id), { ...booking })
-      alertStore.info({
-        content: `${capitalize(collectionName).charAt(0) + collectionName.slice(1)} updated`,
-      })
+      if (!completedStatus) {
+        alertStore.info({
+          content: `${capitalize(collectionName).charAt(0) + collectionName.slice(1)} updated`,
+        })
+      }
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
@@ -250,6 +307,7 @@ export const useBookingsStore = defineStore('bookings', () => {
 
   return {
     bookings,
+    pastBookings,
     drafts,
     loading,
     getBookings,
@@ -262,8 +320,11 @@ export const useBookingsStore = defineStore('bookings', () => {
     removeFromNetwork,
     updateBooking,
     updateBookingStatus,
+    getBookingHistory,
+    reactivateBooking,
     updateBookingStore,
     reset,
+    duplicateBooking,
     closeBookingExpansion,
   }
 })

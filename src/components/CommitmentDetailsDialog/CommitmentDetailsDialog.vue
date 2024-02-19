@@ -4,14 +4,12 @@ import { useBookingsStore } from '~/stores/bookings.store'
 import { useDate } from '~/composables'
 import { statuses } from '~/constants/statuses'
 import { useChatStore } from '~/stores/chat.store'
-import { useBookingHistoryStore } from '~/stores/bookingHistory.store'
 
 const props = defineProps({
   commitment: Object,
 })
 const emit = defineEmits(['close', 'approveCommitment', 'completeCommitment', 'declineCommitment'])
 const bookingStore = useBookingsStore()
-const bookingHistoryStore = useBookingHistoryStore()
 const { getFormattedDate } = useDate()
 const { goToChat } = useChatStore()
 const checkCommitmentStatus = () => {
@@ -37,8 +35,7 @@ const {
   line,
   size,
   location,
-} = bookingStore.bookings.find(i => i.id === props.commitment.bookingId) ||
-bookingHistoryStore.bookings.find(i => i.id === props.commitment.bookingId)
+} = bookingStore.bookings.find(i => i.id === props.commitment.bookingId)
 
 onMounted(async () => {
   if (checkCommitmentStatus()) {
