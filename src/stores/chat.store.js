@@ -52,7 +52,7 @@ export const useChatStore = defineStore('chat', () => {
 
   //open chat and mark all message as read
   const openChat = async chatId => {
-    await router.push({ query: { id: chatId } })
+    await router.replace({ query: { id: chatId } })
     activeChat.value = chats.value.find(i => i.chatId === chatId)
     await markAsRead(chatId)
   }
