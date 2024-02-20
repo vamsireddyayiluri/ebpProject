@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import { useAlertStore } from '~/stores/alert.store'
-import { useBookingHistoryStore } from '~/stores/bookingHistory.store'
 
 import { uid } from 'uid'
 import {

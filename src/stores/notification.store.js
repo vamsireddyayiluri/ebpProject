@@ -107,7 +107,7 @@ export const useNotificationStore = defineStore('notification', () => {
             showAlert(change.doc.data().list.at(-1))
           }
         })
-        notifications.value = list.reverse() || []
+        notifications.value = list?.reverse() || []
       })
     } catch ({ message }) {
       alertStore.warning({ content: message })

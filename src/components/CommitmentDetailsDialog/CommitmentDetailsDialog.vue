@@ -60,7 +60,7 @@ onMounted(async () => {
       <IconButton
         icon="mdi-message-text"
         class="mr-2"
-        @click="goToChat('6srEzErbjIW4bL9gQUNbI51BGlE3')"
+        @click="goToChat(props.commitment)"
       >
         <Tooltip> Go to chat </Tooltip>
       </IconButton>
@@ -177,9 +177,7 @@ onMounted(async () => {
                   </Typography>
                   </template>
                 -->
-                <Typography type="text-body-s-regular">
-                  Loading date
-                </Typography>
+                <Typography type="text-body-s-regular"> Loading date </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
@@ -193,16 +191,12 @@ onMounted(async () => {
                 >
                   {{ commodity }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Line
-                </Typography>
+                <Typography type="text-body-s-regular"> Line </Typography>
                 <LineAvatar
                   :line="line"
                   class="ml-auto"
                 />
-                <Typography type="text-body-s-regular">
-                  Size
-                </Typography>
+                <Typography type="text-body-s-regular"> Size </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
@@ -238,7 +232,7 @@ onMounted(async () => {
         Timeline
       </Typography>
       <Timeline
-        :items="commitment.timeline"
+        :items="commitment.timeLine"
         variant="vertical"
         class="scrollbar overflow-auto md:mb-10"
       />
@@ -250,9 +244,7 @@ onMounted(async () => {
           complete
         </Button>
         <template v-if="isPending && status !== statuses.paused">
-          <Button @click="emit('approveCommitment', commitment)">
-            approve
-          </Button>
+          <Button @click="emit('approveCommitment', commitment)"> approve </Button>
           <Button
             variant="outlined"
             data="secondary1"

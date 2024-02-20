@@ -42,8 +42,8 @@ export const useChatStore = defineStore('chat', () => {
   // check if chat exist and return id
   const checkIfExist = async userId => {
     const chatsQuery = await query(
-      collection(db, 'chats'),
-      where('userIds', 'array-contains', userId),
+      collection(db, 'chatExporter'),
+      where('userIds', 'array-contains', userId && authStore.userData.userId),
     )
     const chatDocs = await getDocs(chatsQuery)
 
@@ -54,24 +54,25 @@ export const useChatStore = defineStore('chat', () => {
   const openChat = async chatId => {
     await router.push({ query: { id: chatId } })
     activeChat.value = chats.value.find(i => i.chatId === chatId)
-    await markAsRead(chatId)
+    // await markAsRead(chatId)
   }
 
   // mark all message as read
   const markAsRead = async chatId => {
-    await updateDoc(doc(db, 'chats', chatId), {
+    await updateDoc(doc(db, 'chatExporter', chatId), {
       unreadCount: 0,
     })
   }
 
   // got to chat page and open or create chat
-  const goToChat = async userId => {
+  const goToChat = async commitment => {
+    const data = toRaw(commitment)
     await router.push('chat')
-    const chatId = await checkIfExist(userId)
+    const chatId = await checkIfExist(data.owner)
     if (chatId) {
       await openChat(chatId)
     } else {
-      const user = await getUserById(userId)
+      const user = await getUserById(data.owner)
       await createNewChat(uid(16), user)
     }
   }
@@ -86,20 +87,20 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   const createNewChat = async (chatId, user) => {
-    const receiverAvatar = await getUserPhoto(user.userId)
+    const receiverAvatar = await getUserPhoto(user.user_id)
     const newChat = {
       chatId,
       users: [
         {
-          id: user.userId,
+          id: user.user_id,
           avatar: receiverAvatar,
-          username: user.fullName,
+          username: user.name,
           status: 'online',
         },
         {
           id: authStore.userData.userId,
           avatar: authStore.currentUser.photoURL,
-          username: authStore.userData.fullName,
+          username: authStore.userData.name,
           status: 'online',
         },
       ],
@@ -109,10 +110,10 @@ export const useChatStore = defineStore('chat', () => {
       },
       messages: [],
       unreadCount: 0,
-      userIds: [authStore.userData.userId, user.userId],
+      userIds: [authStore.userData.userId, user.user_id],
     }
     try {
-      await setDoc(doc(db, 'chats', chatId), newChat)
+      await setDoc(doc(db, 'chatExporter', chatId), newChat)
       await openChat(chatId)
     } catch ({ message }) {
       alertStore.warning({ content: message })
@@ -139,7 +140,7 @@ export const useChatStore = defineStore('chat', () => {
             const file = new File([blob.blob], blob.name, { type: blob.type })
             const fileRef = await firebaseRef(
               storage,
-              `chats/${chatId}/${newMessage.id}/${file.name}`,
+              `chatExporter/${chatId}/${newMessage.id}/${file.name}`,
             )
             await uploadBytes(fileRef, file)
             const url = await getDownloadURL(fileRef)
@@ -154,7 +155,7 @@ export const useChatStore = defineStore('chat', () => {
         )
         newMessage.files = fileUrls
       }
-      await updateDoc(doc(db, 'chats', chatId), {
+      await updateDoc(doc(db, 'chatExporter', chatId), {
         messages: arrayUnion(newMessage),
         lastMessage: {
           content: newMessage.content,
@@ -174,7 +175,7 @@ export const useChatStore = defineStore('chat', () => {
       unsubscribeChats()
     }
     const queryByPartialId = await query(
-      collection(db, 'chats'),
+      collection(db, 'chatExporter'),
       where('userIds', 'array-contains', authStore.userData.userId),
     )
 
@@ -216,7 +217,7 @@ export const useChatStore = defineStore('chat', () => {
   }
   const markUserAsOnlineOffline = async status => {
     const queryByPartialId = await query(
-      collection(db, 'chats'),
+      collection(db, 'chatExporter'),
       where('userIds', 'array-contains', authStore.userData.userId),
     )
     try {
