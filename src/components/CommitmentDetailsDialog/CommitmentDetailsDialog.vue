@@ -14,6 +14,7 @@ const bookingStore = useBookingsStore()
 const bookingHistoryStore = useBookingHistoryStore()
 const { getFormattedDate } = useDate()
 const { goToChat } = useChatStore()
+const router = useRouter()
 const checkCommitmentStatus = () => {
   return props.commitment?.timeline?.some(({ title }) => title.includes('approved'))
 }
@@ -53,6 +54,9 @@ onMounted(async () => {
       ],
     ]
   }
+})
+onUnmounted(() => {
+  router.push({query: null})
 })
 </script>
 
