@@ -71,7 +71,7 @@ onMounted(async () => {
 <template>
   <div v-bind="{ ...attrs }">
     <Header
-      :avatar="authStore.currentUser.photoURL"
+      :user="{avatar: authStore.currentUser.photoURL, userName: authStore.userData.fullName}"
       class="default z-10 top-0"
       :items="width < 760 ? mobileMenuItems : items"
       :notifications="notifications"

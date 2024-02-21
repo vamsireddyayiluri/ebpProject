@@ -39,17 +39,6 @@ export const useChatStore = defineStore('chat', () => {
   )
   const today = moment()
 
-  // check if chat exist and return id
-  const checkIfExist = async userId => {
-    const chatsQuery = await query(
-      collection(db, 'chats'),
-      where('userIds', 'array-contains', userId),
-    )
-    const chatDocs = await getDocs(chatsQuery)
-
-    return chatDocs.docs[0]?.id
-  }
-
   //open chat and mark all message as read
   const openChat = async chatId => {
     await router.replace({ query: { id: chatId } })
@@ -66,13 +55,14 @@ export const useChatStore = defineStore('chat', () => {
 
   // got to chat page and open or create chat
   const goToChat = async userId => {
+    const chatId = [userId.substring(0, 12), authStore.userData.userId.substring(0, 12)].sort().join('-')
     await router.push('chat')
-    const chatId = await checkIfExist(userId)
-    if (chatId) {
+    const exist = chats.value.some(c => c.chatId === chatId)
+    if (exist) {
       await openChat(chatId)
     } else {
       const user = await getUserById(userId)
-      await createNewChat(uid(16), user)
+      await createNewChat(chatId, user)
     }
   }
   const getUserById = async userId => {
