@@ -56,7 +56,7 @@ onMounted(async () => {
   }
 })
 onUnmounted(() => {
-  router.push({query: null})
+  router.push({ query: null })
 })
 </script>
 

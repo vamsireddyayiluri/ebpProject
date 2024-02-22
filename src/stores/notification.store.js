@@ -114,8 +114,8 @@ export const useNotificationStore = defineStore('notification', () => {
     }
   }
 
-  const showAlert = ({type, ...rest}) => {
-    alertStore[type]({...rest})
+  const showAlert = ({ type, ...rest }) => {
+    alertStore[type]({ ...rest })
   }
 
   const readAllNotifications = async () => {

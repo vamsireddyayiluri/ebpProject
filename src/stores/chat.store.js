@@ -55,7 +55,9 @@ export const useChatStore = defineStore('chat', () => {
 
   // got to chat page and open or create chat
   const goToChat = async userId => {
-    const chatId = [userId.substring(0, 12), authStore.userData.userId.substring(0, 12)].sort().join('-')
+    const chatId = [userId.substring(0, 12), authStore.userData.userId.substring(0, 12)]
+      .sort()
+      .join('-')
     await router.push('chat')
     const exist = chats.value.some(c => c.chatId === chatId)
     if (exist) {
