@@ -3,9 +3,14 @@ import { storeToRefs } from 'pinia'
 import { useAlertStore } from '~/stores/alert.store'
 
 const alertStore = useAlertStore()
+const router = useRouter()
+
 const { show, alertList } = storeToRefs(useAlertStore())
-const handleLinkClick = async callback => {
-  await callback()
+const handleLinkClick = async ({ callback, route }) => {
+  if (callback) await callback()
+  if (route) {
+    await router.push(route)
+  }
 }
 </script>
 
@@ -29,7 +34,10 @@ const handleLinkClick = async callback => {
           variant="plain"
           height="20"
           class="mt-2 -ml-4"
-          @click="handleLinkClick(a.button.callback), a.close(a.id, 0)"
+          @click="
+            handleLinkClick({ callback: a.button.callback, route: a.button.route }),
+            a.close(a.id, 0)
+          "
         >
           {{ a.button.name }}
         </Button>

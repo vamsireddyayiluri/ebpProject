@@ -62,6 +62,11 @@ const readNotification = async id => {
     await notificationStore.readNotification(id)
   }
 }
+const onNotificationClick = async notification => {
+  if (notification.button.route) {
+    router.push(notification.button.route)
+  }
+}
 onMounted(async () => {
   await notificationStore.getNotifications()
   await chatStore.getChats()
@@ -71,7 +76,7 @@ onMounted(async () => {
 <template>
   <div v-bind="{ ...attrs }">
     <Header
-      :avatar="authStore.currentUser.photoURL"
+      :user="{ avatar: authStore.currentUser.photoURL, userName: authStore.userData.fullName }"
       class="default z-10 top-0"
       :items="width < 760 ? mobileMenuItems : items"
       :notifications="notifications"
@@ -81,6 +86,7 @@ onMounted(async () => {
       @readAll="readAllNotifications"
       @readNotification="readNotification"
       @logout="authStore.logout()"
+      @onNotificationClick="onNotificationClick"
     />
     <slot />
   </div>
