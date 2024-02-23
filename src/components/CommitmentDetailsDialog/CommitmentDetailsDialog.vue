@@ -60,7 +60,7 @@ onMounted(async () => {
       <IconButton
         icon="mdi-message-text"
         class="mr-2"
-        @click="goToChat(props.commitment)"
+        @click="goToChat(props.commitment.truckerOrgId)"
       >
         <Tooltip> Go to chat </Tooltip>
       </IconButton>

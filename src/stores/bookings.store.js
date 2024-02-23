@@ -87,7 +87,7 @@ export const useBookingsStore = defineStore('bookings', () => {
   const validateBookingsExpiry = async bookings => {
     const today = getLocalServerTime(moment(), 'America/Los_Angeles')
     for (const b of bookings) {
-      if (moment(b.bookingExpiry).isBefore(moment(today)) || b.status === 'completed') {
+      if (moment(b.loadingDate).isBefore(moment(today)) || b.status === 'completed') {
         await updateBooking(
           {
             ...b,
@@ -120,7 +120,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     }
   }
   const createBookingObj = booking => {
-    const { userId, name, orgId, type } = userData
+    const { userId, name, orgId, type } = authStore.userData
     const bookingId = uid(28)
 
     return {

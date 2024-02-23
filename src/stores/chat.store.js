@@ -15,6 +15,8 @@ import {
   updateDoc,
   where,
   increment,
+  addDoc,
+  orderBy,
 } from 'firebase/firestore'
 import { db, storage } from '~/firebase'
 import { uid } from 'uid'
@@ -28,52 +30,69 @@ export const useChatStore = defineStore('chat', () => {
   const chats = ref([])
   const activeChat = ref(null)
   const loading = ref(false)
+  const activeChatMessages = ref([])
+  const companies = ref([])
+  const users = ref([])
+
+  // const currentParticipant = computed(() =>
+  //   activeChat.value?.users?.find(i => i.id !== authStore?.userData?.userId),
+  // )
 
   const currentParticipant = computed(() =>
-    activeChat.value?.users?.find(i => i.id !== authStore?.userData?.userId),
+    activeChat.value?.participants?.find(i => i !== authStore?.userData?.orgId),
   )
-  const isNewMessage = computed(() =>
-    chats.value?.some(
-      i => i.unreadCount && i.messages.at(-1).senderId !== authStore.userData.userId,
-    ),
-  )
-  const today = moment()
+
+  // const isNewMessage = computed(() => {
+  //   console.log('chats', chats)
+  //   return chats.value?.some(
+  //     i => i?.unreadCount && i?.messages?.at(-1)?.senderId !== authStore?.userData?.userId,
+  //   )
+  // })
 
   // check if chat exist and return id
-  const checkIfExist = async userId => {
+  const checkIfExist = async orgId => {
     const chatsQuery = await query(
-      collection(db, 'chatExporter'),
-      where('userIds', 'array-contains', userId && authStore.userData.userId),
+      collection(db, 'exporterChat'),
+      where('participants', 'array-contains', authStore.userData.orgId),
     )
     const chatDocs = await getDocs(chatsQuery)
-
-    return chatDocs.docs[0]?.id
+    if (!chatDocs.empty) {
+      const chatDoc = chatDocs.docs.find(doc => doc.data().participants.includes(orgId))
+      return chatDoc?.id
+    } else {
+      return null
+    }
   }
 
   //open chat and mark all message as read
   const openChat = async chatId => {
     await router.push({ query: { id: chatId } })
     activeChat.value = chats.value.find(i => i.chatId === chatId)
-    // await markAsRead(chatId)
+    await getMessagesBychatId(chatId)
+    await markAsRead(chatId)
   }
 
   // mark all message as read
   const markAsRead = async chatId => {
-    await updateDoc(doc(db, 'chatExporter', chatId), {
-      unreadCount: 0,
-    })
+    await setDoc(
+      doc(db, 'exporterChat', chatId),
+      {
+        unreadCounts: { [authStore.userData.orgId]: 0 },
+      },
+      { merge: true },
+    )
   }
 
   // got to chat page and open or create chat
-  const goToChat = async commitment => {
-    const data = toRaw(commitment)
+  const goToChat = async orgId => {
+    // organization Id
     await router.push('chat')
-    const chatId = await checkIfExist(data.owner)
+    const chatId = await checkIfExist(orgId)
     if (chatId) {
       await openChat(chatId)
     } else {
-      const user = await getUserById(data.owner)
-      await createNewChat(uid(16), user)
+      // const user = await getUserById(data.owner)
+      await createNewChat(authStore.userData.orgId + '_' + orgId, orgId)
     }
   }
   const getUserById = async userId => {
@@ -86,34 +105,21 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
-  const createNewChat = async (chatId, user) => {
-    const receiverAvatar = await getUserPhoto(user.user_id)
+  const createNewChat = async (chatId, orgId) => {
+    // const receiverAvatar = await getUserPhoto(user.user_id)
     const newChat = {
       chatId,
-      users: [
-        {
-          id: user.user_id,
-          avatar: receiverAvatar,
-          username: user.name,
-          status: 'online',
-        },
-        {
-          id: authStore.userData.userId,
-          avatar: authStore.currentUser.photoURL,
-          username: authStore.userData.name,
-          status: 'online',
-        },
-      ],
+      participants: [authStore.userData.orgId, orgId],
+      unreadCounts: { [authStore.userData.orgId]: 0, [orgId]: 0 },
       lastMessage: {
         content: '',
         timestamp: '',
       },
-      messages: [],
-      unreadCount: 0,
-      userIds: [authStore.userData.userId, user.user_id],
+      users: [],
+      updatedAt: '',
     }
     try {
-      await setDoc(doc(db, 'chatExporter', chatId), newChat)
+      await setDoc(doc(db, 'exporterChat', chatId), newChat)
       await openChat(chatId)
     } catch ({ message }) {
       alertStore.warning({ content: message })
@@ -124,11 +130,11 @@ export const useChatStore = defineStore('chat', () => {
     const newMessage = {
       id: uid(16),
       chatId: chatId,
-      receiverId: currentParticipant.value.id,
       senderId: authStore.userData.userId,
+      participantId: authStore.userData.userId,
       content,
-      date: today.format('MM/DD/YYYY'),
-      timestamp: formatDate.todayYesterdayDate(today),
+      date: moment().format('MM/DD/YYYY'),
+      timestamp: moment().format(),
       ...(replyMessage && { replyMessage }),
     }
     const fileUrls = []
@@ -140,7 +146,7 @@ export const useChatStore = defineStore('chat', () => {
             const file = new File([blob.blob], blob.name, { type: blob.type })
             const fileRef = await firebaseRef(
               storage,
-              `chatExporter/${chatId}/${newMessage.id}/${file.name}`,
+              `exporterChat/${chatId}/${newMessage.id}/${file.name}`,
             )
             await uploadBytes(fileRef, file)
             const url = await getDownloadURL(fileRef)
@@ -155,14 +161,22 @@ export const useChatStore = defineStore('chat', () => {
         )
         newMessage.files = fileUrls
       }
-      await updateDoc(doc(db, 'chatExporter', chatId), {
-        messages: arrayUnion(newMessage),
+      const chatData = {
         lastMessage: {
           content: newMessage.content,
-          timestamp: newMessage.timestamp,
+          timestamp: moment().format(),
         },
-        unreadCount: increment(1),
-      })
+        unreadCounts: { [currentParticipant.value]: increment(1) },
+        updatedAt: moment().format(),
+      }
+      const { users } = chats.value.find(c => c.chatId === chatId)
+      if (!users.includes(authStore.userData.userId)) {
+        chatData.users = arrayUnion(authStore.userData.userId)
+      }
+      const chatDocRef = doc(db, 'exporterChat', chatId)
+      await setDoc(chatDocRef, chatData, { merge: true })
+      const messageRef = collection(chatDocRef, 'messages')
+      await addDoc(messageRef, { ...newMessage })
       loading.value = false
     } catch (error) {
       alertStore.warning({ content: error.message })
@@ -174,65 +188,118 @@ export const useChatStore = defineStore('chat', () => {
     if (unsubscribeChats) {
       unsubscribeChats()
     }
-    const queryByPartialId = await query(
-      collection(db, 'chatExporter'),
-      where('userIds', 'array-contains', authStore.userData.userId),
-    )
+    try {
+      const queryByPartialId = await query(
+        collection(db, 'exporterChat'),
+        where('participants', 'array-contains', authStore.userData.orgId),
+      )
 
-    // subscribe on chats
-    unsubscribeChats = await onSnapshot(queryByPartialId, async snapshot => {
-      const arr = []
-      await snapshot.docs.map(async doc => {
-        arr.push(doc.data())
-      })
+      // subscribe on chats
+      unsubscribeChats = await onSnapshot(queryByPartialId, async snapshot => {
+        const arr = []
+        companies.value = []
+        users.value = []
+        await snapshot.docs.map(async doc => {
+          const array = doc.data()
+          array.participants?.forEach(async orgId => {
+            if (orgId !== authStore.orgData.orgId) {
+              const { company } = await getOrgData(orgId)
+              companies.value.push({ company: company, orgId: orgId })
+            }
+          })
+          array.users?.forEach(async (user, index) => {
+            if (user !== authStore.userData.userId) {
+              const { name, status } = await getUserById(user)
+              const avatar = await getUserPhoto(user)
+              users.value.push({
+                id: user,
+                name: name,
+                avatar: avatar || null,
+                status: status || 'offline',
+              })
+            }
+          })
+          arr.push(array)
+        })
 
-      // messages listener
-      snapshot.docChanges().forEach(change => {
-        if (change.type === 'modified') {
-          const chatData = change.doc.data()
-          const lastMessage = chatData.messages.at(-1)
-          chatData.unreadCount && handleNewMessage(lastMessage)
-        }
+        companies.value.push({ company: authStore.orgData.company, orgId: authStore.orgData.orgId })
+        users.value.push({
+          id: authStore.userData.userId,
+          name: authStore.userData.name,
+          avatar: authStore.userData.avatar || null,
+          status: authStore.userData.status || 'offline',
+        })
+        snapshot.docChanges().forEach(change => {
+          if (change.type === 'modified') {
+            const chatData = change.doc.data()
+            const user = chatData.participants.find(val => val !== authStore.userData.orgId)
+            user.unreadCount && handleNewMessage()
+          }
+        })
+        // messages listener
+        // snapshot.docChanges().forEach(change => {
+        //   if (change.type === 'modified') {
+        //     const chatData = change.doc.data()
+        //     const lastMessage = chatData.messages.at(-1)
+        //     chatData.unreadCount && handleNewMessage(lastMessage)
+        //   }
+        // })
+        chats.value = arr
       })
-      chats.value = arr
+    } catch (error) {
+      console.log('error', error)
+    }
+  }
+  const getOrgData = async orgId => {
+    const docData = await getDoc(doc(db, 'organizations', orgId))
+    return docData.data()
+  }
+
+  const getMessagesBychatId = async chatId => {
+    activeChatMessages.value = []
+    const messageRef = collection(db, 'exporterChat', chatId, 'messages')
+    await onSnapshot(messageRef, async snapshot => {
+      activeChatMessages.value = await snapshot.docs.map(doc => doc.data())
     })
   }
 
   const handleNewMessage = async message => {
     const isChatPage = router.currentRoute.value.name === 'chat'
-    if (authStore.userData.userId !== message.senderId) {
-      // notify if user is not on chat page
-      if (!isChatPage) {
-        const toasty = {
-          title: 'New message',
-          content: message.content,
-          button: { name: 'Go to chat', callback: async () => await goToChat(message.receiverId) },
-        }
-        alertStore.info(toasty)
+    // if (authStore.userData.userId !== message.senderId) {
+    // notify if user is not on chat page
+    if (!isChatPage) {
+      const toasty = {
+        title: 'New message',
+        content: 'new message arrived',
+        button: { name: 'Go to chat', callback: async () => await goToChat(message.receiverId) },
       }
+      alertStore.info(toasty)
+      // }
       if (activeChat.value?.chatId === message.chatId && isChatPage) {
         await markAsRead(message.chatId)
       }
     }
   }
   const markUserAsOnlineOffline = async status => {
-    const queryByPartialId = await query(
-      collection(db, 'chatExporter'),
-      where('userIds', 'array-contains', authStore.userData.userId),
-    )
     try {
-      const chatsSnapshot = await getDocs(queryByPartialId)
-      for (const doc of chatsSnapshot.docs) {
-        const arr = doc.data().users.map(i => {
-          if (i.id === authStore.userData.userId) {
-            return { ...i, status }
-          } else return i
-        })
-        const chatRef = doc.ref
-        await updateDoc(chatRef, {
-          users: arr,
-        })
-      }
+      await authStore.updateUserDoc({ status })
+      // const queryByPartialId = await query(
+      //   collection(db, 'exporterChat'),
+      //   where('userIds', 'array-contains', authStore.userData.userId),
+      // )
+      // try {
+      //   const chatsSnapshot = await getDocs(queryByPartialId)
+      //   for (const doc of chatsSnapshot.docs) {
+      //     const arr = doc.data().users.map(i => {
+      //       if (i.id === authStore.userData.userId) {
+      //         return { ...i, status }
+      //       } else return i
+      //     })
+      //     const chatRef = doc.ref
+      //     await updateDoc(chatRef, {
+      //       users: arr,
+      //     })
+      //   }
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
@@ -264,7 +331,6 @@ export const useChatStore = defineStore('chat', () => {
       link.click()
       body.style.cursor = null
     } catch (error) {
-      console.error('Error downloading file:', error)
       body.style.cursor = null
     }
   }
@@ -272,8 +338,10 @@ export const useChatStore = defineStore('chat', () => {
   return {
     chats,
     activeChat,
-    isNewMessage,
     loading,
+    activeChatMessages,
+    companies,
+    users,
     openChat,
     goToChat,
     getChats,

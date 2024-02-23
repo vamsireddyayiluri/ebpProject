@@ -16,15 +16,30 @@ const { userData } = useAuthStore()
 const alertStore = useAlertStore()
 const { openChat, sendNewMessage, markAsRead, markUserAsOnlineOffline, downloadFileFromChat } =
   useChatStore()
-const { chats, activeChat, loading } = storeToRefs(useChatStore())
+const { chats, activeChat, loading, activeChatMessages, companies, users } = storeToRefs(
+  useChatStore(),
+)
 const currentUserId = ref(userData.userId)
+const currentParticipantId = ref(userData.orgId)
+const chatActions = [
+  {
+    name: 'viewMembers',
+    title: 'View members',
+  },
+]
 const router = useRouter()
 
-const messageActionHandler = ({ action, message }) => {
-  console.log('action ', action, message)
+const messageActionHandler = ({ action, ...rest }) => {
+  console.log('action ', action, rest)
 }
 
-const computedChat = computed(() => chats.value.find(c => c.chatId === activeChat.value?.chatId))
+const chatActionHandler = ({ action, ...rest }) => {
+  console.log('action ', action, rest)
+}
+
+const computedCompanies = computed(() => companies.value.map(val => toRaw(val)))
+const computedUsers = computed(() => users.value.map(val => toRaw(val)))
+
 const sendMessage = async message => {
   await sendNewMessage(message)
 }
@@ -57,18 +72,20 @@ onBeforeUnmount(async () => {
 
 <template>
   <Main>
-    <ChatWindow
+    <chat-window
+      :current-participant-id="currentParticipantId"
       :current-user-id="currentUserId"
-      :messages="computedChat?.messages"
+      :messages="activeChatMessages || []"
       :menu-action="messageActions"
+      :chat-actions="chatActions"
       :chats="chats"
       :active-chat-id="activeChat?.chatId"
-      :loading="loading"
+      :participants="computedCompanies"
+      :users="computedUsers"
       @messageActionHandler="messageActionHandler"
+      @chatActionHandler="chatActionHandler"
       @openChat="openChat"
       @sendMessage="sendMessage"
-      @onChatArea="onChatArea"
-      @downloadFile="downloadFileFromChat"
     />
   </Main>
 </template>

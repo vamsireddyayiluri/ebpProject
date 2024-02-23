@@ -52,17 +52,17 @@ export const useAuthStore = defineStore('auth', () => {
     } catch (error) {
       isLoading.value = false
       switch (error.code) {
-      case 'auth/user-not-found':
-        alertStore.warning({ content: 'User not found' })
-        break
-      case 'auth/wrong-password':
-        alertStore.warning({ content: 'Wrong password' })
-        break
-      case 'auth/invalid-login-credentials':
-        alertStore.warning({ content: 'Invalid credentials' })
-        break
-      default:
-        alertStore.warning({ content: 'Something went wrong' })
+        case 'auth/user-not-found':
+          alertStore.warning({ content: 'User not found' })
+          break
+        case 'auth/wrong-password':
+          alertStore.warning({ content: 'Wrong password' })
+          break
+        case 'auth/invalid-login-credentials':
+          alertStore.warning({ content: 'Invalid credentials' })
+          break
+        default:
+          alertStore.warning({ content: 'Something went wrong' })
       }
     }
   }
@@ -295,6 +295,14 @@ export const useAuthStore = defineStore('auth', () => {
     const querySnapshot = await getDocs(q)
     workers.value = querySnapshot.docs.map(doc => doc.data())
   }
+  const updateUserDoc = async payload => {
+    try {
+      await updateDoc(doc(db, 'users', userData.value.userId), payload)
+      await getUserData(userData.value.userId)
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
 
   return {
     login,
@@ -313,5 +321,6 @@ export const useAuthStore = defineStore('auth', () => {
     saveUserDataReports,
     getOrgData,
     workers,
+    updateUserDoc,
   }
 })

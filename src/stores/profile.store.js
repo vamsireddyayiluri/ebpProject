@@ -25,7 +25,7 @@ export const useProfileStore = defineStore('profile', () => {
   const alertStore = useAlertStore()
   const { getFormattedDateTime } = useDate()
   const accountInfo = ref({
-    fullName: userData.fullName,
+    name: userData.name,
     company: userData.company,
     cell: userData.cell,
     email: userData.email,

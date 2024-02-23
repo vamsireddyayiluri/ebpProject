@@ -30,7 +30,7 @@ const updateUserAvatar = async (_, file) => {
 }
 const validateName = computed(() => {
   return (
-    accountInfo.value.fullName !== userData.value.fullName ||
+    accountInfo.value.name !== userData.value.name ||
     accountInfo.value.company !== userData.value.company
   )
 })
@@ -57,7 +57,7 @@ const onSave = async () => {
 }
 const cancelChanges = () => {
   if (validateEmail) accountInfo.value.email = currentUser.value.email
-  if (validateName) accountInfo.value.fullName = userData.value.fullName
+  if (validateName) accountInfo.value.name = userData.value.name
 }
 </script>
 
@@ -94,7 +94,7 @@ const cancelChanges = () => {
       >
         <VCol cols="auto">
           <Textfield
-            v-model.trim="accountInfo.fullName"
+            v-model.trim="accountInfo.name"
             type="text"
             label="Full name *"
             required
