@@ -61,7 +61,7 @@ const rules = {
   containers: value => checkPositiveInteger(value),
 }
 const updateExpiryDate = value => {
-  booking.value.bookingExpiry = moment(value).endOf('day').format()
+  booking.value.loadingDate = moment(value).endOf('day').format()
   if (bookingRulesStore?.rules?.timeForTruckersFromMarketplace) {
     booking.value.preferredDate = moment(value)
       .subtract(bookingRulesStore?.rules?.timeForTruckersFromMarketplace, 'day')
@@ -117,7 +117,7 @@ const closeBookingDialog = () => {
   } else emit('close')
 }
 const updateDates = () => {
-  booking.value.bookingExpiry = moment(booking.value.bookingExpiry).endOf('day').format()
+  booking.value.loadingDate = moment(booking.value.loadingDate).endOf('day').format()
   booking.value.preferredDate = moment(booking.value.preferredDate).endOf('day').format()
 }
 const saveDraft = () => {

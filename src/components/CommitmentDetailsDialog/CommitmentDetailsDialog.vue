@@ -13,7 +13,7 @@ const bookingStore = useBookingsStore()
 const { getFormattedDate } = useDate()
 const { goToChat } = useChatStore()
 const checkCommitmentStatus = () => {
-  return props.commitment?.timeline?.some(({ title }) => title.includes('approved'))
+  return props.commitment?.timeLine?.some(({ title }) => title.includes('approved'))
 }
 const isPending = props.commitment?.status === statuses.pending
 let details = ref([
@@ -38,6 +38,14 @@ const {
 } = bookingStore.bookings.find(i => i.id === props.commitment.bookingId)
 
 onMounted(async () => {
+  // if (props.commitment.timeLine) {
+  //   props.commitment.timeLine.title = props.commitment.timeLine.message
+  //   props.commitment.timeLine = props.commitment.timeLine.map(obj => {
+  //     obj.title = obj.message
+  //     return obj
+  //   })
+  //   console.log(props.commitment.timeLine)
+  // }
   if (checkCommitmentStatus()) {
     details.value = [
       ...details.value,
