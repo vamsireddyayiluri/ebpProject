@@ -24,7 +24,7 @@ const {
 } = useBookingsStore()
 const { approveCommitment, declineCommitment, completeCommitment } = useCommitmentsStore()
 const { computedEntities } = toRefs(props)
-const { userData } = useAuthStore()
+const authStore = useAuthStore()
 const { smAndDown } = useDisplay()
 const showActions = ref(true)
 const tableHeight = ref(0)
@@ -132,7 +132,7 @@ onMounted(() => {
     :id="tableId"
     key="bookings"
     :entities="computedEntities"
-    :headers="bookingsHeaders(userData.type)"
+    :headers="bookingsHeaders(authStore.userData?.type)"
     :loading="loading"
     :options="{
       rowHeight: 64,
