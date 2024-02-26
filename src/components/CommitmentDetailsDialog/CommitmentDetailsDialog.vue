@@ -4,6 +4,7 @@ import { useBookingsStore } from '~/stores/bookings.store'
 import { useDate } from '~/composables'
 import { statuses } from '~/constants/statuses'
 import { useChatStore } from '~/stores/chat.store'
+import moment from 'moment-timezone'
 
 const props = defineProps({
   commitment: Object,
@@ -36,16 +37,13 @@ const {
   size,
   location,
 } = bookingStore.bookings.find(i => i.id === props.commitment.bookingId)
-
+const getTimeLine = timeLine => {
+  const test = timeLine.map(val => {
+    return { title: val.message, date: moment(val.time_stamp).format('MM/DD/YYYY hh:mm:ss a') }
+  })
+  return test
+}
 onMounted(async () => {
-  // if (props.commitment.timeLine) {
-  //   props.commitment.timeLine.title = props.commitment.timeLine.message
-  //   props.commitment.timeLine = props.commitment.timeLine.map(obj => {
-  //     obj.title = obj.message
-  //     return obj
-  //   })
-  //   console.log(props.commitment.timeLine)
-  // }
   if (checkCommitmentStatus()) {
     details.value = [
       ...details.value,
@@ -240,7 +238,7 @@ onMounted(async () => {
         Timeline
       </Typography>
       <Timeline
-        :items="commitment.timeLine"
+        :items="getTimeLine(commitment.timeLine)"
         variant="vertical"
         class="scrollbar overflow-auto md:mb-10"
       />

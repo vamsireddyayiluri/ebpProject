@@ -21,6 +21,7 @@ import {
 import { db, storage } from '~/firebase'
 import { uid } from 'uid'
 import { getDownloadURL, ref as firebaseRef, list, uploadBytes } from 'firebase/storage'
+import { sortBy } from 'lodash'
 
 export const useChatStore = defineStore('chat', () => {
   const alertStore = useAlertStore()
@@ -52,7 +53,7 @@ export const useChatStore = defineStore('chat', () => {
   // check if chat exist and return id
   const checkIfExist = async orgId => {
     const chatsQuery = await query(
-      collection(db, 'exporterChat'),
+      collection(db, 'chats'),
       where('participants', 'array-contains', authStore.userData.orgId),
     )
     const chatDocs = await getDocs(chatsQuery)
@@ -75,7 +76,7 @@ export const useChatStore = defineStore('chat', () => {
   // mark all message as read
   const markAsRead = async chatId => {
     await setDoc(
-      doc(db, 'exporterChat', chatId),
+      doc(db, 'chats', chatId),
       {
         unreadCounts: { [authStore.userData.orgId]: 0 },
       },
@@ -119,7 +120,7 @@ export const useChatStore = defineStore('chat', () => {
       updatedAt: '',
     }
     try {
-      await setDoc(doc(db, 'exporterChat', chatId), newChat)
+      await setDoc(doc(db, 'chats', chatId), newChat)
       await openChat(chatId)
     } catch ({ message }) {
       alertStore.warning({ content: message })
@@ -146,7 +147,7 @@ export const useChatStore = defineStore('chat', () => {
             const file = new File([blob.blob], blob.name, { type: blob.type })
             const fileRef = await firebaseRef(
               storage,
-              `exporterChat/${chatId}/${newMessage.id}/${file.name}`,
+              `chats/${chatId}/${newMessage.id}/${file.name}`,
             )
             await uploadBytes(fileRef, file)
             const url = await getDownloadURL(fileRef)
@@ -173,7 +174,7 @@ export const useChatStore = defineStore('chat', () => {
       if (!users.includes(authStore.userData.userId)) {
         chatData.users = arrayUnion(authStore.userData.userId)
       }
-      const chatDocRef = doc(db, 'exporterChat', chatId)
+      const chatDocRef = doc(db, 'chats', chatId)
       await setDoc(chatDocRef, chatData, { merge: true })
       const messageRef = collection(chatDocRef, 'messages')
       await addDoc(messageRef, { ...newMessage })
@@ -189,8 +190,9 @@ export const useChatStore = defineStore('chat', () => {
       unsubscribeChats()
     }
     try {
+      loading.value = true
       const queryByPartialId = await query(
-        collection(db, 'exporterChat'),
+        collection(db, 'chats'),
         where('participants', 'array-contains', authStore.userData.orgId),
       )
 
@@ -201,13 +203,13 @@ export const useChatStore = defineStore('chat', () => {
         users.value = []
         await snapshot.docs.map(async doc => {
           const array = doc.data()
-          array.participants?.forEach(async orgId => {
+          array.participants?.map(async orgId => {
             if (orgId !== authStore.orgData.orgId) {
               const { company } = await getOrgData(orgId)
               companies.value.push({ company: company, orgId: orgId })
             }
           })
-          array.users?.forEach(async (user, index) => {
+          array.users?.map(async (user, index) => {
             if (user !== authStore.userData.userId) {
               const { name, status } = await getUserById(user)
               const avatar = await getUserPhoto(user)
@@ -218,11 +220,13 @@ export const useChatStore = defineStore('chat', () => {
                 status: status || 'offline',
               })
             }
+          }),
+            arr.push(array)
+        }),
+          companies.value.push({
+            company: authStore.orgData.company,
+            orgId: authStore.orgData.orgId,
           })
-          arr.push(array)
-        })
-
-        companies.value.push({ company: authStore.orgData.company, orgId: authStore.orgData.orgId })
         users.value.push({
           id: authStore.userData.userId,
           name: authStore.userData.name,
@@ -233,7 +237,7 @@ export const useChatStore = defineStore('chat', () => {
           if (change.type === 'modified') {
             const chatData = change.doc.data()
             const user = chatData.participants.find(val => val !== authStore.userData.orgId)
-            user.unreadCount && handleNewMessage()
+            chatData.unreadCounts[user] && handleNewMessage()
           }
         })
         // messages listener
@@ -246,6 +250,7 @@ export const useChatStore = defineStore('chat', () => {
         // })
         chats.value = arr
       })
+      loading.value = false
     } catch (error) {
       console.log('error', error)
     }
@@ -257,9 +262,12 @@ export const useChatStore = defineStore('chat', () => {
 
   const getMessagesBychatId = async chatId => {
     activeChatMessages.value = []
-    const messageRef = collection(db, 'exporterChat', chatId, 'messages')
+    const messageRef = collection(db, 'chats', chatId, 'messages')
     await onSnapshot(messageRef, async snapshot => {
-      activeChatMessages.value = await snapshot.docs.map(doc => doc.data())
+      if (activeChat.value?.chatId === chatId) {
+        const test = await snapshot.docs.map(doc => doc.data())
+        activeChatMessages.value = sortBy(test, 'timestamp')
+      }
     })
   }
 
@@ -284,7 +292,7 @@ export const useChatStore = defineStore('chat', () => {
     try {
       await authStore.updateUserDoc({ status })
       // const queryByPartialId = await query(
-      //   collection(db, 'exporterChat'),
+      //   collection(db, 'chats'),
       //   where('userIds', 'array-contains', authStore.userData.userId),
       // )
       // try {
