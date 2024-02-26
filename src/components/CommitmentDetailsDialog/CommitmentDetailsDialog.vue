@@ -56,7 +56,7 @@ onMounted(async () => {
   }
 })
 onUnmounted(() => {
-  router.push({query: null})
+  router.push({ query: null })
 })
 </script>
 
@@ -66,13 +66,14 @@ onUnmounted(() => {
       Commitment
     </Typography>
     <div class="ml-auto">
-      <IconButton
-        icon="mdi-message-text"
-        class="mr-2"
+      <Button
+        prepend-icon="mdi-message-text"
+        density="compact"
+        class="mr-4"
         @click="goToChat('6srEzErbjIW4bL9gQUNbI51BGlE3')"
       >
-        <Tooltip> Go to chat </Tooltip>
-      </IconButton>
+        Chat with trucker
+      </Button>
       <IconButton
         icon="mdi-close"
         size="24"

@@ -33,7 +33,7 @@ const tabs = [
 ]
 const tab = computed(() => tabs.findIndex(i => i.to === router.currentRoute.value.query.tab))
 const handleTabChange = async value => {
-  await router.push({ query: { tab: tabs[value].to} })
+  await router.push({ query: { tab: tabs[value].to } })
 }
 </script>
 

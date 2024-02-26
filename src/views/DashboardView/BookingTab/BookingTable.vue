@@ -15,12 +15,8 @@ const props = defineProps({
   loading: Boolean,
 })
 const emit = defineEmits(['selectTableRow', 'editBooking'])
-const {
-  deleteBooking,
-  updateBookingStatus,
-  getCommitmentsByBookingId,
-  closeBookingExpansion,
-} = useBookingsStore()
+const { deleteBooking, updateBookingStatus, getCommitmentsByBookingId, closeBookingExpansion } =
+  useBookingsStore()
 const { approveCommitment, declineCommitment, completeCommitment } = useCommitmentsStore()
 const { computedEntities } = toRefs(props)
 const { userData } = useAuthStore()
@@ -118,7 +114,8 @@ const onDeclineCommitment = async (id, reason) => {
 }
 const openCommitmentsDialogOnUrlChange = async () => {
   const commitment = await handleQueryUrlForCommitments(router.currentRoute.value.query)
-  commitment && (commitmentDetailsDialog.value.show(true), commitmentDetailsDialog.value.data = commitment)
+  commitment &&
+    (commitmentDetailsDialog.value.show(true), (commitmentDetailsDialog.value.data = commitment))
 }
 const tableId = 'bookingsTable'
 
