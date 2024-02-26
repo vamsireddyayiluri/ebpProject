@@ -5,11 +5,12 @@ import { useAuthStore } from '~/stores/auth.store'
 import { storeToRefs } from 'pinia'
 import { uid } from 'uid'
 import geohash from 'ngeohash'
+import { getColor } from '~/helpers/colors'
 
 const attrs = useAttrs()
 const workDetailsStore = useWorkDetailsStore()
 const authStore = useAuthStore()
-const { yards } = storeToRefs(workDetailsStore)
+const { yards, vendorDetails } = storeToRefs(workDetailsStore)
 const { xs } = useDisplay()
 const newLocation = ref({
   address: null,
@@ -17,6 +18,8 @@ const newLocation = ref({
 })
 const commodity = ref(null)
 const removeLocationDialog = ref(null)
+const defaultDetails = ref(vendorDetails.value)
+const locationDetailsDialog = ref(null)
 
 const onSelectLocation = location => {
   newLocation.value.address = location.fullAddress
@@ -34,6 +37,7 @@ const addYard = async () => {
     geohash: geohashedLocation,
     commodity: commodity.value,
     text: `Commodity: ${commodity.value}`,
+    details: defaultDetails.value,
   })
   newLocation.value.address = null
   newLocation.value.label = ''
@@ -46,6 +50,21 @@ const openRemoveLocationDialog = locationId => {
 const removeYard = async () => {
   await workDetailsStore.removeYard(removeLocationDialog.value.data.id)
   removeLocationDialog.value.show(false)
+}
+const editDetails = id => {
+  locationDetailsDialog.value.show(true)
+  const editedLocation = yards.value.find(i => i.id === id)
+  locationDetailsDialog.value.data = editedLocation
+}
+
+const resetDefaultSettings = () => {
+  defaultDetails.value = authStore.orgData.vendorDetails
+}
+
+// that function runs when click outside the addEditDialog
+const onClickOutsideDialog = () => {
+  locationDetailsDialog.value.data = null
+  resetDefaultSettings()
 }
 </script>
 
@@ -79,22 +98,59 @@ const removeYard = async () => {
         persistent-hint
         :prepend-icon="xs ? '' : 'mdi-package-variant'"
       />
-      <Button
-        variant="outlined"
-        type="button"
-        :disabled="!newLocation?.address || !newLocation?.label"
-        class="w-full sm:w-min"
-        @click="addYard"
-      >
-        Add
-      </Button>
+      <div class="flex gap-5">
+        <VCard
+          variant="outlined"
+          :color="getColor('uiLine')"
+          class="w-full h-12 pl-4"
+        >
+          <div class="flex justify-between">
+            <Typography
+              :color="getColor(!defaultDetails.primaryContactName ? 'textDisabled' : 'textPrimary')"
+              class="mt-3.5"
+            >
+              {{ !defaultDetails.primaryContactName ? 'Location details' : 'Default Details' }}
+            </Typography>
+            <Button
+              v-if="!defaultDetails.primaryContactName"
+              prepend-icon="mdi-plus"
+              variant="plain"
+              class="-mt-0.5"
+              @click="locationDetailsDialog.show(true)"
+            >
+              Set
+            </Button>
+            <IconButton
+              v-else
+              icon="mdi-pencil"
+              width="24"
+              min-width="24"
+              height="24"
+              size="22"
+              class="mt-2.5 mr-4"
+              @click="locationDetailsDialog.show(true)"
+            />
+          </div>
+        </VCard>
+        <Button
+          variant="outlined"
+          type="button"
+          :disabled="!newLocation?.address || !newLocation?.label"
+          class="w-full sm:w-min"
+          @click="addYard"
+        >
+          Add
+        </Button>
+      </div>
     </div>
     <LocationItems
       :locations="yards"
       is-close-btn
+      :is-edit-btn="defaultDetails"
       class="mt-5 sm:!mt-2"
       :class="{ 'mb-2': yards?.length }"
       @onRemove="locationId => openRemoveLocationDialog(locationId)"
+      @onEdit="editDetails"
     />
   </div>
 
@@ -114,6 +170,23 @@ const removeYard = async () => {
           from your locations?
         </Typography>
       </RemoveCancelDialog>
+    </template>
+  </Dialog>
+  <Dialog
+    ref="locationDetailsDialog"
+    max-width="980"
+    @update:modelValue="onClickOutsideDialog"
+  >
+    <template #text>
+      <LocationDetailsDialog
+        :default-details="defaultDetails"
+        :edited-location="locationDetailsDialog.data"
+        @close="
+          locationDetailsDialog.show(false),
+          locationDetailsDialog.data = null,
+          resetDefaultSettings()
+        "
+      />
     </template>
   </Dialog>
 </template>
