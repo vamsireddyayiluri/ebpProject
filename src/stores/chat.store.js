@@ -70,7 +70,6 @@ export const useChatStore = defineStore('chat', () => {
     await router.push({ query: { id: chatId } })
     activeChat.value = chats.value.find(i => i.chatId === chatId)
     await getMessagesBychatId(chatId)
-    await markAsRead(chatId)
   }
 
   // mark all message as read
@@ -267,6 +266,7 @@ export const useChatStore = defineStore('chat', () => {
       if (activeChat.value?.chatId === chatId) {
         const test = await snapshot.docs.map(doc => doc.data())
         activeChatMessages.value = sortBy(test, 'timestamp')
+        await markAsRead(chatId)
       }
     })
   }
