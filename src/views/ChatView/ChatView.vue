@@ -14,7 +14,7 @@ const messageActions = [
 
 const { userData } = useAuthStore()
 const alertStore = useAlertStore()
-const { openChat, sendNewMessage, markAsRead, markUserAsOnlineOffline, downloadFileFromChat } =
+const { openChat, sendNewMessage, markAsRead, markUserAsOnlineOffline, downloadFileFromChat, getAllOrgs, goToChat } =
   useChatStore()
 const { chats, activeChat, loading, activeChatMessages, companies, users } = storeToRefs(
   useChatStore(),
@@ -28,7 +28,7 @@ const chatActions = [
   },
 ]
 const router = useRouter()
-
+const allParticipants = ref([])
 const messageActionHandler = ({ action, ...rest }) => {
   console.log('action ', action, rest)
 }
@@ -49,6 +49,7 @@ const onChatArea = async chat => {
   }
 }
 onMounted(async () => {
+  allParticipants.value = await getAllOrgs()
   const interval = setInterval(async () => {
     const chatId = router.currentRoute.value.query.id
 
@@ -68,11 +69,16 @@ onMounted(async () => {
 onBeforeUnmount(async () => {
   await markUserAsOnlineOffline('offline')
 })
+
+const createChat = async participantId => {
+  await goToChat(participantId)
+}
 </script>
 
 <template>
   <Main>
-    <chat-window
+    <ChatWindow
+      v-if="allParticipants.length"
       :current-participant-id="currentParticipantId"
       :current-user-id="currentUserId"
       :messages="activeChatMessages || []"
@@ -82,10 +88,12 @@ onBeforeUnmount(async () => {
       :active-chat-id="activeChat?.chatId"
       :participants="computedCompanies"
       :users="computedUsers"
+      :all-participants="allParticipants"
       @messageActionHandler="messageActionHandler"
       @chatActionHandler="chatActionHandler"
       @openChat="openChat"
       @sendMessage="sendMessage"
+      @createChat="createChat"
     />
   </Main>
 </template>

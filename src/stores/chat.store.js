@@ -59,6 +59,7 @@ export const useChatStore = defineStore('chat', () => {
     const chatDocs = await getDocs(chatsQuery)
     if (!chatDocs.empty) {
       const chatDoc = chatDocs.docs.find(doc => doc.data().participants.includes(orgId))
+
       return chatDoc?.id
     } else {
       return null
@@ -240,6 +241,7 @@ export const useChatStore = defineStore('chat', () => {
             chatData.unreadCounts[user] && handleNewMessage()
           }
         })
+
         // messages listener
         // snapshot.docChanges().forEach(change => {
         //   if (change.type === 'modified') {
@@ -257,6 +259,7 @@ export const useChatStore = defineStore('chat', () => {
   }
   const getOrgData = async orgId => {
     const docData = await getDoc(doc(db, 'organizations', orgId))
+
     return docData.data()
   }
 
@@ -273,6 +276,7 @@ export const useChatStore = defineStore('chat', () => {
 
   const handleNewMessage = async message => {
     const isChatPage = router.currentRoute.value.name === 'chat'
+
     // if (authStore.userData.userId !== message.senderId) {
     // notify if user is not on chat page
     if (!isChatPage) {
@@ -282,6 +286,7 @@ export const useChatStore = defineStore('chat', () => {
         button: { name: 'Go to chat', callback: async () => await goToChat(message.receiverId) },
       }
       alertStore.info(toasty)
+
       // }
       if (activeChat.value?.chatId === message.chatId && isChatPage) {
         await markAsRead(message.chatId)
@@ -291,6 +296,7 @@ export const useChatStore = defineStore('chat', () => {
   const markUserAsOnlineOffline = async status => {
     try {
       await authStore.updateUserDoc({ status })
+
       // const queryByPartialId = await query(
       //   collection(db, 'chats'),
       //   where('userIds', 'array-contains', authStore.userData.userId),
@@ -343,6 +349,17 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
+  const getAllOrgs = async () => {
+    const qFiltered = query(collection(db, 'organizations'), where('orgId', '!=', authStore.userData?.orgId))
+    const querySnapshot = await getDocs(qFiltered)
+
+    return querySnapshot.docs.map(doc => {
+      const { orgId, company } = doc.data()
+
+      return { orgId, company}
+    })
+  }
+
   return {
     chats,
     activeChat,
@@ -357,5 +374,6 @@ export const useChatStore = defineStore('chat', () => {
     markAsRead,
     markUserAsOnlineOffline,
     downloadFileFromChat,
+    getAllOrgs,
   }
 })
