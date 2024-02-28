@@ -6,6 +6,7 @@ import { storeToRefs } from 'pinia'
 import { uid } from 'uid'
 import geohash from 'ngeohash'
 import { getColor } from '~/helpers/colors'
+import { cloneDeep } from 'lodash'
 
 const attrs = useAttrs()
 const workDetailsStore = useWorkDetailsStore()
@@ -89,6 +90,7 @@ const onClickOutsideDialog = () => {
         label="Location label"
         hint="For e.g. Farm label"
         persistent-hint
+        class="h-fit"
       />
       <Textfield
         v-model.trim="commodity"
@@ -106,16 +108,16 @@ const onClickOutsideDialog = () => {
         >
           <div class="flex justify-between">
             <Typography
-              :color="getColor(!defaultDetails.primaryContactName ? 'textDisabled' : 'textPrimary')"
+              :color="getColor(!defaultDetails?.primaryContactName ? 'textDisabled' : 'textPrimary')"
               class="mt-3.5"
             >
-              {{ !defaultDetails.primaryContactName ? 'Location details' : 'Default Details' }}
+              {{ !defaultDetails?.primaryContactName ? 'Location details' : 'Default Details' }}
             </Typography>
             <Button
-              v-if="!defaultDetails.primaryContactName"
+              v-if="!defaultDetails?.primaryContactName"
               prepend-icon="mdi-plus"
               variant="plain"
-              class="-mt-0.5"
+              class="-mt-0.5 pl-0"
               @click="locationDetailsDialog.show(true)"
             >
               Set
@@ -146,7 +148,7 @@ const onClickOutsideDialog = () => {
     <LocationItems
       :locations="yards"
       is-close-btn
-      :is-edit-btn="defaultDetails"
+      :is-edit-btn="!!defaultDetails"
       class="mt-5 sm:!mt-2"
       :class="{ 'mb-2': yards?.length }"
       @onRemove="locationId => openRemoveLocationDialog(locationId)"
@@ -179,8 +181,8 @@ const onClickOutsideDialog = () => {
   >
     <template #text>
       <LocationDetailsDialog
-        :default-details="defaultDetails"
-        :edited-location="locationDetailsDialog.data"
+        :default-details="cloneDeep(defaultDetails)"
+        :edited-location="cloneDeep(locationDetailsDialog.data)"
         @close="
           locationDetailsDialog.show(false),
           locationDetailsDialog.data = null,

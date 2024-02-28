@@ -53,10 +53,10 @@ export const useWorkDetailsStore = defineStore('workDetails', () => {
       alertStore.warning({ content: message })
     }
   }
-  const saveVendorDetails = async () => {
+  const saveVendorDetails = async vendorDetails => {
     try {
       await updateDoc(doc(db, 'organizations', authStore.orgData.orgId), {
-        vendorDetails: vendorDetails.value,
+        vendorDetails: vendorDetails,
       })
       alertStore.info({ content: 'Default details saved!' })
     } catch ({ message }) {
