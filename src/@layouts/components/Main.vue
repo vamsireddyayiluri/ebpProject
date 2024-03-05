@@ -4,10 +4,13 @@ import { storeToRefs } from 'pinia'
 import { useNotificationStore } from '~/stores/notification.store'
 import { useDisplay } from 'vuetify'
 import { useChatStore } from '~/stores/chat.store'
+import { useProfileStore } from "~/stores/profile.store"
 
 const authStore = useAuthStore()
 const notificationStore = useNotificationStore()
 const chatStore = useChatStore()
+const profileStore = useProfileStore()
+const { accountInfo } = storeToRefs(profileStore)
 const { isNewMessage } = storeToRefs(chatStore)
 const attrs = useAttrs()
 const { width } = useDisplay()
@@ -76,7 +79,7 @@ onMounted(async () => {
 <template>
   <div v-bind="{ ...attrs }">
     <Header
-      :user="{ avatar: authStore.currentUser.photoURL, userName: authStore.userData.fullName }"
+      :user="{ avatar: accountInfo.imageUrl, userName: accountInfo.fullName }"
       class="default z-10 top-0"
       :items="width < 760 ? mobileMenuItems : items"
       :notifications="notifications"
