@@ -10,15 +10,15 @@ const tabs = [
   },
   {
     label: 'Yards',
-    to: 'yards',
+    route: 'yards',
   },
   {
     label: 'Drafts',
-    to: 'drafts',
+    route: 'drafts',
   },
   {
     label: 'Booking history',
-    to: 'bookingHistory',
+    route: 'bookingHistory',
   },
 ]
 const mapToggled = ref(false)
@@ -26,9 +26,9 @@ const mapToggled = ref(false)
 const toggleMap = () => {
   mapToggled.value = !mapToggled.value
 }
-const tab = computed(() => tabs.findIndex(i => i.to === router.currentRoute.value.query.tab))
+const tab = ref(tabs.findIndex(i => i.route === router.currentRoute.value.query.tab))
 const handleTabChange = async value => {
-  await router.push({ query: { tab: tabs[value].to } })
+  await router.push({ query: { tab: tabs[value].route } })
 }
 watch(tab, () => (mapToggled.value = false))
 </script>
