@@ -12,7 +12,7 @@ const attrs = useAttrs()
 const workDetailsStore = useWorkDetailsStore()
 const authStore = useAuthStore()
 const { yards, vendorDetails } = storeToRefs(workDetailsStore)
-const { xs } = useDisplay()
+const { xs, width } = useDisplay()
 const newLocation = ref({
   address: null,
   label: '',
@@ -100,7 +100,7 @@ const onClickOutsideDialog = () => {
         persistent-hint
         :prepend-icon="xs ? '' : 'mdi-package-variant'"
       />
-      <div class="flex gap-5">
+      <div class="flex gap-5 flex-nowrap sm:flex-wrap">
         <VCard
           variant="outlined"
           :color="getColor('uiLine')"
@@ -111,7 +111,7 @@ const onClickOutsideDialog = () => {
               :color="getColor(!defaultDetails?.primaryContactName ? 'textDisabled' : 'textPrimary')"
               class="mt-3.5"
             >
-              {{ !defaultDetails?.primaryContactName ? 'Location details' : 'Default Details' }}
+              {{ width >= 600 && width <= 770 ? 'Details': !defaultDetails?.primaryContactName ? 'Location details' : 'Default details' }}
             </Typography>
             <Button
               v-if="!defaultDetails?.primaryContactName"
@@ -138,7 +138,7 @@ const onClickOutsideDialog = () => {
           variant="outlined"
           type="button"
           :disabled="!newLocation?.address || !newLocation?.label"
-          class="w-full sm:w-min"
+          class="w-min"
           @click="addYard"
         >
           Add
