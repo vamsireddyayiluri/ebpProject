@@ -89,11 +89,13 @@ const createChat = async participantId => {
       :participants="computedCompanies"
       :users="computedUsers"
       :all-participants="allParticipants"
+      :loading="loading"
       @messageActionHandler="messageActionHandler"
       @chatActionHandler="chatActionHandler"
       @openChat="openChat"
       @sendMessage="sendMessage"
       @createChat="createChat"
+      @downloadFile="downloadFileFromChat"
     />
   </Main>
 </template>
