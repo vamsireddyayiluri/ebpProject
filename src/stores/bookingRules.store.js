@@ -12,8 +12,8 @@ export const useBookingRulesStore = defineStore('bookingRules', () => {
   const rules = ref({
     yard: bookingRules.yard || null,
     truckers: bookingRules?.truckers || { list: [] },
-    timeForTruckersFromMarketplace: bookingRules.timeForTruckersFromMarketplace || null,
-    timeForNotificationBeforeCutoff: bookingRules.timeForNotificationBeforeCutoff || null,
+    timeForTruckersFromMarketplace: bookingRules.timeForTruckersFromMarketplace || '',
+    timeForNotificationBeforeCutoff: bookingRules.timeForNotificationBeforeCutoff || '',
   })
 
   const updateRules = async (bookingRules, orgId) => {

@@ -9,12 +9,22 @@ export const useWorkDetailsStore = defineStore('workDetails', () => {
   const alertStore = useAlertStore()
   const authStore = useAuthStore()
   const yards = ref([])
+  const vendorDetails = ref(authStore.orgData?.vendorDetails || {
+    primaryContact: null,
+    primaryContactName: null,
+    primaryContactEmail: null,
+    secondaryContact: null,
+    secondaryContactName: null,
+    secondaryContactEmail: null,
+    pickupInstructions: null,
+    hoursOfOperation: null,
+  })
 
   const getYards = () => {
     yards.value = authStore.orgData?.workDetails?.map(i => {
       return {
         ...i,
-        text: `Commodity: ${i.commodity}`,
+        text: `Commodity: ${i.commodity} ${i.details?.customizedDetails? '- (customized details)': ''}`,
       }
     })
   }
@@ -43,12 +53,45 @@ export const useWorkDetailsStore = defineStore('workDetails', () => {
       alertStore.warning({ content: message })
     }
   }
+  const saveVendorDetails = async vendorDetails => {
+    try {
+      await updateDoc(doc(db, 'organizations', authStore.orgData.orgId), {
+        vendorDetails: vendorDetails,
+      })
+      alertStore.info({ content: 'Default details saved!' })
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
+  const saveYardDetails = async location => {
+    const updatedDetails = yards.value.map(i => {
+      if (i.id === location.id) {
+        return {
+          ...i, details: {...i.details, ...location.details, customizedDetails: true},
+        }
+      } else return i
+    })
+
+    try {
+      await updateDoc(doc(db, 'organizations', authStore.orgData.orgId), {
+        workDetails: updatedDetails,
+      })
+      await getYards()
+      await authStore.getOrgData(authStore.orgData.orgId)
+      alertStore.info({ content: 'Yard details saved!' })
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
 
   return {
     yards,
+    vendorDetails,
     getYards,
     addYard,
     removeYard,
     saveYards,
+    saveVendorDetails,
+    saveYardDetails,
   }
 })

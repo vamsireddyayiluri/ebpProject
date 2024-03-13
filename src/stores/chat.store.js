@@ -68,7 +68,7 @@ export const useChatStore = defineStore('chat', () => {
 
   //open chat and mark all message as read
   const openChat = async chatId => {
-    await router.push({ query: { id: chatId } })
+    await router.replace({ query: { id: chatId } })
     activeChat.value = chats.value.find(i => i.chatId === chatId)
     await getMessagesBychatId(chatId)
   }
@@ -94,7 +94,18 @@ export const useChatStore = defineStore('chat', () => {
     } else {
       // const user = await getUserById(data.owner)
       await createNewChat(authStore.userData.orgId + '_' + orgId, orgId)
-    }
+  // const goToChat = async userId => {
+  //   const chatId = [userId.substring(0, 12), authStore.userData.userId.substring(0, 12)]
+  //     .sort()
+  //     .join('-')
+  //   await router.push('chat')
+  //   const exist = chats.value.some(c => c.chatId === chatId)
+  //   if (exist) {
+  //     await openChat(chatId)
+  //   } else {
+  //     const user = await getUserById(userId)
+  //     await createNewChat(chatId, user)
+  //   }
   }
   const getUserById = async userId => {
     try {

@@ -51,9 +51,11 @@ export const bookingRemovedNotifier = async data => {
   await updateNotificationList(data.orgId, notification)
 }
 export const commitCreatedNotifier = async data => {
+  const path = `/dashboard?bid=${data.bookingId}&cid=${data.id}`
   const notification = {
     ...createNotificationObj(data),
     title: `Trucker ${data.scac} offered capacity for booking ${data.ref}`,
+    button: { name: 'View commitment', route: path },
   }
   await updateNotificationList(data.bookingOrgId, notification)
 }

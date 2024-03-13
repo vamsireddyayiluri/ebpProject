@@ -81,7 +81,7 @@ const renderMarkerIcon = marker => {
     icon: 'garage',
     color: 'textTertiary',
     bgColor: 'uiInteractive',
-    bgColorHover: 'mapMarkerInteraction-1',
+    bgColorHover: 'uiInteractiveHover',
     count: marker.entities.length,
   }
 }

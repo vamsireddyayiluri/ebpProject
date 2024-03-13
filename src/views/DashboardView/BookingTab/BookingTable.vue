@@ -7,6 +7,7 @@ import { useAuthStore } from '~/stores/auth.store'
 import { useCommitmentsStore } from '~/stores/commitments.store'
 import { declineCodes, onboardingCodes } from '~/constants/reasonCodes'
 import { statuses } from '~/constants/statuses'
+import { handleQueryUrlForCommitments } from '~/helpers/links'
 
 const props = defineProps({
   computedEntities: Array,
@@ -14,18 +15,13 @@ const props = defineProps({
   loading: Boolean,
 })
 const emit = defineEmits(['selectTableRow', 'editBooking'])
-const {
-  deleteBooking,
-  pauseBooking,
-  createDraft,
-  updateBookingStatus,
-  getCommitmentsByBookingId,
-  closeBookingExpansion,
-} = useBookingsStore()
+const { deleteBooking, updateBookingStatus, getCommitmentsByBookingId, closeBookingExpansion } =
+  useBookingsStore()
 const { approveCommitment, declineCommitment, completeCommitment } = useCommitmentsStore()
 const { computedEntities } = toRefs(props)
 const authStore = useAuthStore()
 const { smAndDown } = useDisplay()
+const router = useRouter()
 const showActions = ref(true)
 const tableHeight = ref(0)
 const removeBookingDialog = ref(false)
@@ -116,8 +112,14 @@ const onDeclineCommitment = async (id, reason) => {
   commitmentDetailsDialog.value.show(false)
   await declineCommitment(id, reason)
 }
+const openCommitmentsDialogOnUrlChange = async () => {
+  const commitment = await handleQueryUrlForCommitments(router.currentRoute.value.query)
+  commitment &&
+    (commitmentDetailsDialog.value.show(true), (commitmentDetailsDialog.value.data = commitment))
+}
 const tableId = 'bookingsTable'
-onMounted(() => {
+
+onMounted(async () => {
   setTimeout(() => {
     const table = document.getElementById(tableId)
     tableHeight.value = smAndDown.value
@@ -125,6 +127,13 @@ onMounted(() => {
       : window.innerHeight - table.getBoundingClientRect().top - 108
   })
 })
+onUpdated(async () => {
+  await openCommitmentsDialogOnUrlChange()
+})
+watch(
+  () => router.currentRoute.value.fullPath,
+  async () => openCommitmentsDialogOnUrlChange(),
+)
 </script>
 
 <template>

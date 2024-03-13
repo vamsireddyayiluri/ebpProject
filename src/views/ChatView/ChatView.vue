@@ -55,7 +55,7 @@ onMounted(async () => {
 
     // if activeChat exist in store save id in URL
     if (!chatId && activeChat.value) {
-      await router.push({ query: { id: activeChat.value.chatId } })
+      await router.replace({ query: { id: activeChat.value.chatId } })
     }
 
     // if chat id exists in URL open chat

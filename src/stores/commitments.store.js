@@ -82,7 +82,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
           }
         })
       })
-      const commitment = await getcommitment(id)
+      const commitment = await getCommitment(id)
       await updateBookingStore(commitment.bookingId)
       alertStore.info({ content: 'Booking commitment completed' })
     } catch ({ message }) {
@@ -104,14 +104,14 @@ export const useCommitmentsStore = defineStore('commitments', () => {
           }
         })
       })
-      const commitment = await getcommitment(id)
+      const commitment = await getCommitment(id)
       await updateBookingStore(commitment.bookingId)
       alertStore.info({ content: 'Booking commitment declined' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
   }
-  const getcommitment = async id => {
+  const getCommitment = async id => {
     try {
       const docData = await getDoc(doc(db, 'commitments', id))
 
@@ -122,6 +122,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
   }
 
   return {
+    getCommitment,
     approveCommitment,
     completeCommitment,
     declineCommitment,

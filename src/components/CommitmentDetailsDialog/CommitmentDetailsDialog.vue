@@ -13,6 +13,7 @@ const emit = defineEmits(['close', 'approveCommitment', 'completeCommitment', 'd
 const bookingStore = useBookingsStore()
 const { getFormattedDate } = useDate()
 const { goToChat } = useChatStore()
+const router = useRouter()
 const checkCommitmentStatus = () => {
   return props.commitment?.timeLine?.some(({ title }) => title.includes('approved'))
 }
@@ -57,19 +58,23 @@ onMounted(async () => {
     ]
   }
 })
+onUnmounted(() => {
+  router.push({ query: null })
+})
 </script>
 
 <template>
   <div class="flex justify-between items-center mb-8 pt-2">
     <Typography type="text-h1"> Commitment </Typography>
     <div class="ml-auto">
-      <IconButton
-        icon="mdi-message-text"
-        class="mr-2"
+      <Button
+        prepend-icon="mdi-message-text"
+        density="compact"
+        class="mr-4"
         @click="goToChat(props.commitment.truckerOrgId)"
       >
-        <Tooltip> Go to chat </Tooltip>
-      </IconButton>
+        Chat with trucker
+      </Button>
       <IconButton
         icon="mdi-close"
         size="24"
