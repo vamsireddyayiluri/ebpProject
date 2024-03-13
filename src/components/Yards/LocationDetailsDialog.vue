@@ -39,45 +39,29 @@ const details = ref(
     : rawVendorDetails.value || emptyDetails,
 )
 const isSecondaryContact = ref(false)
-const defaultTime = [
-  {
-    day: 'Monday',
-    from: null,
-    status: false,
-    to: null,
-  },
-  {
-    day: 'Tuesday',
-    from: null,
-    status: false,
-    to: null,
-  },
-  { day: 'Wednesday', from: null, status: false, to: null },
-  {
-    day: 'Thursday',
-    from: null,
-    status: false,
-    to: null,
-  },
-  {
-    day: 'Friday',
-    from: null,
-    status: false,
-    to: null,
-  },
-  {
-    day: 'Saturday',
-    from: null,
-    status: false,
-    to: null,
-  },
-  {
-    day: 'Sunday',
-    from: null,
-    status: false,
-    to: null,
-  },
-]
+const createDefaultTimeArray = () => {
+  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+  const defaultTimeFrom = {
+    hh: '09',
+    mm: '30',
+    A: 'AM',
+  }
+  const defaultTimeTo = {
+    hh: '05',
+    mm: '30',
+    A: 'PM',
+  }
+
+  return days.map(day => {
+    return {
+      day,
+      from: defaultTimeFrom,
+      status: false,
+      to: defaultTimeTo,
+    }
+  })
+}
+const defaultTime = createDefaultTimeArray()
 const checkboxes = ref(
   props.editedLocation?.details?.customizedDetails
     ? props.editedLocation.details.hoursOfOperation || defaultTime
@@ -119,9 +103,13 @@ const rules = {
       : true
   },
 }
-const currentEditedDetails = props.editedLocation? authStore.orgData.workDetails.find(l => l.id === props.editedLocation.id)?.details: authStore.orgData.vendorDetails
+const currentEditedDetails = props.editedLocation
+  ? authStore.orgData.workDetails.find(l => l.id === props.editedLocation.id)?.details
+  : authStore.orgData.vendorDetails
 const isDirty = ref(null)
-const isDisabled = computed(() => !!form.value?.errors.length || form.value?.isValidating || !isDirty.value)
+const isDisabled = computed(
+  () => !!form.value?.errors.length || form.value?.isValidating || !isDirty.value,
+)
 
 const checkFormModified = () => {
   isDirty.value = !isEqual(details.value, currentEditedDetails)
@@ -160,7 +148,11 @@ watch(details, checkFormModified, { deep: true })
     :color="getColor('textSecondary')"
     class="mb-8"
   >
-    {{ editedLocation? 'Customize the details for an individual location': 'Create location details that will be shown by default. You can customize the details for an    individual location at any time.' }}
+    {{
+      editedLocation
+        ? 'Customize the details for an individual location'
+        : 'Create location details that will be shown by default. You can customize the details for an    individual location at any time.'
+    }}
   </Typography>
   <VForm
     ref="form"
@@ -186,24 +178,22 @@ watch(details, checkFormModified, { deep: true })
         placeholder="Primary@mail.com"
         :rules="[rules.email]"
       />
-      <template v-if="!isSecondaryContact">
-        <IconButton
-          width="48"
-          height="48"
-          variant="outlined"
-          :color="getColor('uiLine')"
-        >
-          <Icon
-            icon="mdi-plus"
-            size="24"
-            :color="getColor('iconButton-1')"
-            @click="isSecondaryContact = true"
-          />
-          <Tooltip location="top">
-            Add secondary contact information
-          </Tooltip>
-        </IconButton>
-      </template>
+      <IconButton
+        width="48"
+        height="48"
+        variant="outlined"
+        :color="getColor('uiLine')"
+      >
+        <Icon
+          :icon="isSecondaryContact ? 'mdi-minus' : 'mdi-plus'"
+          size="24"
+          :color="getColor('iconButton-1')"
+          @click="isSecondaryContact = !isSecondaryContact"
+        />
+        <Tooltip location="top">
+          {{ `${isSecondaryContact ? 'Remove' : 'Add'} secondary contact information` }}
+        </Tooltip>
+      </IconButton>
     </div>
     <div
       v-if="isSecondaryContact"
@@ -211,16 +201,17 @@ watch(details, checkFormModified, { deep: true })
     >
       <Textfield
         v-model="details.secondaryContactName"
-        label="Secondary contact name"
+        label="Secondary contact name *"
+        :rules="[rules.required]"
       />
       <Textfield
         v-model="details.secondaryContact"
-        label="Secondary contact number"
+        label="Secondary contact number *"
         :rules="[rules.cell]"
       />
       <Textfield
         v-model="details.secondaryContactEmail"
-        label="Secondary contact email"
+        label="Secondary contact email *"
         :rules="[rules.email]"
       />
     </div>
@@ -298,7 +289,7 @@ watch(details, checkFormModified, { deep: true })
         v-model="details.overweight"
         label="Overweight facility"
         class="h-fit"
-        @update:modelValue="value => details.averageWeight = value? defaultOverWeight: null"
+        @update:modelValue="value => (details.averageWeight = value ? defaultOverWeight : null)"
       />
       <Textfield
         v-if="details.overweight"
