@@ -94,18 +94,18 @@ export const useChatStore = defineStore('chat', () => {
     } else {
       // const user = await getUserById(data.owner)
       await createNewChat(authStore.userData.orgId + '_' + orgId, orgId)
-  // const goToChat = async userId => {
-  //   const chatId = [userId.substring(0, 12), authStore.userData.userId.substring(0, 12)]
-  //     .sort()
-  //     .join('-')
-  //   await router.push('chat')
-  //   const exist = chats.value.some(c => c.chatId === chatId)
-  //   if (exist) {
-  //     await openChat(chatId)
-  //   } else {
-  //     const user = await getUserById(userId)
-  //     await createNewChat(chatId, user)
-  //   }
+      // const goToChat = async userId => {
+      //   const chatId = [userId.substring(0, 12), authStore.userData.userId.substring(0, 12)]
+      //     .sort()
+      //     .join('-')
+      //   await router.push('chat')
+      //   const exist = chats.value.some(c => c.chatId === chatId)
+      //   if (exist) {
+      //     await openChat(chatId)
+      //   } else {
+      //     const user = await getUserById(userId)
+      //     await createNewChat(chatId, user)
+    }
   }
   const getUserById = async userId => {
     try {
