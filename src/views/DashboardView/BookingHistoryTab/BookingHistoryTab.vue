@@ -206,12 +206,12 @@ watch(searchValue, value => {
         variant="outlined"
         class="ml-auto"
         :color="getColor('uiLine')"
+        @click="downloadData"
       >
         <Icon
           icon="mdi-download"
           size="24"
           :color="getColor('iconButton-1')"
-          @click="downloadData"
         />
         <Tooltip> Download datatable </Tooltip>
       </IconButton>
