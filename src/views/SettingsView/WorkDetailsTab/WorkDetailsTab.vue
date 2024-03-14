@@ -9,9 +9,9 @@ const { orgData } = storeToRefs(authStore)
 const { yards } = storeToRefs(workDetailsStore)
 
 const validateWorkDetail = computed(() => {
-  if (yards.value.length !== orgData.value?.workDetails.length) return true
+  if (yards.value.length !== orgData.value?.locations.length) return true
   for (let i = 0; i < yards.value.length; i++) {
-    if (yards.value[i].id !== orgData.value.workDetails[i].id) {
+    if (yards.value[i].id !== orgData.value.locations[i].id) {
       return true
     }
   }
@@ -25,7 +25,7 @@ const onSave = async () => {
   await workDetailsStore.saveYards(filteredYards)
 }
 const cancelChanges = () => {
-  yards.value = [...orgData.value.workDetails]
+  yards.value = [...orgData.value.locations]
 }
 onMounted(() => {
   workDetailsStore.getYards()

@@ -21,7 +21,7 @@ export const useWorkDetailsStore = defineStore('workDetails', () => {
   })
 
   const getYards = () => {
-    yards.value = authStore.orgData?.workDetails?.map(i => {
+    yards.value = authStore.orgData?.locations?.map(i => {
       return {
         ...i,
         text: `Commodity: ${i.commodity} ${i.details?.customizedDetails? '- (customized details)': ''}`,

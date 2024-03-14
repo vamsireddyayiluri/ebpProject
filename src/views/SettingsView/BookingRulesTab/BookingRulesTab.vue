@@ -76,7 +76,6 @@ tryOnUnmounted(() => {
       <div class="order-4 sm:!order-3 !-mb-4 flex flex-col">
         <AutocompleteScac
           :scac-list="rules.truckers"
-          :menu-btn="false"
         />
       </div>
       <Textfield
