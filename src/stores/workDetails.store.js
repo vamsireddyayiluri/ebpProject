@@ -40,7 +40,7 @@ export const useWorkDetailsStore = defineStore('workDetails', () => {
     const { rules } = useBookingRulesStore()
 
     let data = {
-      workDetails: yards,
+      locations: yards,
     }
     if (!yards.find(val => val.label === rules?.yard?.label)) {
       delete rules?.yard
@@ -74,7 +74,7 @@ export const useWorkDetailsStore = defineStore('workDetails', () => {
 
     try {
       await updateDoc(doc(db, 'organizations', authStore.orgData.orgId), {
-        workDetails: updatedDetails,
+        locations: updatedDetails,
       })
       await getYards()
       await authStore.getOrgData(authStore.orgData.orgId)

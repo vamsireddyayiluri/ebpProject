@@ -26,6 +26,7 @@ const autocompleteValue = ref(null)
 
 const removeScac = e => {
   scacList.value = useArrayFilter(scacList, i => i !== e).value
+  emit('onChange', scacList.value)
 }
 const sendToMarketplace = () => {
   sendDialog.value.show(false)
@@ -35,6 +36,9 @@ const updateModelValue = updatedScacList => {
   scacList.value = updatedScacList
   emit('onChange', updatedScacList)
 }
+defineExpose({
+  updateModelValue,
+})
 onMounted(async () => {
   truckers.value = await getTruckers()
 })

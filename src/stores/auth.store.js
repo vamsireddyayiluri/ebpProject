@@ -205,7 +205,11 @@ export const useAuthStore = defineStore('auth', () => {
           createdAt: getLocalTime().format(),
           updatedAt: getLocalTime().format(),
           workDetails: data.yards,
-          bookingRules: {},
+          bookingRules: {
+            timeForNotificationBeforeCutoff: '',
+            timeForTruckersFromMarketplace: '',
+            truckers: {list: []},
+          },
           type: 'exporter',
         }
         await setDoc(docRef, orgData)
