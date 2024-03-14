@@ -119,7 +119,7 @@ const rules = {
       : true
   },
 }
-const currentEditedDetails = props.editedLocation? authStore.orgData.workDetails.find(l => l.id === props.editedLocation.id)?.details: authStore.orgData.vendorDetails
+const currentEditedDetails = props.editedLocation? authStore.orgData.locations.find(l => l.id === props.editedLocation.id)?.details: authStore.orgData.vendorDetails
 const isDirty = ref(null)
 const isDisabled = computed(() => !!form.value?.errors.length || form.value?.isValidating || !isDirty.value)
 
