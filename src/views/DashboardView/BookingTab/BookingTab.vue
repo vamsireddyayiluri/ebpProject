@@ -48,6 +48,7 @@ const filters = ref({
 const selectLine = ref(getAllLines())
 const createBookingDialog = ref(null)
 const clickedOutside = ref(null)
+const bookingConfirmationDialog = ref(null)
 
 const computedSearchedEntities = computed({
   get() {
@@ -105,7 +106,12 @@ const selectTableRow = e => {
   mapRef.value?.setZoom(15)
   mapRef.value?.panTo({ lat: e.location.lat, lng: e.location.lng })
 }
-
+const handleCreateBookingDialog = () => {
+  /*if (true) {
+    bookingConfirmationDialog.value.show(true)
+  } else createBookingDialog.value.show(true)*/
+  createBookingDialog.value.show(true)
+}
 const viewStatistics = e => {
   bookingStatisticsDialog.value.show(true)
   bookingStatisticsDialog.value.data = e
@@ -201,7 +207,7 @@ watch(searchValue, value => {
           </div>
           <Button
             class="ml-auto px-12"
-            @click="createBookingDialog.show(true)"
+            @click="handleCreateBookingDialog"
           >
             Create booking
           </Button>
@@ -308,6 +314,14 @@ watch(searchValue, value => {
         :clicked-outside="clickedOutside"
         @close="createBookingDialog.show(false)"
       />
+    </template>
+  </Dialog>
+  <Dialog
+    ref="bookingConfirmationDialog"
+    class="max-w-full sm:max-w-[90vw] md:max-w-[75vw]"
+  >
+    <template #text>
+      <BookingConfirmationDialog :commitments="[]" />
     </template>
   </Dialog>
 </template>
