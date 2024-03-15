@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { auth, db } from '~/firebase'
+import moment from 'moment-timezone'
 import {
   addDoc,
   collection,
@@ -204,9 +205,13 @@ export const useAuthStore = defineStore('auth', () => {
           orgId: data.orgId,
           email: data.email,
           company: data.company,
+          location: {
+            address: null,
+            timezone: moment.tz.guess(),
+          },
           createdAt: getLocalTime().format(),
           updatedAt: getLocalTime().format(),
-          workDetails: data.yards,
+          locations: data.yards,
           bookingRules: {
             timeForNotificationBeforeCutoff: '',
             timeForTruckersFromMarketplace: '',
