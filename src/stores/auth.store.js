@@ -1,4 +1,4 @@
-import { defineStore, getActivePinia } from 'pinia'
+import { defineStore } from 'pinia'
 import { auth, db } from '~/firebase'
 import {
   addDoc,
@@ -28,6 +28,7 @@ import firebase from 'firebase/compat/app'
 import { useInvitationStore } from '~/stores/invitation.store'
 import { useNotificationStore } from '~/stores/notification.store'
 import { useBookingsStore } from '~/stores/bookings.store'
+import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
 
 export const useAuthStore = defineStore('auth', () => {
   const router = useRouter()
@@ -35,6 +36,7 @@ export const useAuthStore = defineStore('auth', () => {
   const invitationStore = useInvitationStore()
   const notificationStore = useNotificationStore()
   const bookingsStore = useBookingsStore()
+  const { getPreferredTruckers } = usePreferredTruckersStore()
   const currentUser = ref(null)
   const storage = getStorage()
   const userData = ref(null)
@@ -208,7 +210,7 @@ export const useAuthStore = defineStore('auth', () => {
           bookingRules: {
             timeForNotificationBeforeCutoff: '',
             timeForTruckersFromMarketplace: '',
-            truckers: {list: []},
+            truckers: { list: [] },
           },
           type: 'exporter',
         }
@@ -264,6 +266,7 @@ export const useAuthStore = defineStore('auth', () => {
           await getOrgWorkers()
           isLoading.value = false
         }
+        getPreferredTruckers()
       })
     } catch ({ message }) {
       alertStore.warning({ content: message })

@@ -6,9 +6,14 @@ import { addDoc, arrayRemove, arrayUnion, collection, doc, updateDoc } from 'fir
 import { db } from '~/firebase'
 
 export const usePreferredTruckersStore = defineStore('preferredTruckers', () => {
-  const { orgData } = useAuthStore()
-  const preferredTruckers = ref(orgData?.preferredTruckers || [])
+  const authStore = useAuthStore()
+  const preferredTruckers = ref(authStore.orgData?.preferredTruckers || [])
   const alertStore = useAlertStore()
+
+  const getPreferredTruckers = () => {
+    //here need to find last booking dale (commitments with any status)
+    preferredTruckers.value = authStore.orgData?.preferredTruckers
+  }
 
   const inviteTrucker = async email => {
     const index = preferredTruckers?.value.findIndex(i => i?.email === email)
@@ -34,7 +39,7 @@ export const usePreferredTruckersStore = defineStore('preferredTruckers', () => 
           subject: 'Hello from Qualle!',
           html:
             'Hello trucker <br>' +
-            `Exporter ${orgData.company} invited you to the platform` +
+            `Exporter ${authStore.orgData.company} invited you to the platform` +
             `<br/><a href="https://qualle-stpv2.web.app/register">Street turn platform</a>`,
         },
       })
@@ -44,7 +49,7 @@ export const usePreferredTruckersStore = defineStore('preferredTruckers', () => 
   }
   const addTrucker = async trucker => {
     try {
-      await updateDoc(doc(db, 'organizations', orgData.orgId), {
+      await updateDoc(doc(db, 'organizations', authStore.orgData.orgId), {
         preferredTruckers: arrayUnion(trucker),
       })
       preferredTruckers.value.push(trucker)
@@ -57,7 +62,7 @@ export const usePreferredTruckersStore = defineStore('preferredTruckers', () => 
     delete trucker.selected
     const truckerToRemove = trucker
     try {
-      await updateDoc(doc(db, 'organizations', orgData.orgId), {
+      await updateDoc(doc(db, 'organizations', authStore.orgData.orgId), {
         preferredTruckers: arrayRemove(truckerToRemove),
       })
       const index = preferredTruckers.value.findIndex(i => i.id === truckerToRemove.id)
@@ -71,6 +76,7 @@ export const usePreferredTruckersStore = defineStore('preferredTruckers', () => 
 
   return {
     preferredTruckers,
+    getPreferredTruckers,
     inviteTrucker,
     addTrucker,
     deleteTrucker,

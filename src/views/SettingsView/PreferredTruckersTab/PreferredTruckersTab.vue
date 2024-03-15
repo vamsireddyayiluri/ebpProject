@@ -4,12 +4,15 @@ import { useDisplay } from 'vuetify'
 import { useActions, useDate, useHeaders } from '~/composables'
 import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
 import { storeToRefs } from 'pinia'
-import allTruckers from '~/fixtures/truckers.json'
 import { pullAllBy } from 'lodash'
 import { useAlertStore } from '~/stores/alert.store'
+import { useBookingRulesStore } from '~/stores/bookingRules.store'
+import { computed } from 'vue'
 
 const alertStore = useAlertStore()
 const preferredTruckersStore = usePreferredTruckersStore()
+const { getTruckers } = useBookingRulesStore()
+const truckers = ref([])
 const { preferredTruckers } = storeToRefs(preferredTruckersStore)
 const { smAndDown } = useDisplay()
 const showActions = ref(true)
@@ -25,7 +28,7 @@ const { getFormattedDateTime } = useDate()
 const searchValue = ref(null)
 const loading = ref(false)
 const mutableEntities = ref(preferredTruckers)
-const preferedScacSearch = ref()
+const preferedScacSearch = ref('')
 const computedEntities = computed({
   get() {
     return mutableEntities.value
@@ -54,14 +57,25 @@ const deleteTrucker = () => {
 const customFilter = (search, lists) => {
   preferedScacSearch.value = search
   const result = [
-    lists[0].filter(i => i.scac.toLowerCase() === search.toLowerCase()),
+    lists[0].filter(i => {
+      return i.scac.toLowerCase() === search.toLowerCase()
+    }),
 
-    lists[1].filter(i => i.scac.toLowerCase() === search.toLowerCase()),
+    lists[1].filter(i => {
+      return i.scac.toLowerCase() === search.toLowerCase()
+    }),
   ]
 
   return result
 }
-
+const computedSearchCounts = computed(() => {
+  return preferedScacSearch?.value.length < 4
+})
+const onSelect = item => {
+  console.log('-> item', item)
+  preferredTruckersStore.addTrucker(item)
+  preferedScacSearch.value = ''
+}
 /*const sendInvitation = async () => {
   try {
     const result = await preferredTruckersStore.inviteTrucker('testEmail@test.com')
@@ -77,13 +91,14 @@ const customFilter = (search, lists) => {
 }*/
 
 const tableId = 'truckersListTable'
-onMounted(() => {
+onMounted(async () => {
   setTimeout(() => {
     const table = document.getElementById(tableId)
     tableHeight.value = smAndDown.value
       ? 396
-      : window.innerHeight - table.getBoundingClientRect().top - 95
+      : window.innerHeight - table.getBoundingClientRect().top - 99
   })
+  truckers.value = await getTruckers()
 })
 </script>
 
@@ -103,19 +118,22 @@ onMounted(() => {
     send him an invitation via email.
   </Typography>
   <div class="flex justify-between flex-wrap gap-5 mb-5">
-    <AutocompleteGroups
-      :lists="[preferredTruckers, pullAllBy(allTruckers, preferredTruckers, 'scac')]"
-      label="Search for truckers by SCAC and email"
+    <AutocompleteGroups2
+      :lists="[preferredTruckers, pullAllBy(truckers, preferredTruckers, 'scac')]"
+      label="Search for truckers by SCAC"
       multiple2-list=""
       item-title="scac"
       item-value="email"
       class="max-w-[500px] min-w-[280px]"
       :custom-filter="customFilter"
-      :hide-no-data="preferedScacSearch?.length < 4"
-      @onSelect="e => {}"
-      @onSelectMultiple="item => preferredTruckersStore.addTrucker(item)"
+      :hide-no-data="computedSearchCounts"
+      :suffix="preferedScacSearch?.length >= 4 ? '' : 4 - preferedScacSearch?.length + ' chars'"
+      @onSelect="onSelect"
     >
-      <template #noData>
+      <template
+        #noData
+        v-if="preferedScacSearch?.length >= 4"
+      >
         <Typography class="mb-5">
           There is no such trucker on the platform. Do you want to send an invitation via email?
         </Typography>
@@ -126,7 +144,16 @@ onMounted(() => {
           Invite new trucker
         </Button>
       </template>
-    </AutocompleteGroups>
+      <template #list2Action>
+        <Button
+          variant="plain"
+          prepend-icon="mdi-plus"
+          density="compact"
+        >
+          add
+        </Button>
+      </template>
+    </AutocompleteGroups2>
     <Button
       class="px-12"
       @click="inviteTruckerDialog.show(true)"
@@ -146,7 +173,6 @@ onMounted(() => {
       tableHeight: tableHeight,
       tableMinWidth: 960,
     }"
-    class="mb-5"
   >
     <template #scacEmail="{ item }">
       <div>
