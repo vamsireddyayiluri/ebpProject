@@ -212,7 +212,7 @@ watch(
     </template>
     <template #worker="{ item }">
       <Typography>
-        {{ item.createdBy.name }}
+        {{ item.createdBy?.name }}
       </Typography>
     </template>
     <template #progress="{ item }">

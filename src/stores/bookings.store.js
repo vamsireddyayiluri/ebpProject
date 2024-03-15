@@ -88,15 +88,12 @@ export const useBookingsStore = defineStore('bookings', () => {
     const today = getLocalServerTime(moment(), 'America/Los_Angeles')
     for (const b of bookings) {
       if (moment(b.loadingDate).isBefore(moment(today)) || b.status === 'completed') {
-        await updateBooking(
-          {
-            ...b,
-            status: b?.status === 'completed' ? b?.status : statuses.expired,
-            updatedAt: getLocalTime().format(),
-          },
-          'bookings',
-          true,
-        )
+        const updatedBookingData = {
+          ...b,
+          status: b.status === 'completed' ? b.status : statuses.expired,
+          updatedAt: getLocalTime().format(),
+        }
+        updatePromises.push(updateBooking(updatedBookingData, 'bookings', true))
       }
     }
   }
