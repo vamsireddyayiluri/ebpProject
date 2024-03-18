@@ -3,19 +3,21 @@ import { collection, doc, getDocs, query, updateDoc, where } from 'firebase/fire
 import { db } from '~/firebase'
 import { useAlertStore } from '~/stores/alert.store'
 import { useAuthStore } from '~/stores/auth.store'
-import {deepCopy} from "json-2-csv/lib/utils";
+import { deepCopy } from 'json-2-csv/lib/utils'
 
 export const useBookingRulesStore = defineStore('bookingRules', () => {
   const {
     orgData: { bookingRules, locations },
   } = useAuthStore()
   const alertStore = useAlertStore()
-  const rules = ref(deepCopy({
-    yard: bookingRules.yard,
-    truckers: bookingRules?.truckers || { list: [] },
-    timeForTruckersFromMarketplace: bookingRules.timeForTruckersFromMarketplace,
-    timeForNotificationBeforeCutoff: bookingRules.timeForNotificationBeforeCutoff,
-  }))
+  const rules = ref(
+    deepCopy({
+      yard: bookingRules.yard,
+      truckers: bookingRules?.truckers || { list: [] },
+      timeForTruckersFromMarketplace: bookingRules.timeForTruckersFromMarketplace,
+      timeForNotificationBeforeCutoff: bookingRules.timeForNotificationBeforeCutoff,
+    }),
+  )
 
   const updateRules = async (bookingRules, orgId) => {
     try {

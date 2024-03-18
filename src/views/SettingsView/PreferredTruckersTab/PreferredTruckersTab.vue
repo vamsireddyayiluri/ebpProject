@@ -8,10 +8,12 @@ import { pullAllBy } from 'lodash'
 import { useAlertStore } from '~/stores/alert.store'
 import { useBookingRulesStore } from '~/stores/bookingRules.store'
 import { computed } from 'vue'
+import { useChatStore } from '~/stores/chat.store'
 
 const alertStore = useAlertStore()
 const preferredTruckersStore = usePreferredTruckersStore()
 const { getTruckers } = useBookingRulesStore()
+const { goToChat } = useChatStore()
 const truckers = ref([])
 const { preferredTruckers } = storeToRefs(preferredTruckersStore)
 const { smAndDown } = useDisplay()
@@ -42,40 +44,38 @@ const confirmSendInvitation = trucker => {
   inviteTruckerDialog.value.show(true)
   inviteTruckerDialog.value.data = trucker
 }
-const containerActionHandler = ({ action, e }) => {
+const containerActionHandler = async ({ action, e }) => {
   if (action === 'to-message') {
+    goToChat(e[0].id)
   }
   if (action === 'delete-trucker') {
     deleteTruckerDialog.value.show(true)
     deleteTruckerDialog.value.data = e[0]
   }
 }
-const deleteTrucker = () => {
-  preferredTruckersStore.deleteTrucker(deleteTruckerDialog.value.data)
+const deleteTrucker = async () => {
+  await preferredTruckersStore.deleteTrucker(deleteTruckerDialog.value.data)
   deleteTruckerDialog.value.show(false)
+  truckers.value = await getTruckers()
 }
 const customFilter = (search, lists) => {
   preferedScacSearch.value = search
   const result = [
-    lists[0].filter(i => {
-      return i.scac.toLowerCase() === search.toLowerCase()
-    }),
+    lists[0].filter(i => i.scac.toLowerCase() === search.toLowerCase()),
 
-    lists[1].filter(i => {
-      return i.scac.toLowerCase() === search.toLowerCase()
-    }),
+    lists[1].filter(i => i.scac.toLowerCase() === search.toLowerCase()),
   ]
 
   return result
 }
-const computedSearchCounts = computed(() => {
+const computedHideNoData = computed(() => {
   return preferedScacSearch?.value.length < 4
 })
-const onSelect = item => {
-  console.log('-> item', item)
-  preferredTruckersStore.addTrucker(item)
+const onSelect = async item => {
+  await preferredTruckersStore.addTrucker(item)
   preferedScacSearch.value = ''
 }
+
 /*const sendInvitation = async () => {
   try {
     const result = await preferredTruckersStore.inviteTrucker('testEmail@test.com')
@@ -118,21 +118,20 @@ onMounted(async () => {
     send him an invitation via email.
   </Typography>
   <div class="flex justify-between flex-wrap gap-5 mb-5">
-    <AutocompleteGroups2
-      :lists="[preferredTruckers, pullAllBy(truckers, preferredTruckers, 'scac')]"
+    <AutocompleteGroups
+      :lists="[computedEntities, pullAllBy(truckers, computedEntities, 'scac')]"
       label="Search for truckers by SCAC"
-      multiple2-list=""
       item-title="scac"
       item-value="email"
       class="max-w-[500px] min-w-[280px]"
       :custom-filter="customFilter"
-      :hide-no-data="computedSearchCounts"
+      :hide-no-data="computedHideNoData"
       :suffix="preferedScacSearch?.length >= 4 ? '' : 4 - preferedScacSearch?.length + ' chars'"
       @onSelect="onSelect"
     >
       <template
-        #noData
         v-if="preferedScacSearch?.length >= 4"
+        #noData
       >
         <Typography class="mb-5">
           There is no such trucker on the platform. Do you want to send an invitation via email?
@@ -153,7 +152,7 @@ onMounted(async () => {
           add
         </Button>
       </template>
-    </AutocompleteGroups2>
+    </AutocompleteGroups>
     <Button
       class="px-12"
       @click="inviteTruckerDialog.show(true)"

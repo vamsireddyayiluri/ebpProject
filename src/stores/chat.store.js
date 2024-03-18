@@ -130,6 +130,7 @@ export const useChatStore = defineStore('chat', () => {
     } else {
       // const user = await getUserById(data.owner)
       await createNewChat(chatId, orgId)
+
       // const goToChat = async userId => {
       //   const chatId = [userId.substring(0, 12), authStore.userData.userId.substring(0, 12)]
       //     .sort()

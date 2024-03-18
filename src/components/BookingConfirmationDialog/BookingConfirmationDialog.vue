@@ -13,7 +13,7 @@ const props = defineProps({
       :src="logo"
       alt="qualle logo"
       class="h-9 mx-auto mb-4"
-    />
+    >
     <Typography
       :color="getColor('textPrimary')"
       class="text-center mb-8"

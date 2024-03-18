@@ -71,7 +71,7 @@ const onClickOutsideDialog = () => {
 
 <template>
   <div
-    class="w-full md:w-11/12"
+    class="w-full"
     v-bind="{ ...attrs }"
   >
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 [&>div]:text-left">

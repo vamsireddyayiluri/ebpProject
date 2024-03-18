@@ -99,6 +99,7 @@ const isDisabled = computed(() => {
       validateFlexibleSizes(booking.value.size, booking.value.flexibleBooking)?.length > 0
   }
   console.log('condition test validare', condition)
+  
   return condition
 })
 
