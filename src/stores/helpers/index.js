@@ -1,6 +1,6 @@
 import { groupBy, uniqBy, values } from 'lodash'
 import { db } from '~/firebase'
-import { collection, getDocs, query, where } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore'
 import { uid } from 'uid'
 
 export const groupedBookingLocations = bookings =>
@@ -44,4 +44,10 @@ export const getUserIdByEmail = async email => {
   const users = await getDocs(userCollection)
 
   return users.docs[0].id
+}
+
+export const getRequestLoadFee = async () => {
+  const settingsCollection = query(doc(db, 'settings', 'request_loads'))
+  const settings = await getDoc(settingsCollection)
+  return settings.data()
 }

@@ -14,8 +14,15 @@ const messageActions = [
 
 const { userData } = useAuthStore()
 const alertStore = useAlertStore()
-const { openChat, sendNewMessage, markAsRead, markUserAsOnlineOffline, downloadFileFromChat, getAllOrgs, goToChat } =
-  useChatStore()
+const {
+  openChat,
+  sendNewMessage,
+  markAsRead,
+  markUserAsOnlineOffline,
+  downloadFileFromChat,
+  getCommittedTruckerOrgs,
+  goToChat,
+} = useChatStore()
 const { chats, activeChat, loading, activeChatMessages, companies, users } = storeToRefs(
   useChatStore(),
 )
@@ -49,7 +56,7 @@ const onChatArea = async chat => {
   }
 }
 onMounted(async () => {
-  allParticipants.value = await getAllOrgs()
+  allParticipants.value = await getCommittedTruckerOrgs()
   const interval = setInterval(async () => {
     const chatId = router.currentRoute.value.query.id
 
@@ -67,6 +74,7 @@ onMounted(async () => {
   await markUserAsOnlineOffline('online')
 })
 onBeforeUnmount(async () => {
+  activeChat.value = null
   await markUserAsOnlineOffline('offline')
 })
 

@@ -7,6 +7,7 @@ import { useBookingsStore } from '~/stores/bookings.store'
 const { updateBookingStore } = useBookingsStore()
 
 import { onboardingCodes } from '~/constants/reasonCodes'
+import { getRequestLoadFee } from './helpers'
 
 export const useCommitmentsStore = defineStore('commitments', () => {
   const alertStore = useAlertStore()
@@ -62,27 +63,51 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       alertStore.warning({ content: message })
     }
   }
-  const completeCommitment = async (id, reason) => {
-    const obj = {}
-    if (onboardingCodes.onboarded === reason || onboardingCodes.onboardMovedLoad === reason) {
+  const completeCommitment = async (data, reason, onBoardedContainers) => {
+    let obj = {}
+    if (onboardingCodes.onboarded === reason) {
       obj.status = statuses.onboarded
+    } else if (onboardingCodes.onboardMovedLoad === reason) {
+      // Calculating marketplace fee if trucker moved different loads
+
+      const { marketplaceFeePercentage, processingFee } = await getRequestLoadFee()
+      const truckerRevenue = data.estimatedRate * onBoardedContainers
+      const marketPlaceFee = parseFloat(
+        ((truckerRevenue / 100) * marketplaceFeePercentage).toFixed(2),
+      )
+
+      const stripeCharge = (marketPlaceFee / 100) * processingFee.percentage
+      const finalFee = stripeCharge + processingFee.cents / 100
+      const processingFeeAmount = parseFloat(finalFee.toFixed(2))
+
+      const loadFee = parseFloat(processingFeeAmount + marketPlaceFee).toFixed(2)
+      const amountBreakup = {
+        baseFee: marketPlaceFee,
+        processingFee: parseFloat(processingFeeAmount.toFixed(2)),
+      }
+      obj = {
+        loadFee,
+        amountBreakup,
+        status: statuses.onboarded,
+        onBoardedContainers: onBoardedContainers,
+      }
     } else {
       obj.status = statuses.incomplete
       obj.reason = reason
     }
     try {
-      await updateDoc(doc(db, 'commitments', id), {
+      await updateDoc(doc(db, 'commitments', data.id), {
         ...obj,
       })
       bookingsStore.bookings.forEach(i => {
         i.entities.forEach(j => {
           // i.expand = true
-          if (j.id === id) {
+          if (j.id === data.id) {
             ;(j.status = obj.status), (j.reason = reason)
           }
         })
       })
-      const commitment = await getCommitment(id)
+      const commitment = await getCommitment(data.id)
       await updateBookingStore(commitment.bookingId)
       alertStore.info({ content: 'Booking commitment completed' })
     } catch ({ message }) {

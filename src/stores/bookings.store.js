@@ -93,7 +93,7 @@ export const useBookingsStore = defineStore('bookings', () => {
           status: b.status === 'completed' ? b.status : statuses.expired,
           updatedAt: getLocalTime().format(),
         }
-        // updatePromises.push(updateBooking(updatedBookingData, 'bookings', true))
+        updateBooking(updatedBookingData, 'bookings', true)
       }
     }
   }
