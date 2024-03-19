@@ -15,7 +15,7 @@ const { getFormattedDate } = useDate()
 const { goToChat } = useChatStore()
 const router = useRouter()
 const checkCommitmentStatus = () => {
-  return props.commitment?.timeLine?.some(({ title }) => title.includes('approved'))
+  return props.commitment?.timeLine?.some(({ status }) => status === 'approved')
 }
 const isPending = props.commitment?.status === statuses.pending
 let details = ref([
