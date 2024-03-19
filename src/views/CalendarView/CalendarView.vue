@@ -23,7 +23,7 @@ const getEvents = bookings => {
       id: i.id,
       title: `Ref# ${i.ref}`,
       start: i.createdAt,
-      end: i.bookingExpiry,
+      end: i.loadingDate,
       metadata: {
         name: `event-${Math.floor(Math.random() * 9) + 1}`,
         ref: i.ref,
@@ -59,9 +59,9 @@ const today = moment()
 const nextExpiring = computed(() => {
   const datesArray = bookings.value
     .filter(b => b)
-    .sort((a, b) => moment(a.bookingExpiry).diff(moment(b.bookingExpiry)))
+    .sort((a, b) => moment(a.loadingDate).diff(moment(b.loadingDate)))
 
-  return getFormattedDate(datesArray[0]?.bookingExpiry)
+  return getFormattedDate(datesArray[0]?.loadingDate)
 })
 const openCreateBookingDialog = () => {
   createBookingDialog.value.show(true)

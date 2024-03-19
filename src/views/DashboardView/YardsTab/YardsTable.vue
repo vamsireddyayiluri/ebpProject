@@ -152,9 +152,9 @@ onMounted(() => {
         </template>
         <template #bookingExpiry="{ item }">
           <Typography type="text-body-m-regular">
-            {{ getFormattedDate(item.bookingExpiry) }}
+            {{ getFormattedDate(item.loadingDate) }}
             <Tooltip>
-              {{ getFormattedDateTime(item.bookingExpiry) }}
+              {{ getFormattedDateTime(item.loadingDate) }}
             </Tooltip>
           </Typography>
         </template>

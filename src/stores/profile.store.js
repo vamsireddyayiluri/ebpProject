@@ -25,7 +25,7 @@ export const useProfileStore = defineStore('profile', () => {
   const alertStore = useAlertStore()
   const { getFormattedDateTime } = useDate()
   const accountInfo = ref({
-    fullName: userData.fullName,
+    name: userData.name,
     company: userData.company,
     cell: userData.cell,
     email: userData.email,
@@ -56,9 +56,9 @@ export const useProfileStore = defineStore('profile', () => {
 
   // update user data in users collection
   const updateUserData = async payload => {
-    const { userId, fullName, company, cell } = payload
+    const { userId, name, company, cell } = payload
     try {
-      await updateDoc(doc(db, 'users', userId), { fullName, company, cell })
+      await updateDoc(doc(db, 'users', userId), { name, company, cell })
       await updateDoc(doc(db, 'organizations', userData.orgId), { company })
     } catch ({ message }) {
       alertStore.warning({ content: message })

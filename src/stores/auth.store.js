@@ -1,5 +1,6 @@
 import { defineStore, getActivePinia } from 'pinia'
 import { auth, db } from '~/firebase'
+import moment from 'moment-timezone'
 import {
   addDoc,
   collection,
@@ -52,17 +53,17 @@ export const useAuthStore = defineStore('auth', () => {
     } catch (error) {
       isLoading.value = false
       switch (error.code) {
-      case 'auth/user-not-found':
-        alertStore.warning({ content: 'User not found' })
-        break
-      case 'auth/wrong-password':
-        alertStore.warning({ content: 'Wrong password' })
-        break
-      case 'auth/invalid-login-credentials':
-        alertStore.warning({ content: 'Invalid credentials' })
-        break
-      default:
-        alertStore.warning({ content: 'Something went wrong' })
+        case 'auth/user-not-found':
+          alertStore.warning({ content: 'User not found' })
+          break
+        case 'auth/wrong-password':
+          alertStore.warning({ content: 'Wrong password' })
+          break
+        case 'auth/invalid-login-credentials':
+          alertStore.warning({ content: 'Invalid credentials' })
+          break
+        default:
+          alertStore.warning({ content: 'Something went wrong' })
       }
     }
   }
@@ -89,7 +90,7 @@ export const useAuthStore = defineStore('auth', () => {
       await signInWithEmailAndPassword(auth, form.email, form.password)
       const orgId = await getOrgId(form.email)
       await addDoc(collection(db, 'pending_verifications'), {
-        fullName: form.fullName,
+        name: form.fullName,
         email: form.email,
         orgId,
         cell: form.cell,
@@ -114,20 +115,20 @@ export const useAuthStore = defineStore('auth', () => {
       await sendVerificationEmail()
     } catch (error) {
       switch (error.code) {
-      case 'auth/email-already-in-use':
-        alertStore.warning({ content: 'Email already in use' })
-        break
-      case 'auth/invalid-email':
-        alertStore.warning({ content: 'Invalid email' })
-        break
-      case 'auth/operation-not-allowed':
-        alertStore.warning({ content: 'Operation not allowed' })
-        break
-      case 'auth/weak-password':
-        alertStore.warning({ content: 'Weak password' })
-        break
-      default:
-        alertStore.warning({ content: 'Something went wrong' })
+        case 'auth/email-already-in-use':
+          alertStore.warning({ content: 'Email already in use' })
+          break
+        case 'auth/invalid-email':
+          alertStore.warning({ content: 'Invalid email' })
+          break
+        case 'auth/operation-not-allowed':
+          alertStore.warning({ content: 'Operation not allowed' })
+          break
+        case 'auth/weak-password':
+          alertStore.warning({ content: 'Weak password' })
+          break
+        default:
+          alertStore.warning({ content: 'Something went wrong' })
       }
       isLoading.value = false
     }
@@ -180,7 +181,7 @@ export const useAuthStore = defineStore('auth', () => {
       auth.currentUser.emailVerified = true
       const { uid: userId } = user
       let newUser = {
-        fullName: data.fullName,
+        name: data.name,
         email: data.email,
         cell: data.cell,
         createdAt: getLocalTime().format(),
@@ -202,10 +203,15 @@ export const useAuthStore = defineStore('auth', () => {
           orgId: data.orgId,
           email: data.email,
           company: data.company,
+          location: {
+            address: null,
+            timezone: moment.tz.guess(),
+          },
           createdAt: getLocalTime().format(),
           updatedAt: getLocalTime().format(),
-          workDetails: data.yards,
+          locations: data.yards,
           bookingRules: {},
+          type: 'exporter',
         }
         await setDoc(docRef, orgData)
       }
@@ -294,6 +300,14 @@ export const useAuthStore = defineStore('auth', () => {
     const querySnapshot = await getDocs(q)
     workers.value = querySnapshot.docs.map(doc => doc.data())
   }
+  const updateUserDoc = async payload => {
+    try {
+      await updateDoc(doc(db, 'users', userData.value.userId), payload)
+      await getUserData(userData.value.userId)
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
 
   return {
     login,
@@ -312,5 +326,6 @@ export const useAuthStore = defineStore('auth', () => {
     saveUserDataReports,
     getOrgData,
     workers,
+    updateUserDoc,
   }
 })

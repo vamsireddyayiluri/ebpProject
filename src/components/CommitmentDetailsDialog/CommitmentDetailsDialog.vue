@@ -4,18 +4,18 @@ import { useBookingsStore } from '~/stores/bookings.store'
 import { useDate } from '~/composables'
 import { statuses } from '~/constants/statuses'
 import { useChatStore } from '~/stores/chat.store'
-import { useBookingHistoryStore } from '~/stores/bookingHistory.store'
+import moment from 'moment-timezone'
 
 const props = defineProps({
   commitment: Object,
 })
 const emit = defineEmits(['close', 'approveCommitment', 'completeCommitment', 'declineCommitment'])
 const bookingStore = useBookingsStore()
-const bookingHistoryStore = useBookingHistoryStore()
 const { getFormattedDate } = useDate()
 const { goToChat } = useChatStore()
+const router = useRouter()
 const checkCommitmentStatus = () => {
-  return props.commitment?.timeline?.some(({ title }) => title.includes('approved'))
+  return props.commitment?.timeLine?.some(({ status }) => status === 'approved')
 }
 const isPending = props.commitment?.status === statuses.pending
 let details = ref([
@@ -32,14 +32,18 @@ const {
   containers,
   committed,
   status,
-  bookingExpiry,
+  loadingDate,
   commodity,
   line,
   size,
   location,
-} = bookingStore.bookings.find(i => i.id === props.commitment.bookingId) ||
-bookingHistoryStore.bookings.find(i => i.id === props.commitment.bookingId)
-
+} = bookingStore.bookings.find(i => i.id === props.commitment.bookingId)
+const getTimeLine = timeLine => {
+  const test = timeLine.map(val => {
+    return { title: val.message, date: moment(val.time_stamp).format('MM/DD/YYYY hh:mm:ss a') }
+  })
+  return test
+}
 onMounted(async () => {
   if (checkCommitmentStatus()) {
     details.value = [
@@ -54,21 +58,23 @@ onMounted(async () => {
     ]
   }
 })
+onUnmounted(() => {
+  router.push({ query: null })
+})
 </script>
 
 <template>
   <div class="flex justify-between items-center mb-8 pt-2">
-    <Typography type="text-h1">
-      Commitment
-    </Typography>
+    <Typography type="text-h1"> Commitment </Typography>
     <div class="ml-auto">
-      <IconButton
-        icon="mdi-message-text"
-        class="mr-2"
-        @click="goToChat('6srEzErbjIW4bL9gQUNbI51BGlE3')"
+      <Button
+        prepend-icon="mdi-message-text"
+        density="compact"
+        class="mr-4"
+        @click="goToChat(props.commitment.truckerOrgId)"
       >
-        <Tooltip> Go to chat </Tooltip>
-      </IconButton>
+        Chat with trucker
+      </Button>
       <IconButton
         icon="mdi-close"
         size="24"
@@ -144,36 +150,28 @@ onMounted(async () => {
             </ExpansionPanelTitle>
             <ExpansionPanelText class="pa-0">
               <div class="grid grid-cols-2 items-center [&>div]:py-2.5">
-                <Typography type="text-body-s-regular">
-                  Ref
-                </Typography>
+                <Typography type="text-body-s-regular"> Ref </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ bookingRef }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Containers
-                </Typography>
+                <Typography type="text-body-s-regular"> Containers </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ containers }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Committed
-                </Typography>
+                <Typography type="text-body-s-regular"> Committed </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ committed }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Status
-                </Typography>
+                <Typography type="text-body-s-regular"> Status </Typography>
                 <Classification
                   type="status"
                   :value="status"
@@ -190,43 +188,33 @@ onMounted(async () => {
                   </Typography>
                   </template>
                 -->
-                <Typography type="text-body-s-regular">
-                  Loading date
-                </Typography>
+                <Typography type="text-body-s-regular"> Loading date </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
-                  {{ getFormattedDate(bookingExpiry) }}
+                  {{ getFormattedDate(loadingDate) }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Commodity
-                </Typography>
+                <Typography type="text-body-s-regular"> Commodity </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ commodity }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Line
-                </Typography>
+                <Typography type="text-body-s-regular"> Line </Typography>
                 <LineAvatar
                   :line="line"
                   class="ml-auto"
                 />
-                <Typography type="text-body-s-regular">
-                  Size
-                </Typography>
+                <Typography type="text-body-s-regular"> Size </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ size }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Export facility
-                </Typography>
+                <Typography type="text-body-s-regular"> Export facility </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
@@ -255,7 +243,7 @@ onMounted(async () => {
         Timeline
       </Typography>
       <Timeline
-        :items="commitment.timeline"
+        :items="getTimeLine(commitment.timeLine)"
         variant="vertical"
         class="scrollbar overflow-auto md:mb-10"
       />
@@ -267,9 +255,7 @@ onMounted(async () => {
           complete
         </Button>
         <template v-if="isPending && status !== statuses.paused">
-          <Button @click="emit('approveCommitment', commitment)">
-            approve
-          </Button>
+          <Button @click="emit('approveCommitment', commitment)"> approve </Button>
           <Button
             variant="outlined"
             data="secondary1"

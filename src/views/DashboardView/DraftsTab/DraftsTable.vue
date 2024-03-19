@@ -93,14 +93,14 @@ onMounted(() => {
     </template>
     <template #worker="{ item }">
       <Typography>
-        {{ item.createdBy.fullName }}
+        {{ item.createdBy.name }}
       </Typography>
     </template>
     <template #bookingExpiry="{ item }">
       <Typography type="text-body-m-regular">
-        {{ getFormattedDate(item.bookingExpiry) }}
+        {{ getFormattedDate(item.loadingDate) }}
         <Tooltip>
-          {{ getFormattedDateTime(item.bookingExpiry) }}
+          {{ getFormattedDateTime(item.loadingDate) }}
         </Tooltip>
       </Typography>
     </template>
@@ -129,7 +129,8 @@ onMounted(() => {
       >
         <Typography>
           Are you sure you want to delete draft#
-          <b>{{ deleteDraftDialog.data.ref }}</b>?
+          <b>{{ deleteDraftDialog.data.ref }}</b
+          >?
         </Typography>
       </RemoveCancelDialog>
     </template>

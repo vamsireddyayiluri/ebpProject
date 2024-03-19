@@ -27,9 +27,9 @@ const { mapToggled } = toRefs(props)
 const getPanes = () => {
   return mapToggled.value
     ? [
-      { name: 'content', size: 60 },
-      { name: 'map', size: 40 },
-    ]
+        { name: 'content', size: 60 },
+        { name: 'map', size: 40 },
+      ]
     : [{ name: 'content', size: 100 }]
 }
 const panes = ref(getPanes())
@@ -79,7 +79,7 @@ const renderMarkerIcon = marker => {
     icon: 'garage',
     color: 'textTertiary',
     bgColor: 'uiInteractive',
-    bgColorHover: 'mapMarkerInteraction-1',
+    bgColorHover: 'uiInteractiveHover',
     count: marker.entities.length,
   }
 }
@@ -197,9 +197,7 @@ watch(searchValue, value => {
       >
         <div class="flex flex-wrap items-center gap-4 mb-7">
           <div class="flex justify-between sm:justify-normal items-center gap-4">
-            <Typography type="text-h1 shrink-0">
-              Bookings
-            </Typography>
+            <Typography type="text-h1 shrink-0"> Bookings </Typography>
           </div>
           <Button
             class="ml-auto px-12"

@@ -9,7 +9,6 @@ import { getBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { storeToRefs } from 'pinia'
 import { statuses } from '~/constants/statuses'
-import { useBookingHistoryStore } from '~/stores/bookingHistory.store'
 import { cloneDeep, isEqual } from 'lodash'
 import container from '~/assets/images/container.png'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
@@ -27,14 +26,17 @@ const authStore = useAuthStore()
 const alertStore = useAlertStore()
 
 const { userData } = authStore
-const { getBookings, getBooking, publishDraft, removeFromNetwork, deleteBooking, updateBooking } =
-  useBookingsStore()
 const {
-  getBooking: getBookingInHistory,
-  deleteHistoryBooking,
+  getBookings,
+  getBooking,
+  publishDraft,
+  removeFromNetwork,
+  deleteBooking,
+  updateBooking,
   reactivateBooking,
   duplicateBooking,
-} = useBookingHistoryStore()
+} = useBookingsStore()
+
 const workDetailsStore = useWorkDetailsStore()
 const { yards } = storeToRefs(workDetailsStore)
 const { bookings, drafts } = storeToRefs(useBookingsStore())
@@ -58,7 +60,7 @@ const rules = {
 }
 
 const updateExpiryDate = value => {
-  booking.value.bookingExpiry = moment(value).endOf('day').format()
+  booking.value.loadingDate = moment(value).endOf('day').format()
 }
 const updatePreferredDate = value => {
   booking.value.preferredDate = moment(value).endOf('day').format()
@@ -82,7 +84,7 @@ const expired = computed(() => booking.value?.status === statuses.expired)
 
 const handleBookingChanges = async () => {
   if (fromDraft) {
-    booking.value.bookingExpiry = moment(booking.value.bookingExpiry).endOf('day').format()
+    booking.value.loadingDate = moment(booking.value.loadingDate).endOf('day').format()
     booking.value.preferredDate = moment(booking.value.preferredDate).endOf('day').format()
     const res = await publishDraft(booking.value)
     if (res === 'published') {
@@ -100,11 +102,7 @@ const openRemoveDialog = () => {
   removeBookingDialog.value.data = booking.value
 }
 const deleteFromPlatform = async () => {
-  if (fromHistory) {
-    await deleteHistoryBooking(booking.value.id)
-  } else {
-    await deleteBooking(booking.value.id, fromDraft)
-  }
+  await deleteBooking(booking.value.id, fromDraft, fromHistory)
   router.push('/dashboard')
 }
 const handleAction = async e => {
@@ -130,15 +128,15 @@ const validateRequiredFields = () => {
     booking.value.insurance &&
     booking.value.weight &&
     rules.containers(booking.value.weight) === true &&
-    booking.value.targetRate &&
-    rules.containers(booking.value.targetRate) === true &&
-    booking.value.bookingExpiry &&
+    booking.value.estimatedRate &&
+    rules.containers(booking.value.estimatedRate) === true &&
+    booking.value.loadingDate &&
     booking.value.preferredDate &&
     booking.value.scacList.list?.length &&
     booking.value.size &&
     booking.value.size
       ? booking.value.size.length > 0
-      : false && booking.value.targetRateType) ||
+      : false && booking.value.estimatedRateType) ||
     validateFlexibleSizes(booking.value.size, booking.value.flexibleBooking)?.length > 0
   )
 }
@@ -147,7 +145,7 @@ const isDisabledPublish = computed(() => {
   return (
     validateRequiredFields() ||
     !validExpiryDate.value ||
-    moment(booking.value.bookingExpiry).endOf('day').isBefore(currentDate.value) ||
+    moment(booking.value.loadingDate).endOf('day').isBefore(currentDate.value) ||
     moment(booking.value.preferredDate).endOf('day').isBefore(currentDate.value)
   )
 })
@@ -166,7 +164,7 @@ const validateBooking = computed(() => {
   condition = condition || validateRequiredFields()
   condition =
     condition ||
-    moment(booking.value.bookingExpiry).endOf('day').isBefore(currentDate.value) ||
+    moment(booking.value.loadingDate).endOf('day').isBefore(currentDate.value) ||
     moment(booking.value.preferredDate).endOf('day').isBefore(currentDate.value)
 
   if (!fromDraft) {
@@ -182,7 +180,7 @@ const cancelChanges = async () => {
   if (expired.value || completed.value) {
     activated.value = false
     hideChip.value = false
-    booking.value = await getBookingInHistory(route.params.id)
+    booking.value = await getBooking({ id: route.params.id })
 
     return
   }
@@ -191,7 +189,7 @@ const cancelChanges = async () => {
   )
 }
 const onSave = async () => {
-  booking.value.bookingExpiry = moment(booking.value.bookingExpiry).endOf('day').format()
+  booking.value.loadingDate = moment(booking.value.loadingDate).endOf('day').format()
   booking.value.preferredDate = moment(booking.value.preferredDate).endOf('day').format()
   if (activated) {
     if (expired.value) {
@@ -219,7 +217,7 @@ const validateExpiryDates = () => {
 onMounted(async () => {
   loading.value = true
   if (fromHistory) {
-    booking.value = await getBookingInHistory(route.params.id)
+    booking.value = await getBooking({ id: route.params.id })
     if (queryParams.activated) {
       animate()
     }
@@ -376,8 +374,8 @@ onMounted(async () => {
             :disabled="expired || completed"
           />
           <Datepicker
-            :key="booking.bookingExpiry"
-            :picked="booking.bookingExpiry ? moment(booking.bookingExpiry).toDate() : null"
+            :key="booking.loadingDate"
+            :picked="booking.loadingDate ? moment(booking.loadingDate).toDate() : null"
             label="Loading date *"
             :disabled="!activated && (expired || completed)"
             :class="{ 'pointer-events-none': !activated && (expired || completed) }"
@@ -391,7 +389,7 @@ onMounted(async () => {
             label="Preferred carrier window"
             :disabled="!activated && (expired || completed)"
             :class="{ 'pointer-events-none': !activated && (expired || completed) }"
-            :upper-limit="booking.bookingExpiry && new Date(booking.bookingExpiry)"
+            :upper-limit="booking.loadingDate && new Date(booking.loadingDate)"
             :lower-limit="currentDate"
             @onUpdate="updatePreferredDate"
           />
@@ -432,7 +430,7 @@ onMounted(async () => {
             :disabled="expired || completed"
           />
           <Textfield
-            v-model.number="booking.targetRate"
+            v-model.number="booking.estimatedRate"
             label="Target Rate*"
             :rules="[rules.containers]"
             type="number"
@@ -440,7 +438,7 @@ onMounted(async () => {
             :disabled="expired || completed"
           />
           <RadioGroup
-            v-model="booking.targetRateType"
+            v-model="booking.estimatedRateType"
             inline
             class="mt-3"
           >
@@ -494,9 +492,7 @@ onMounted(async () => {
         :class="[flyoutBottom || smAndDown ? 'bottom' : 'right', drawer ? 'active' : '']"
       >
         <div class="flex justify-between items-center">
-          <Typography type="text-h1">
-            Statistics
-          </Typography>
+          <Typography type="text-h1"> Statistics </Typography>
           <IconButton
             v-if="!smAndDown"
             :icon="!flyoutBottom ? 'mdi-dock-bottom' : 'mdi-dock-right'"
@@ -506,9 +502,7 @@ onMounted(async () => {
         </div>
         <div class="statisticsContent">
           <div class="statisticsProgress">
-            <Typography type="text-h4">
-              Fulfillment progress
-            </Typography>
+            <Typography type="text-h4"> Fulfillment progress </Typography>
             <ProgressCircular
               :size="260"
               :value="getBookingLoad(booking.committed, booking.containers)"
@@ -519,9 +513,7 @@ onMounted(async () => {
             </ProgressCircular>
           </div>
           <div class="statisticsTimeline">
-            <Typography type="text-h4">
-              Booking timeline
-            </Typography>
+            <Typography type="text-h4"> Booking timeline </Typography>
             <div class="timeline scrollbar">
               <Timeline
                 :items="booking.timeline"
@@ -541,7 +533,7 @@ onMounted(async () => {
         :src="container"
         class="container-img"
         alt="qualle container"
-      >
+      />
       <Typography
         type="text-h1"
         class="!text-7xl mb-4 text-center"

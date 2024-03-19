@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { doc, updateDoc, getDoc } from 'firebase/firestore'
+import { doc, updateDoc, getDoc, increment } from 'firebase/firestore'
 import { db } from '~/firebase'
 import { statuses } from '~/constants/statuses'
 import { useAlertStore } from '~/stores/alert.store'
@@ -30,6 +30,21 @@ export const useCommitmentsStore = defineStore('commitments', () => {
     try {
       await updateDoc(doc(db, 'commitments', commitment.id), {
         status: statuses.approved,
+      })
+      const carrierIndex = booking.carriers.findIndex(carrier => carrier.scac === commitment.scac)
+      if (carrierIndex !== -1) {
+        booking.carriers[carrierIndex].total =
+          booking.carriers[carrierIndex].total + commitment.committed
+      } else {
+        booking.carriers.push({
+          scac: commitment.scac,
+          fulfilled: 0,
+          total: commitment.committed,
+        })
+      }
+      await updateDoc(doc(db, 'bookings', commitment.bookingId), {
+        committed: increment(commitment.committed),
+        carriers: booking.carriers,
       })
 
       const index = bookingsStore.bookings.findIndex(i => i.id === commitment.bookingId)
@@ -67,7 +82,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
           }
         })
       })
-      const commitment = await getcommitment(id)
+      const commitment = await getCommitment(id)
       await updateBookingStore(commitment.bookingId)
       alertStore.info({ content: 'Booking commitment completed' })
     } catch ({ message }) {
@@ -89,14 +104,14 @@ export const useCommitmentsStore = defineStore('commitments', () => {
           }
         })
       })
-      const commitment = await getcommitment(id)
+      const commitment = await getCommitment(id)
       await updateBookingStore(commitment.bookingId)
       alertStore.info({ content: 'Booking commitment declined' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
   }
-  const getcommitment = async id => {
+  const getCommitment = async id => {
     try {
       const docData = await getDoc(doc(db, 'commitments', id))
 
@@ -107,6 +122,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
   }
 
   return {
+    getCommitment,
     approveCommitment,
     completeCommitment,
     declineCommitment,

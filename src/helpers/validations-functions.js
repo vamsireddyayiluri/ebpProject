@@ -1,5 +1,6 @@
 import moment from 'moment-timezone'
 import { useAlertStore } from '~/stores/alert.store'
+import { isNull } from "lodash"
 
 const alertStore = useAlertStore()
 
@@ -10,12 +11,23 @@ export const checkCommittedValue = (value, booking) => {
     return checkPositiveInteger(value, booking)
   }
 }
-export const checkPositiveInteger = (value, booking) => {
+export const checkPositiveInteger = value => {
   if (value <= 0 || !Number.isInteger(value) || value === 0) {
     return 'Value should be positive integer'
   } else {
     return true
   }
+}
+
+// check empty string
+export const isEmptyString = string => {
+  return string === ""
+}
+
+export const validateDays = value => {
+  if (isEmptyString(value) || isNull(value)) {
+    return true
+  } else return checkPositiveInteger(value)
 }
 
 // Checking expiry date with ref is already exists or not
