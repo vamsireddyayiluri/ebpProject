@@ -50,6 +50,7 @@ declare module '@vue/runtime-core' {
     RegisterView: typeof import('./views/RegisterView/RegisterView.vue')['default']
     RemoveCancelDialog: typeof import('./components/RemoveCancelDialog/RemoveCancelDialog.vue')['default']
     ReportIssueCancelDialog: typeof import('./components/ReportIssueCancelDialog/ReportIssueCancelDialog.vue')['default']
+    ReportIssueDialog: typeof import('./components/ReportIssueDialog/ReportIssueDialog.vue')['default']
     ResetPasswordView: typeof import('./views/ResetPasswordView.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

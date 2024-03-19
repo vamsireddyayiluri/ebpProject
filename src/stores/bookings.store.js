@@ -53,7 +53,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     } else {
       await getallBookings()
       bookings.value = bookings.value.filter(
-        booking => booking.status !== statuses.completed && booking.status !== statuses.expired,
+        booking => booking.status !== statuses.completed && booking.status !== statuses.expired && booking.status !== statuses.canceled,
       )
     }
     loading.value = false
@@ -62,7 +62,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     loading.value = true
     await getallBookings()
     pastBookings.value = bookings.value.filter(
-      booking => booking.status === statuses.completed || booking.status === statuses.expired,
+      booking => booking.status === statuses.completed || booking.status === statuses.expired || booking.status === statuses.canceled,
     )
     loading.value = false
   }
@@ -93,7 +93,7 @@ export const useBookingsStore = defineStore('bookings', () => {
           status: b.status === 'completed' ? b.status : statuses.expired,
           updatedAt: getLocalTime().format(),
         }
-        updatePromises.push(updateBooking(updatedBookingData, 'bookings', true))
+        // updatePromises.push(updateBooking(updatedBookingData, 'bookings', true))
       }
     }
   }
@@ -159,13 +159,27 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.warning({ content: message })
     }
   }
-  const updateBookingStatus = async (id, status) => {
+  const updateBookingStatus = async (id, status, reason) => {
     try {
       await updateDoc(doc(db, 'bookings', id), {
         status,
+        ...(reason ? { reason: reason?.trim() } : {}),
       })
 
       bookings.value.find(i => i.id === id).status = status
+      if (status === statuses.canceled) {
+        const commitments = await getCommitmentsByBookingId(id)
+        commitments.map(async i => {
+          if (i.status === statuses.approved) {
+            await updateDoc(doc(db, 'commitments', i.id), {
+              status: statuses.bookingCanceled,
+              reason,
+              updatedAt: getLocalTime().format(),
+            })
+          }
+        })
+        await updateBookingStore(id)
+      }
       alertStore.info({ content: `Booking ${status}!` })
     } catch ({ message }) {
       alertStore.warning({ content: message })
@@ -178,7 +192,6 @@ export const useBookingsStore = defineStore('bookings', () => {
       await setDoc(doc(collection(db, 'bookings'), bookingId), {
         ...booking,
         committed: 0,
-        entities: [],
         createdAt: getLocalTime().format(),
         updatedAt: getLocalTime().format(),
         entities: [],
@@ -286,7 +299,7 @@ export const useBookingsStore = defineStore('bookings', () => {
           }
         })
         await getCommitmentsByBookingId(bookingId)
-      }, 2000)
+      }, 3000)
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }

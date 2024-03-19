@@ -33,6 +33,16 @@ export const bookingsActions = item => {
       ...actions,
     ]
   }
+  if (item.status === statuses.pending) {
+    return [
+      {
+        icon: 'mdi-cancel',
+        label: 'Cancel booking',
+        action: 'cancel-booking',
+        color: 'functionalError',
+      },
+    ]
+  }
   if (item.committed === item.containers) {
     return []
   }
@@ -93,9 +103,10 @@ export const commitmentsActions = (status, bstatus) => {
       action: 'view-trucker-details',
     },
   ]
+  const actions = []
 
   if (status === statuses.pending && bstatus !== statuses.paused) {
-    return [
+    actions.push(
       {
         icon: 'mdi-check',
         label: 'Approve',
@@ -108,20 +119,30 @@ export const commitmentsActions = (status, bstatus) => {
         action: 'decline-commitment',
         color: 'functionalError',
       },
-    ]
+    )
   }
   if (status === statuses.approved && bstatus !== statuses.paused) {
-    return [
+    actions.push(
       {
         icon: 'mdi-check-underline',
         label: 'Complete commitment',
         action: 'complete-commitment',
       },
       ...viewDetailsAction,
-    ]
+    )
+  }
+  if (status === statuses.approved && (bstatus === statuses.active || bstatus === statuses.pending)) {
+    actions.push(
+      {
+        icon: 'mdi-cancel',
+        label: 'Cancel commitment',
+        action: 'cancel-commitment',
+        color: 'functionalError',
+      },
+    )
   }
 
-  return viewDetailsAction
+  return actions.length > 0 ? actions : viewDetailsAction
 }
 export default () => ({
   bookingsActions,

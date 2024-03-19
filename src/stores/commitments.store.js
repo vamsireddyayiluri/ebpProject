@@ -111,6 +111,26 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       alertStore.warning({ content: message })
     }
   }
+  const cancelCommitment = async (id, reason) => {
+    try {
+      await updateDoc(doc(db, 'commitments', id), {
+        status: statuses.canceled,
+        reason,
+      })
+      bookingsStore.bookings.forEach(i => {
+        i.entities.forEach(j => {
+          if (j.id === id) {
+            ;(j.status = statuses.canceled), (j.reason = reason)
+          }
+        })
+      })
+      const commitment = await getCommitment(id)
+      await updateBookingStore(commitment.bookingId)
+      alertStore.info({ content: 'Booking commitment canceled' })
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
   const getCommitment = async id => {
     try {
       const docData = await getDoc(doc(db, 'commitments', id))
@@ -126,5 +146,6 @@ export const useCommitmentsStore = defineStore('commitments', () => {
     approveCommitment,
     completeCommitment,
     declineCommitment,
+    cancelCommitment,
   }
 })

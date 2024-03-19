@@ -121,7 +121,7 @@ const onDeclineCommitment = async (id, reason) => {
     max-width="480"
   >
     <template #text>
-      <CompleteCommitmentsDialog
+      <ReportIssueDialog
         title="Complete commitment"
         sub-title="Did you onboard and work with halo lab delivery successfully?"
         select-label="Select"
@@ -137,7 +137,7 @@ const onDeclineCommitment = async (id, reason) => {
     max-width="480"
   >
     <template #text>
-      <CompleteCommitmentsDialog
+      <ReportIssueDialog
         title="Decline commitment"
         sub-title="Choose the reason why you want to decline commitment"
         select-label="Select"
