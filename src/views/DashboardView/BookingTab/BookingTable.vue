@@ -27,11 +27,11 @@ const tableHeight = ref(0)
 const removeBookingDialog = ref(false)
 const completeCommitmentDialog = ref(false)
 const declineCommitmentDialog = ref(false)
+const loadCompleteCommitment = ref(false)
 const completeReasonList = [
   onboardingCodes.onboarded,
   onboardingCodes.onboardMovedLoad,
-  onboardingCodes.neverOnboarded,
-  onboardingCodes.other,
+  onboardingCodes.inComplete,
 ]
 const declineReasonList = [
   declineCodes.bookingCanceled,
@@ -69,7 +69,7 @@ const containerActionHandler = async ({ action, e }) => {
     await approveCommitment(e[0])
   }
   if (action === 'complete-commitment') {
-    openCompleteCommitmentDialog(e[0].id)
+    openCompleteCommitmentDialog(e[0])
   }
   if (action === 'decline-commitment') {
     openDeclineCommitmentDialog(e[0].id)
@@ -90,9 +90,9 @@ const onApproveCommitment = async commitment => {
   commitmentDetailsDialog.value.show(false)
   await approveCommitment(commitment)
 }
-const openCompleteCommitmentDialog = id => {
+const openCompleteCommitmentDialog = commitment => {
   completeCommitmentDialog.value.show(true)
-  completeCommitmentDialog.value.data = id
+  completeCommitmentDialog.value.data = commitment
 }
 const openDeclineCommitmentDialog = id => {
   declineCommitmentDialog.value.show(true)
@@ -102,10 +102,12 @@ const removeBooking = id => {
   deleteBooking(id)
   removeBookingDialog.value.show(false)
 }
-const onCompleteCommitment = async (id, reason) => {
-  await completeCommitment(id, reason)
+const onCompleteCommitment = async (data, reason, onBoardedContainers) => {
+  loadCompleteCommitment.value = true
+  await completeCommitment(data, reason, onBoardedContainers)
   completeCommitmentDialog.value.show(false)
   commitmentDetailsDialog.value.show(false)
+  loadCompleteCommitment.value = false
 }
 const onDeclineCommitment = async (id, reason) => {
   declineCommitmentDialog.value.show(false)
@@ -185,7 +187,7 @@ watch(
             :key="i"
           >
             {{ i }}
-            <br>
+            <br />
           </template>
         </template>
         <template v-else>
@@ -295,12 +297,16 @@ watch(
     <template #text>
       <CompleteCommitmentsDialog
         title="Complete commitment"
-        sub-title="Did you onboard and work with halo lab delivery successfully?"
+        :sub-title="`Confirm number of loads moved by ${completeCommitmentDialog.data.truckerCompany}`"
         select-label="Select"
         :reason-list="completeReasonList"
         btn-name="confirm"
+        :committed="completeCommitmentDialog.data.committed"
+        :loading="loadCompleteCommitment"
         @close="completeCommitmentDialog.show(false)"
-        @onClickBtn="e => onCompleteCommitment(completeCommitmentDialog.data, e)"
+        @onClickBtn="
+          (e, containers) => onCompleteCommitment(completeCommitmentDialog.data, e, containers)
+        "
       />
     </template>
   </Dialog>

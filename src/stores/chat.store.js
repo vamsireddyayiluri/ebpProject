@@ -19,7 +19,7 @@ import {
 import { db, storage } from '~/firebase'
 import { uid } from 'uid'
 import { getDownloadURL, ref as firebaseRef, list, uploadBytes } from 'firebase/storage'
-import { sortBy } from 'lodash'
+import { sortBy, uniqBy } from 'lodash'
 
 export const useChatStore = defineStore('chat', () => {
   const alertStore = useAlertStore()
@@ -282,6 +282,7 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   const getMessagesBychatId = async chatId => {
+    loading.value = true
     activeChatMessages.value = []
     const messageRef = collection(db, 'chats', chatId, 'messages')
     await onSnapshot(messageRef, async snapshot => {
@@ -290,6 +291,7 @@ export const useChatStore = defineStore('chat', () => {
         activeChatMessages.value = sortBy(test, 'timestamp')
         await markAsRead(chatId)
       }
+      loading.value = false
     })
   }
 
@@ -350,18 +352,18 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
-  const getAllOrgs = async () => {
+  const getCommittedTruckerOrgs = async () => {
     const qFiltered = query(
-      collection(db, 'organizations'),
-      where('orgId', '!=', authStore.userData?.orgId),
+      collection(db, 'commitments'),
+      where('orgId', '==', authStore.userData?.orgId),
     )
     const querySnapshot = await getDocs(qFiltered)
-
-    return querySnapshot.docs.map(doc => {
-      const { orgId, company } = doc.data()
-
+    const allTruckers = querySnapshot.docs.map(doc => {
+      const { truckerOrgId: orgId, truckerCompany: company } = doc.data()
       return { orgId, company }
     })
+    const committedTruckers = uniqBy(allTruckers, 'orgId')
+    return committedTruckers
   }
 
   return {
@@ -378,6 +380,6 @@ export const useChatStore = defineStore('chat', () => {
     markAsRead,
     markUserAsOnlineOffline,
     downloadFileFromChat,
-    getAllOrgs,
+    getCommittedTruckerOrgs,
   }
 })

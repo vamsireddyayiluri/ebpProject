@@ -15,7 +15,7 @@ const { getFormattedDate } = useDate()
 const { goToChat } = useChatStore()
 const router = useRouter()
 const checkCommitmentStatus = () => {
-  return props.commitment?.timeLine?.some(({ status }) => status === 'approved')
+  return props.commitment?.timeLine?.some(({ status }) => status === statuses.approved)
 }
 const isPending = props.commitment?.status === statuses.pending
 let details = ref([
@@ -250,7 +250,7 @@ onUnmounted(() => {
       <div class="styledCommitActionsBtns static md:fixed bottom-8 flex pt-8 gap-4">
         <Button
           v-if="commitment.status === statuses.approved && status !== statuses.paused"
-          @click="emit('completeCommitment', commitment.id)"
+          @click="emit('completeCommitment', commitment)"
         >
           complete
         </Button>
