@@ -14,7 +14,7 @@ const props = defineProps({
   searchValue: String,
   loading: Boolean,
 })
-const emit = defineEmits(['selectTableRow', 'editBooking'])
+const emit = defineEmits(['selectTableRow', 'editBooking', 'duplicateBooking'])
 const { deleteBooking, updateBookingStatus, getCommitmentsByBookingId, closeBookingExpansion } =
   useBookingsStore()
 const { approveCommitment, declineCommitment, cancelCommitment, completeCommitment } = useCommitmentsStore()
@@ -70,6 +70,9 @@ const containerActionHandler = async ({ action, e }) => {
   }
   if (action === 'reactive-booking') {
     await updateBookingStatus(e[0].id, statuses.active)
+  }
+  if (action === 'duplicate-booking') {
+    emit('duplicateBooking', e[0])
   }
   if (action === 'view-trucker-details') {
     commitmentDetailsDialog.value.show(true)

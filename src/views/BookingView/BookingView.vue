@@ -522,7 +522,7 @@ onMounted(async () => {
             </Typography>
             <div class="timeline scrollbar">
               <Timeline
-                :items="booking.timeline"
+                :items="booking.timeLine"
                 :variant="flyoutBottom ? 'horizontal' : 'vertical'"
               />
             </div>

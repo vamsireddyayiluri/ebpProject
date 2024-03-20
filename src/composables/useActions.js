@@ -1,47 +1,49 @@
 import { statuses } from '~/constants/statuses'
 
+const deleteAction = {
+  icon: 'mdi-delete',
+  label: 'Remove booking',
+  action: 'remove-booking',
+  color: 'functionalError',
+}
+const editAction = {
+  icon: 'mdi-pencil',
+  label: 'Edit booking',
+  action: 'edit-booking',
+}
+const pauseAction = {
+  icon: 'mdi-pause',
+  label: 'Pause booking',
+  action: 'pause-booking',
+}
+const duplicateAction = {
+  icon: 'mdi-content-copy',
+  label: 'Duplicate booking',
+  action: 'duplicate-booking',
+}
+const cancelAction = {
+  icon: 'mdi-cancel',
+  label: 'Cancel booking',
+  action: 'cancel-booking',
+  color: 'functionalError',
+}
+
 export const bookingsActions = item => {
-  const actions = [
-    {
-      icon: 'mdi-pencil',
-      label: 'Edit booking',
-      action: 'edit-booking',
-    },
-    {
-      icon: 'mdi-delete',
-      label: 'Remove booking',
-      action: 'remove-booking',
-      color: 'functionalError',
-    },
-  ]
-  if (item.status !== statuses.paused) {
-    const pauseAction = {
-      icon: 'mdi-pause',
-      label: 'Pause booking',
-      action: 'pause-booking',
-    }
-    const secondToLastIndex = actions.length - 1
-    actions.splice(secondToLastIndex, 0, pauseAction)
+  const actions = []
+  if (item.status ===  statuses.active) {
+    actions.unshift(editAction, pauseAction, duplicateAction, deleteAction)
   }
   if (item.status === statuses.paused) {
-    return [
-      {
-        icon: 'mdi-reload',
-        label: 'Re-activate booking',
-        action: 'reactive-booking',
-      },
-      ...actions,
-    ]
+    actions.push( {
+      icon: 'mdi-reload',
+      label: 'Re-activate booking',
+      action: 'reactive-booking',
+    },
+    duplicateAction, cancelAction)
   }
   if (item.status === statuses.pending) {
-    return [
-      {
-        icon: 'mdi-cancel',
-        label: 'Cancel booking',
-        action: 'cancel-booking',
-        color: 'functionalError',
-      },
-    ]
+    actions.splice(0,2)
+    actions.push(duplicateAction, cancelAction)
   }
   if (item.committed === item.containers) {
     return []

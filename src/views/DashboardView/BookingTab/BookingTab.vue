@@ -112,6 +112,14 @@ const handleCreateBookingDialog = () => {
   } else createBookingDialog.value.show(true)*/
   createBookingDialog.value.show(true)
 }
+const duplicateBooking = booking => {
+  createBookingDialog.value.show(true)
+  createBookingDialog.value.data = booking
+}
+const closeCreateBookingDialog = () => {
+  createBookingDialog.value.show(false)
+  createBookingDialog.value.data = null
+}
 const viewStatistics = e => {
   bookingStatisticsDialog.value.show(true)
   bookingStatisticsDialog.value.data = e
@@ -167,7 +175,7 @@ const clearDateFilter = () => {
 }
 const onClickOutsideDialog = () => {
   clickedOutside.value = true
-  createBookingDialog.value.show(true)
+  closeCreateBookingDialog()
   setInterval(() => {
     clickedOutside.value = false
   }, 1000)
@@ -249,6 +257,7 @@ watch(searchValue, value => {
           :loading="loading"
           @selectTableRow="selectTableRow"
           @editBooking="id => router.push({ path: `booking/${id}` })"
+          @duplicateBooking="duplicateBooking"
         />
       </div>
     </template>
@@ -313,8 +322,9 @@ watch(searchValue, value => {
   >
     <template #text>
       <CreateBookingDialog
+        :duplicate="createBookingDialog.data"
         :clicked-outside="clickedOutside"
-        @close="createBookingDialog.show(false)"
+        @close="closeCreateBookingDialog"
       />
     </template>
   </Dialog>
