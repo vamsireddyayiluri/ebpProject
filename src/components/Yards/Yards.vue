@@ -108,10 +108,18 @@ const onClickOutsideDialog = () => {
         >
           <div class="flex justify-between">
             <Typography
-              :color="getColor(!defaultDetails?.primaryContactName ? 'textDisabled' : 'textPrimary')"
+              :color="
+                getColor(!defaultDetails?.primaryContactName ? 'textDisabled' : 'textPrimary')
+              "
               class="mt-3.5"
             >
-              {{ width >= 600 && width <= 770 ? 'Details': !defaultDetails?.primaryContactName ? 'Location details' : 'Default details' }}
+              {{
+                width >= 600 && width <= 770
+                  ? 'Details'
+                  : !defaultDetails?.primaryContactName
+                  ? 'Location details'
+                  : 'Edit default details'
+              }}
             </Typography>
             <Button
               v-if="!defaultDetails?.primaryContactName"
@@ -185,8 +193,8 @@ const onClickOutsideDialog = () => {
         :edited-location="cloneDeep(locationDetailsDialog.data)"
         @close="
           locationDetailsDialog.show(false),
-          locationDetailsDialog.data = null,
-          resetDefaultSettings()
+            (locationDetailsDialog.data = null),
+            resetDefaultSettings()
         "
       />
     </template>
