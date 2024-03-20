@@ -260,6 +260,7 @@ watch(
 
     <template #actions="{ item, selected }">
       <MenuActions
+        :disabled="bookingsActions(item).length<=0"
         :actions="() => bookingsActions(item)"
         :selected="selected"
         :container="item"
