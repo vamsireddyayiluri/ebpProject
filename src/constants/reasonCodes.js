@@ -1,8 +1,7 @@
 export const onboardingCodes = {
-  onboarded: 'Onboarded',
-  onboardMovedLoad: 'Onboard and moved load',
-  neverOnboarded: 'Never onboarded',
-  other: 'Other',
+  onboarded: 'All loads were successfully moved',
+  onboardMovedLoad: 'Trucker moved a different number of loads',
+  inComplete: 'Trucker did not move the shipments',
 }
 export const declineCodes = {
   bookingCanceled: 'Booking canceled',
