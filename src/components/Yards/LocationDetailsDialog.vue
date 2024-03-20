@@ -251,12 +251,14 @@ watch(details, checkFormModified, { deep: true })
             :time-value="d.from"
             label="Time from*"
             class="w-44"
+            :minute-interval="15"
             @change="e => onChangeFrom(e, d.day)"
           />
           <Timepicker
             :time-value="d.to"
             label="Time to*"
             class="w-44"
+            :minute-interval="15"
             @change="e => onChangeTo(e, d.day)"
           />
         </div>

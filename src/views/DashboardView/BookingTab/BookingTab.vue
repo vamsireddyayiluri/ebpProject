@@ -10,6 +10,7 @@ import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth.store'
 import moment from 'moment-timezone'
 import { some } from 'lodash'
+import { checkVendorDetailsCompletion } from '~/helpers/validations-functions'
 
 const props = defineProps({
   mapToggled: Boolean,
@@ -107,10 +108,9 @@ const selectTableRow = e => {
   mapRef.value?.panTo({ lat: e.location.lat, lng: e.location.lng })
 }
 const handleCreateBookingDialog = () => {
-  /*if (true) {
-    bookingConfirmationDialog.value.show(true)
-  } else createBookingDialog.value.show(true)*/
-  createBookingDialog.value.show(true)
+  if (checkVendorDetailsCompletion()) {
+    createBookingDialog.value.show(true)
+  }
 }
 const duplicateBooking = booking => {
   createBookingDialog.value.show(true)
@@ -211,9 +211,7 @@ watch(searchValue, value => {
       >
         <div class="flex flex-wrap items-center gap-4 mb-7">
           <div class="flex justify-between sm:justify-normal items-center gap-4">
-            <Typography type="text-h1 shrink-0">
-              Bookings
-            </Typography>
+            <Typography type="text-h1 shrink-0"> Bookings</Typography>
           </div>
           <Button
             class="ml-auto px-12"

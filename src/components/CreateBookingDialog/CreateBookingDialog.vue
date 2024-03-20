@@ -117,7 +117,6 @@ const validateExpiryDates = useDebounceFn(() => {
 }, 200)
 
 const isDisabled = computed(() => {
-  console.log('is')
   let condition
   if (!props.duplicate) {
     const values = Object.values(booking.value)

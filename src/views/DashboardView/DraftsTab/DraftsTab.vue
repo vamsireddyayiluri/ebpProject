@@ -10,6 +10,7 @@ import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth.store'
 import moment from 'moment-timezone'
 import { some } from 'lodash'
+import { checkVendorDetailsCompletion } from '~/helpers/validations-functions'
 
 const props = defineProps({
   mapToggled: Boolean,
@@ -103,7 +104,11 @@ const selectTableRow = e => {
   mapRef.value.setZoom(15)
   mapRef.value.panTo({ lat: e.location.lat, lng: e.location.lng })
 }
-
+const handleCreateBookingDialog = () => {
+  if (checkVendorDetailsCompletion()) {
+    createBookingDialog.value.show(true)
+  }
+}
 const onClearSearch = () => {
   loading.value = true
   setTimeout(() => {
@@ -196,7 +201,7 @@ watch(searchValue, value => {
           </div>
           <Button
             class="ml-auto px-12"
-            @click="createBookingDialog.show(true)"
+            @click="handleCreateBookingDialog"
           >
             Create booking
           </Button>
