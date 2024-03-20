@@ -2,9 +2,25 @@ import { defineStore } from 'pinia'
 import { useAlertStore } from '~/stores/alert.store'
 import listRequiresForTruckers from '~/fixtures/requiresForTruckers.json'
 import { useAuthStore } from '~/stores/auth.store'
-import { doc, getDoc, setDoc } from 'firebase/firestore'
-import { deleteObject, listAll, ref as firebaseRef, uploadBytes } from 'firebase/storage'
+import {
+  arrayUnion,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  updateDoc,
+  where,
+} from 'firebase/firestore'
+import {
+  deleteObject,
+  listAll,
+  ref as firebaseRef,
+  uploadBytes,
+  getDownloadURL,
+} from 'firebase/storage'
 import { db, storage } from '~/firebase'
+import { uid } from 'uid'
 
 export const useTruckerManagementStore = defineStore('truckerManagement', () => {
   const alertStore = useAlertStore()
@@ -71,7 +87,22 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
       if (exist) {
         alertStore.warning({ content: `File with name ${file.name} exist` })
       } else {
-        await uploadBytes(fileRef, file)
+        const snapshot = await uploadBytes(fileRef, file)
+        const downloadURL = await getDownloadURL(snapshot.ref)
+
+        const truckerManagementRef = doc(db, 'trucker_requirements', userData.orgId)
+
+        await setDoc(
+          truckerManagementRef,
+          {
+            onBoardingDocuments: arrayUnion({
+              id: uid(),
+              fileURL: downloadURL,
+              fileName: file.name,
+            }),
+          },
+          { merge: true },
+        )
         onboardingDocuments.value.push(file)
         alertStore.info({ content: 'File was uploaded' })
       }
@@ -101,6 +132,34 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
     return onboardingDocuments.value.some(i => i.name === fileRef.name)
   }
 
+  const getOnboardedTruckers = async () => {
+    const query = collection(db, 'onboarding_documents')
+
+    const onboardingDocs = await getDocs(query, where('exporterOrgId', '==', userData.orgId))
+
+    if (!onboardingDocs.empty) {
+      return onboardingDocs.docs.map(doc => doc.data())
+    }
+    return []
+  }
+
+  const approveOnboardingDoc = async payload => {
+    const { selectedItem, data } = payload
+
+    const query = doc(db, 'onboarding_documents', selectedItem)
+    const docSnap = await getDoc(query)
+
+    let documentsArray = docSnap.data().documents || []
+
+    const docIndex = documentsArray.findIndex(doc => doc.name === data.name)
+
+    if (docIndex !== -1) {
+      documentsArray[docIndex] = { ...documentsArray[docIndex], status: 'approved' }
+    }
+
+    await updateDoc(query, { documents: documentsArray })
+  }
+
   return {
     requiresForTruckers,
     questionList,
@@ -113,5 +172,7 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
     getOnboardingDocuments,
     addDoc,
     removeDoc,
+    getOnboardedTruckers,
+    approveOnboardingDoc,
   }
 })

@@ -128,16 +128,19 @@ export const truckersDocumentsHeaders = [
     text: 'Trucker',
     value: 'trucker',
     align: 'start',
+    align: 'center',
     width: 3,
   },
   {
     text: 'Company',
     value: 'company',
+    align: 'center',
     width: 2,
   },
   {
     text: 'Documents',
     value: 'documents',
+    align: 'center',
   },
 ]
 export const statisticsTruckersHeaders = [

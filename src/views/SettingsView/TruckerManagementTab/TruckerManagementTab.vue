@@ -14,6 +14,7 @@ const { requiresForTruckers, questionList } = storeToRefs(truckerManagement)
 const openedPanel = ref([2])
 const loading = ref(false)
 const documentsDialog = ref(null)
+const onboardingTruckersList = ref([])
 let truckerManagementDB = ref({ requiresForTruckers: null, questionList: null })
 const isDisabled = ref(false)
 
@@ -28,9 +29,10 @@ const validateRequirements = computed(() => {
 
   return isDisabled.value
 })
-const openDocuments = doc => {
+const openDocuments = (doc, id) => {
   documentsDialog.value.show(true)
   documentsDialog.value.data = doc
+  documentsDialog.value.selectedItem = id
 }
 const saveTruckerRequirements = async () => {
   const data = await truckerManagement.saveTruckerRequirements({
@@ -45,10 +47,19 @@ const cancelChanges = async () => {
   requiresForTruckers.value = cloneDeep(data.requiresForTruckers)
   questionList.value = cloneDeep(data.questionList)
 }
+const acceptDocument = async () => {
+
+  const { selectedItem, data } = documentsDialog.value
+  await truckerManagement.approveOnboardingDoc({ selectedItem, data })
+}
+const declineDocument = async reason => {
+  console.log('decline documnet', reason)
+}
 onMounted(async () => {
   const data = await truckerManagement.getTruckerRequirements()
   truckerManagementDB = cloneDeep(data)
   await truckerManagement.getOnboardingDocuments()
+  onboardingTruckersList.value = await truckerManagement.getOnboardedTruckers()
 })
 </script>
 
@@ -65,9 +76,7 @@ onMounted(async () => {
   >
     <ExpansionPanel elevation="0">
       <ExpansionPanelTitle :color="getColor('uiSecondary-02')">
-        <Typography type="text-h4">
-          Trucker requirements
-        </Typography>
+        <Typography type="text-h4"> Trucker requirements </Typography>
       </ExpansionPanelTitle>
       <ExpansionPanelText class="w-full md:w-2/3 lg:w-4/3 pt-4">
         <div>
@@ -83,9 +92,7 @@ onMounted(async () => {
     </ExpansionPanel>
     <ExpansionPanel elevation="0">
       <ExpansionPanelTitle :color="getColor('uiSecondary-02')">
-        <Typography type="text-h4">
-          Required onboarding documents
-        </Typography>
+        <Typography type="text-h4"> Required onboarding documents </Typography>
       </ExpansionPanelTitle>
       <ExpansionPanelText class="w-full md:w-2/3 lg:w-4/3 pt-4">
         <div>
@@ -95,15 +102,12 @@ onMounted(async () => {
     </ExpansionPanel>
     <ExpansionPanel elevation="0">
       <ExpansionPanelTitle :color="getColor('uiSecondary-02')">
-        <Typography type="text-h4">
-          Onboarding
-        </Typography>
+        <Typography type="text-h4"> Onboarding </Typography>
       </ExpansionPanelTitle>
       <ExpansionPanelText class="pt-4">
         <VirtualTable
           id="truckersDocumentsTable"
-          key="bookings"
-          :entities="truckers"
+          :entities="onboardingTruckersList"
           :headers="truckersDocumentsHeaders"
           :loading="loading"
           :options="{
@@ -117,16 +121,16 @@ onMounted(async () => {
           <template #trucker="{ item }">
             <div>
               <Typography>
-                {{ item.scac }}
+                {{ item?.truckerScac || '--' }}
               </Typography>
               <Typography :color="getColor('textSecondary')">
-                {{ item.email }}
+                {{ item.truckerEmail || '--' }}
               </Typography>
             </div>
           </template>
           <template #company="{ item }">
             <Typography>
-              {{ item.company }}
+              {{ item.truckerCompany || '--' }}
             </Typography>
           </template>
           <template #documents="{ item }">
@@ -138,9 +142,9 @@ onMounted(async () => {
                 <Chip
                   :prepend-icon="useDocumentsChip()[i.status]?.icon"
                   :color="useDocumentsChip()[i.status]?.color"
-                  @click="openDocuments(i)"
+                  @click="openDocuments(i, item.id)"
                 >
-                  {{ i.label }}
+                  {{ i.name }}
                 </Chip>
               </template>
             </div>
@@ -156,6 +160,8 @@ onMounted(async () => {
     <template #text>
       <DocumentViewerDialog
         :doc="documentsDialog.data"
+        @acceptDoc="acceptDocument()"
+        @declineDoc="declineDocument(reason)"
         @close="documentsDialog.show(false)"
       />
     </template>

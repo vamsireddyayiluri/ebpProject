@@ -13,4 +13,8 @@ export default () => ({
     icon: 'mdi-timer',
     color: getColor('functionalWarning'),
   },
+  approved: {
+    icon: 'mdi-check-circle',
+    color: getColor('functionalSuccess'),
+  },
 })

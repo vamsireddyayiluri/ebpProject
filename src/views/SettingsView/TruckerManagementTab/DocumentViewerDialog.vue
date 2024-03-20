@@ -66,10 +66,14 @@ onMounted(async () => {
       variant="plain"
       class="ml-auto"
       @click="leaveCommentDialog.show(true)"
+      v-if="doc.status === 'pending'"
     >
       decline
     </Button>
-    <Button @click="emit('close')">
+    <Button
+      @click="emit('acceptDoc')"
+      v-if="doc.status === 'pending'"
+    >
       accept
     </Button>
   </div>
@@ -79,9 +83,7 @@ onMounted(async () => {
   >
     <template #text>
       <div class="flex justify-between mb-3">
-        <Typography type="text-h3">
-          Leave comment
-        </Typography>
+        <Typography type="text-h3"> Leave comment </Typography>
         <IconButton
           icon="mdi-close"
           class="-mt-1"
@@ -89,12 +91,12 @@ onMounted(async () => {
         />
       </div>
       <Textarea
-        v-model="comment"
+        v-model.trim="comment"
         label="Explain what is wrong"
       />
       <Button
         class="float-right mt-6"
-        @click="leaveCommentDialog.show(false)"
+        @click="$emit('declineDoc', comment)"
       >
         send
       </Button>
