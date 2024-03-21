@@ -2,6 +2,7 @@ export const onboardingCodes = {
   onboarded: 'All loads were successfully moved',
   onboardMovedLoad: 'Trucker moved a different number of loads',
   inComplete: 'Trucker did not move the shipments',
+  other: 'Other',
 }
 export const declineCodes = {
   bookingCanceled: 'Booking canceled',

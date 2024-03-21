@@ -42,11 +42,7 @@ export const bookingsActions = item => {
     duplicateAction, cancelAction)
   }
   if (item.status === statuses.pending) {
-    actions.splice(0,2)
     actions.push(duplicateAction, cancelAction)
-  }
-  if (item.committed === item.containers) {
-    return []
   }
 
   return actions
