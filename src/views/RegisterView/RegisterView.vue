@@ -23,9 +23,10 @@ const form = reactive({
   confirmPassword: '',
 })
 const loading = ref(false)
-const { yards } = storeToRefs(workDetailsStore)
+const { yards, vendorDetails } = storeToRefs(workDetailsStore)
 const { requiresForTruckers, preferredTruckersList, questionList, onboardingDocuments } =
   storeToRefs(truckerManagement)
+const { getVendorDetails } = useWorkDetailsStore()
 const invitations = ref([])
 const rules = {
   cell(value) {
@@ -80,6 +81,7 @@ const onSubmit = async () => {
     await authStore.register({
       form,
       yards: yards.value,
+      vendorDetails: vendorDetails.value,
       invitations: invitations.value,
       requiresForTruckers: requiresForTruckers.value,
       questionList: questionList.value,
@@ -97,6 +99,7 @@ onMounted(async () => {
   truckerManagement.questionList = []
   truckerManagement.onboardingDocuments = []
   truckerManagement.preferredTruckersList = []
+  getVendorDetails()
 })
 </script>
 

@@ -49,5 +49,6 @@ export const getUserIdByEmail = async email => {
 export const getRequestLoadFee = async () => {
   const settingsCollection = query(doc(db, 'settings', 'request_loads'))
   const settings = await getDoc(settingsCollection)
+  
   return settings.data()
 }

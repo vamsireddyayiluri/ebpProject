@@ -3,41 +3,32 @@ import { getColor } from '~/helpers/colors'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { emailRegex } from '@qualle-admin/qutil/dist/patterns'
 import { defaultOverWeight, maximumOverWeight } from '~/constants/settings'
-import { isEqual } from 'lodash'
+import { cloneDeep, isEqual } from 'lodash'
 import { useAuthStore } from '~/stores/auth.store'
+import { storeToRefs } from 'pinia'
 
 const props = defineProps({
-  defaultDetails: Object,
   editedLocation: Object,
 })
-const emit = defineEmits(['close', 'setDetails', 'setCustomDetails'])
+const emit = defineEmits(['close'])
 const authStore = useAuthStore()
-const { saveVendorDetails, saveYardDetails } = useWorkDetailsStore()
-const emptyDetails = {
-  primaryContact: null,
-  primaryContactName: null,
-  primaryContactEmail: null,
-  secondaryContact: null,
-  secondaryContactName: null,
-  secondaryContactEmail: null,
-  pickupInstructions: null,
-  hoursOfOperation: null,
-  ...(props.editedLocation
-    ? {
-      averageLoadTime: null,
-      overweight: null,
-      averageWeight: null,
-    }
-    : {}),
-}
-const rawVendorDetails = ref(toRaw(props.defaultDetails))
+const workDetailsStore = useWorkDetailsStore()
+const { saveVendorDetails, saveYardDetails, getVendorDetails } = workDetailsStore
+const { vendorDetails } = storeToRefs(workDetailsStore)
+
 const details = ref(
   props.editedLocation
     ? props.editedLocation?.details?.customizedDetails
       ? props.editedLocation?.details
-      : rawVendorDetails.value
-    : rawVendorDetails.value || emptyDetails,
+      : {
+        ...vendorDetails.value,
+        averageLoadTime: null,
+        overweight: null,
+        averageWeight: null,
+      }
+    : vendorDetails.value,
 )
+const initDetails = cloneDeep(details.value)
 const isSecondaryContact = ref(false)
 const createDefaultTimeArray = () => {
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
@@ -62,11 +53,22 @@ const createDefaultTimeArray = () => {
   })
 }
 const defaultTime = createDefaultTimeArray()
-const checkboxes = ref(
-  props.editedLocation?.details?.customizedDetails
-    ? props.editedLocation.details.hoursOfOperation || defaultTime
-    : props.defaultDetails?.hoursOfOperation || defaultTime,
-)
+const getCurrentHours = () => {
+  if (props.editedLocation) {
+    if (props.editedLocation?.details?.customizedDetails) {
+      return props.editedLocation.details.hoursOfOperation
+    } else {
+      if (vendorDetails.value.primaryContactName) {
+        return cloneDeep(vendorDetails.value?.hoursOfOperation)
+      } else {
+        return defaultTime
+      }
+    }
+  } else {
+    return details.value?.hoursOfOperation || defaultTime
+  }
+}
+const checkboxes = ref(getCurrentHours())
 const form = ref(null)
 const loadTimes = ['0.5 hours', '1 hour', '1.5 hours']
 const onChangeFrom = (e, day) => {
@@ -103,22 +105,16 @@ const rules = {
       : true
   },
 }
-const currentEditedDetails = props.editedLocation
-  ? authStore.orgData.locations.find(l => l.id === props.editedLocation.id)?.details
-  : authStore.orgData?.vendorDetails || {}
-const isDirty = ref(null)
+const isDirty = computed(() => !isEqual(details.value, initDetails))
 const isDisabled = computed(
   () => !!form.value?.errors.length || form.value?.isValidating || !isDirty.value,
 )
 
-const checkFormModified = () => {
-  isDirty.value = !isEqual(details.value, currentEditedDetails)
-}
 const setDetails = async () => {
   const validationData = await form.value.validate()
   if (validationData.valid) {
     if (props.editedLocation) {
-      saveYardDetails({ ...props.editedLocation, details: { ...details.value } })
+      saveYardDetails({ ...props.editedLocation, details: { ...details.value, hoursOfOperation: checkboxes.value } })
     } else {
       details.value.hoursOfOperation = checkboxes.value
       await saveVendorDetails(details.value)
@@ -126,7 +122,9 @@ const setDetails = async () => {
     emit('close')
   }
 }
-watch(details, checkFormModified, { deep: true })
+onUnmounted(() => {
+  if (authStore.orgData?.vendorDetails) getVendorDetails()
+})
 </script>
 
 <template>

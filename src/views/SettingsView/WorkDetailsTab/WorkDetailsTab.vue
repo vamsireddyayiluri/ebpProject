@@ -25,7 +25,7 @@ const onSave = async () => {
   await workDetailsStore.saveYards(filteredYards)
 }
 const cancelChanges = () => {
-  yards.value = [...orgData.value.locations]
+  orgData.value?.locations && (yards.value = [...orgData.value.locations])
 }
 onMounted(() => {
   workDetailsStore.getYards()

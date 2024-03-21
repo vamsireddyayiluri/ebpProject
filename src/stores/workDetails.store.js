@@ -4,14 +4,16 @@ import { db } from '~/firebase'
 import { useAuthStore } from '~/stores/auth.store'
 import { useAlertStore } from '~/stores/alert.store'
 import { useBookingRulesStore } from '~/stores/bookingRules.store'
+import { cloneDeep } from 'lodash'
 
 export const useWorkDetailsStore = defineStore('workDetails', () => {
   const alertStore = useAlertStore()
   const authStore = useAuthStore()
-  const { orgData } = storeToRefs(authStore)
   const yards = ref([])
-  const getVendorDetails = computed(() => {
-    return orgData.value?.vendorDetails || {
+  const vendorDetails = ref(null)
+
+  const getVendorDetails = () => {
+    vendorDetails.value = cloneDeep(authStore.orgData?.vendorDetails || {
       primaryContact: null,
       primaryContactName: null,
       primaryContactEmail: null,
@@ -20,10 +22,8 @@ export const useWorkDetailsStore = defineStore('workDetails', () => {
       secondaryContactEmail: null,
       pickupInstructions: null,
       hoursOfOperation: null,
-    }
-  })
-  const vendorDetails = ref(getVendorDetails)
-
+    })
+  }
   const getYards = () => {
     yards.value = authStore.orgData?.locations?.map(i => {
       return {
@@ -58,13 +58,15 @@ export const useWorkDetailsStore = defineStore('workDetails', () => {
     }
   }
   const saveVendorDetails = async vendorDetails => {
-    try {
-      await updateDoc(doc(db, 'organizations', authStore.orgData.orgId), {
-        vendorDetails: vendorDetails,
-      })
-      alertStore.info({ content: 'Default details saved!' })
-    } catch ({ message }) {
-      alertStore.warning({ content: message })
+    if (authStore.orgData?.orgId) {
+      try {
+        await updateDoc(doc(db, 'organizations', authStore.orgData.orgId), {
+          vendorDetails: vendorDetails,
+        })
+        alertStore.info({ content: 'Default details saved!' })
+      } catch ({ message }) {
+        alertStore.warning({ content: message })
+      }
     }
   }
   const saveYardDetails = async location => {
@@ -75,16 +77,25 @@ export const useWorkDetailsStore = defineStore('workDetails', () => {
         }
       } else return i
     })
-
-    try {
-      await updateDoc(doc(db, 'organizations', authStore.orgData.orgId), {
-        locations: updatedDetails,
+    if (!authStore.orgData?.orgId) {
+      yards.value = updatedDetails.map(i => {
+        return {
+          ...i,
+          text: `Commodity: ${i.commodity} ${i.details?.customizedDetails? '- (customized details)': ''}`,
+        }
       })
-      await getYards()
-      await authStore.getOrgData(authStore.orgData.orgId)
-      alertStore.info({ content: 'Yard details saved!' })
-    } catch ({ message }) {
-      alertStore.warning({ content: message })
+    }
+    else {
+      try {
+        await updateDoc(doc(db, 'organizations', authStore.orgData.orgId), {
+          locations: updatedDetails,
+        })
+        await getYards()
+        await authStore.getOrgData(authStore.orgData.orgId)
+        alertStore.info({content: 'Yard details saved!'})
+      } catch ({message}) {
+        alertStore.warning({content: message})
+      }
     }
   }
 
@@ -97,5 +108,6 @@ export const useWorkDetailsStore = defineStore('workDetails', () => {
     saveYards,
     saveVendorDetails,
     saveYardDetails,
+    getVendorDetails,
   }
 })

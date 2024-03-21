@@ -10,7 +10,7 @@ import { groupedBookingLocations } from '~/stores/helpers'
 import { useAuthStore } from '~/stores/auth.store'
 import moment from 'moment-timezone'
 import { some } from 'lodash'
-import {checkVendorDetailsCompletion} from "~/helpers/validations-functions";
+import { checkVendorDetailsCompletion } from '~/helpers/validations-functions'
 
 const props = defineProps({
   mapToggled: Boolean,

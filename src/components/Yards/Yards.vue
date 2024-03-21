@@ -11,7 +11,7 @@ import { cloneDeep } from 'lodash'
 const attrs = useAttrs()
 const workDetailsStore = useWorkDetailsStore()
 const authStore = useAuthStore()
-const { yards, vendorDetails } = storeToRefs(workDetailsStore)
+const { yards, vendorDetails: defaultDetails } = storeToRefs(workDetailsStore)
 const { xs, width } = useDisplay()
 const newLocation = ref({
   address: null,
@@ -19,7 +19,6 @@ const newLocation = ref({
 })
 const commodity = ref(null)
 const removeLocationDialog = ref(null)
-const defaultDetails = ref(vendorDetails.value)
 const locationDetailsDialog = ref(null)
 
 const onSelectLocation = location => {
@@ -58,14 +57,9 @@ const editDetails = id => {
   locationDetailsDialog.value.data = editedLocation
 }
 
-const resetDefaultSettings = () => {
-  defaultDetails.value = authStore.orgData.vendorDetails
-}
-
 // that function runs when click outside the addEditDialog
 const onClickOutsideDialog = () => {
   locationDetailsDialog.value.data = null
-  resetDefaultSettings()
 }
 </script>
 
@@ -108,10 +102,18 @@ const onClickOutsideDialog = () => {
         >
           <div class="flex justify-between">
             <Typography
-              :color="getColor(!defaultDetails?.primaryContactName ? 'textDisabled' : 'textPrimary')"
+              :color="
+                getColor(!defaultDetails?.primaryContactName ? 'textDisabled' : 'textPrimary')
+              "
               class="mt-3.5"
             >
-              {{ width >= 600 && width <= 770 ? 'Details': !defaultDetails?.primaryContactName ? 'Location details' : 'Default details' }}
+              {{
+                width >= 600 && width <= 770
+                  ? 'Details'
+                  : !defaultDetails?.primaryContactName
+                    ? 'Location details'
+                    : 'Default details'
+              }}
             </Typography>
             <Button
               v-if="!defaultDetails?.primaryContactName"
@@ -181,12 +183,10 @@ const onClickOutsideDialog = () => {
   >
     <template #text>
       <LocationDetailsDialog
-        :default-details="cloneDeep(defaultDetails)"
         :edited-location="cloneDeep(locationDetailsDialog.data)"
         @close="
           locationDetailsDialog.show(false),
-          locationDetailsDialog.data = null,
-          resetDefaultSettings()
+          (locationDetailsDialog.data = null)
         "
       />
     </template>
