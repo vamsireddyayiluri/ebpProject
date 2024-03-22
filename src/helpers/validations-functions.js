@@ -75,3 +75,6 @@ export const checkVendorDetailsCompletion = () => {
       content: 'Please add yard details in settings to perform actions',
     })
 }
+export const isExistName = (list, value, key) => {
+  return list.some(i => i[key] === value)
+}

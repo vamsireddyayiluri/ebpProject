@@ -97,7 +97,7 @@ const rules = {
     return emailRegex.test(value) || 'Invalid e-mail'
   },
   required(value) {
-    return value ? true : 'Required field'
+    return value.trim() ? true : 'Required field'
   },
   averageWeight(value) {
     return value < defaultOverWeight || value > maximumOverWeight
@@ -270,7 +270,7 @@ onUnmounted(() => {
       v-model="details.pickupInstructions"
       label="Instructions for the pickup *"
       rows="3"
-      maxlength="150"
+      maxlength="255"
       :rules="[rules.required]"
     />
     <div

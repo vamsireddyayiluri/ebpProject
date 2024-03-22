@@ -245,6 +245,7 @@ onMounted(async () => {
             label: yard.label,
             lat: yard.lat,
             lng: yard.lng,
+            details: yard.details
           }))
         "
         label="Yard label *"
@@ -253,6 +254,7 @@ onMounted(async () => {
         item-value="address"
         return-object
         class="h-fit"
+        @update:modelValue="(value) => booking.weight = value.details?.averageWeight || null"
       />
       <Textfield
         v-model.trim="booking.commodity"
