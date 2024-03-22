@@ -37,7 +37,16 @@ const addYard = async () => {
     geohash: geohashedLocation,
     commodity: commodity.value,
     text: `Commodity: ${commodity.value}`,
-    details: defaultDetails.value,
+    details: {
+      primaryContact: null,
+      primaryContactName: null,
+      primaryContactEmail: null,
+      secondaryContact: null,
+      secondaryContactName: null,
+      secondaryContactEmail: null,
+      pickupInstructions: null,
+      hoursOfOperation: null,
+    },
   })
   newLocation.value.address = null
   newLocation.value.label = ''
