@@ -97,7 +97,7 @@ const rules = {
     return emailRegex.test(value) || 'Invalid e-mail'
   },
   required(value) {
-    return value.trim() ? true : 'Required field'
+    return value?.trim() ? true : 'Required field'
   },
   averageWeight(value) {
     return value < defaultOverWeight || value > maximumOverWeight

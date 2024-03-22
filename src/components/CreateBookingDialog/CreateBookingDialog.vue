@@ -13,7 +13,7 @@ import {
   validateExpiryDate,
   validateFlexibleSizes,
 } from '~/helpers/validations-functions'
-import { insuranceTypes } from '~/constants/settings'
+import { defaultOverWeight, insuranceTypes, maximumOverWeight } from '~/constants/settings'
 import { deepCopy } from 'json-2-csv/lib/utils'
 
 const props = defineProps({
@@ -92,6 +92,11 @@ const currentDate = ref(new Date())
 
 const rules = {
   containers: value => checkPositiveInteger(value),
+  averageWeight: value => {
+    return value < defaultOverWeight || value > maximumOverWeight
+      ? `Weight must be b/w${defaultOverWeight} to ${maximumOverWeight}`
+      : true
+  },
 }
 const updateExpiryDate = value => {
   booking.value.loadingDate = moment(value).endOf('day').format()
@@ -265,7 +270,7 @@ onMounted(async () => {
         v-model.number="booking.weight"
         label="Average weight*"
         type="number"
-        :rules="[rules.containers]"
+        :rules="[rules.containers, rules.averageWeight]"
         required
       />
       <Autocomplete
