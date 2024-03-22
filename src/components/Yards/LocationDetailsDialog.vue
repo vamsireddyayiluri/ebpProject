@@ -70,8 +70,19 @@ const getCurrentHours = () => {
 }
 const checkboxes = ref(getCurrentHours())
 const form = ref(null)
+const notAfterToTime = ref({})
+const notBeforeFromTime = ref({})
 const loadTimes = ['0.5 hours', '1 hour', '1.5 hours']
+
 const onChangeFrom = (e, day) => {
+  const currentTimePicker = checkboxes.value.find(d => d)
+
+  notAfterToTime.value.hour= [[0, currentTimePicker.to.hh + currentTimePicker.to.A.toLowerCase().slice(0, -1)]]
+  if (currentTimePicker.to.hh === e.data.hh && currentTimePicker.to.A.toLowerCase() === e.data.a) {
+    notAfterToTime.value.minute = [[0, currentTimePicker.to.mm]]
+  } else {
+    notAfterToTime.value.minute = [[0, 60]]
+  }
   checkboxes.value.map(d => {
     if (d.day === day) {
       d.from = e.displayTime
@@ -80,6 +91,14 @@ const onChangeFrom = (e, day) => {
 }
 
 const onChangeTo = (e, day) => {
+  const currentTimePicker = checkboxes.value.find(d => d)
+
+  notBeforeFromTime.value.hour = [[currentTimePicker.from.hh + currentTimePicker.from.A.toLowerCase().slice(0, -1), '11p']]
+  if (currentTimePicker.from.hh === e.data.hh && currentTimePicker.from.A.toLowerCase() === e.data.a) {
+    notBeforeFromTime.value.minute = [[currentTimePicker.from.mm, 60]]
+  } else {
+    notBeforeFromTime.value.minute = [[0, 60]]
+  }
   checkboxes.value.map(d => {
     if (d.day === day) {
       d.to = e.displayTime
@@ -97,7 +116,7 @@ const rules = {
     return emailRegex.test(value) || 'Invalid e-mail'
   },
   required(value) {
-    return value?.trim() ? true : 'Required field'
+    return value?.toString().trim() ? true : 'Required field'
   },
   averageWeight(value) {
     return value < defaultOverWeight || value > maximumOverWeight
@@ -213,9 +232,7 @@ onUnmounted(() => {
         :rules="[rules.email]"
       />
     </div>
-    <Typography type="text-body-xs-semibold mt-6 mb-2">
-      Operation hours
-    </Typography>
+    <Typography type="text-body-xs-semibold mt-6 mb-2"> Operation hours </Typography>
     <div class="flex gap-6 flex-col sm:flex-row">
       <template
         v-for="(item, n) in checkboxes"
@@ -250,6 +267,9 @@ onUnmounted(() => {
             label="Time from*"
             class="w-44"
             :minute-interval="15"
+            :hour-range="notAfterToTime?.hour"
+            :minute-range="notAfterToTime?.minute"
+            hide-disabled-items
             @change="e => onChangeFrom(e, d.day)"
           />
           <Timepicker
@@ -257,15 +277,16 @@ onUnmounted(() => {
             label="Time to*"
             class="w-44"
             :minute-interval="15"
+            :hour-range="notBeforeFromTime?.hour"
+            :minute-range="notBeforeFromTime?.minute"
+            hide-disabled-items
             @change="e => onChangeTo(e, d.day)"
           />
         </div>
       </VRow>
     </template>
 
-    <Typography type="text-body-xs-semibold mt-6 mb-4">
-      Pickup instructions
-    </Typography>
+    <Typography type="text-body-xs-semibold mt-6 mb-4"> Pickup instructions </Typography>
     <Textarea
       v-model="details.pickupInstructions"
       label="Instructions for the pickup *"
