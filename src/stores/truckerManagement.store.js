@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { useAlertStore } from '~/stores/alert.store'
 import listRequiresForTruckers from '~/fixtures/requiresForTruckers.json'
 import { useAuthStore } from '~/stores/auth.store'
-import { doc, getDoc, setDoc } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, query, setDoc, where } from 'firebase/firestore'
 import { deleteObject, listAll, ref as firebaseRef, uploadBytes } from 'firebase/storage'
 import { db, storage } from '~/firebase'
 
@@ -100,6 +100,12 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
   const isFileExists = async fileRef => {
     return onboardingDocuments.value.some(i => i.name === fileRef.name)
   }
+  const getTruckerDetails = async orgId => {
+    const q = query(collection(db, 'organizations'), where('orgId', '==', orgId))
+    const querySnapshot = await getDocs(q)
+
+    return querySnapshot.docs.map(doc => doc.data())[0]
+  }
 
   return {
     requiresForTruckers,
@@ -113,5 +119,6 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
     getOnboardingDocuments,
     addDoc,
     removeDoc,
+    getTruckerDetails,
   }
 })

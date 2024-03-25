@@ -90,7 +90,11 @@ const onClickOutsideDialog = () => {
     class="w-full"
     v-bind="{ ...attrs }"
   >
-    <VForm ref="form" @submit.prevent class="grid grid-cols-1 sm:grid-cols-2 gap-5 [&>div]:text-left">
+    <VForm
+      ref="form"
+      class="grid grid-cols-1 sm:grid-cols-2 gap-5 [&>div]:text-left"
+      @submit.prevent
+    >
       <Location
         v-model="newLocation.address"
         label="Address *"
@@ -136,8 +140,8 @@ const onClickOutsideDialog = () => {
                 width >= 600 && width <= 770
                   ? 'Details'
                   : !defaultDetails?.primaryContactName
-                  ? 'Location details'
-                  : 'Default details'
+                    ? 'Location details'
+                    : 'Default details'
               }}
             </Typography>
             <Button

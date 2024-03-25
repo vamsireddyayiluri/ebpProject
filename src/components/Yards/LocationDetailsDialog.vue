@@ -6,7 +6,7 @@ import { defaultOverWeight, maximumOverWeight } from '~/constants/settings'
 import { cloneDeep, isEqual } from 'lodash'
 import { useAuthStore } from '~/stores/auth.store'
 import { storeToRefs } from 'pinia'
-import moment from "moment-timezone";
+import moment from 'moment-timezone'
 
 const props = defineProps({
   editedLocation: Object,
@@ -237,7 +237,9 @@ onUnmounted(() => {
         :rules="[rules.email]"
       />
     </div>
-    <Typography type="text-body-xs-semibold mt-6 mb-2"> Operation hours </Typography>
+    <Typography type="text-body-xs-semibold mt-6 mb-2">
+      Operation hours
+    </Typography>
     <div class="flex gap-6 flex-col sm:flex-row">
       <template
         v-for="(item, n) in checkboxes"
@@ -293,7 +295,9 @@ onUnmounted(() => {
       </VRow>
     </template>
 
-    <Typography type="text-body-xs-semibold mt-6 mb-4"> Pickup instructions </Typography>
+    <Typography type="text-body-xs-semibold mt-6 mb-4">
+      Pickup instructions
+    </Typography>
     <Textarea
       v-model="details.pickupInstructions"
       label="Instructions for the pickup *"
