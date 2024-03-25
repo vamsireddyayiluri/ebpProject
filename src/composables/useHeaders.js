@@ -128,7 +128,6 @@ export const truckersDocumentsHeaders = [
     text: 'Trucker',
     value: 'trucker',
     align: 'start',
-    align: 'center',
     width: 3,
   },
   {

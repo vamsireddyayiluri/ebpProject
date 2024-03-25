@@ -29,10 +29,10 @@ const validateRequirements = computed(() => {
 
   return isDisabled.value
 })
-const openDocuments = (doc, id) => {
+const openDocuments = (doc, item) => {
   documentsDialog.value.show(true)
   documentsDialog.value.data = doc
-  documentsDialog.value.selectedItem = id
+  documentsDialog.value.selectedItem = item
 }
 const saveTruckerRequirements = async () => {
   const data = await truckerManagement.saveTruckerRequirements({
@@ -48,12 +48,26 @@ const cancelChanges = async () => {
   questionList.value = cloneDeep(data.questionList)
 }
 const acceptDocument = async () => {
-
-  const { selectedItem, data } = documentsDialog.value
-  await truckerManagement.approveOnboardingDoc({ selectedItem, data })
+  updateDocumentStatus()
 }
 const declineDocument = async reason => {
-  console.log('decline documnet', reason)
+  updateDocumentStatus(reason)
+}
+const updateDocumentStatus = async (reason = null) => {
+  const { selectedItem, data } = documentsDialog.value
+  const payload = { selectedItem, data, status: 'approved' }
+  if (reason) {
+    payload.status = 'declined'
+    payload.reason = reason
+  }
+  await truckerManagement.updateOnboardingDocStatus(payload)
+  onboardingTruckersList.value = await truckerManagement.getOnboardedTruckers()
+  documentsDialog.value.show(false)
+}
+
+const getTruncatedFileName = fileName => {
+  const name = `${fileName?.substring(0, 15)}...`
+  return fileName?.length > 15 ? name : fileName
 }
 onMounted(async () => {
   const data = await truckerManagement.getTruckerRequirements()
@@ -135,17 +149,89 @@ onMounted(async () => {
           </template>
           <template #documents="{ item }">
             <div class="flex gap-2 z-50">
-              <template
-                v-for="(i, index) in item.documents"
-                :key="index"
-              >
-                <Chip
-                  :prepend-icon="useDocumentsChip()[i.status]?.icon"
-                  :color="useDocumentsChip()[i.status]?.color"
-                  @click="openDocuments(i, item.id)"
+              <template v-if="item.documents.length <= 2">
+                <template
+                  v-for="(i, index) in item.documents"
+                  :key="index"
                 >
-                  {{ i.name }}
-                </Chip>
+                  <Chip
+                    :prepend-icon="useDocumentsChip()[i.status]?.icon"
+                    :color="useDocumentsChip()[i.status]?.color"
+                    @click="openDocuments(i, item)"
+                  >
+                    {{ getTruncatedFileName(i.filename) }}
+                    <Popover
+                      activator="parent"
+                      location="top "
+                      class="pl-2"
+                    >
+                      <div class="flex justify-center gap-2 py-1">
+                        <span>{{ i.filename }}</span>
+                      </div>
+                    </Popover>
+                  </Chip>
+                </template>
+              </template>
+              <template v-if="item.documents.length > 2">
+                <template
+                  v-for="(i, index) in item.documents.slice(0, 1)"
+                  :key="index"
+                >
+                  <Chip
+                    :prepend-icon="useDocumentsChip()[i.status]?.icon"
+                    :color="useDocumentsChip()[i.status]?.color"
+                    @click="openDocuments(i, item)"
+                  >
+                    {{ getTruncatedFileName(i.filename) }}
+                    <Popover
+                      activator="parent"
+                      location="top "
+                      class="pl-2"
+                    >
+                      <div class="flex justify-center gap-2 py-1">
+                        <span>{{ i.filename }}</span>
+                      </div>
+                    </Popover>
+                  </Chip>
+                </template>
+                <Menu
+                  location="bottom end"
+                  offset="3"
+                >
+                  <template #activator="{ props }">
+                    <span
+                      v-bind="props"
+                      v-on="on"
+                      class="mt-2"
+                    >
+                      +{{ item.documents?.length - 1 }}
+                      more
+                    </span>
+                  </template>
+                  <List>
+                    <ListItem
+                      v-for="(i, index) in item.documents.slice(1)"
+                      :key="index"
+                    >
+                      <Chip
+                        :prepend-icon="useDocumentsChip()[i.status]?.icon"
+                        :color="useDocumentsChip()[i.status]?.color"
+                        @click="openDocuments(i, item)"
+                      >
+                        {{ getTruncatedFileName(i.filename) }}
+                        <Popover
+                          activator="parent"
+                          location="top "
+                          class="pl-2"
+                        >
+                          <div class="flex justify-center gap-2 py-1">
+                            <span>{{ i.filename }}</span>
+                          </div>
+                        </Popover>
+                      </Chip>
+                    </ListItem>
+                  </List>
+                </Menu>
               </template>
             </div>
           </template>
@@ -161,7 +247,7 @@ onMounted(async () => {
       <DocumentViewerDialog
         :doc="documentsDialog.data"
         @acceptDoc="acceptDocument()"
-        @declineDoc="declineDocument(reason)"
+        @declineDoc="declineDocument"
         @close="documentsDialog.show(false)"
       />
     </template>

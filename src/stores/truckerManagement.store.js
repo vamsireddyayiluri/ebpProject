@@ -21,6 +21,7 @@ import {
 } from 'firebase/storage'
 import { db, storage } from '~/firebase'
 import { uid } from 'uid'
+import axios from 'axios'
 
 export const useTruckerManagementStore = defineStore('truckerManagement', () => {
   const alertStore = useAlertStore()
@@ -70,6 +71,10 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
       const folderRef = firebaseRef(storage, folderPath)
       const filesList = await listAll(folderRef)
       onboardingDocuments.value = filesList.items.map(fileRef => fileRef)
+      // const doc = await getDoc(db, 'trucker_requirements', userData.orgId)
+
+      // onboardingDocuments.value = doc.data()?.onBoardingDocuments || []
+      // console.log('onboardingDOcumnets', onboardingDocuments)
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
@@ -97,8 +102,9 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
           {
             onBoardingDocuments: arrayUnion({
               id: uid(),
-              fileURL: downloadURL,
-              fileName: file.name,
+              path: downloadURL,
+              filename: file.name,
+              type: file.type,
             }),
           },
           { merge: true },
@@ -122,8 +128,15 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
     try {
       const fileRef = firebaseRef(storage, filePath)
       await deleteObject(fileRef)
-      const index = onboardingDocuments.value.findIndex(f => f.name === fileName)
-      onboardingDocuments.value.splice(index, 1)
+      const truckerManagementRef = doc(db, 'trucker_requirements', userData.orgId)
+
+      const { onBoardingDocuments } = (await getDoc(truckerManagementRef)).data()
+
+      const updatedDocs = onBoardingDocuments.filter(doc => doc.fileName !== fileName)
+
+      await updateDoc(truckerManagementRef, {
+        onBoardingDocuments: updatedDocs,
+      })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
@@ -133,31 +146,63 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
   }
 
   const getOnboardedTruckers = async () => {
-    const query = collection(db, 'onboarding_documents')
+    try {
+      const query = collection(db, 'onboarding_documents')
 
-    const onboardingDocs = await getDocs(query, where('exporterOrgId', '==', userData.orgId))
+      // Get onboarding documents where 'exporterOrgId' matches 'userData.orgId'.
+      const onboardingDocsSnapshot = await getDocs(
+        query,
+        where('exporterOrgId', '==', userData.orgId),
+      )
 
-    if (!onboardingDocs.empty) {
-      return onboardingDocs.docs.map(doc => doc.data())
+      if (!onboardingDocsSnapshot.empty) {
+        const docDataPromises = onboardingDocsSnapshot.docs.map(async docSnapshot => {
+          // Use the correct way to reference a sub-collection depending on your SDK
+          const documentsQuery = collection(docSnapshot.ref, 'documents')
+          const documentsSnapshot = await getDocs(documentsQuery)
+
+          const documentsData = documentsSnapshot.docs.map(document => document.data())
+
+          return { ...docSnapshot.data(), documents: documentsData }
+        })
+        const docData = await Promise.all(docDataPromises)
+        return docData
+      }
+
+      return []
+    } catch (error) {
+      console.log('error', error)
     }
-    return []
   }
 
-  const approveOnboardingDoc = async payload => {
-    const { selectedItem, data } = payload
+  const updateOnboardingDocStatus = async payload => {
+    const { selectedItem, data, status, reason = null } = payload
+    try {
+      const query = doc(db, 'onboarding_documents', selectedItem.id, 'documents', data.id)
 
-    const query = doc(db, 'onboarding_documents', selectedItem)
-    const docSnap = await getDoc(query)
+      const docStatus = { status: status }
+      if (reason) {
+        docStatus.reason = reason
+      }
+      await updateDoc(query, docStatus)
 
-    let documentsArray = docSnap.data().documents || []
+      const emailData = {
+        status,
+        reason,
+        attachments: [data],
+        exporterOrgId: selectedItem.exporterOrgId,
+        truckerOrgId: selectedItem.truckerOrgId,
+      }
 
-    const docIndex = documentsArray.findIndex(doc => doc.name === data.name)
-
-    if (docIndex !== -1) {
-      documentsArray[docIndex] = { ...documentsArray[docIndex], status: 'approved' }
+      await axios.post(
+        `${
+          import.meta.env.VITE_APP_CANONICAL_URL
+        }/api/v1/onboardingDocuments/docUpdated/sendNotification`,
+        emailData,
+      )
+    } catch (error) {
+      console.log('error', error)
     }
-
-    await updateDoc(query, { documents: documentsArray })
   }
 
   return {
@@ -173,6 +218,6 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
     addDoc,
     removeDoc,
     getOnboardedTruckers,
-    approveOnboardingDoc,
+    updateOnboardingDocStatus,
   }
 })

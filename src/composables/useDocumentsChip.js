@@ -17,4 +17,8 @@ export default () => ({
     icon: 'mdi-check-circle',
     color: getColor('functionalSuccess'),
   },
+  declined: {
+    icon: 'mdi-close-circle',
+    color: '#FF0000',
+  },
 })
