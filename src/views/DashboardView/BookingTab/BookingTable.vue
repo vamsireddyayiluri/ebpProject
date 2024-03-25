@@ -27,6 +27,7 @@ const showActions = ref(true)
 const tableHeight = ref(0)
 const removeBookingDialog = ref(false)
 const cancelBookingDialog = ref(false)
+const approveCommitmentDialog = ref(false)
 const completeCommitmentDialog = ref(false)
 const declineCommitmentDialog = ref(false)
 const cancelCommitmentDialog = ref(false)
@@ -80,7 +81,7 @@ const containerActionHandler = async ({ action, e }) => {
     commitmentDetailsDialog.value.data = e[0]
   }
   if (action === 'approve-commitment') {
-    await approveCommitment(e[0])
+    openApproveCommitmentDialog(e[0])
   }
   if (action === 'complete-commitment') {
     openCompleteCommitmentDialog(e[0])
@@ -103,13 +104,13 @@ const rowExpanded = async (event, data) => {
     await closeBookingExpansion(id)
   }
 }
+const openApproveCommitmentDialog = commitment => {
+  approveCommitmentDialog.value.show(true)
+  approveCommitmentDialog.value.data = commitment
+}
 const openCancelBookingDialog = id => {
   cancelBookingDialog.value.show(true)
   cancelBookingDialog.value.data = id
-}
-const onApproveCommitment = async commitment => {
-  commitmentDetailsDialog.value.show(false)
-  await approveCommitment(commitment)
 }
 const openCompleteCommitmentDialog = commitment => {
   completeCommitmentDialog.value.show(true)
@@ -126,6 +127,11 @@ const openCancelCommitmentDialog = id => {
 const removeBooking = id => {
   deleteBooking(id)
   removeBookingDialog.value.show(false)
+}
+const onApproveCommitment = async commitment => {
+  approveCommitmentDialog.value.show(false)
+  commitmentDetailsDialog.value.show(false)
+  await approveCommitment(commitment)
 }
 const onCancelBooking = async (id, reason) => {
   await updateBookingStatus(id, statuses.canceled, reason)
@@ -312,7 +318,7 @@ watch(
     max-width="480"
   >
     <template #text>
-      <RemoveCancelDialog
+      <ConfirmationDialog
         btn-name="Remove"
         @close="removeBookingDialog.show(false)"
         @onClickBtn="removeBooking(removeBookingDialog.data.id)"
@@ -322,7 +328,7 @@ watch(
           <b>{{ removeBookingDialog.data.ref }}</b>
           from your bookings?
         </Typography>
-      </RemoveCancelDialog>
+      </ConfirmationDialog>
     </template>
   </Dialog>
   <Dialog
@@ -339,6 +345,23 @@ watch(
         @close="cancelBookingDialog.show(false)"
         @onClickBtn="e => onCancelBooking(cancelBookingDialog.data, e)"
       />
+    </template>
+  </Dialog>
+  <Dialog
+    ref="approveCommitmentDialog"
+    max-width="480"
+  >
+    <template #text>
+      <ConfirmationDialog
+        btn-name="Approve"
+        btn-type="primary"
+        @close="approveCommitmentDialog.show(false)"
+        @onClickBtn="onApproveCommitment(approveCommitmentDialog.data)"
+      >
+        <Typography>
+          Are you sure you want to approve this booking commitment?
+        </Typography>
+      </ConfirmationDialog>
     </template>
   </Dialog>
   <Dialog
@@ -400,7 +423,7 @@ watch(
     <template #text>
       <CommitmentDetailsDialog
         :commitment="commitmentDetailsDialog.data"
-        @approveCommitment="onApproveCommitment"
+        @approveCommitment="openApproveCommitmentDialog"
         @completeCommitment="openCompleteCommitmentDialog"
         @declineCommitment="openDeclineCommitmentDialog"
         @close="commitmentDetailsDialog.show(false)"

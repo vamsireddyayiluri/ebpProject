@@ -192,7 +192,7 @@ const onClickOutsideDialog = () => {
     max-width="480"
   >
     <template #text>
-      <RemoveCancelDialog
+      <ConfirmationDialog
         btn-name="Remove"
         @close="removeLocationDialog.show(false)"
         @onClickBtn="removeYard"
@@ -202,7 +202,7 @@ const onClickOutsideDialog = () => {
           <b>{{ removeLocationDialog.data.label }} ({{ removeLocationDialog.data.value }})</b>
           from your locations?
         </Typography>
-      </RemoveCancelDialog>
+      </ConfirmationDialog>
     </template>
   </Dialog>
   <Dialog

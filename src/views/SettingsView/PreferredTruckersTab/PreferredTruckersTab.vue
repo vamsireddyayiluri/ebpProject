@@ -265,7 +265,7 @@ onMounted(async () => {
     max-width="480"
   >
     <template #text>
-      <RemoveCancelDialog
+      <ConfirmationDialog
         btn-name="Delete"
         @close="deleteTruckerDialog.show(false)"
         @onClickBtn="deleteTrucker"
@@ -274,7 +274,7 @@ onMounted(async () => {
           Are you sure you want to remove trucker <b>{{ deleteTruckerDialog.data.email }}</b>
           your preferred list?
         </Typography>
-      </RemoveCancelDialog>
+      </ConfirmationDialog>
     </template>
   </Dialog>
 </template>

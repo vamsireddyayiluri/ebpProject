@@ -157,7 +157,7 @@ onMounted(async () => {
     max-width="480"
   >
     <template #text>
-      <RemoveCancelDialog
+      <ConfirmationDialog
         btn-name="Remove"
         @close="removeBookingDialog.show(false)"
         @onClickBtn="removeBooking(removeBookingDialog.data.id)"
@@ -167,7 +167,7 @@ onMounted(async () => {
           <b>ref# {{ removeBookingDialog.data.extendedProps.metadata.ref }}</b>
           from network?
         </Typography>
-      </RemoveCancelDialog>
+      </ConfirmationDialog>
     </template>
   </Dialog>
 </template>

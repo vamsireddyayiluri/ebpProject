@@ -122,7 +122,7 @@ onMounted(() => {
     max-width="480"
   >
     <template #text>
-      <RemoveCancelDialog
+      <ConfirmationDialog
         btn-name="Delete"
         @close="deleteDraftDialog.show(false)"
         @onClickBtn="deleteDraft(deleteDraftDialog.data.id)"
@@ -131,7 +131,7 @@ onMounted(() => {
           Are you sure you want to delete draft#
           <b>{{ deleteDraftDialog.data.ref }}</b>?
         </Typography>
-      </RemoveCancelDialog>
+      </ConfirmationDialog>
     </template>
   </Dialog>
 </template>

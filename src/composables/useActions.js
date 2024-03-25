@@ -107,13 +107,13 @@ export const commitmentsActions = (status, bstatus) => {
     actions.push(
       {
         icon: 'mdi-check',
-        label: 'Approve',
+        label: 'Approve commitment',
         action: 'approve-commitment',
       },
       ...viewDetailsAction,
       {
         icon: 'mdi-cancel',
-        label: 'Decline',
+        label: 'Decline commitment',
         action: 'decline-commitment',
         color: 'functionalError',
       },
