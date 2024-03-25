@@ -6,6 +6,7 @@ import { defaultOverWeight, maximumOverWeight } from '~/constants/settings'
 import { cloneDeep, isEqual } from 'lodash'
 import { useAuthStore } from '~/stores/auth.store'
 import { storeToRefs } from 'pinia'
+import moment from "moment-timezone";
 
 const props = defineProps({
   editedLocation: Object,
@@ -70,16 +71,23 @@ const getCurrentHours = () => {
 }
 const checkboxes = ref(getCurrentHours())
 const form = ref(null)
+const activeTimePicker = ref(null)
 const notAfterToTime = ref({})
 const notBeforeFromTime = ref({})
 const loadTimes = ['0.5 hours', '1 hour', '1.5 hours']
 
+const openTimePickerFrom = data => {
+  activeTimePicker.value = checkboxes.value.find(d => d.day === data.day)
+  notAfterToTime.value.hour= [[0, moment(activeTimePicker.value.to, 'hh:mm A').format('ha').slice(0, -1)]]
+}
+const openTimePickerTo = data => {
+  activeTimePicker.value = checkboxes.value.find(d => d.day === data.day)
+  notBeforeFromTime.value.hour = [[moment(activeTimePicker.value.from, 'hh:mm A').format('ha').slice(0, -1), '11p']]
+}
 const onChangeFrom = (e, day) => {
-  const currentTimePicker = checkboxes.value.find(d => d)
-
-  notAfterToTime.value.hour= [[0, currentTimePicker.to.hh + currentTimePicker.to.A.toLowerCase().slice(0, -1)]]
-  if (currentTimePicker.to.hh === e.data.hh && currentTimePicker.to.A.toLowerCase() === e.data.a) {
-    notAfterToTime.value.minute = [[0, currentTimePicker.to.mm]]
+  const currentTimePicker = checkboxes.value.find(d => d.day === day)
+  if (moment(currentTimePicker.to, 'hh:mm A').format('hha') === e.data.hh + e.data.a) {
+    notAfterToTime.value.minute = [[0, moment(currentTimePicker.to, 'hh:mm A').format('mm')]]
   } else {
     notAfterToTime.value.minute = [[0, 60]]
   }
@@ -89,13 +97,10 @@ const onChangeFrom = (e, day) => {
     }
   })
 }
-
 const onChangeTo = (e, day) => {
-  const currentTimePicker = checkboxes.value.find(d => d)
-
-  notBeforeFromTime.value.hour = [[currentTimePicker.from.hh + currentTimePicker.from.A.toLowerCase().slice(0, -1), '11p']]
-  if (currentTimePicker.from.hh === e.data.hh && currentTimePicker.from.A.toLowerCase() === e.data.a) {
-    notBeforeFromTime.value.minute = [[currentTimePicker.from.mm, 60]]
+  const currentTimePicker = checkboxes.value.find(d => d.day === day)
+  if (moment(currentTimePicker.from, 'hh:mm A').format('hha') === e.data.hh + e.data.a) {
+    notBeforeFromTime.value.minute = [[moment(currentTimePicker.from, 'hh:mm A').format('mm'), 60]]
   } else {
     notBeforeFromTime.value.minute = [[0, 60]]
   }
@@ -271,6 +276,7 @@ onUnmounted(() => {
             :minute-range="notAfterToTime?.minute"
             hide-disabled-items
             @change="e => onChangeFrom(e, d.day)"
+            @open="openTimePickerFrom(d)"
           />
           <Timepicker
             :time-value="d.to"
@@ -281,6 +287,7 @@ onUnmounted(() => {
             :minute-range="notBeforeFromTime?.minute"
             hide-disabled-items
             @change="e => onChangeTo(e, d.day)"
+            @open="openTimePickerTo(d)"
           />
         </div>
       </VRow>
