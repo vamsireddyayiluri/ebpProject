@@ -4,6 +4,7 @@ export const useAlertStore = defineStore('alert', () => {
   const alertList = ref([])
   const show = ref(false)
   const defaultTimeout = 5000
+  const router = useRouter()
 
   const text = ({ title, content, timeout = defaultTimeout }) => {
     const id = title + content
@@ -27,9 +28,9 @@ export const useAlertStore = defineStore('alert', () => {
     close(id, timeout)
   }
 
-  const warning = ({ title, content, timeout = defaultTimeout }) => {
+  const warning = ({ title, content, button, timeout = defaultTimeout }) => {
     const id = title + content
-    alertList.value.push({ id, title, content, type: 'warning', timeout, close })
+    alertList.value.push({ id, title, content, type: 'warning', button, timeout, close })
     show.value = true
     close(id, timeout)
   }
@@ -44,5 +45,9 @@ export const useAlertStore = defineStore('alert', () => {
     }, timeout)
   }
 
-  return { show, alertList, text, info, warning }
+  const routerPush = async route => {
+    await router.push(route)
+  }
+
+  return { show, alertList, text, info, warning, routerPush }
 })

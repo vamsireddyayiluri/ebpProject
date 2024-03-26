@@ -78,6 +78,7 @@ export const checkVendorDetailsCompletion = () => {
   } else
     alertStore.warning({
       content: 'Please add yard details in settings to perform actions',
+      button: { name: 'Go to yard details', callback: async () => await alertStore.routerPush({name: 'settings' })},
     })
 }
 export const isExistName = (list, value, key) => {
