@@ -141,6 +141,7 @@ export const useNotificationStore = defineStore('notification', () => {
         id: uid(16),
       }
     })
+    
     return notifications
   }
   const showAlert = ({ type, ...rest }) => {

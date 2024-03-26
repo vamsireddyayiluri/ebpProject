@@ -5,7 +5,7 @@ import { getBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { useAuthStore } from '~/stores/auth.store'
 import { useCommitmentsStore } from '~/stores/commitments.store'
-import { declineCodes, onboardingCodes } from '~/constants/reasonCodes'
+import { canceledCodes, declineCodes, onboardingCodes } from '~/constants/reasonCodes'
 import { statuses } from '~/constants/statuses'
 import { handleQueryUrlForCommitments } from '~/helpers/links'
 
@@ -14,10 +14,11 @@ const props = defineProps({
   searchValue: String,
   loading: Boolean,
 })
-const emit = defineEmits(['selectTableRow', 'editBooking'])
+const emit = defineEmits(['selectTableRow', 'editBooking', 'duplicateBooking'])
 const { deleteBooking, updateBookingStatus, getCommitmentsByBookingId, closeBookingExpansion } =
   useBookingsStore()
-const { approveCommitment, declineCommitment, completeCommitment } = useCommitmentsStore()
+const { approveCommitment, declineCommitment, cancelCommitment, completeCommitment } =
+  useCommitmentsStore()
 const { computedEntities } = toRefs(props)
 const authStore = useAuthStore()
 const { smAndDown } = useDisplay()
@@ -25,8 +26,10 @@ const router = useRouter()
 const showActions = ref(true)
 const tableHeight = ref(0)
 const removeBookingDialog = ref(false)
+const cancelBookingDialog = ref(false)
 const completeCommitmentDialog = ref(false)
 const declineCommitmentDialog = ref(false)
+const cancelCommitmentDialog = ref(false)
 const loadCompleteCommitment = ref(false)
 const completeReasonList = [
   onboardingCodes.onboarded,
@@ -38,6 +41,11 @@ const declineReasonList = [
   declineCodes.bookingRolled,
   declineCodes.tenderedElsewhere,
   declineCodes.other,
+]
+const cancelReasonList = [
+  canceledCodes.capacityNotAvailable,
+  canceledCodes.equipmentNotAvailable,
+  canceledCodes.other,
 ]
 const { bookingsHeaders, commitmentsHeaders } = useHeaders()
 const { bookingsActions, commitmentsActions } = useActions()
@@ -55,11 +63,17 @@ const containerActionHandler = async ({ action, e }) => {
     removeBookingDialog.value.show(true)
     removeBookingDialog.value.data = e[0]
   }
+  if (action === 'cancel-booking') {
+    openCancelBookingDialog(e[0].id)
+  }
   if (action === 'pause-booking') {
     await updateBookingStatus(e[0].id, statuses.paused)
   }
   if (action === 'reactive-booking') {
     await updateBookingStatus(e[0].id, statuses.active)
+  }
+  if (action === 'duplicate-booking') {
+    emit('duplicateBooking', e[0])
   }
   if (action === 'view-trucker-details') {
     commitmentDetailsDialog.value.show(true)
@@ -74,6 +88,9 @@ const containerActionHandler = async ({ action, e }) => {
   if (action === 'decline-commitment') {
     openDeclineCommitmentDialog(e[0].id)
   }
+  if (action === 'cancel-commitment') {
+    openCancelCommitmentDialog(e[0].id)
+  }
 }
 const onSelectRow = e => {
   emit('selectTableRow', e)
@@ -85,6 +102,10 @@ const rowExpanded = async (event, data) => {
   } else {
     await closeBookingExpansion(id)
   }
+}
+const openCancelBookingDialog = id => {
+  cancelBookingDialog.value.show(true)
+  cancelBookingDialog.value.data = id
 }
 const onApproveCommitment = async commitment => {
   commitmentDetailsDialog.value.show(false)
@@ -98,9 +119,18 @@ const openDeclineCommitmentDialog = id => {
   declineCommitmentDialog.value.show(true)
   declineCommitmentDialog.value.data = id
 }
+const openCancelCommitmentDialog = id => {
+  cancelCommitmentDialog.value.show(true)
+  cancelCommitmentDialog.value.data = id
+}
 const removeBooking = id => {
   deleteBooking(id)
   removeBookingDialog.value.show(false)
+}
+const onCancelBooking = async (id, reason) => {
+  await updateBookingStatus(id, statuses.canceled, reason)
+  cancelBookingDialog.value.show(false)
+  commitmentDetailsDialog.value.show(false)
 }
 const onCompleteCommitment = async (data, reason, onBoardedContainers) => {
   loadCompleteCommitment.value = true
@@ -113,6 +143,11 @@ const onDeclineCommitment = async (id, reason) => {
   declineCommitmentDialog.value.show(false)
   commitmentDetailsDialog.value.show(false)
   await declineCommitment(id, reason)
+}
+const onCancelCommitment = async (id, reason) => {
+  cancelCommitmentDialog.value.show(false)
+  commitmentDetailsDialog.value.show(false)
+  await cancelCommitment(id, reason)
 }
 const openCommitmentsDialogOnUrlChange = async () => {
   const commitment = await handleQueryUrlForCommitments(router.currentRoute.value.query)
@@ -225,7 +260,7 @@ watch(
 
     <template #actions="{ item, selected }">
       <MenuActions
-        :disabled="bookingsActions(item).length > 0 ? false : true"
+        :disabled="bookingsActions(item).length<=0"
         :actions="() => bookingsActions(item)"
         :selected="selected"
         :container="item"
@@ -291,11 +326,27 @@ watch(
     </template>
   </Dialog>
   <Dialog
+    ref="cancelBookingDialog"
+    max-width="480"
+  >
+    <template #text>
+      <ReportIssueDialog
+        title="Cancel booking"
+        sub-title="Choose the reason why you want to cancel booking"
+        select-label="Select"
+        :reason-list="declineReasonList"
+        btn-name="cancel"
+        @close="cancelBookingDialog.show(false)"
+        @onClickBtn="e => onCancelBooking(cancelBookingDialog.data, e)"
+      />
+    </template>
+  </Dialog>
+  <Dialog
     ref="completeCommitmentDialog"
     max-width="480"
   >
     <template #text>
-      <CompleteCommitmentsDialog
+      <ReportIssueDialog
         title="Complete commitment"
         :sub-title="`Confirm number of loads moved by ${completeCommitmentDialog.data.truckerCompany}`"
         select-label="Select"
@@ -315,7 +366,7 @@ watch(
     max-width="480"
   >
     <template #text>
-      <CompleteCommitmentsDialog
+      <ReportIssueDialog
         title="Decline commitment"
         sub-title="Choose the reason why you want to decline commitment"
         select-label="Select"
@@ -323,6 +374,22 @@ watch(
         btn-name="decline"
         @close="declineCommitmentDialog.show(false)"
         @onClickBtn="e => onDeclineCommitment(declineCommitmentDialog.data, e)"
+      />
+    </template>
+  </Dialog>
+  <Dialog
+    ref="cancelCommitmentDialog"
+    max-width="480"
+  >
+    <template #text>
+      <ReportIssueDialog
+        title="Cancel commitment"
+        sub-title="Choose the reason why you want to cancel commitment"
+        select-label="Select"
+        :reason-list="cancelReasonList"
+        btn-name="cancel"
+        @close="cancelCommitmentDialog.show(false)"
+        @onClickBtn="e => onCancelCommitment(cancelCommitmentDialog.data, e)"
       />
     </template>
   </Dialog>

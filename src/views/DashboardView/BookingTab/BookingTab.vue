@@ -10,6 +10,7 @@ import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth.store'
 import moment from 'moment-timezone'
 import { some } from 'lodash'
+import { checkVendorDetailsCompletion } from '~/helpers/validations-functions'
 
 const props = defineProps({
   mapToggled: Boolean,
@@ -27,9 +28,9 @@ const { mapToggled } = toRefs(props)
 const getPanes = () => {
   return mapToggled.value
     ? [
-        { name: 'content', size: 60 },
-        { name: 'map', size: 40 },
-      ]
+      { name: 'content', size: 60 },
+      { name: 'map', size: 40 },
+    ]
     : [{ name: 'content', size: 100 }]
 }
 const panes = ref(getPanes())
@@ -48,6 +49,7 @@ const filters = ref({
 const selectLine = ref(getAllLines())
 const createBookingDialog = ref(null)
 const clickedOutside = ref(null)
+const bookingConfirmationDialog = ref(null)
 
 const computedSearchedEntities = computed({
   get() {
@@ -105,7 +107,19 @@ const selectTableRow = e => {
   mapRef.value?.setZoom(15)
   mapRef.value?.panTo({ lat: e.location.lat, lng: e.location.lng })
 }
-
+const handleCreateBookingDialog = () => {
+  if (checkVendorDetailsCompletion()) {
+    createBookingDialog.value.show(true)
+  }
+}
+const duplicateBooking = booking => {
+  createBookingDialog.value.show(true)
+  createBookingDialog.value.data = booking
+}
+const closeCreateBookingDialog = () => {
+  createBookingDialog.value.show(false)
+  createBookingDialog.value.data = null
+}
 const viewStatistics = e => {
   bookingStatisticsDialog.value.show(true)
   bookingStatisticsDialog.value.data = e
@@ -161,7 +175,7 @@ const clearDateFilter = () => {
 }
 const onClickOutsideDialog = () => {
   clickedOutside.value = true
-  createBookingDialog.value.show(true)
+  closeCreateBookingDialog()
   setInterval(() => {
     clickedOutside.value = false
   }, 1000)
@@ -197,11 +211,11 @@ watch(searchValue, value => {
       >
         <div class="flex flex-wrap items-center gap-4 mb-7">
           <div class="flex justify-between sm:justify-normal items-center gap-4">
-            <Typography type="text-h1 shrink-0"> Bookings </Typography>
+            <Typography type="text-h1 shrink-0"> Bookings</Typography>
           </div>
           <Button
             class="ml-auto px-12"
-            @click="createBookingDialog.show(true)"
+            @click="handleCreateBookingDialog"
           >
             Create booking
           </Button>
@@ -241,6 +255,7 @@ watch(searchValue, value => {
           :loading="loading"
           @selectTableRow="selectTableRow"
           @editBooking="id => router.push({ path: `booking/${id}` })"
+          @duplicateBooking="duplicateBooking"
         />
       </div>
     </template>
@@ -305,9 +320,18 @@ watch(searchValue, value => {
   >
     <template #text>
       <CreateBookingDialog
+        :duplicate="createBookingDialog.data"
         :clicked-outside="clickedOutside"
-        @close="createBookingDialog.show(false)"
+        @close="closeCreateBookingDialog"
       />
+    </template>
+  </Dialog>
+  <Dialog
+    ref="bookingConfirmationDialog"
+    class="max-w-full sm:max-w-[90vw] md:max-w-[75vw]"
+  >
+    <template #text>
+      <BookingConfirmationDialog :commitments="[]" />
     </template>
   </Dialog>
 </template>

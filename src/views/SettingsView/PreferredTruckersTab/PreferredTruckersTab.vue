@@ -4,12 +4,17 @@ import { useDisplay } from 'vuetify'
 import { useActions, useDate, useHeaders } from '~/composables'
 import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
 import { storeToRefs } from 'pinia'
-import allTruckers from '~/fixtures/truckers.json'
 import { pullAllBy } from 'lodash'
 import { useAlertStore } from '~/stores/alert.store'
+import { useBookingRulesStore } from '~/stores/bookingRules.store'
+import { computed } from 'vue'
+import { useChatStore } from '~/stores/chat.store'
 
 const alertStore = useAlertStore()
 const preferredTruckersStore = usePreferredTruckersStore()
+const { getTruckers } = useBookingRulesStore()
+const { goToChat } = useChatStore()
+const truckers = ref([])
 const { preferredTruckers } = storeToRefs(preferredTruckersStore)
 const { smAndDown } = useDisplay()
 const showActions = ref(true)
@@ -25,7 +30,7 @@ const { getFormattedDateTime } = useDate()
 const searchValue = ref(null)
 const loading = ref(false)
 const mutableEntities = ref(preferredTruckers)
-const preferedScacSearch = ref()
+const preferedScacSearch = ref('')
 const computedEntities = computed({
   get() {
     return mutableEntities.value
@@ -39,17 +44,19 @@ const confirmSendInvitation = trucker => {
   inviteTruckerDialog.value.show(true)
   inviteTruckerDialog.value.data = trucker
 }
-const containerActionHandler = ({ action, e }) => {
+const containerActionHandler = async ({ action, e }) => {
   if (action === 'to-message') {
+    goToChat(e[0].id)
   }
   if (action === 'delete-trucker') {
     deleteTruckerDialog.value.show(true)
     deleteTruckerDialog.value.data = e[0]
   }
 }
-const deleteTrucker = () => {
-  preferredTruckersStore.deleteTrucker(deleteTruckerDialog.value.data)
+const deleteTrucker = async () => {
+  await preferredTruckersStore.deleteTrucker(deleteTruckerDialog.value.data)
   deleteTruckerDialog.value.show(false)
+  truckers.value = await getTruckers()
 }
 const customFilter = (search, lists) => {
   preferedScacSearch.value = search
@@ -60,6 +67,13 @@ const customFilter = (search, lists) => {
   ]
 
   return result
+}
+const computedHideNoData = computed(() => {
+  return preferedScacSearch?.value.length < 4
+})
+const onSelect = async item => {
+  await preferredTruckersStore.addTrucker(item)
+  preferedScacSearch.value = ''
 }
 
 /*const sendInvitation = async () => {
@@ -77,13 +91,14 @@ const customFilter = (search, lists) => {
 }*/
 
 const tableId = 'truckersListTable'
-onMounted(() => {
+onMounted(async () => {
   setTimeout(() => {
     const table = document.getElementById(tableId)
     tableHeight.value = smAndDown.value
       ? 396
-      : window.innerHeight - table.getBoundingClientRect().top - 95
+      : window.innerHeight - table.getBoundingClientRect().top - 99
   })
+  truckers.value = await getTruckers()
 })
 </script>
 
@@ -104,18 +119,20 @@ onMounted(() => {
   </Typography>
   <div class="flex justify-between flex-wrap gap-5 mb-5">
     <AutocompleteGroups
-      :lists="[preferredTruckers, pullAllBy(allTruckers, preferredTruckers, 'scac')]"
-      label="Search for truckers by SCAC and email"
-      multiple2-list=""
+      :lists="[computedEntities, pullAllBy(truckers, computedEntities, 'scac')]"
+      label="Search for truckers by SCAC"
       item-title="scac"
       item-value="email"
       class="max-w-[500px] min-w-[280px]"
       :custom-filter="customFilter"
-      :hide-no-data="preferedScacSearch?.length < 4"
-      @onSelect="e => {}"
-      @onSelectMultiple="item => preferredTruckersStore.addTrucker(item)"
+      :hide-no-data="computedHideNoData"
+      :suffix="preferedScacSearch?.length >= 4 ? '' : 4 - preferedScacSearch?.length + ' chars'"
+      @onSelect="onSelect"
     >
-      <template #noData>
+      <template
+        v-if="preferedScacSearch?.length >= 4"
+        #noData
+      >
         <Typography class="mb-5">
           There is no such trucker on the platform. Do you want to send an invitation via email?
         </Typography>
@@ -124,6 +141,15 @@ onMounted(() => {
           @click="confirmSendInvitation"
         >
           Invite new trucker
+        </Button>
+      </template>
+      <template #list2Action>
+        <Button
+          variant="plain"
+          prepend-icon="mdi-plus"
+          density="compact"
+        >
+          add
         </Button>
       </template>
     </AutocompleteGroups>
@@ -146,7 +172,6 @@ onMounted(() => {
       tableHeight: tableHeight,
       tableMinWidth: 960,
     }"
-    class="mb-5"
   >
     <template #scacEmail="{ item }">
       <div>

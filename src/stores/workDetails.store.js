@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia'
+import {defineStore, storeToRefs} from 'pinia'
 import { doc, updateDoc } from 'firebase/firestore'
 import { db } from '~/firebase'
 import { useAuthStore } from '~/stores/auth.store'
@@ -8,17 +8,21 @@ import { useBookingRulesStore } from '~/stores/bookingRules.store'
 export const useWorkDetailsStore = defineStore('workDetails', () => {
   const alertStore = useAlertStore()
   const authStore = useAuthStore()
+  const { orgData } = storeToRefs(authStore)
   const yards = ref([])
-  const vendorDetails = ref(authStore.orgData?.vendorDetails || {
-    primaryContact: null,
-    primaryContactName: null,
-    primaryContactEmail: null,
-    secondaryContact: null,
-    secondaryContactName: null,
-    secondaryContactEmail: null,
-    pickupInstructions: null,
-    hoursOfOperation: null,
+  const getVendorDetails = computed(() => {
+    return orgData.value?.vendorDetails || {
+      primaryContact: null,
+      primaryContactName: null,
+      primaryContactEmail: null,
+      secondaryContact: null,
+      secondaryContactName: null,
+      secondaryContactEmail: null,
+      pickupInstructions: null,
+      hoursOfOperation: null,
+    }
   })
+  const vendorDetails = ref(getVendorDetails)
 
   const getYards = () => {
     yards.value = authStore.orgData?.locations?.map(i => {

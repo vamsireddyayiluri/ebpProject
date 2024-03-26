@@ -14,8 +14,10 @@ import {
   validateFlexibleSizes,
 } from '~/helpers/validations-functions'
 import { insuranceTypes } from '~/constants/settings'
+import { deepCopy } from 'json-2-csv/lib/utils'
 
 const props = defineProps({
+  duplicate: Object,
   clickedOutside: Boolean,
 })
 
@@ -33,9 +35,40 @@ const form = ref(null)
 const validExpiryDate = ref(false)
 const insuranceItems = ref(insuranceTypes)
 
-const computedEntities = computed(() => bookings.value)
+const {
+  ref: bookingRef,
+  containers,
+  line,
+  commodity,
+  loadingDate,
+  preferredDate,
+  location,
+  weight,
+  estimatedRateType,
+  estimatedRate,
+  flexibleBooking,
+  size,
+  scacList,
+  insurance,
+} = deepCopy(props?.duplicate || {})
 
-const booking = ref({
+const copyBooking = {
+  ref: bookingRef,
+  containers,
+  line,
+  commodity,
+  loadingDate,
+  preferredDate,
+  location,
+  weight,
+  estimatedRateType,
+  estimatedRate,
+  flexibleBooking,
+  size,
+  scacList,
+  insurance,
+}
+const emptyBooking = {
   ref: '',
   containers: null,
   line: null,
@@ -50,8 +83,8 @@ const booking = ref({
   size: null,
   scacList: bookingRulesStore.rules.truckers,
   insurance: '100,000',
-})
-
+}
+const booking = ref(props?.duplicate ? copyBooking : emptyBooking)
 const confirmDraftsDialog = ref(null)
 const { clickedOutside } = toRefs(props)
 
@@ -79,26 +112,26 @@ const updateSize = () => {
   booking.value.size = null
 }
 
-const validateExpiryDates = () => {
+const validateExpiryDates = useDebounceFn(() => {
   validExpiryDate.value = validateExpiryDate(bookings?.value, booking.value)
-}
+}, 200)
 
 const isDisabled = computed(() => {
-  console.log('bokking', booking)
-  const values = Object.values(booking.value)
-  values.pop()
-  values.splice(10, 1)
-  console.log('values', values)
-  let condition = values.some(i => !i) || !booking.value.scacList?.list?.length
-  console.log('condition', condition)
+  let condition
+  if (!props.duplicate) {
+    const values = Object.values(booking.value)
+    values.pop()
+    values.splice(10, 1)
+    condition = values.some(i => !i)
+  }
+  condition = !booking.value.scacList?.list?.length
   if (!condition) {
-    console.log('inside the if condition')
     condition =
       form.value?.errors.length ||
       !validExpiryDate.value ||
       validateFlexibleSizes(booking.value.size, booking.value.flexibleBooking)?.length > 0
   }
-  console.log('condition test validare', condition)
+
   return condition
 })
 
@@ -316,7 +349,7 @@ onMounted(async () => {
         align="center"
         class="flex-nowrap mb-8"
       >
-        <Typography> Do you want to keep the bookings in Drafts? </Typography>
+        <Typography> Do you want to keep the bookings in Drafts?</Typography>
         <IconButton
           icon="mdi-close"
           class="-mt-1"

@@ -13,6 +13,7 @@ const { orgData } = storeToRefs(useAuthStore())
 const { rules } = storeToRefs(bookingRulesStore)
 const { yards } = storeToRefs(workDetailsStore)
 const form = ref(null)
+const truckersRef = ref(null)
 const errorRules = {
   days: value => validateDays(value),
 }
@@ -26,14 +27,9 @@ const onSave = async () => {
   await bookingRulesStore.updateRules(rules.value, userData.orgId)
 }
 const cancelChanges = () => {
+  truckersRef.value.updateModelValue(orgData.value.bookingRules.truckers.list)
   rules.value = cloneDeep(orgData.value.bookingRules)
 }
-onMounted(() => {
-  cancelChanges()
-})
-tryOnUnmounted(() => {
-  cancelChanges()
-})
 </script>
 
 <template>
@@ -75,8 +71,9 @@ tryOnUnmounted(() => {
       />
       <div class="order-4 sm:!order-3 !-mb-4 flex flex-col">
         <AutocompleteScac
+          ref="truckersRef"
           :scac-list="rules.truckers"
-          :menu-btn="false"
+          @onChange="list => rules.truckers.list = list"
         />
       </div>
       <Textfield

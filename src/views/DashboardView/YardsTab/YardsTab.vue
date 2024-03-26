@@ -10,6 +10,7 @@ import { groupedBookingLocations } from '~/stores/helpers'
 import { useAuthStore } from '~/stores/auth.store'
 import moment from 'moment-timezone'
 import { some } from 'lodash'
+import {checkVendorDetailsCompletion} from "~/helpers/validations-functions";
 
 const props = defineProps({
   mapToggled: Boolean,
@@ -26,9 +27,9 @@ const { mapToggled } = toRefs(props)
 const getPanes = () => {
   return mapToggled.value
     ? [
-        { name: 'content', size: 60 },
-        { name: 'map', size: 40 },
-      ]
+      { name: 'content', size: 60 },
+      { name: 'map', size: 40 },
+    ]
     : [{ name: 'content', size: 100 }]
 }
 const panes = ref(getPanes())
@@ -107,7 +108,11 @@ const selectTableRow = e => {
   mapRef.value.setZoom(15)
   mapRef.value.panTo({ lat: e.location.lat, lng: e.location.lng })
 }
-
+const handleCreateBookingDialog = () => {
+  if (checkVendorDetailsCompletion()) {
+    createBookingDialog.value.show(true)
+  }
+}
 const viewStatistics = e => {
   bookingStatisticsDialog.value.show(true)
   bookingStatisticsDialog.value.data = e
@@ -195,11 +200,13 @@ watch(searchValue, value => {
       >
         <div class="flex flex-wrap items-center gap-4 mb-7">
           <div class="flex justify-between sm:justify-normal items-center gap-4">
-            <Typography type="text-h1 shrink-0"> Yards </Typography>
+            <Typography type="text-h1 shrink-0">
+              Yards
+            </Typography>
           </div>
           <Button
             class="ml-auto px-12"
-            @click="createBookingDialog.show(true)"
+            @click="handleCreateBookingDialog"
           >
             Create booking
           </Button>

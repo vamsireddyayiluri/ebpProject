@@ -1,20 +1,23 @@
 import { defineStore } from 'pinia'
-import { doc, updateDoc } from 'firebase/firestore'
+import { collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
 import { db } from '~/firebase'
 import { useAlertStore } from '~/stores/alert.store'
 import { useAuthStore } from '~/stores/auth.store'
+import { deepCopy } from 'json-2-csv/lib/utils'
 
 export const useBookingRulesStore = defineStore('bookingRules', () => {
   const {
-    orgData: { bookingRules },
+    orgData: { bookingRules, locations },
   } = useAuthStore()
   const alertStore = useAlertStore()
-  const rules = ref({
-    yard: bookingRules?.yard || null,
-    truckers: bookingRules?.truckers || { list: [] },
-    timeForTruckersFromMarketplace: bookingRules?.timeForTruckersFromMarketplace || '',
-    timeForNotificationBeforeCutoff: bookingRules?.timeForNotificationBeforeCutoff || '',
-  })
+  const rules = ref(
+    deepCopy({
+      yard: bookingRules.yard,
+      truckers: bookingRules?.truckers || { list: [] },
+      timeForTruckersFromMarketplace: bookingRules.timeForTruckersFromMarketplace,
+      timeForNotificationBeforeCutoff: bookingRules.timeForNotificationBeforeCutoff,
+    }),
+  )
 
   const updateRules = async (bookingRules, orgId) => {
     try {
@@ -27,9 +30,25 @@ export const useBookingRulesStore = defineStore('bookingRules', () => {
       alertStore.warning({ content: message })
     }
   }
+  const getTruckers = async () => {
+    const truckersQuery = query(collection(db, 'organizations'), where('org_type', '==', 'asset'))
+    const querySnapshot = await getDocs(truckersQuery)
+
+    return querySnapshot.docs.map(doc => {
+      const { orgId, scac, email, company } = doc.data()
+
+      return {
+        id: orgId,
+        scac,
+        email,
+        company,
+      }
+    })
+  }
 
   return {
     rules,
     updateRules,
+    getTruckers,
   }
 })

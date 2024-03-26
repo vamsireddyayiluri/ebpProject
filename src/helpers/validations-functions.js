@@ -1,6 +1,7 @@
 import moment from 'moment-timezone'
 import { useAlertStore } from '~/stores/alert.store'
-import { isNull } from "lodash"
+import { isNull } from 'lodash'
+import { useWorkDetailsStore } from '~/stores/workDetails.store'
 
 const alertStore = useAlertStore()
 
@@ -21,7 +22,7 @@ export const checkPositiveInteger = value => {
 
 // check empty string
 export const isEmptyString = string => {
-  return string === ""
+  return string === ''
 }
 
 export const validateDays = value => {
@@ -35,7 +36,7 @@ export const validateExpiryDate = (entities, entity) => {
   if (
     entities.find(
       val =>
-        moment(val?.bookingExpiry).endOf('day').isSame(moment(entity.bookingExpiry).endOf('day')) &&
+        moment(val?.loadingDate).endOf('day').isSame(moment(entity?.loadingDate).endOf('day')) &&
         val?.ref?.trim() === entity.ref?.trim() &&
         val.id !== entity.id,
     )
@@ -59,4 +60,18 @@ export const validateFlexibleSizes = (value, flexiblBooking) => {
   } else {
     return ''
   }
+}
+const workDetailsStore = useWorkDetailsStore()
+export const checkVendorDetailsCompletion = () => {
+  const { vendorDetails } = workDetailsStore
+  if (
+    vendorDetails?.pickupInstructions &&
+    vendorDetails?.primaryContact &&
+    vendorDetails?.primaryContactName
+  ) {
+    return true
+  } else
+    alertStore.warning({
+      content: 'Please add yard details in settings to perform actions',
+    })
 }

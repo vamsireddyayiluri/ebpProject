@@ -6,6 +6,7 @@ import { getBookingLoad, totalFulfilledBookings } from '~/helpers/countings'
 import { useDate } from '~/composables'
 import { storeToRefs } from 'pinia'
 import { useBookingsStore } from '~/stores/bookings.store'
+import { checkVendorDetailsCompletion } from '~/helpers/validations-functions'
 
 const router = useRouter()
 const { getFormattedDate } = useDate()
@@ -64,7 +65,9 @@ const nextExpiring = computed(() => {
   return getFormattedDate(datesArray[0]?.loadingDate)
 })
 const openCreateBookingDialog = () => {
-  createBookingDialog.value.show(true)
+  if (checkVendorDetailsCompletion()) {
+    createBookingDialog.value.show(true)
+  }
 }
 onMounted(async () => {
   await bookingsStore.getBookings({})

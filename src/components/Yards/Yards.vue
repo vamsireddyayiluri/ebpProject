@@ -38,7 +38,16 @@ const addYard = async () => {
     geohash: geohashedLocation,
     commodity: commodity.value,
     text: `Commodity: ${commodity.value}`,
-    details: defaultDetails.value,
+    details: {
+      primaryContact: null,
+      primaryContactName: null,
+      primaryContactEmail: null,
+      secondaryContact: null,
+      secondaryContactName: null,
+      secondaryContactEmail: null,
+      pickupInstructions: null,
+      hoursOfOperation: null,
+    },
   })
   newLocation.value.address = null
   newLocation.value.label = ''
@@ -71,7 +80,7 @@ const onClickOutsideDialog = () => {
 
 <template>
   <div
-    class="w-full md:w-11/12"
+    class="w-full"
     v-bind="{ ...attrs }"
   >
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 [&>div]:text-left">
@@ -108,10 +117,18 @@ const onClickOutsideDialog = () => {
         >
           <div class="flex justify-between">
             <Typography
-              :color="getColor(!defaultDetails?.primaryContactName ? 'textDisabled' : 'textPrimary')"
+              :color="
+                getColor(!defaultDetails?.primaryContactName ? 'textDisabled' : 'textPrimary')
+              "
               class="mt-3.5"
             >
-              {{ width >= 600 && width <= 770 ? 'Details': !defaultDetails?.primaryContactName ? 'Location details' : 'Default details' }}
+              {{
+                width >= 600 && width <= 770
+                  ? 'Details'
+                  : !defaultDetails?.primaryContactName
+                  ? 'Location details'
+                  : 'Edit default details'
+              }}
             </Typography>
             <Button
               v-if="!defaultDetails?.primaryContactName"
@@ -185,8 +202,8 @@ const onClickOutsideDialog = () => {
         :edited-location="cloneDeep(locationDetailsDialog.data)"
         @close="
           locationDetailsDialog.show(false),
-          locationDetailsDialog.data = null,
-          resetDefaultSettings()
+            (locationDetailsDialog.data = null),
+            resetDefaultSettings()
         "
       />
     </template>
