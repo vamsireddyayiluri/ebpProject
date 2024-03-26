@@ -10,10 +10,11 @@ import moment from 'moment'
 import { useAlertStore } from '~/stores/alert.store'
 import {
   checkPositiveInteger,
+  validateAverageWeight,
   validateExpiryDate,
   validateFlexibleSizes,
 } from '~/helpers/validations-functions'
-import { defaultOverWeight, insuranceTypes, maximumOverWeight } from '~/constants/settings'
+import { insuranceTypes } from '~/constants/settings'
 import { deepCopy } from 'json-2-csv/lib/utils'
 
 const props = defineProps({
@@ -69,14 +70,14 @@ const copyBooking = {
   insurance,
 }
 const emptyBooking = {
-  ref: 'test',
-  containers: 2,
+  ref: '',
+  containers: null,
   line: null,
-  commodity: 'test',
+  commodity: '',
   loadingDate: null,
   preferredDate: null,
   location: bookingRulesStore.rules.yard,
-  weight: null,
+  weight: bookingRulesStore.rules.yard?.details?.overweight? bookingRulesStore.rules.yard?.details?.averageWeight: null,
   estimatedRateType: 'All in rate',
   estimatedRate: null,
   flexibleBooking: false,
@@ -92,11 +93,7 @@ const currentDate = ref(new Date())
 
 const rules = {
   containers: value => checkPositiveInteger(value),
-  averageWeight: value => {
-    return value < defaultOverWeight || value > maximumOverWeight
-      ? `Weight must be b/w${defaultOverWeight} to ${maximumOverWeight}`
-      : true
-  },
+  averageWeight: value => validateAverageWeight(value, booking.value.location),
 }
 const updateExpiryDate = value => {
   booking.value.loadingDate = moment(value).endOf('day').format()

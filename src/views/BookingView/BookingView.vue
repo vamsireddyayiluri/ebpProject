@@ -19,6 +19,7 @@ import {
   validateExpiryDate,
   validateFlexibleSizes,
   checkCommittedValue,
+  validateAverageWeight,
 } from '~/helpers/validations-functions'
 import { insuranceTypes } from '~/constants/settings'
 
@@ -57,6 +58,7 @@ const insuranceItems = ref(insuranceTypes)
 const rules = {
   containers: value => checkPositiveInteger(value, booking.value),
   checkcommitted: value => checkCommittedValue(value, booking.value),
+  averageWeight: value => validateAverageWeight(value, booking.value.location),
 }
 
 const updateExpiryDate = value => {
@@ -402,6 +404,7 @@ onMounted(async () => {
                 label: yard.label,
                 lat: yard.lat,
                 lng: yard.lng,
+                details: yard.details
               }))
             "
             label="Yard label *"
@@ -410,12 +413,13 @@ onMounted(async () => {
             return-object
             required
             :disabled="expired || completed"
+            @update:modelValue="(value) => booking.weight = value.details?.averageWeight || null"
           />
           <Textfield
             v-model.number="booking.weight"
             label="Average Weight*"
             type="number"
-            :rules="[rules.containers]"
+            :rules="[rules.containers, rules.averageWeight]"
             required
             :disabled="expired || completed"
           />

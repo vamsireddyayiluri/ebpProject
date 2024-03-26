@@ -6,6 +6,7 @@ import { getLocalTime } from '@qualle-admin/qutil/dist/date'
 import { collection, getDocs, query, where } from 'firebase/firestore'
 import { db } from '~/firebase'
 import { useBookingsStore } from '~/stores/bookings.store'
+import { defaultOverWeight, maximumOverWeight, minimumLegalWeight } from '~/constants/settings'
 
 const alertStore = useAlertStore()
 const bookingsStore = useBookingsStore()
@@ -83,6 +84,18 @@ export const checkVendorDetailsCompletion = () => {
 }
 export const isExistName = (list, value, key) => {
   return list.some(i => i[key] === value)
+}
+export const validateAverageWeight = (value, location) => {
+  if (location.details?.overweight) {
+    return value < defaultOverWeight || value > maximumOverWeight
+      ? `Weight must be b/w ${defaultOverWeight} to ${maximumOverWeight}`
+      : true
+  } else {
+    return value < minimumLegalWeight || value >= defaultOverWeight?
+      `Weight must be b/w ${minimumLegalWeight} to ${
+        defaultOverWeight - 1
+      }`: true
+  }
 }
 const checkPendingBookings = () => {
   const currentTimestamp = getLocalTime().format()

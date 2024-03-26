@@ -53,6 +53,7 @@ const cancelChanges = () => {
             label: yard.label,
             lat: yard.lat,
             lng: yard.lng,
+            details: yard.details
           }))
         "
         label="Set yard by default"
