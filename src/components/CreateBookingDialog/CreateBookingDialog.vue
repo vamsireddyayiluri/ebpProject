@@ -69,10 +69,10 @@ const copyBooking = {
   insurance,
 }
 const emptyBooking = {
-  ref: '',
-  containers: null,
+  ref: 'test',
+  containers: 2,
   line: null,
-  commodity: '',
+  commodity: 'test',
   loadingDate: null,
   preferredDate: null,
   location: bookingRulesStore.rules.yard,
@@ -122,14 +122,16 @@ const validateExpiryDates = useDebounceFn(() => {
 }, 200)
 
 const isDisabled = computed(() => {
-  let condition
+  let condition = false
   if (!props.duplicate) {
     const values = Object.values(booking.value)
     values.pop()
     values.splice(10, 1)
     condition = values.some(i => !i)
   }
-  condition = !booking.value.scacList?.list?.length
+  if (!booking.value.scacList?.list?.length) {
+    condition = true
+  }
   if (!condition) {
     condition =
       form.value?.errors.length ||
@@ -326,7 +328,7 @@ onMounted(async () => {
         />
         <Checkbox
           v-model="booking.flexibleBooking"
-          label="Flexible booking*"
+          label="Flexible booking"
           class="mt-3"
           @change="updateSize"
         />
