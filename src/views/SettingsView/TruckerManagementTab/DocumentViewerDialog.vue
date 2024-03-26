@@ -11,14 +11,19 @@ const leaveCommentDialog = ref(null)
 const docxFileUrl = ref(null)
 
 const isLoading = ref(false)
+const loading = ref(false)
+const dLoading = ref(false)
 
 const approve = () => {
   isLoading.value = true
   emit('acceptDoc')
 }
 const decline = () => {
+  dLoading.value = true
   emit('declineDoc', comment.value)
   leaveCommentDialog.value.show(false)
+  dLoading.value = false
+  loading.value = true
 }
 const onDecline = () => {
   comment.value = ''
@@ -41,6 +46,22 @@ const downloadFile = async () => {
   } catch (error) {
     console.error('There was an error downloading the file', error)
   }
+}
+const validate = () => {
+  return rules.reason(comment.value)?.length > 0
+}
+
+const rules = {
+  reason: value => {
+    value = value?.trim()
+    if (!value) {
+      return 'Reason should not be empty'
+    } else if (value?.length > 255) {
+      return 'Max 255 characters'
+    } else {
+      return true
+    }
+  },
 }
 onMounted(async () => {
   if (props.doc.type !== 'pdf' && props.doc.type !== 'txt') {
@@ -99,6 +120,8 @@ onMounted(async () => {
       class="ml-auto"
       @click="onDecline"
       v-if="doc.status === 'pending'"
+      :loading="loading"
+      :disabled="isLoading"
     >
       decline
     </Button>
@@ -106,6 +129,7 @@ onMounted(async () => {
       @click="approve"
       v-if="doc.status === 'pending'"
       :loading="isLoading"
+      :disabled="loading"
     >
       accept
     </Button>
@@ -125,11 +149,14 @@ onMounted(async () => {
       </div>
       <Textarea
         v-model.trim="comment"
+        :rules="[rules.reason]"
         label="Explain what is wrong"
       />
       <Button
         class="float-right mt-6"
         @click="decline"
+        :loading="dLoading"
+        :disabled="validate() ? true : false"
       >
         send
       </Button>

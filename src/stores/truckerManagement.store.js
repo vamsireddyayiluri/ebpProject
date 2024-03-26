@@ -132,7 +132,7 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
 
       const { onBoardingDocuments } = (await getDoc(truckerManagementRef)).data()
 
-      const updatedDocs = onBoardingDocuments.filter(doc => doc.fileName !== fileName)
+      const updatedDocs = onBoardingDocuments.filter(doc => doc.filename !== fileName)
 
       await updateDoc(truckerManagementRef, {
         onBoardingDocuments: updatedDocs,

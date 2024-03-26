@@ -70,10 +70,12 @@ const getTruncatedFileName = fileName => {
   return fileName?.length > 15 ? name : fileName
 }
 onMounted(async () => {
+  loading.value = true
   const data = await truckerManagement.getTruckerRequirements()
   truckerManagementDB = cloneDeep(data)
   await truckerManagement.getOnboardingDocuments()
   onboardingTruckersList.value = await truckerManagement.getOnboardedTruckers()
+  loading.value = false
 })
 </script>
 
