@@ -64,13 +64,13 @@ export const useChatStore = defineStore('chat', () => {
     unsubscribeUsers && unsubscribeUsers()
     users.value = []
     usersData?.map(async user => {
-      if (user !== authStore.userData.userId) {
+      if (user !== authStore.userData.user_id) {
         const avatar = (await getUserPhoto(user)) || null
         getUserById(user, avatar)
       }
     })
     const { orgId } = authStore.orgData
-    const { userId, name, avatar, status } = authStore.userData
+    const { user_id: userId, name, avatar, status } = authStore.userData
     users.value.push({
       id: userId,
       orgId,
@@ -170,8 +170,8 @@ export const useChatStore = defineStore('chat', () => {
     const newMessage = {
       id: uid(16),
       chatId: chatId,
-      senderId: authStore.userData.userId,
-      participantId: authStore.userData.userId,
+      senderId: authStore.userData.user_id,
+      participantId: authStore.userData.user_id,
       content,
       date: moment().format('MM/DD/YYYY'),
       timestamp: moment().format(),
@@ -210,8 +210,8 @@ export const useChatStore = defineStore('chat', () => {
         updatedAt: moment().format(),
       }
       const { users } = chats.value.find(c => c.chatId === chatId)
-      if (!users.includes(authStore.userData.userId)) {
-        chatData.users = arrayUnion(authStore.userData.userId)
+      if (!users.includes(authStore.userData.user_id)) {
+        chatData.users = arrayUnion(authStore.userData.user_id)
       }
       const chatDocRef = doc(db, 'chats', chatId)
       await setDoc(chatDocRef, chatData, { merge: true })

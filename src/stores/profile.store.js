@@ -39,11 +39,11 @@ export const useProfileStore = defineStore('profile', () => {
   const updateUserAvatar = async file => {
     try {
       // remove old
-      const folderRef = firebaseRef(storage, `avatar/${userData.userId}`)
+      const folderRef = firebaseRef(storage, `avatar/${userData.user_id}`)
       const filesList = await list(folderRef)
       await Promise.all(filesList.items.map(file => deleteObject(file)))
 
-      const fileRef = firebaseRef(storage, `avatar/${userData.userId}/${file.name}`)
+      const fileRef = firebaseRef(storage, `avatar/${userData.user_id}/${file.name}`)
       const url = await uploadBytes(fileRef, file).then(async snapshot => {
         return await getDownloadURL(snapshot.ref)
       })
