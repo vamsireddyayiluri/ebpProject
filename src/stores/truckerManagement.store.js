@@ -137,6 +137,7 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
       await updateDoc(truckerManagementRef, {
         onBoardingDocuments: updatedDocs,
       })
+      alertStore.info({ content: 'File was deleted' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
