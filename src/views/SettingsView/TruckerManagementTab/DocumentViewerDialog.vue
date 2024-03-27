@@ -116,20 +116,20 @@ onMounted(async () => {
       {{ capitalize(doc.status) }}
     </Chip>
     <Button
+      v-if="doc.status === 'pending'"
       variant="plain"
       class="ml-auto"
-      @click="onDecline"
-      v-if="doc.status === 'pending'"
       :loading="loading"
       :disabled="isLoading"
+      @click="onDecline"
     >
       decline
     </Button>
     <Button
-      @click="approve"
       v-if="doc.status === 'pending'"
       :loading="isLoading"
       :disabled="loading"
+      @click="approve"
     >
       accept
     </Button>
@@ -140,7 +140,9 @@ onMounted(async () => {
   >
     <template #text>
       <div class="flex justify-between mb-3">
-        <Typography type="text-h3"> Leave comment </Typography>
+        <Typography type="text-h3">
+          Leave comment
+        </Typography>
         <IconButton
           icon="mdi-close"
           class="-mt-1"
@@ -154,9 +156,9 @@ onMounted(async () => {
       />
       <Button
         class="float-right mt-6"
-        @click="decline"
         :loading="dLoading"
         :disabled="validate() ? true : false"
+        @click="decline"
       >
         send
       </Button>

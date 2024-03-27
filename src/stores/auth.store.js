@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia'
+import {defineStore, storeToRefs} from 'pinia'
 import { auth, db } from '~/firebase'
 import moment from 'moment-timezone'
 import {
@@ -86,6 +86,7 @@ export const useAuthStore = defineStore('auth', () => {
     yards,
     vendorDetails,
     invitations,
+    preferredTruckers,
     requiresForTruckers,
     questionList,
     onboardingDocuments,
@@ -105,6 +106,7 @@ export const useAuthStore = defineStore('auth', () => {
         vendorDetails,
         type: userTypes.admin,
         invitations,
+        preferredTruckers,
         requiresForTruckers,
         questionList,
       })
@@ -224,7 +226,7 @@ export const useAuthStore = defineStore('auth', () => {
           },
           org_type: 'exporter',
           owner_uid: userId,
-          preferredTruckers: [],
+          preferredTruckers: data.preferredTruckers,
         }
         await setDoc(docRef, orgData)
       }

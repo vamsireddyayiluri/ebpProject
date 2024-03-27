@@ -3,6 +3,7 @@ import { getColor } from '~/helpers/colors'
 import { storeToRefs } from 'pinia'
 import { useTruckerManagementStore } from '~/stores/truckerManagement.store'
 import { getTruckers } from '~/stores/helpers'
+import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
 
 const props = defineProps({
   scacSection: {
@@ -11,9 +12,11 @@ const props = defineProps({
   },
 })
 const truckerManagement = useTruckerManagementStore()
-const { requiresForTruckers, preferredTruckersList, questionList } = storeToRefs(truckerManagement)
+const preferredTruckersStore = usePreferredTruckersStore()
+const { preferredTruckers } = storeToRefs(preferredTruckersStore)
+const { requiresForTruckers, questionList } = storeToRefs(truckerManagement)
 const question = ref(null)
-const items = ref(preferredTruckersList)
+const items = ref(preferredTruckers)
 const inviteTruckerDialog = ref(false)
 
 const scacList = ref()
@@ -21,7 +24,7 @@ let filteredScacList = ref([])
 let search = ref('')
 
 const removeTrucker = item => {
-  const index = preferredTruckersList.value.findIndex(i => i === item)
+  const index = preferredTruckers.value.findIndex(i => i === item)
   items.value.splice(index, 1)
 }
 

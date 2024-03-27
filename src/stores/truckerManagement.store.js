@@ -29,7 +29,6 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
   const requiresForTruckers = ref(JSON.parse(JSON.stringify(listRequiresForTruckers)))
   const questionList = ref([])
   const onboardingDocuments = ref([])
-  const preferredTruckersList = ref([])
   const { userData } = useAuthStore()
 
   const getTruckerRequirements = async () => {
@@ -171,6 +170,7 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
           return { ...docSnapshot.data(), documents: documentsData }
         })
         const docData = await Promise.all(docDataPromises)
+        
         return docData
       }
 
@@ -214,7 +214,6 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
     requiresForTruckers,
     questionList,
     onboardingDocuments,
-    preferredTruckersList,
     getTruckerRequirements,
     addAdditionalQuestion,
     removeQuestion,
