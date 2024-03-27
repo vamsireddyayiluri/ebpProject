@@ -150,6 +150,7 @@ const debouncedSearch = useDebounceFn(searchValue => {
 
 const applyFilter = () => {
   let filteredData = bookingsStore.bookings
+  console.log("-> filteredData", filteredData);
 
   if (filters.value.line) {
     filteredData = useArrayFilter(
@@ -160,7 +161,7 @@ const applyFilter = () => {
   if (filters.value.loadingDate) {
     filteredData = useArrayFilter(
       filteredData,
-      booking => booking.bookingExpiry === moment(filters.value.loadingDate).endOf('day').format(),
+      booking => booking.loadingDate === moment(filters.value.loadingDate).endOf('day').format(),
     ).value
   }
   const isFiltered = some(filters.value, value => !!value)
