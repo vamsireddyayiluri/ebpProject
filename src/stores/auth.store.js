@@ -57,17 +57,17 @@ export const useAuthStore = defineStore('auth', () => {
     } catch (error) {
       isLoading.value = false
       switch (error.code) {
-      case 'auth/user-not-found':
-        alertStore.warning({ content: 'User not found' })
-        break
-      case 'auth/wrong-password':
-        alertStore.warning({ content: 'Wrong password' })
-        break
-      case 'auth/invalid-login-credentials':
-        alertStore.warning({ content: 'Invalid credentials' })
-        break
-      default:
-        alertStore.warning({ content: 'Something went wrong' })
+        case 'auth/user-not-found':
+          alertStore.warning({ content: 'User not found' })
+          break
+        case 'auth/wrong-password':
+          alertStore.warning({ content: 'Wrong password' })
+          break
+        case 'auth/invalid-login-credentials':
+          alertStore.warning({ content: 'Invalid credentials' })
+          break
+        default:
+          alertStore.warning({ content: 'Something went wrong' })
       }
     }
   }
@@ -121,20 +121,20 @@ export const useAuthStore = defineStore('auth', () => {
       await sendVerificationEmail()
     } catch (error) {
       switch (error.code) {
-      case 'auth/email-already-in-use':
-        alertStore.warning({ content: 'Email already in use' })
-        break
-      case 'auth/invalid-email':
-        alertStore.warning({ content: 'Invalid email' })
-        break
-      case 'auth/operation-not-allowed':
-        alertStore.warning({ content: 'Operation not allowed' })
-        break
-      case 'auth/weak-password':
-        alertStore.warning({ content: 'Weak password' })
-        break
-      default:
-        alertStore.warning({ content: 'Something went wrong' })
+        case 'auth/email-already-in-use':
+          alertStore.warning({ content: 'Email already in use' })
+          break
+        case 'auth/invalid-email':
+          alertStore.warning({ content: 'Invalid email' })
+          break
+        case 'auth/operation-not-allowed':
+          alertStore.warning({ content: 'Operation not allowed' })
+          break
+        case 'auth/weak-password':
+          alertStore.warning({ content: 'Weak password' })
+          break
+        default:
+          alertStore.warning({ content: 'Something went wrong' })
       }
       isLoading.value = false
     }
@@ -192,7 +192,7 @@ export const useAuthStore = defineStore('auth', () => {
         cell: data.cell,
         createdAt: getLocalTime().format(),
         updatedAt: getLocalTime().format(),
-        userId: userId,
+        user_id: userId,
         orgId: data.orgId,
         password: data.password,
         type: userTypes.admin,
@@ -222,7 +222,8 @@ export const useAuthStore = defineStore('auth', () => {
             timeForTruckersFromMarketplace: '',
             truckers: { list: [] },
           },
-          type: 'exporter',
+          org_type: 'exporter',
+          owner_uid: userId,
           preferredTruckers: [],
         }
         await setDoc(docRef, orgData)
@@ -299,11 +300,11 @@ export const useAuthStore = defineStore('auth', () => {
   const saveUserDataReports = async payload => {
     const { emptyContainerReport, exportFacilityReport } = payload
     try {
-      await updateDoc(doc(db, 'users', userData.value.userId), {
+      await updateDoc(doc(db, 'users', userData.value.user_id), {
         emptyContainerDataReport: emptyContainerReport?.value,
         exporterFacilityDataReport: exportFacilityReport?.value,
       })
-      await getUserData(userData.value.userId)
+      await getUserData(userData.value.user_id)
       alertStore.info({ content: 'Data report updated!' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
@@ -316,8 +317,8 @@ export const useAuthStore = defineStore('auth', () => {
   }
   const updateUserDoc = async payload => {
     try {
-      await updateDoc(doc(db, 'users', userData.value.userId), payload)
-      await getUserData(userData.value.userId)
+      await updateDoc(doc(db, 'users', userData.value.user_id), payload)
+      await getUserData(userData.value.user_id)
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }

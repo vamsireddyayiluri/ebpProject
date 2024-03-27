@@ -26,7 +26,7 @@ const {
 const { chats, activeChat, loading, activeChatMessages, companies, users } = storeToRefs(
   useChatStore(),
 )
-const currentUserId = ref(userData.userId)
+const currentUserId = ref(userData.user_id)
 const currentParticipantId = ref(userData.orgId)
 const chatActions = [
   {

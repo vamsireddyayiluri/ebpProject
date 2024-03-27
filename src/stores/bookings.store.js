@@ -53,7 +53,10 @@ export const useBookingsStore = defineStore('bookings', () => {
     } else {
       await getallBookings()
       bookings.value = bookings.value.filter(
-        booking => booking.status !== statuses.completed && booking.status !== statuses.expired && booking.status !== statuses.canceled,
+        booking =>
+          booking.status !== statuses.completed &&
+          booking.status !== statuses.expired &&
+          booking.status !== statuses.canceled,
       )
     }
     loading.value = false
@@ -62,7 +65,10 @@ export const useBookingsStore = defineStore('bookings', () => {
     loading.value = true
     await getallBookings()
     pastBookings.value = bookings.value.filter(
-      booking => booking.status === statuses.completed || booking.status === statuses.expired || booking.status === statuses.canceled,
+      booking =>
+        booking.status === statuses.completed ||
+        booking.status === statuses.expired ||
+        booking.status === statuses.canceled,
     )
     loading.value = false
   }
@@ -118,7 +124,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     }
   }
   const createBookingObj = booking => {
-    const { userId, name, orgId, type } = authStore.userData
+    const { user_id: userId, name, orgId, type } = authStore.userData
     const bookingId = uid(28)
 
     return {

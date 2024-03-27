@@ -14,6 +14,7 @@ const { requiresForTruckers, questionList } = storeToRefs(truckerManagement)
 const openedPanel = ref([2])
 const loading = ref(false)
 const documentsDialog = ref(null)
+const onboardingTruckersList = ref([])
 let truckerManagementDB = ref({ requiresForTruckers: null, questionList: null })
 const isDisabled = ref(false)
 
@@ -28,9 +29,10 @@ const validateRequirements = computed(() => {
 
   return isDisabled.value
 })
-const openDocuments = doc => {
+const openDocuments = (doc, item) => {
   documentsDialog.value.show(true)
   documentsDialog.value.data = doc
+  documentsDialog.value.selectedItem = item
 }
 const saveTruckerRequirements = async () => {
   const data = await truckerManagement.saveTruckerRequirements({
@@ -45,10 +47,35 @@ const cancelChanges = async () => {
   requiresForTruckers.value = cloneDeep(data.requiresForTruckers)
   questionList.value = cloneDeep(data.questionList)
 }
+const acceptDocument = async () => {
+  updateDocumentStatus()
+}
+const declineDocument = async reason => {
+  updateDocumentStatus(reason)
+}
+const updateDocumentStatus = async (reason = null) => {
+  const { selectedItem, data } = documentsDialog.value
+  const payload = { selectedItem, data, status: 'approved' }
+  if (reason) {
+    payload.status = 'declined'
+    payload.reason = reason
+  }
+  await truckerManagement.updateOnboardingDocStatus(payload)
+  onboardingTruckersList.value = await truckerManagement.getOnboardedTruckers()
+  documentsDialog.value.show(false)
+}
+
+const getTruncatedFileName = fileName => {
+  const name = `${fileName?.substring(0, 15)}...`
+  return fileName?.length > 15 ? name : fileName
+}
 onMounted(async () => {
+  loading.value = true
   const data = await truckerManagement.getTruckerRequirements()
   truckerManagementDB = cloneDeep(data)
   await truckerManagement.getOnboardingDocuments()
+  onboardingTruckersList.value = await truckerManagement.getOnboardedTruckers()
+  loading.value = false
 })
 </script>
 
@@ -65,9 +92,7 @@ onMounted(async () => {
   >
     <ExpansionPanel elevation="0">
       <ExpansionPanelTitle :color="getColor('uiSecondary-02')">
-        <Typography type="text-h4">
-          Trucker requirements
-        </Typography>
+        <Typography type="text-h4"> Trucker requirements </Typography>
       </ExpansionPanelTitle>
       <ExpansionPanelText class="w-full md:w-2/3 lg:w-4/3 pt-4">
         <div>
@@ -83,9 +108,7 @@ onMounted(async () => {
     </ExpansionPanel>
     <ExpansionPanel elevation="0">
       <ExpansionPanelTitle :color="getColor('uiSecondary-02')">
-        <Typography type="text-h4">
-          Required onboarding documents
-        </Typography>
+        <Typography type="text-h4"> Required onboarding documents </Typography>
       </ExpansionPanelTitle>
       <ExpansionPanelText class="w-full md:w-2/3 lg:w-4/3 pt-4">
         <div>
@@ -95,15 +118,12 @@ onMounted(async () => {
     </ExpansionPanel>
     <ExpansionPanel elevation="0">
       <ExpansionPanelTitle :color="getColor('uiSecondary-02')">
-        <Typography type="text-h4">
-          Onboarding
-        </Typography>
+        <Typography type="text-h4"> Onboarding </Typography>
       </ExpansionPanelTitle>
       <ExpansionPanelText class="pt-4">
         <VirtualTable
           id="truckersDocumentsTable"
-          key="bookings"
-          :entities="truckers"
+          :entities="onboardingTruckersList"
           :headers="truckersDocumentsHeaders"
           :loading="loading"
           :options="{
@@ -117,31 +137,103 @@ onMounted(async () => {
           <template #trucker="{ item }">
             <div>
               <Typography>
-                {{ item.scac }}
+                {{ item?.truckerScac || '--' }}
               </Typography>
               <Typography :color="getColor('textSecondary')">
-                {{ item.email }}
+                {{ item.truckerEmail || '--' }}
               </Typography>
             </div>
           </template>
           <template #company="{ item }">
             <Typography>
-              {{ item.company }}
+              {{ item.truckerCompany || '--' }}
             </Typography>
           </template>
           <template #documents="{ item }">
             <div class="flex gap-2 z-50">
-              <template
-                v-for="(i, index) in item.documents"
-                :key="index"
-              >
-                <Chip
-                  :prepend-icon="useDocumentsChip()[i.status]?.icon"
-                  :color="useDocumentsChip()[i.status]?.color"
-                  @click="openDocuments(i)"
+              <template v-if="item.documents.length <= 2">
+                <template
+                  v-for="(i, index) in item.documents"
+                  :key="index"
                 >
-                  {{ i.label }}
-                </Chip>
+                  <Chip
+                    :prepend-icon="useDocumentsChip()[i.status]?.icon"
+                    :color="useDocumentsChip()[i.status]?.color"
+                    @click="openDocuments(i, item)"
+                  >
+                    {{ getTruncatedFileName(i.filename) }}
+                    <Popover
+                      activator="parent"
+                      location="top "
+                      class="pl-2"
+                    >
+                      <div class="flex justify-center gap-2 py-1">
+                        <span>{{ i.filename }}</span>
+                      </div>
+                    </Popover>
+                  </Chip>
+                </template>
+              </template>
+              <template v-if="item.documents.length > 2">
+                <template
+                  v-for="(i, index) in item.documents.slice(0, 1)"
+                  :key="index"
+                >
+                  <Chip
+                    :prepend-icon="useDocumentsChip()[i.status]?.icon"
+                    :color="useDocumentsChip()[i.status]?.color"
+                    @click="openDocuments(i, item)"
+                  >
+                    {{ getTruncatedFileName(i.filename) }}
+                    <Popover
+                      activator="parent"
+                      location="top "
+                      class="pl-2"
+                    >
+                      <div class="flex justify-center gap-2 py-1">
+                        <span>{{ i.filename }}</span>
+                      </div>
+                    </Popover>
+                  </Chip>
+                </template>
+                <Menu
+                  location="bottom end"
+                  offset="3"
+                >
+                  <template #activator="{ props }">
+                    <span
+                      v-bind="props"
+                      v-on="on"
+                      class="mt-2"
+                    >
+                      +{{ item.documents?.length - 1 }}
+                      more
+                    </span>
+                  </template>
+                  <List>
+                    <ListItem
+                      v-for="(i, index) in item.documents.slice(1)"
+                      :key="index"
+                    >
+                      <Chip
+                        :prepend-icon="useDocumentsChip()[i.status]?.icon"
+                        :color="useDocumentsChip()[i.status]?.color"
+                        @click="openDocuments(i, item)"
+                      >
+                        {{ getTruncatedFileName(i.filename) }}
+                        <Popover
+                          activator="parent"
+                          location="top "
+                          class="pl-2"
+                        >
+                          <div class="flex justify-center gap-2 py-1">
+                            <span>{{ i.filename }}</span>
+                          </div>
+                        </Popover>
+                      </Chip>
+                    </ListItem>
+                  </List>
+                </Menu>
               </template>
             </div>
           </template>
@@ -156,6 +248,8 @@ onMounted(async () => {
     <template #text>
       <DocumentViewerDialog
         :doc="documentsDialog.data"
+        @acceptDoc="acceptDocument()"
+        @declineDoc="declineDocument"
         @close="documentsDialog.show(false)"
       />
     </template>

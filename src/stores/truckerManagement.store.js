@@ -2,9 +2,26 @@ import { defineStore } from 'pinia'
 import { useAlertStore } from '~/stores/alert.store'
 import listRequiresForTruckers from '~/fixtures/requiresForTruckers.json'
 import { useAuthStore } from '~/stores/auth.store'
-import { collection, doc, getDoc, getDocs, query, setDoc, where } from 'firebase/firestore'
-import { deleteObject, listAll, ref as firebaseRef, uploadBytes } from 'firebase/storage'
+import {
+  arrayUnion,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  updateDoc,
+  where,
+} from 'firebase/firestore'
+import {
+  deleteObject,
+  listAll,
+  ref as firebaseRef,
+  uploadBytes,
+  getDownloadURL,
+} from 'firebase/storage'
 import { db, storage } from '~/firebase'
+import { uid } from 'uid'
+import axios from 'axios'
 
 export const useTruckerManagementStore = defineStore('truckerManagement', () => {
   const alertStore = useAlertStore()
@@ -54,6 +71,10 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
       const folderRef = firebaseRef(storage, folderPath)
       const filesList = await listAll(folderRef)
       onboardingDocuments.value = filesList.items.map(fileRef => fileRef)
+      // const doc = await getDoc(db, 'trucker_requirements', userData.orgId)
+
+      // onboardingDocuments.value = doc.data()?.onBoardingDocuments || []
+      // console.log('onboardingDOcumnets', onboardingDocuments)
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
@@ -71,7 +92,23 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
       if (exist) {
         alertStore.warning({ content: `File with name ${file.name} exist` })
       } else {
-        await uploadBytes(fileRef, file)
+        const snapshot = await uploadBytes(fileRef, file)
+        const downloadURL = await getDownloadURL(snapshot.ref)
+
+        const truckerManagementRef = doc(db, 'trucker_requirements', userData.orgId)
+
+        await setDoc(
+          truckerManagementRef,
+          {
+            onBoardingDocuments: arrayUnion({
+              id: uid(),
+              path: downloadURL,
+              filename: file.name,
+              type: file.type,
+            }),
+          },
+          { merge: true },
+        )
         onboardingDocuments.value.push(file)
         alertStore.info({ content: 'File was uploaded' })
       }
@@ -91,8 +128,16 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
     try {
       const fileRef = firebaseRef(storage, filePath)
       await deleteObject(fileRef)
-      const index = onboardingDocuments.value.findIndex(f => f.name === fileName)
-      onboardingDocuments.value.splice(index, 1)
+      const truckerManagementRef = doc(db, 'trucker_requirements', userData.orgId)
+
+      const { onBoardingDocuments } = (await getDoc(truckerManagementRef)).data()
+
+      const updatedDocs = onBoardingDocuments.filter(doc => doc.filename !== fileName)
+
+      await updateDoc(truckerManagementRef, {
+        onBoardingDocuments: updatedDocs,
+      })
+      alertStore.info({ content: 'File was deleted' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
@@ -105,6 +150,66 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
     const querySnapshot = await getDocs(q)
 
     return querySnapshot.docs.map(doc => doc.data())[0]
+  }
+
+  const getOnboardedTruckers = async () => {
+    try {
+      const query = collection(db, 'onboarding_documents')
+
+      // Get onboarding documents where 'exporterOrgId' matches 'userData.orgId'.
+      const onboardingDocsSnapshot = await getDocs(
+        query,
+        where('exporterOrgId', '==', userData.orgId),
+      )
+
+      if (!onboardingDocsSnapshot.empty) {
+        const docDataPromises = onboardingDocsSnapshot.docs.map(async docSnapshot => {
+          // Use the correct way to reference a sub-collection depending on your SDK
+          const documentsQuery = collection(docSnapshot.ref, 'documents')
+          const documentsSnapshot = await getDocs(documentsQuery)
+
+          const documentsData = documentsSnapshot.docs.map(document => document.data())
+
+          return { ...docSnapshot.data(), documents: documentsData }
+        })
+        const docData = await Promise.all(docDataPromises)
+        return docData
+      }
+
+      return []
+    } catch (error) {
+      console.log('error', error)
+    }
+  }
+
+  const updateOnboardingDocStatus = async payload => {
+    const { selectedItem, data, status, reason = null } = payload
+    try {
+      const query = doc(db, 'onboarding_documents', selectedItem.id, 'documents', data.id)
+
+      const docStatus = { status: status }
+      if (reason) {
+        docStatus.reason = reason
+      }
+      await updateDoc(query, docStatus)
+
+      const emailData = {
+        status,
+        reason,
+        attachments: [data],
+        exporterOrgId: selectedItem.exporterOrgId,
+        truckerOrgId: selectedItem.truckerOrgId,
+      }
+
+      await axios.post(
+        `${
+          import.meta.env.VITE_APP_CANONICAL_URL
+        }/api/v1/onboardingDocuments/docUpdated/sendNotification`,
+        emailData,
+      )
+    } catch (error) {
+      console.log('error', error)
+    }
   }
 
   return {
@@ -120,5 +225,7 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
     addDoc,
     removeDoc,
     getTruckerDetails,
+    getOnboardedTruckers,
+    updateOnboardingDocStatus,
   }
 })

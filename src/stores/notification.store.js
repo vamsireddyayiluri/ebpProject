@@ -111,11 +111,7 @@ export const useNotificationStore = defineStore('notification', () => {
 
       unsubscribeNotification = await onSnapshot(doc(db, 'notifications', docId), snapshot => {
         let notificationsData = null
-        if (!snapshot.data()?.orgId) {
-          notificationsData = requiredData(snapshot.data()?.notifications)
-        } else {
-          notificationsData = snapshot.data()?.notifications
-        }
+        notificationsData = requiredData(snapshot.data()?.notifications)
         const list = notificationsData.at(-1)
         if (
           !initialLoad &&
@@ -141,7 +137,7 @@ export const useNotificationStore = defineStore('notification', () => {
         id: uid(16),
       }
     })
-    
+
     return notifications
   }
   const showAlert = ({ type, ...rest }) => {
