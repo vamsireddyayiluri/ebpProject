@@ -81,6 +81,7 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
 
       return
     }
+    console.log()
     try {
       const fileRef = firebaseRef(storage, `uploads/exporter/${userData.orgId}/${file.name}`)
       const exist = await isFileExists(fileRef)
@@ -143,7 +144,7 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
     }
   }
   const isFileExists = async fileRef => {
-    return onboardingDocuments.value.some(i => i.name === fileRef.name)
+    return onboardingDocuments.value?.some(i => i.name === fileRef.name)
   }
 
   const getOnboardedTruckers = async () => {
