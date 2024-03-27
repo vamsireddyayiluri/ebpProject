@@ -8,6 +8,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  query,
   setDoc,
   updateDoc,
   where,
@@ -147,14 +148,11 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
 
   const getOnboardedTruckers = async () => {
     try {
-      const query = collection(db, 'onboarding_documents')
-
-      // Get onboarding documents where 'exporterOrgId' matches 'userData.orgId'.
-      const onboardingDocsSnapshot = await getDocs(
-        query,
-        where('exporterOrgId', '==', userData.orgId),
+      const q = await query(
+        collection(db, 'onboarding_documents'),
+        where('exporterOrgId', '==', userData.orgId)
       )
-
+      const onboardingDocsSnapshot = await getDocs(q);
       if (!onboardingDocsSnapshot.empty) {
         const docDataPromises = onboardingDocsSnapshot.docs.map(async docSnapshot => {
           // Use the correct way to reference a sub-collection depending on your SDK
