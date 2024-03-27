@@ -46,7 +46,7 @@ const showProgress = () => {
   }, 1500)
 }
 const removeFile = file => {
-  truckerManagement.removeDoc(file.name)
+  truckerManagement.removeDoc(file.filename)
   if (fileInput.value) {
     fileInput.value.value = ''
   }
