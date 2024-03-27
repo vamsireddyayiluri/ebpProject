@@ -67,15 +67,9 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
     }
   }
   const getOnboardingDocuments = async () => {
-    const folderPath = `uploads/${userData.orgId}/`
     try {
-      const folderRef = firebaseRef(storage, folderPath)
-      const filesList = await listAll(folderRef)
-      onboardingDocuments.value = filesList.items.map(fileRef => fileRef)
-      // const doc = await getDoc(db, 'trucker_requirements', userData.orgId)
-
-      // onboardingDocuments.value = doc.data()?.onBoardingDocuments || []
-      // console.log('onboardingDOcumnets', onboardingDocuments)
+      const docData = await getDoc(doc(db, 'trucker_requirements', userData.orgId))
+      onboardingDocuments.value = docData.data().onBoardingDocuments
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
@@ -88,7 +82,7 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
       return
     }
     try {
-      const fileRef = firebaseRef(storage, `uploads/${userData.orgId}/${file.name}`)
+      const fileRef = firebaseRef(storage, `uploads/exporter/${userData.orgId}/${file.name}`)
       const exist = await isFileExists(fileRef)
       if (exist) {
         alertStore.warning({ content: `File with name ${file.name} exist` })
@@ -110,7 +104,12 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
           },
           { merge: true },
         )
-        onboardingDocuments.value.push(file)
+        onboardingDocuments.value.push({
+          id: uid(),
+          path: downloadURL,
+          filename: file.name,
+          type: file.type,
+        })
         alertStore.info({ content: 'File was uploaded' })
       }
     } catch ({ message }) {
@@ -125,7 +124,7 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
 
       return
     }
-    const filePath = `uploads/${userData.orgId}/${fileName}`
+    const filePath = `uploads/exporter/${userData.orgId}/${fileName}`
     try {
       const fileRef = firebaseRef(storage, filePath)
       await deleteObject(fileRef)
@@ -151,9 +150,9 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
     try {
       const q = await query(
         collection(db, 'onboarding_documents'),
-        where('exporterOrgId', '==', userData.orgId)
+        where('exporterOrgId', '==', userData.orgId),
       )
-      const onboardingDocsSnapshot = await getDocs(q);
+      const onboardingDocsSnapshot = await getDocs(q)
       if (!onboardingDocsSnapshot.empty) {
         const docDataPromises = onboardingDocsSnapshot.docs.map(async docSnapshot => {
           // Use the correct way to reference a sub-collection depending on your SDK

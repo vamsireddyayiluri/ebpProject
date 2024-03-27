@@ -126,7 +126,7 @@ const renameFile = () => {
   <div class="flex flex-wrap gap-2">
     <template
       v-for="i in files"
-      :key="i.name"
+      :key="i.filename"
     >
       <Chip
         prepend-icon="mdi-file"
@@ -135,10 +135,10 @@ const renameFile = () => {
         @click:close="removeFile(i)"
       >
         <span class="text-truncate px-2">
-          {{ i.name }}
+          {{ i.filename }}
         </span>
         <Tooltip>
-          {{ i.name }}
+          {{ i.filename }}
         </Tooltip>
       </Chip>
     </template>
