@@ -30,19 +30,22 @@ const cancelAction = {
 
 export const bookingsActions = item => {
   const actions = []
-  if (item.status ===  statuses.active) {
+  if (item.status === statuses.active) {
     actions.unshift(editAction, pauseAction, duplicateAction, deleteAction)
   }
   if (item.status === statuses.paused) {
-    actions.push( {
-      icon: 'mdi-reload',
-      label: 'Re-activate booking',
-      action: 'reactive-booking',
-    },
-    duplicateAction, cancelAction)
+    actions.push(
+      {
+        icon: 'mdi-reload',
+        label: 'Re-activate booking',
+        action: 'reactive-booking',
+      },
+      duplicateAction,
+      cancelAction,
+    )
   }
   if (item.status === statuses.pending) {
-    actions.push(duplicateAction, cancelAction)
+    actions.push(editAction, duplicateAction, cancelAction)
   }
 
   return actions
@@ -129,15 +132,16 @@ export const commitmentsActions = (status, bstatus) => {
       ...viewDetailsAction,
     )
   }
-  if (status === statuses.approved && (bstatus === statuses.active || bstatus === statuses.pending)) {
-    actions.push(
-      {
-        icon: 'mdi-cancel',
-        label: 'Cancel commitment',
-        action: 'cancel-commitment',
-        color: 'functionalError',
-      },
-    )
+  if (
+    status === statuses.approved &&
+    (bstatus === statuses.active || bstatus === statuses.pending)
+  ) {
+    actions.push({
+      icon: 'mdi-cancel',
+      label: 'Cancel commitment',
+      action: 'cancel-commitment',
+      color: 'functionalError',
+    })
   }
 
   return actions.length > 0 ? actions : viewDetailsAction
