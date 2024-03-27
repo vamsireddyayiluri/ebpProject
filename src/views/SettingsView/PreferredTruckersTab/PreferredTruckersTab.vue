@@ -6,13 +6,12 @@ import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
 import { storeToRefs } from 'pinia'
 import { pullAllBy } from 'lodash'
 import { useAlertStore } from '~/stores/alert.store'
-import { useBookingRulesStore } from '~/stores/bookingRules.store'
 import { computed } from 'vue'
 import { useChatStore } from '~/stores/chat.store'
+import { getTruckers } from '~/stores/helpers'
 
 const alertStore = useAlertStore()
 const preferredTruckersStore = usePreferredTruckersStore()
-const { getTruckers } = useBookingRulesStore()
 const { goToChat } = useChatStore()
 const truckers = ref([])
 const { preferredTruckers } = storeToRefs(preferredTruckersStore)

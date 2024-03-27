@@ -2,6 +2,7 @@
 import { getColor } from '~/helpers/colors'
 import { storeToRefs } from 'pinia'
 import { useTruckerManagementStore } from '~/stores/truckerManagement.store'
+import { getTruckers } from '~/stores/helpers'
 
 const props = defineProps({
   scacSection: {
@@ -10,13 +11,12 @@ const props = defineProps({
   },
 })
 const truckerManagement = useTruckerManagementStore()
-
 const { requiresForTruckers, preferredTruckersList, questionList } = storeToRefs(truckerManagement)
 const question = ref(null)
 const items = ref(preferredTruckersList)
 const inviteTruckerDialog = ref(false)
 
-const scacList = ['aass', 'qqww']
+const scacList = ref()
 let filteredScacList = ref([])
 let search = ref('')
 
@@ -26,8 +26,8 @@ const removeTrucker = item => {
 }
 
 const filterItems = event => {
-  search.value = event.target.value
-  const filter = scacList.filter(val => val.toLowerCase() === search.value.toLowerCase())
+  search.value = event.target.value.trim()
+  const filter = scacList.value.filter(val => val.scac.toLowerCase() === search.value.toLowerCase())
   if (filter?.length) {
     filteredScacList.value.push(...filter)
   } else {
@@ -42,6 +42,9 @@ const confirmSendInvitation = trucker => {
   inviteTruckerDialog.value.show(true)
   inviteTruckerDialog.value.data = trucker
 }
+onMounted(async () => {
+  scacList.value = await getTruckers()
+})
 </script>
 
 <template>
@@ -53,15 +56,26 @@ const confirmSendInvitation = trucker => {
     <Autocomplete
       v-model="items"
       :items="filteredScacList"
-      placeholder="Seach for truckers by SCAC"
+      placeholder="Search for truckers by SCAC"
       prepend-inner-icon="mdi-magnify"
       multiple
       with-btn
+      item-title="scac"
+      item-value="scac"
+      return-object
+      max-length="4"
+      max-height="500"
+      :menu-props="{ maxHeight: 300 }"
+      :suffix="search?.length >= 4 ? '' : 4 - search?.length + ' chars'"
+      :hide-no-data="!(search?.length === 4)"
       class="text-left"
       @input="filterItems"
       @blur="clearData"
     >
-      <template #no-data>
+      <template
+        v-if="search?.length === 4"
+        #no-data
+      >
         <Typography class="mb-5 inline-block">
           Do you want to send an invitation via email?
         </Typography>
@@ -82,7 +96,7 @@ const confirmSendInvitation = trucker => {
           closable
           @click:close="removeTrucker(i)"
         >
-          {{ i }}
+          {{ i.scac }}
         </Chip>
       </template>
     </div>

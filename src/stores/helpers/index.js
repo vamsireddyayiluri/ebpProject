@@ -49,6 +49,22 @@ export const getUserIdByEmail = async email => {
 export const getRequestLoadFee = async () => {
   const settingsCollection = query(doc(db, 'settings', 'request_loads'))
   const settings = await getDoc(settingsCollection)
-  
+
   return settings.data()
+}
+
+export const getTruckers = async () => {
+  const truckersQuery = query(collection(db, 'organizations'), where('org_type', '==', 'asset'))
+  const querySnapshot = await getDocs(truckersQuery)
+
+  return querySnapshot.docs.map(doc => {
+    const { orgId, scac, email, company } = doc.data()
+
+    return {
+      id: orgId,
+      scac,
+      email,
+      company,
+    }
+  })
 }

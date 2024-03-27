@@ -423,7 +423,7 @@ onMounted(async () => {
             required
             :disabled="expired || completed"
           />
-          <Autocomplete
+          <Select
             v-model="booking.insurance"
             :items="insuranceItems"
             label="Minimum Insurance*"

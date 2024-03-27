@@ -33,6 +33,7 @@ const {
   line,
   size,
   location,
+  reason = null,
 } = bookingStore.bookings.find(i => i.id === props.commitment.bookingId)
 const { truckerDetails } = props.commitment.details
 let details = ref([
@@ -201,6 +202,17 @@ onUnmounted(() => {
                 >
                   {{ committed }}
                 </Typography>
+                <!--
+                  <Typography type="text-body-s-regular">
+                  OnBoarded Containers
+                  </Typography>
+                  <Typography
+                  type="text-body-s-regular text-end"
+                  :color="getColor('textSecondary')"
+                  >
+                  {{ committed }}
+                  </Typography>
+                -->
                 <Typography type="text-body-s-regular">
                   Status
                 </Typography>
@@ -209,17 +221,17 @@ onUnmounted(() => {
                   :value="status"
                   class="w-min h-fit ml-auto"
                 />
-                <!--
-                  <template v-if="reason">
-                  <Typography type="text-body-s-regular"> Reason </Typography>
-                  <Typography
-                  type="text-body-s-regular text-end"
-                  :color="getColor('textSecondary')"
-                  >
-                  {{ reason }}
+                <template v-if="reason">
+                  <Typography type="text-body-s-regular">
+                    Reason
                   </Typography>
-                  </template>
-                -->
+                  <Typography
+                    type="text-body-s-regular text-end"
+                    :color="getColor('textSecondary')"
+                  >
+                    {{ reason }}
+                  </Typography>
+                </template>
                 <Typography type="text-body-s-regular">
                   Loading date
                 </Typography>
@@ -346,5 +358,6 @@ onUnmounted(() => {
 
 .styledCommitActionsBtns {
   background: linear-gradient(transparent, rgba(var(--v-theme-uiPrimary), 1));
+  z-index: 10;
 }
 </style>

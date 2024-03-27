@@ -7,7 +7,7 @@ import { deepCopy } from 'json-2-csv/lib/utils'
 
 export const useBookingRulesStore = defineStore('bookingRules', () => {
   const {
-    orgData: { bookingRules, locations },
+    orgData: { bookingRules },
   } = useAuthStore()
   const alertStore = useAlertStore()
   const rules = ref(
@@ -30,25 +30,9 @@ export const useBookingRulesStore = defineStore('bookingRules', () => {
       alertStore.warning({ content: message })
     }
   }
-  const getTruckers = async () => {
-    const truckersQuery = query(collection(db, 'organizations'), where('org_type', '==', 'asset'))
-    const querySnapshot = await getDocs(truckersQuery)
-
-    return querySnapshot.docs.map(doc => {
-      const { orgId, scac, email, company } = doc.data()
-
-      return {
-        id: orgId,
-        scac,
-        email,
-        company,
-      }
-    })
-  }
 
   return {
     rules,
     updateRules,
-    getTruckers,
   }
 })

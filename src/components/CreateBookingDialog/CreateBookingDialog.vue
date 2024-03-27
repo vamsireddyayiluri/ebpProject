@@ -272,7 +272,7 @@ onMounted(async () => {
         :rules="[rules.containers, rules.averageWeight]"
         required
       />
-      <Autocomplete
+      <Select
         v-model="booking.insurance"
         :items="insuranceItems"
         label="Minimum Insurance*"
