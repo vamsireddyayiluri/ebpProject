@@ -221,7 +221,6 @@ export const useBookingsStore = defineStore('bookings', () => {
         } else alertStore.warning({ content: 'Draft not found' })
       } else if (fromHistory) {
         const index = pastBookings.value.findIndex(i => i.id === id)
-        debugger
         if (index > -1) {
           pastBookings.value.splice(index, 1)
           await deleteDoc(doc(db, 'bookings', id))
