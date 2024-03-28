@@ -3,6 +3,7 @@ import { useAlertStore } from '~/stores/alert.store'
 
 const props = defineProps({
   disabled: Boolean,
+  loading: Boolean,
 })
 const emit = defineEmits(['onSave', 'onCancel'])
 const attrs = useAttrs()
@@ -21,6 +22,7 @@ const onSave = () => {
     <Button
       class="mr-4"
       :disabled="disabled"
+      :loading="loading"
       type="submit"
       @click="saveDialog.show(true)"
     >
@@ -28,7 +30,7 @@ const onSave = () => {
     </Button>
     <Button
       variant="outlined"
-      :disabled="disabled"
+      :disabled="disabled || loading"
       @click="emit('onCancel')"
     >
       Cancel changes
