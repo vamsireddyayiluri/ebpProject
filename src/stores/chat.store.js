@@ -361,11 +361,11 @@ export const useChatStore = defineStore('chat', () => {
     const querySnapshot = await getDocs(qFiltered)
     const allTruckers = querySnapshot.docs.map(doc => {
       const { truckerOrgId: orgId, truckerCompany: company } = doc.data()
-      
+
       return { orgId, company }
     })
     const committedTruckers = uniqBy(allTruckers, 'orgId')
-    
+
     return committedTruckers
   }
 

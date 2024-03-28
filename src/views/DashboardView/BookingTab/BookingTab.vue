@@ -150,7 +150,6 @@ const debouncedSearch = useDebounceFn(searchValue => {
 
 const applyFilter = () => {
   let filteredData = bookingsStore.bookings
-  console.log("-> filteredData", filteredData);
 
   if (filters.value.line) {
     filteredData = useArrayFilter(
