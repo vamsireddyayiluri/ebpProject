@@ -335,19 +335,11 @@ watch(
             {{ item.committed }}
           </Typography>
         </template>
-        <Typography type="text-body-m-regular">
-          {{ getFormattedDate(item.loadingDate) }}
-          <Popover
-            activator="parent"
-            location="top center"
-          >
-            <div class="flex justify-center gap-2 py-1">
-              <Chip>
-                {{ item.loadingDate }}
-              </Chip>
-            </div>
-          </Popover>
-        </Typography>
+        <template #loadingDate="{ item }">
+          <Typography type="text-body-m-regular">
+            {{ formateTime(item.loadingDate) }}
+          </Typography>
+        </template>
         <template #status="{ item }">
           <Classification
             type="status"

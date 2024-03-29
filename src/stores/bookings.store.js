@@ -319,8 +319,8 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.warning({ content: message })
     }
   }
-  const closeBookingExpansion = async bookingId => {
-    const index = bookings.value.findIndex(val => val.id === bookingId)
+  const closeBookingExpansion = async referenceId => {
+    const index = bookings.value.findIndex(val => val.referenceId === referenceId)
     bookings.value[index].expand = false
   }
   const reset = () => {

@@ -15,8 +15,13 @@ export const useCommitmentsStore = defineStore('commitments', () => {
 
   const approveCommitment = async commitment => {
     // find booking
-    const booking = bookingsStore.bookings.find(i => i.id === commitment.bookingId)
-    const availableContainers = booking.containers - booking.committed
+    const booking = bookingsStore.bookings.find(i => {
+      return (
+        i.id === commitment.bookingId ||
+        (Array.isArray(i.ids) && i.ids.includes(commitment.bookingId))
+      )
+    })
+    const availableContainers = booking?.containers - booking?.committed
 
     //throw error if commitment capacity is not available
     if (!availableContainers) {
@@ -52,7 +57,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         carriers: booking?.carriers || [],
       })
 
-      const index = bookingsStore.bookings.findIndex(i => i.id === commitment.bookingId)
+      const index = bookingsStore.bookings.findIndex(i => i.referenceId === commitment.referenceId)
 
       bookingsStore.bookings[index].entities.forEach(j => {
         // i.expand = true
@@ -60,7 +65,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
           j.status = statuses.approved
         }
       })
-      await updateBookingStore(commitment.bookingId)
+      await updateBookingStore(commitment)
 
       alertStore.info({ content: 'Booking commitment approved' })
     } catch ({ message }) {
@@ -112,7 +117,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         })
       })
       const commitment = await getCommitment(data.id)
-      await updateBookingStore(commitment.bookingId)
+      await updateBookingStore(commitment)
       alertStore.info({ content: 'Booking commitment completed' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
@@ -134,7 +139,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         })
       })
       const commitment = await getCommitment(id)
-      await updateBookingStore(commitment.bookingId)
+      await updateBookingStore(commitment)
       alertStore.info({ content: 'Booking commitment declined' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
@@ -154,7 +159,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         })
       })
       const commitment = await getCommitment(id)
-      await updateBookingStore(commitment.bookingId)
+      await updateBookingStore(commitment)
       alertStore.info({ content: 'Booking commitment canceled' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
