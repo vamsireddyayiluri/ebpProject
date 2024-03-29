@@ -17,6 +17,7 @@ import {
 import { insuranceTypes } from '~/constants/settings'
 import { deepCopy } from 'json-2-csv/lib/utils'
 import { uid } from 'uid'
+import { cloneDeep } from 'lodash'
 
 const props = defineProps({
   duplicate: Object,
@@ -173,7 +174,7 @@ const addLoadingDate = () => {
     id: uid(16),
     loadingDate: null,
     containers: null,
-    scacList: bookingRulesStore.rules.truckers,
+    scacList: cloneDeep(bookingRulesStore.rules.truckers),
     ...booking.value,
   })
 }
@@ -239,6 +240,9 @@ onMounted(async () => {
     @submit.prevent="saveBooking"
   >
     <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+      <Typography type="text-body-xs-semibold col-span-2 md:col-span-3 -mb-2">
+        General information
+      </Typography>
       <Textfield
         v-model.trim="booking.ref"
         label="Booking ref*"
@@ -303,51 +307,48 @@ onMounted(async () => {
         return-object
         class="h-fit"
       />
-      <div class="grid grid-cols-subgrid gap-6 col-span-2 md:col-span-3">
-        <Textfield
-          v-model.number="booking.estimatedRate"
-          label="Target rate*"
-          :rules="[rules.containers]"
+      <div>
+        <TextFieldWithSelector
+          v-model="booking.estimatedRate"
           type="number"
-          required
-          class="col-span-1"
-        />
-        <RadioGroup
-          v-model="booking.estimatedRateType"
-          inline
-          class="mt-0 md:mt-3"
-        >
-          <Radio
-            value="All in rate"
-            label="All in rate"
-            class="mr-6"
-          />
-          <Radio
-            value="Linehaul + FSC Only"
-            label="Linehaul + FSC Only"
-          />
-        </RadioGroup>
-      </div>
-      <div class="grid grid-cols-subgrid gap-6 col-span-2 md:col-span-3">
-        <Select
-          v-model="booking.size"
-          :items="containersSizes"
-          label="Equipment type*"
-          item-title="label"
-          item-value="size"
-          :multiple="booking.flexibleBooking"
-          :error-messages="validateFlexibleSizes(booking.size, booking.flexibleBooking)"
-        />
-        <Checkbox
-          v-model="booking.flexibleBooking"
-          label="Flexible booking"
-          class="mt-3"
-          @change="updateSize"
+          label="Target rate*"
+          :items="['All in rate', 'Linehaul + FSC Only']"
+          return-object="true"
+          :rules="[rules.containers]"
+          @onSelect="value => (booking.estimatedRateType = value)"
         />
       </div>
+      <Autocomplete
+        v-model="booking.size"
+        :items="containersSizes"
+        label="Equipment type*"
+        :multiple="booking.flexibleBooking"
+        item-title="label"
+        item-value="size"
+        :menu-props="{ maxHeight: 350 }"
+        class="h-fit"
+        :error-messages="validateFlexibleSizes(booking.size, booking.flexibleBooking)"
+      >
+        <template #prepend-item>
+          <div class="mt-3 ml-5">
+            <Checkbox
+              v-model="booking.flexibleBooking"
+              label="Flexible booking"
+              @change="updateSize"
+            />
+            <Typography
+              type="w-3/5 text-body-xs-regular ml-9 mt-1.5 -pr-4"
+              :color="getColor('textSecondary')"
+            >
+              Allows more than 1 equipment type to be chosen (maximum of 2)
+            </Typography>
+          </div>
+          <Divider class="w-[calc(100%+16px)] mt-3 -ml-2" />
+        </template>
+      </Autocomplete>
       <div class="grid grid-cols-subgrid gap-6 col-span-2 md:col-span-3 relative">
-        <Typography type="text-body-xs-semibold col-span-2 md:col-span-3 -mb-3">
-          Track details
+        <Typography type="text-body-xs-semibold col-span-2 md:col-span-3 -mb-2">
+          Loading dates
         </Typography>
         <template
           v-for="(d, index) in newBookings"
@@ -439,3 +440,16 @@ onMounted(async () => {
     </template>
   </Dialog>
 </template>
+
+<style lang="scss">
+.styledTextFieldWithSelector {
+  .select {
+    width: 130%;
+
+    .v-field__input {
+      padding-inline-start: 0;
+      padding-inline-end: 2px;
+    }
+  }
+}
+</style>

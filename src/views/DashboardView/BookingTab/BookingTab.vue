@@ -29,9 +29,9 @@ const { mapToggled } = toRefs(props)
 const getPanes = () => {
   return mapToggled.value
     ? [
-        { name: 'content', size: 60 },
-        { name: 'map', size: 40 },
-      ]
+      { name: 'content', size: 60 },
+      { name: 'map', size: 40 },
+    ]
     : [{ name: 'content', size: 100 }]
 }
 const panes = ref(getPanes())
@@ -320,7 +320,7 @@ watch(searchValue, value => {
   </Dialog>
   <Dialog
     ref="createBookingDialog"
-    class="max-w-full sm:max-w-[90vw] md:max-w-[75vw]"
+    class="max-w-full max-w-[90vw]"
     @update:modelValue="onClickOutsideDialog"
   >
     <template #text>

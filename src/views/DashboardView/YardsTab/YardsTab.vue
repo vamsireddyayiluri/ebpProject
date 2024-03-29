@@ -294,7 +294,7 @@ watch(searchValue, value => {
   </Panes>
   <Dialog
     ref="createBookingDialog"
-    class="max-w-full sm:max-w-[90vw] md:max-w-[75vw]"
+    class="max-w-full max-w-[90vw]"
     @update:modelValue="onClickOutsideDialog"
   >
     <template #text>
