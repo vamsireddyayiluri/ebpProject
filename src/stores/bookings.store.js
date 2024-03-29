@@ -327,14 +327,18 @@ export const useBookingsStore = defineStore('bookings', () => {
   }
 
   // Updating booking store data after performing action
-  const updateBookingStore = async commitment => {
+  const updateBookingStore = async (commitment, type = null) => {
     try {
       setTimeout(async () => {
         const id = commitment?.bookingId || commitment.id
         const updatedBooking = await getBooking({ id: id, draft: false })
         bookings.value.forEach(booking => {
           if (booking.referenceId === commitment.referenceId) {
-            booking.committed = commitment.committed + booking.committed
+            if (type === 'approved') {
+              booking.committed = commitment.committed + booking.committed
+            } else if (type === 'canceled') {
+              booking.committed = commitment.committed - booking.committed
+            }
             booking.status = toRaw(updatedBooking.status)
           }
         })

@@ -65,7 +65,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
           j.status = statuses.approved
         }
       })
-      await updateBookingStore(commitment)
+      await updateBookingStore(commitment, 'approved')
 
       alertStore.info({ content: 'Booking commitment approved' })
     } catch ({ message }) {
@@ -159,7 +159,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         })
       })
       const commitment = await getCommitment(id)
-      await updateBookingStore(commitment)
+      await updateBookingStore(commitment, 'canceled')
       alertStore.info({ content: 'Booking commitment canceled' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
