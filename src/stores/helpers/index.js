@@ -80,10 +80,14 @@ export const groupBookings = objects => {
       groupedObject[key].scacList.list.push(...obj.scacList.list)
       groupedObject[key].loadingDate.push(obj.loadingDate)
       groupedObject[key].ids.push(obj.id)
+
+      // groupedObject[key].id += key
     } else {
       groupedObject[key] = { ...obj }
       groupedObject[key].loadingDate = [obj.loadingDate]
       groupedObject[key].ids = [obj.id]
+
+      // groupedObject[key].id = key
     }
   })
 

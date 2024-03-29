@@ -16,7 +16,7 @@ import {
 import { db } from '~/firebase'
 import { useAuthStore } from '~/stores/auth.store'
 import { getLocalServerTime, getLocalTime } from '@qualle-admin/qutil/dist/date'
-import { capitalize } from 'lodash'
+import {capitalize, cloneDeep} from 'lodash'
 import moment from 'moment-timezone'
 import { statuses } from '~/constants/statuses'
 import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
@@ -154,7 +154,10 @@ export const useBookingsStore = defineStore('bookings', () => {
     try {
       await setDoc(doc(collection(db, 'bookings'), newBooking.id), newBooking)
 
-      bookings.value.unshift(groupBookings([newBooking])[0])
+      const newArray = [newBooking, ...cloneDeep(bookings.value)]
+
+      bookings.value.length = 0
+      bookings.value.push(...groupBookings(newArray))
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }

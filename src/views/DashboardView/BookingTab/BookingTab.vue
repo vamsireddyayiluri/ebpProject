@@ -214,7 +214,9 @@ watch(searchValue, value => {
       >
         <div class="flex flex-wrap items-center gap-4 mb-7">
           <div class="flex justify-between sm:justify-normal items-center gap-4">
-            <Typography type="text-h1 shrink-0"> Bookings</Typography>
+            <Typography type="text-h1 shrink-0">
+              Bookings
+            </Typography>
           </div>
           <Button
             class="ml-auto px-12"

@@ -110,7 +110,7 @@ const rules = {
   },
 }
 const updateExpiryDate = (value, index) => {
-  newBookings.value[0].loadingDate = moment(value).endOf('day').format()
+  newBookings.value[index].loadingDate = moment(value).endOf('day').format()
 
   /*if (bookingRulesStore?.rules?.timeForTruckersFromMarketplace) {
     booking.value.preferredDate = moment(value)
@@ -194,8 +194,8 @@ const saveBooking = async () => {
   if (validationData.valid) {
     updateDates()
     newBookings.value[0] = {
-      ...newBookings.value[0],
       ...booking.value,
+      ...newBookings.value[0],
     }
     newBookings.value.forEach(booking => {
       createBooking(booking)
