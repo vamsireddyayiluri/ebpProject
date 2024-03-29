@@ -155,9 +155,9 @@ const isDisabled = computed(() => {
 const isDirty = computed(() => {
   const values = Object.values(booking.value)
   values.pop()
-  values.splice(10, 1)
+  values.splice(8, 1)
 
-  return !values.some(i => !i) && booking.value.scacList?.list.length > 0
+  return !values.some(i => !i) && form.value?.errors.length
 })
 
 const closeBookingDialog = () => {
@@ -184,11 +184,23 @@ const removeLoadingDate = id => {
     newBookings.value.splice(index, 1)
   }
 }
-const saveDraft = () => {
-  updateDates()
-  createDraft(booking.value)
-  confirmDraftsDialog.value.show(false)
-  emit('close')
+const saveDraft = async () => {
+  const validationData = await form.value.validate()
+  if (validationData.valid) {
+    updateDates()
+    newBookings.value[0] = {
+      ...booking.value,
+      ...newBookings.value[0],
+    }
+    const referenceId = uid(16)
+    updateDates()
+    newBookings.value.forEach(booking => {
+      booking.referenceId = referenceId
+      createDraft(booking)
+    })
+    confirmDraftsDialog.value.show(false)
+    emit('close')
+  }
 }
 const saveBooking = async () => {
   const validationData = await form.value.validate()
@@ -375,6 +387,7 @@ onMounted(async () => {
             <AutocompleteScac
               :scac-list="d.scacList"
               :menu-btn="false"
+              :rules="[rules.required]"
               class="w-3/4"
             />
             <IconButton
@@ -396,13 +409,23 @@ onMounted(async () => {
     >
       add loading date
     </Button>
-    <Button
-      type="submit"
-      class="w-fit mt-10 ml-auto"
-      :disabled="isDisabled"
-    >
-      Create
-    </Button>
+    <div class="flex justify-center gap-5 mt-10">
+      <Button
+        variant="outlined"
+        class="w-fit"
+        :disabled="isDisabled"
+        @click="saveDraft"
+      >
+        Save as draft
+      </Button>
+      <Button
+        type="submit"
+        class="w-fit"
+        :disabled="isDisabled"
+      >
+        Create
+      </Button>
+    </div>
   </VForm>
   <Dialog
     ref="confirmDraftsDialog"

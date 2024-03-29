@@ -278,7 +278,7 @@ watch(
                       v-for="scac in data.scacs"
                       :key="scac"
                     >
-                      <Chip>
+                      <Chip class="m-1">
                         {{ scac }}
                       </Chip>
                     </template>

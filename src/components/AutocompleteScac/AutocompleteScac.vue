@@ -52,6 +52,7 @@ onMounted(async () => {
       multiple
       with-btn
       :menu-props="{ maxHeight: 300 }"
+      :rules="attrs.rules"
       :disabled="attrs.disabled"
       @update:modelValue="updateModelValue"
     >
