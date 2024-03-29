@@ -16,7 +16,7 @@ import {
 import { db } from '~/firebase'
 import { useAuthStore } from '~/stores/auth.store'
 import { getLocalServerTime, getLocalTime } from '@qualle-admin/qutil/dist/date'
-import {capitalize, cloneDeep} from 'lodash'
+import { capitalize, cloneDeep } from 'lodash'
 import moment from 'moment-timezone'
 import { statuses } from '~/constants/statuses'
 import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
@@ -75,19 +75,19 @@ export const useBookingsStore = defineStore('bookings', () => {
     )
     loading.value = false
   }
-  const getCommitmentsByBookingId = async bookingId => {
-    const q = await query(collection(db, 'commitments'), where('bookingId', '==', bookingId))
+  const getCommitmentsByBookingId = async referenceId => {
+    const q = await query(collection(db, 'commitments'), where('referenceId', '==', referenceId))
     const docData = await getDocs(q)
     const commitments = docData.docs
       .map(doc => doc.data())
       .sort((a, b) => moment(b.commitmentDate).diff(moment(a.commitmentDate)))
-    await updateBookingCommitments(bookingId, commitments)
+    await updateBookingCommitments(referenceId, commitments)
 
     return commitments
   }
-  const updateBookingCommitments = async (bookingId, commitments) => {
+  const updateBookingCommitments = async (referenceId, commitments) => {
     bookings.value.forEach(b => {
-      if (b.id == bookingId) {
+      if (b.referenceId == referenceId) {
         b['entities'] = commitments
         b.expand = true
       }
@@ -191,7 +191,7 @@ export const useBookingsStore = defineStore('bookings', () => {
             })
           }
         })
-        await updateBookingStore(id)
+        // await updateBookingStore(id)
       }
       alertStore.info({ content: `Booking ${status}!` })
     } catch ({ message }) {
@@ -300,17 +300,20 @@ export const useBookingsStore = defineStore('bookings', () => {
   }
 
   // Updating booking store data after performing action
-  const updateBookingStore = async bookingId => {
+  const updateBookingStore = async commitment => {
     try {
       setTimeout(async () => {
-        const updatedBooking = await getBooking({ id: bookingId, draft: false })
+        const updatedBooking = await getBooking({ id: commitment.bookingId, draft: false })
+        await getallBookings()
         bookings.value.forEach(booking => {
-          if (booking.id === bookingId) {
+          if (booking.id === commitment.bookingId) {
             booking.committed = toRaw(updatedBooking.committed)
             booking.status = toRaw(updatedBooking.status)
           }
         })
-        await getCommitmentsByBookingId(bookingId)
+        const group = groupBookings(bookings.value)
+        bookings.value = group
+        await getCommitmentsByBookingId(commitment.referenceId)
       }, 3000)
     } catch ({ message }) {
       alertStore.warning({ content: message })

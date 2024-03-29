@@ -52,11 +52,19 @@ const { bookingsHeaders, commitmentsHeaders } = useHeaders()
 const { bookingsActions, commitmentsActions } = useActions()
 const { getFormattedDateTime, getFormattedDate, getSmallerDate } = useDate()
 const commitmentDetailsDialog = ref(null)
-const bookingStatus = id => {
+const formateTime = date => {
+  return getFormattedDate(date)
+}
+const formateMinTime = dates => {
+  // const maxDate = new Date(Math.max(...dates))
+  const minData = getSmallerDate(dates)
+  return getFormattedDate(minData)
+}
+const bookingStatus = referenceId => {
   const bookings = computedEntities.value
-  const booking = bookings.find(i => i.id === id)
+  const booking = bookings.find(i => i.referenceId === referenceId)
 
-  return booking.status
+  return booking?.status
 }
 const containerActionHandler = async ({ action, e }) => {
   if (action === 'edit-booking') emit('editBooking', e[0].id)
@@ -97,11 +105,11 @@ const onSelectRow = e => {
   emit('selectTableRow', e)
 }
 const rowExpanded = async (event, data) => {
-  const { id } = toRaw(data.value)
+  const { referenceId } = toRaw(data.value)
   if (event) {
-    await getCommitmentsByBookingId(id)
+    await getCommitmentsByBookingId(referenceId)
   } else {
-    await closeBookingExpansion(id)
+    await closeBookingExpansion(referenceId)
   }
 }
 const openApproveCommitmentDialog = commitment => {
@@ -228,7 +236,7 @@ watch(
             :key="i"
           >
             {{ i }}
-            <br>
+            <br />
           </template>
         </template>
         <template v-else>
@@ -244,20 +252,40 @@ watch(
     </template>
     <template #bookingExpiry="{ item }">
       <Typography type="text-body-m-regular">
-        {{ getFormattedDate(getSmallerDate(item.loadingDate)) }}
+        {{ formateMinTime(item.loadingDate) }}
         <Popover
           activator="parent"
           location="top center"
         >
           <div class="flex justify-center gap-2 py-1">
-            <template
-              v-for="date in item.loadingDate"
-              :key="date"
-            >
-              <Chip>
-                {{ getFormattedDateTime(date) }}
-              </Chip>
-            </template>
+            <v-table>
+              <thead>
+                <tr>
+                  <th class="text-left">Committed/Total</th>
+                  <th class="text-left">Loading Date</th>
+                  <th class="text-left">SCAC</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="data in item.loadingDate"
+                  :key="data.loadingDate"
+                >
+                  <td class="text-center">{{ data.committed }}/{{ data.containers }}</td>
+                  <td>{{ formateTime(data.date) }}</td>
+                  <td>
+                    <template
+                      v-for="scac in data.scacs"
+                      :key="scac"
+                    >
+                      <Chip>
+                        {{ scac }}
+                      </Chip>
+                    </template>
+                  </td>
+                </tr>
+              </tbody>
+            </v-table>
           </div>
         </Popover>
       </Typography>
@@ -278,7 +306,7 @@ watch(
 
     <template #actions="{ item, selected }">
       <MenuActions
-        :disabled="bookingsActions(item).length<=0"
+        :disabled="bookingsActions(item).length <= 0"
         :actions="() => bookingsActions(item)"
         :selected="selected"
         :container="item"
@@ -307,6 +335,19 @@ watch(
             {{ item.committed }}
           </Typography>
         </template>
+        <Typography type="text-body-m-regular">
+          {{ getFormattedDate(item.loadingDate) }}
+          <Popover
+            activator="parent"
+            location="top center"
+          >
+            <div class="flex justify-center gap-2 py-1">
+              <Chip>
+                {{ item.loadingDate }}
+              </Chip>
+            </div>
+          </Popover>
+        </Typography>
         <template #status="{ item }">
           <Classification
             type="status"
@@ -315,7 +356,7 @@ watch(
         </template>
         <template #actions="{ item, selected }">
           <MenuActions
-            :actions="() => commitmentsActions(item.status, bookingStatus(item.bookingId))"
+            :actions="() => commitmentsActions(item.status, bookingStatus(item.referenceId))"
             :selected="selected"
             :container="item"
             @containerActionHandler="containerActionHandler"
@@ -370,9 +411,7 @@ watch(
         @close="approveCommitmentDialog.show(false)"
         @onClickBtn="onApproveCommitment(approveCommitmentDialog.data)"
       >
-        <Typography>
-          Are you sure you want to approve this booking commitment?
-        </Typography>
+        <Typography> Are you sure you want to approve this booking commitment? </Typography>
       </ConfirmationDialog>
     </template>
   </Dialog>

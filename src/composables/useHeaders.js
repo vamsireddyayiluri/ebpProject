@@ -208,7 +208,12 @@ export const commitmentsHeaders = [
   {
     text: 'Committed',
     value: 'committed',
+    align: 'center',
     sorter: (a, b) => moment(a).diff(moment(b)),
+  },
+  {
+    text: 'Loading Date',
+    value: 'loadingDate',
   },
   {
     text: 'Status',

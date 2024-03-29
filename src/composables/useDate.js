@@ -29,7 +29,7 @@ export const getSmallerDate = dates => {
   if (dates?.length === 0) {
     return null
   }
-  const momentDates = dates.map(date => moment(date))
+  const momentDates = dates.map(date => moment(date.date))
 
   const smallestDate = moment.min(momentDates)
 
