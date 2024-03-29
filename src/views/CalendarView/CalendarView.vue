@@ -11,7 +11,7 @@ import { checkVendorDetailsCompletion } from '~/helpers/validations-functions'
 const router = useRouter()
 const { getFormattedDate } = useDate()
 const bookingsStore = useBookingsStore()
-const { loading, bookings } = storeToRefs(bookingsStore)
+const { loading, bookingsForCalendar } = storeToRefs(bookingsStore)
 const options = ref({
   initialEvents: [],
 })
@@ -34,7 +34,7 @@ const getEvents = bookings => {
     }
   })
 }
-const events = computed(() => getEvents(bookingsStore.bookings))
+const events = computed(() => getEvents(bookingsStore.bookingsForCalendar))
 
 const onEventClick = e => console.log(e.event)
 const onEvents = e => console.log(e)
@@ -58,10 +58,9 @@ const removeBooking = async id => {
 const today = moment()
 
 const nextExpiring = computed(() => {
-  const datesArray = bookings.value
+  const datesArray = bookingsForCalendar.value
     .filter(b => b)
     .sort((a, b) => moment(a.loadingDate).diff(moment(b.loadingDate)))
-
   return getFormattedDate(datesArray[0]?.loadingDate)
 })
 const openCreateBookingDialog = () => {
@@ -97,7 +96,7 @@ onMounted(async () => {
             class="mx-4"
           />
           <Typography class="flex justify-center flex-wrap gap-2">
-            <b>{{ bookings.length }}</b>
+            <b>{{ bookingsForCalendar.length }}</b>
             <div
               class="text-center"
               :style="{ color: getColor('textSecondary') }"
@@ -110,7 +109,7 @@ onMounted(async () => {
             class="mx-4"
           />
           <Typography class="flex justify-center flex-wrap gap-2">
-            <b>{{ totalFulfilledBookings(bookings) }}</b>
+            <b>{{ totalFulfilledBookings(bookingsForCalendar) }}</b>
             <div
               class="text-center"
               :style="{ color: getColor('textSecondary') }"

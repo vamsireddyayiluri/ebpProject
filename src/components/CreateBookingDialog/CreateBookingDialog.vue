@@ -72,19 +72,15 @@ const copyBooking = {
   insurance,
 }
 const emptyBooking = {
-  ref: 'test',
-  line: {
-    id: '59d8d49984308f11',
-    label: 'ACL',
-  },
-  commodity: 'test',
+  ref: '',
+  line: null,
+  commodity: '',
   preferredDate: null,
   location: bookingRulesStore.rules.yard,
   weight: bookingRulesStore.rules.yard?.details?.overweight
     ? bookingRulesStore.rules.yard?.details?.averageWeight
-    : 33333,
+    : null,
   estimatedRateType: 'All in rate',
-  estimatedRate: 1,
   flexibleBooking: false,
   size: '40 HC',
   insurance: '100,000',
@@ -138,7 +134,7 @@ const isDisabled = computed(() => {
   let condition = false
   if (!props.duplicate) {
     const values = Object.values(booking.value)
-    values.splice(8, 1)
+    values.splice(7, 1)
     condition = values.some(i => !i)
   }
   if (!condition) {
@@ -154,8 +150,7 @@ const isDisabled = computed(() => {
 // if true shows save to draft dialog
 const isDirty = computed(() => {
   const values = Object.values(booking.value)
-  values.pop()
-  values.splice(8, 1)
+  values.splice(7, 1)
 
   return !values.some(i => !i) && form.value?.errors.length
 })
@@ -321,7 +316,7 @@ onMounted(async () => {
       />
       <div>
         <TextFieldWithSelector
-          v-model="booking.estimatedRate"
+          v-model.number="booking.targetRate"
           type="number"
           label="Target rate*"
           :items="['All in rate', 'Linehaul + FSC Only']"
@@ -391,6 +386,7 @@ onMounted(async () => {
               class="w-3/4"
             />
             <IconButton
+              v-if="index"
               icon="mdi-close"
               class="absolute top-0 right-0"
               @click="removeLoadingDate(d.id)"

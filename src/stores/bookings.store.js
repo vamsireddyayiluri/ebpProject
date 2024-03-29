@@ -27,6 +27,7 @@ export const useBookingsStore = defineStore('bookings', () => {
   const authStore = useAuthStore()
   const { preferredTruckers } = usePreferredTruckersStore()
   let bookings = ref([])
+  const bookingsForCalendar = ref([])
   let pastBookings = ref([])
   const drafts = ref([])
   const loading = ref(false)
@@ -66,6 +67,7 @@ export const useBookingsStore = defineStore('bookings', () => {
           booking.status !== statuses.expired &&
           booking.status !== statuses.canceled,
       )
+      bookingsForCalendar.value = filteredBookings
       const group = groupBookings(filteredBookings)
       bookings.value = group
     }
@@ -361,6 +363,7 @@ export const useBookingsStore = defineStore('bookings', () => {
   return {
     bookings,
     pastBookings,
+    bookingsForCalendar,
     drafts,
     loading,
     getBookings,
