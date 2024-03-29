@@ -70,13 +70,13 @@ const renameFile = () => {
 <template>
   <input
     id="fileUpload"
+    ref="fileInput"
     type="file"
     accept="application/pdf, .docx, .doc .csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, text/plain"
     name="userDoc"
     class="input"
-    ref="fileInput"
     @change="onChangeFile"
-  />
+  >
   <label
     for="fileUpload"
     @dragover.prevent="handleDragOver"
@@ -148,7 +148,9 @@ const renameFile = () => {
     max-width="480"
   >
     <template #text>
-      <Typography type="text-h3"> Rename file </Typography>
+      <Typography type="text-h3">
+        Rename file
+      </Typography>
       <form @submit.prevent="renameFile">
         <div class="flex gap-6 mt-10">
           <Textfield

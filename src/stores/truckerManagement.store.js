@@ -29,7 +29,6 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
   const requiresForTruckers = ref(JSON.parse(JSON.stringify(listRequiresForTruckers)))
   const questionList = ref([])
   const onboardingDocuments = ref([])
-  const preferredTruckersList = ref([])
   const { userData } = useAuthStore()
 
   const getTruckerRequirements = async () => {
@@ -146,6 +145,12 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
   const isFileExists = async fileRef => {
     return onboardingDocuments.value?.some(i => i.name === fileRef.name)
   }
+  const getTruckerDetails = async orgId => {
+    const q = query(collection(db, 'organizations'), where('orgId', '==', orgId))
+    const querySnapshot = await getDocs(q)
+
+    return querySnapshot.docs.map(doc => doc.data())[0]
+  }
 
   const getOnboardedTruckers = async () => {
     try {
@@ -165,6 +170,7 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
           return { ...docSnapshot.data(), documents: documentsData }
         })
         const docData = await Promise.all(docDataPromises)
+        
         return docData
       }
 
@@ -208,7 +214,6 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
     requiresForTruckers,
     questionList,
     onboardingDocuments,
-    preferredTruckersList,
     getTruckerRequirements,
     addAdditionalQuestion,
     removeQuestion,
@@ -216,6 +221,7 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
     getOnboardingDocuments,
     addDoc,
     removeDoc,
+    getTruckerDetails,
     getOnboardedTruckers,
     updateOnboardingDocStatus,
   }

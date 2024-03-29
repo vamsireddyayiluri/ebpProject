@@ -3,41 +3,33 @@ import { getColor } from '~/helpers/colors'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { emailRegex } from '@qualle-admin/qutil/dist/patterns'
 import { defaultOverWeight, maximumOverWeight } from '~/constants/settings'
-import { isEqual } from 'lodash'
+import { cloneDeep, isEqual } from 'lodash'
 import { useAuthStore } from '~/stores/auth.store'
+import { storeToRefs } from 'pinia'
+import moment from 'moment-timezone'
 
 const props = defineProps({
-  defaultDetails: Object,
   editedLocation: Object,
 })
-const emit = defineEmits(['close', 'setDetails', 'setCustomDetails'])
+const emit = defineEmits(['close'])
 const authStore = useAuthStore()
-const { saveVendorDetails, saveYardDetails } = useWorkDetailsStore()
-const emptyDetails = {
-  primaryContact: null,
-  primaryContactName: null,
-  primaryContactEmail: null,
-  secondaryContact: null,
-  secondaryContactName: null,
-  secondaryContactEmail: null,
-  pickupInstructions: null,
-  hoursOfOperation: null,
-  ...(props.editedLocation
-    ? {
-      averageLoadTime: null,
-      overweight: null,
-      averageWeight: null,
-    }
-    : {}),
-}
-const rawVendorDetails = ref(toRaw(props.defaultDetails))
+const workDetailsStore = useWorkDetailsStore()
+const { saveVendorDetails, saveYardDetails, getVendorDetails } = workDetailsStore
+const { vendorDetails } = storeToRefs(workDetailsStore)
+
 const details = ref(
   props.editedLocation
     ? props.editedLocation?.details?.customizedDetails
       ? props.editedLocation?.details
-      : rawVendorDetails.value
-    : rawVendorDetails.value || emptyDetails,
+      : {
+        ...vendorDetails.value,
+        averageLoadTime: null,
+        overweight: null,
+        averageWeight: null,
+      }
+    : vendorDetails.value,
 )
+const initDetails = cloneDeep(details.value)
 const isSecondaryContact = ref(false)
 const createDefaultTimeArray = () => {
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
@@ -62,22 +54,56 @@ const createDefaultTimeArray = () => {
   })
 }
 const defaultTime = createDefaultTimeArray()
-const checkboxes = ref(
-  props.editedLocation?.details?.customizedDetails
-    ? props.editedLocation.details.hoursOfOperation || defaultTime
-    : props.defaultDetails?.hoursOfOperation || defaultTime,
-)
+const getCurrentHours = () => {
+  if (props.editedLocation) {
+    if (props.editedLocation?.details?.customizedDetails) {
+      return props.editedLocation.details.hoursOfOperation
+    } else {
+      if (vendorDetails.value.primaryContactName) {
+        return cloneDeep(vendorDetails.value?.hoursOfOperation)
+      } else {
+        return defaultTime
+      }
+    }
+  } else {
+    return details.value?.hoursOfOperation || defaultTime
+  }
+}
+const checkboxes = ref(getCurrentHours())
 const form = ref(null)
+const activeTimePicker = ref(null)
+const notAfterToTime = ref({})
+const notBeforeFromTime = ref({})
 const loadTimes = ['0.5 hours', '1 hour', '1.5 hours']
+
+const openTimePickerFrom = data => {
+  activeTimePicker.value = checkboxes.value.find(d => d.day === data.day)
+  notAfterToTime.value.hour= [[0, moment(activeTimePicker.value.to, 'hh:mm A').format('ha').slice(0, -1)]]
+}
+const openTimePickerTo = data => {
+  activeTimePicker.value = checkboxes.value.find(d => d.day === data.day)
+  notBeforeFromTime.value.hour = [[moment(activeTimePicker.value.from, 'hh:mm A').format('ha').slice(0, -1), '11p']]
+}
 const onChangeFrom = (e, day) => {
+  const currentTimePicker = checkboxes.value.find(d => d.day === day)
+  if (moment(currentTimePicker.to, 'hh:mm A').format('hha') === e.data.hh + e.data.a) {
+    notAfterToTime.value.minute = [[0, moment(currentTimePicker.to, 'hh:mm A').format('mm')]]
+  } else {
+    notAfterToTime.value.minute = [[0, 60]]
+  }
   checkboxes.value.map(d => {
     if (d.day === day) {
       d.from = e.displayTime
     }
   })
 }
-
 const onChangeTo = (e, day) => {
+  const currentTimePicker = checkboxes.value.find(d => d.day === day)
+  if (moment(currentTimePicker.from, 'hh:mm A').format('hha') === e.data.hh + e.data.a) {
+    notBeforeFromTime.value.minute = [[moment(currentTimePicker.from, 'hh:mm A').format('mm'), 60]]
+  } else {
+    notBeforeFromTime.value.minute = [[0, 60]]
+  }
   checkboxes.value.map(d => {
     if (d.day === day) {
       d.to = e.displayTime
@@ -95,7 +121,7 @@ const rules = {
     return emailRegex.test(value) || 'Invalid e-mail'
   },
   required(value) {
-    return value ? true : 'Required field'
+    return value?.toString().trim() ? true : 'Required field'
   },
   averageWeight(value) {
     return value < defaultOverWeight || value > maximumOverWeight
@@ -103,22 +129,16 @@ const rules = {
       : true
   },
 }
-const currentEditedDetails = props.editedLocation
-  ? authStore.orgData.locations.find(l => l.id === props.editedLocation.id)?.details
-  : authStore.orgData?.vendorDetails || {}
-const isDirty = ref(null)
+const isDirty = computed(() => !isEqual(details.value, initDetails))
 const isDisabled = computed(
   () => !!form.value?.errors.length || form.value?.isValidating || !isDirty.value,
 )
 
-const checkFormModified = () => {
-  isDirty.value = !isEqual(details.value, currentEditedDetails)
-}
 const setDetails = async () => {
   const validationData = await form.value.validate()
   if (validationData.valid) {
     if (props.editedLocation) {
-      saveYardDetails({ ...props.editedLocation, details: { ...details.value } })
+      saveYardDetails({ ...props.editedLocation, details: { ...details.value, hoursOfOperation: checkboxes.value } })
     } else {
       details.value.hoursOfOperation = checkboxes.value
       await saveVendorDetails(details.value)
@@ -126,7 +146,9 @@ const setDetails = async () => {
     emit('close')
   }
 }
-watch(details, checkFormModified, { deep: true })
+onUnmounted(() => {
+  if (authStore.orgData?.vendorDetails) getVendorDetails()
+})
 </script>
 
 <template>
@@ -252,14 +274,22 @@ watch(details, checkFormModified, { deep: true })
             label="Time from*"
             class="w-44"
             :minute-interval="15"
+            :hour-range="notAfterToTime?.hour"
+            :minute-range="notAfterToTime?.minute"
+            hide-disabled-items
             @change="e => onChangeFrom(e, d.day)"
+            @open="openTimePickerFrom(d)"
           />
           <Timepicker
             :time-value="d.to"
             label="Time to*"
             class="w-44"
             :minute-interval="15"
+            :hour-range="notBeforeFromTime?.hour"
+            :minute-range="notBeforeFromTime?.minute"
+            hide-disabled-items
             @change="e => onChangeTo(e, d.day)"
+            @open="openTimePickerTo(d)"
           />
         </div>
       </VRow>
@@ -272,7 +302,7 @@ watch(details, checkFormModified, { deep: true })
       v-model="details.pickupInstructions"
       label="Instructions for the pickup *"
       rows="3"
-      maxlength="150"
+      maxlength="255"
       :rules="[rules.required]"
     />
     <div

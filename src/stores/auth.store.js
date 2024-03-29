@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia'
+import {defineStore, storeToRefs} from 'pinia'
 import { auth, db } from '~/firebase'
 import moment from 'moment-timezone'
 import {
@@ -30,6 +30,7 @@ import { useInvitationStore } from '~/stores/invitation.store'
 import { useNotificationStore } from '~/stores/notification.store'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
+import { useWorkDetailsStore } from '~/stores/workDetails.store'
 
 export const useAuthStore = defineStore('auth', () => {
   const router = useRouter()
@@ -38,6 +39,7 @@ export const useAuthStore = defineStore('auth', () => {
   const notificationStore = useNotificationStore()
   const bookingsStore = useBookingsStore()
   const { getPreferredTruckers } = usePreferredTruckersStore()
+  const { getVendorDetails } = useWorkDetailsStore()
   const currentUser = ref(null)
   const storage = getStorage()
   const userData = ref(null)
@@ -82,7 +84,9 @@ export const useAuthStore = defineStore('auth', () => {
   const register = async ({
     form,
     yards,
+    vendorDetails,
     invitations,
+    preferredTruckers,
     requiresForTruckers,
     questionList,
     onboardingDocuments,
@@ -99,8 +103,10 @@ export const useAuthStore = defineStore('auth', () => {
         password: form.password,
         company: form.companyName,
         yards,
+        vendorDetails,
         type: userTypes.admin,
         invitations,
+        preferredTruckers,
         requiresForTruckers,
         questionList,
       })
@@ -212,6 +218,7 @@ export const useAuthStore = defineStore('auth', () => {
           createdAt: getLocalTime().format(),
           updatedAt: getLocalTime().format(),
           locations: data.yards,
+          vendorDetails: data.vendorDetails,
           bookingRules: {
             timeForNotificationBeforeCutoff: '',
             timeForTruckersFromMarketplace: '',
@@ -219,7 +226,7 @@ export const useAuthStore = defineStore('auth', () => {
           },
           org_type: 'exporter',
           owner_uid: userId,
-          preferredTruckers: [],
+          preferredTruckers: data.preferredTruckers,
         }
         await setDoc(docRef, orgData)
       }
@@ -274,6 +281,7 @@ export const useAuthStore = defineStore('auth', () => {
           isLoading.value = false
         }
         getPreferredTruckers()
+        getVendorDetails()
       })
     } catch ({ message }) {
       alertStore.warning({ content: message })

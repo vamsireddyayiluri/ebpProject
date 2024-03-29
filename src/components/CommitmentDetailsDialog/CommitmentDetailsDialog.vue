@@ -5,12 +5,15 @@ import { useDate } from '~/composables'
 import { statuses } from '~/constants/statuses'
 import { useChatStore } from '~/stores/chat.store'
 import moment from 'moment-timezone'
+import { useTruckerManagementStore } from '~/stores/truckerManagement.store'
+import saferLink from '~/fixtures/safer-link'
 
 const props = defineProps({
   commitment: Object,
 })
 const emit = defineEmits(['close', 'approveCommitment', 'completeCommitment', 'declineCommitment'])
 const bookingStore = useBookingsStore()
+const { getTruckerDetails } = useTruckerManagementStore()
 const { getFormattedDate } = useDate()
 const { goToChat } = useChatStore()
 const router = useRouter()
@@ -18,14 +21,7 @@ const checkCommitmentStatus = () => {
   return props.commitment?.timeLine?.some(({ status }) => status === statuses.approved)
 }
 const isPending = props.commitment?.status === statuses.pending
-let details = ref([
-  { name: 'Company name', value: 'FedEx Freight' },
-  { name: 'SCAC', value: 'ABCD' },
-  { name: 'Safer link', value: '2' },
-  { name: 'Number of truckers', value: '20' },
-  { name: 'Insurance amount', value: '250.000-500.000' },
-  { name: 'Authorized for Overweight', value: 'No' },
-])
+const orgDetails = ref(null)
 const openedPanel = ref([0])
 const {
   ref: bookingRef,
@@ -37,24 +33,38 @@ const {
   line,
   size,
   location,
+  reason = null,
 } = bookingStore.bookings.find(i => i.id === props.commitment.bookingId)
+const { truckerDetails } = props.commitment.details
+let details = ref([
+  { name: 'Company name', value: props.commitment?.truckerCompany },
+  { name: 'SCAC', value: truckerDetails?.truckerScac },
+  { name: 'Safer link', value: null },
+  { name: 'Number of trucks', value: truckerDetails?.numberOfTrucks },
+  { name: 'Insurance amount', value: truckerDetails?.insuranceCoverage },
+  {
+    name: 'Authorized for Overweight',
+    value: truckerDetails?.weightAuthorization === 'Overweight' ? 'Yes' : 'No',
+  },
+])
 const getTimeLine = timeLine => {
   const test = timeLine.map(val => {
     return { title: val.message, date: moment(val.time_stamp).format('MM/DD/YYYY hh:mm:ss a') }
   })
-  
+
   return test
 }
 onMounted(async () => {
+  orgDetails.value = await getTruckerDetails(props.commitment.truckerOrgId)
   if (checkCommitmentStatus()) {
     details.value = [
       ...details.value,
       ...[
-        { name: 'Email', value: 'fedex.freight@mail.com' },
-        { name: 'Name', value: 'Vitaliy' },
-        { name: 'Contact number', value: '0123456789' },
-        { name: 'Secondary name', value: '0123456789' },
-        { name: 'Secondary number', value: '--' },
+        { name: 'Email', value: props.commitment?.truckerEmail },
+        { name: 'Name', value: props.commitment?.name },
+        { name: 'Contact number', value: truckerDetails?.truckerPhoneNumber },
+        { name: 'Secondary name', value: orgDetails.value?.vendorDetails?.secondaryContactName },
+        { name: 'Secondary number', value: orgDetails.value?.vendorDetails?.secondaryContact },
       ],
     ]
   }
@@ -132,12 +142,24 @@ onUnmounted(() => {
                   >
                     {{ name }}
                   </Typography>
-                  <Typography
-                    type="text-body-s-regular"
-                    class="text-truncate"
-                  >
-                    {{ value }}
-                  </Typography>
+                  <template v-if="name === 'Safer link'">
+                    <a
+                      :href="saferLink + truckerDetails?.mcNumber"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="text-decoration-underline"
+                    >
+                      {{ truckerDetails?.mcNumber }}
+                    </a>
+                  </template>
+                  <template v-else>
+                    <Typography
+                      type="text-body-s-regular"
+                      class="text-truncate"
+                    >
+                      {{ value || '--' }}
+                    </Typography>
+                  </template>
                 </VCol>
               </VRow>
             </ExpansionPanelText>
@@ -180,6 +202,17 @@ onUnmounted(() => {
                 >
                   {{ committed }}
                 </Typography>
+                <!--
+                  <Typography type="text-body-s-regular">
+                  OnBoarded Containers
+                  </Typography>
+                  <Typography
+                  type="text-body-s-regular text-end"
+                  :color="getColor('textSecondary')"
+                  >
+                  {{ committed }}
+                  </Typography>
+                -->
                 <Typography type="text-body-s-regular">
                   Status
                 </Typography>
@@ -188,17 +221,17 @@ onUnmounted(() => {
                   :value="status"
                   class="w-min h-fit ml-auto"
                 />
-                <!--
-                  <template v-if="reason">
-                  <Typography type="text-body-s-regular"> Reason </Typography>
-                  <Typography
-                  type="text-body-s-regular text-end"
-                  :color="getColor('textSecondary')"
-                  >
-                  {{ reason }}
+                <template v-if="reason">
+                  <Typography type="text-body-s-regular">
+                    Reason
                   </Typography>
-                  </template>
-                -->
+                  <Typography
+                    type="text-body-s-regular text-end"
+                    :color="getColor('textSecondary')"
+                  >
+                    {{ reason }}
+                  </Typography>
+                </template>
                 <Typography type="text-body-s-regular">
                   Loading date
                 </Typography>
@@ -322,7 +355,9 @@ onUnmounted(() => {
     }
   }
 }
+
 .styledCommitActionsBtns {
   background: linear-gradient(transparent, rgba(var(--v-theme-uiPrimary), 1));
+  z-index: 10;
 }
 </style>

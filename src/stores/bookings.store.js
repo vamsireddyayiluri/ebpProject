@@ -16,10 +16,11 @@ import {
 import { db } from '~/firebase'
 import { useAuthStore } from '~/stores/auth.store'
 import { getLocalServerTime, getLocalTime } from '@qualle-admin/qutil/dist/date'
-import { capitalize } from 'lodash'
+import {capitalize, cloneDeep} from 'lodash'
 import moment from 'moment-timezone'
 import { statuses } from '~/constants/statuses'
 import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
+import { groupBookings } from '~/stores/helpers'
 
 export const useBookingsStore = defineStore('bookings', () => {
   const alertStore = useAlertStore()
@@ -52,12 +53,14 @@ export const useBookingsStore = defineStore('bookings', () => {
       drafts.value = querySnapshot.docs.map(doc => doc.data())
     } else {
       await getallBookings()
-      bookings.value = bookings.value.filter(
+      const filteredBookings = bookings.value.filter(
         booking =>
           booking.status !== statuses.completed &&
           booking.status !== statuses.expired &&
           booking.status !== statuses.canceled,
       )
+      const group = groupBookings(filteredBookings)
+      bookings.value = group
     }
     loading.value = false
   }
@@ -151,7 +154,10 @@ export const useBookingsStore = defineStore('bookings', () => {
     try {
       await setDoc(doc(collection(db, 'bookings'), newBooking.id), newBooking)
 
-      bookings.value.unshift(newBooking)
+      const newArray = [newBooking, ...cloneDeep(bookings.value)]
+
+      bookings.value.length = 0
+      bookings.value.push(...groupBookings(newArray))
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }

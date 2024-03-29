@@ -94,7 +94,7 @@ const applyFilter = () => {
   if (filters.value.loadingDate) {
     filteredData = useArrayFilter(
       filteredData,
-      booking => booking.bookingExpiry === moment(filters.value.loadingDate).endOf('day').format(),
+      booking => booking.loadingDate === moment(filters.value.loadingDate).endOf('day').format(),
     ).value
   }
   computedFilteredEntities.value = filteredData
@@ -394,7 +394,7 @@ watch(searchValue, value => {
     max-width="480"
   >
     <template #text>
-      <RemoveCancelDialog
+      <ConfirmationDialog
         btn-name="Remove"
         @close="removeBookingDialog.show(false)"
         @onClickBtn="removeBooking(removeBookingDialog.data.id)"
@@ -404,7 +404,7 @@ watch(searchValue, value => {
           <b>{{ removeBookingDialog.data.ref }}</b>
           from your bookings?
         </Typography>
-      </RemoveCancelDialog>
+      </ConfirmationDialog>
     </template>
   </Dialog>
   <Dialog

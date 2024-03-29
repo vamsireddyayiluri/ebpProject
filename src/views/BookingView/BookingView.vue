@@ -19,6 +19,7 @@ import {
   validateExpiryDate,
   validateFlexibleSizes,
   checkCommittedValue,
+  validateAverageWeight,
 } from '~/helpers/validations-functions'
 import { insuranceTypes } from '~/constants/settings'
 
@@ -58,6 +59,7 @@ const isSaveLoading = ref(false)
 const rules = {
   containers: value => checkPositiveInteger(value, booking.value),
   checkcommitted: value => checkCommittedValue(value, booking.value),
+  averageWeight: value => validateAverageWeight(value, booking.value.location),
 }
 
 const updateExpiryDate = value => {
@@ -409,6 +411,7 @@ onMounted(async () => {
                 label: yard.label,
                 lat: yard.lat,
                 lng: yard.lng,
+                details: yard.details,
               }))
             "
             label="Yard label *"
@@ -417,16 +420,17 @@ onMounted(async () => {
             return-object
             required
             :disabled="pending || expired || completed"
+            @update:modelValue="value => (booking.weight = value.details?.averageWeight || null)"
           />
           <Textfield
             v-model.number="booking.weight"
             label="Average Weight*"
             type="number"
-            :rules="[rules.containers]"
+            :rules="[rules.containers, rules.averageWeight]"
             required
             :disabled="pending || expired || completed"
           />
-          <Autocomplete
+          <Select
             v-model="booking.insurance"
             :items="insuranceItems"
             label="Minimum Insurance*"
@@ -490,9 +494,9 @@ onMounted(async () => {
           v-if="!(expired || completed) || activated"
           :disabled="validateBooking"
           class="mt-10"
+          :loading="isSaveLoading"
           @onSave="onSave"
           @onCancel="cancelChanges"
-          :loading="isSaveLoading"
         />
       </div>
       <div
@@ -500,7 +504,9 @@ onMounted(async () => {
         :class="[flyoutBottom || smAndDown ? 'bottom' : 'right', drawer ? 'active' : '']"
       >
         <div class="flex justify-between items-center">
-          <Typography type="text-h1"> Statistics </Typography>
+          <Typography type="text-h1">
+            Statistics
+          </Typography>
           <IconButton
             v-if="!smAndDown"
             :icon="!flyoutBottom ? 'mdi-dock-bottom' : 'mdi-dock-right'"
@@ -510,7 +516,9 @@ onMounted(async () => {
         </div>
         <div class="statisticsContent">
           <div class="statisticsProgress">
-            <Typography type="text-h4"> Fulfillment progress </Typography>
+            <Typography type="text-h4">
+              Fulfillment progress
+            </Typography>
             <ProgressCircular
               :size="260"
               :value="getBookingLoad(booking.committed, booking.containers)"
@@ -521,7 +529,9 @@ onMounted(async () => {
             </ProgressCircular>
           </div>
           <div class="statisticsTimeline">
-            <Typography type="text-h4"> Booking timeline </Typography>
+            <Typography type="text-h4">
+              Booking timeline
+            </Typography>
             <div class="timeline scrollbar">
               <Timeline
                 :items="booking.timeLine"
@@ -541,7 +551,7 @@ onMounted(async () => {
         :src="container"
         class="container-img"
         alt="qualle container"
-      />
+      >
       <Typography
         type="text-h1"
         class="!text-7xl mb-4 text-center"
@@ -555,7 +565,7 @@ onMounted(async () => {
     max-width="480"
   >
     <template #text>
-      <RemoveCancelDialog
+      <ConfirmationDialog
         btn-name="Remove"
         @close="removeBookingDialog.show(false)"
         @onClickBtn="deleteFromPlatform(removeBookingDialog.data.id)"
@@ -565,7 +575,7 @@ onMounted(async () => {
           <b>{{ removeBookingDialog.data.ref }}</b>
           from your bookings?
         </Typography>
-      </RemoveCancelDialog>
+      </ConfirmationDialog>
     </template>
   </Dialog>
 </template>

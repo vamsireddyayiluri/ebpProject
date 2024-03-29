@@ -10,11 +10,13 @@ import moment from 'moment'
 import { useAlertStore } from '~/stores/alert.store'
 import {
   checkPositiveInteger,
+  validateAverageWeight,
   validateExpiryDate,
   validateFlexibleSizes,
 } from '~/helpers/validations-functions'
 import { insuranceTypes } from '~/constants/settings'
 import { deepCopy } from 'json-2-csv/lib/utils'
+import { uid } from 'uid'
 
 const props = defineProps({
   duplicate: Object,
@@ -69,22 +71,32 @@ const copyBooking = {
   insurance,
 }
 const emptyBooking = {
-  ref: '',
-  containers: null,
-  line: null,
-  commodity: '',
-  loadingDate: null,
+  ref: 'test',
+  line: {
+    id: '59d8d49984308f11',
+    label: 'ACL',
+  },
+  commodity: 'test',
   preferredDate: null,
   location: bookingRulesStore.rules.yard,
-  weight: null,
+  weight: bookingRulesStore.rules.yard?.details?.overweight
+    ? bookingRulesStore.rules.yard?.details?.averageWeight
+    : 33333,
   estimatedRateType: 'All in rate',
-  estimatedRate: null,
+  estimatedRate: 1,
   flexibleBooking: false,
-  size: null,
-  scacList: bookingRulesStore.rules.truckers,
+  size: '40 OT',
   insurance: '100,000',
 }
 const booking = ref(props?.duplicate ? copyBooking : emptyBooking)
+const newBookings = ref([
+  {
+    id: uid(16),
+    loadingDate: null,
+    containers: null,
+    scacList: bookingRulesStore.rules.truckers,
+  },
+])
 const confirmDraftsDialog = ref(null)
 const { clickedOutside } = toRefs(props)
 
@@ -92,17 +104,22 @@ const currentDate = ref(new Date())
 
 const rules = {
   containers: value => checkPositiveInteger(value),
+  averageWeight: value => validateAverageWeight(value, booking.value.location),
+  required(value) {
+    return value?.toString().trim() ? true : 'Required field'
+  },
 }
-const updateExpiryDate = value => {
-  booking.value.loadingDate = moment(value).endOf('day').format()
-  if (bookingRulesStore?.rules?.timeForTruckersFromMarketplace) {
+const updateExpiryDate = (value, index) => {
+  newBookings.value[index].loadingDate = moment(value).endOf('day').format()
+
+  /*if (bookingRulesStore?.rules?.timeForTruckersFromMarketplace) {
     booking.value.preferredDate = moment(value)
       .subtract(bookingRulesStore?.rules?.timeForTruckersFromMarketplace, 'day')
       .format()
     if (moment(booking.value.preferredDate).endOf('day').isBefore(currentDate.value)) {
       booking.value.preferredDate = moment(currentDate.value).format()
     }
-  }
+  }*/
 }
 const updatePreferredDate = value => {
   booking.value.preferredDate = moment(value).endOf('day').format()
@@ -117,14 +134,12 @@ const validateExpiryDates = useDebounceFn(() => {
 }, 200)
 
 const isDisabled = computed(() => {
-  let condition
+  let condition = false
   if (!props.duplicate) {
     const values = Object.values(booking.value)
-    values.pop()
-    values.splice(10, 1)
+    values.splice(8, 1)
     condition = values.some(i => !i)
   }
-  condition = !booking.value.scacList?.list?.length
   if (!condition) {
     condition =
       form.value?.errors.length ||
@@ -150,8 +165,23 @@ const closeBookingDialog = () => {
   } else emit('close')
 }
 const updateDates = () => {
-  booking.value.loadingDate = moment(booking.value.loadingDate).endOf('day').format()
+  booking.value.loadingDate = moment(newBookings.value.loadingDate).endOf('day').format()
   booking.value.preferredDate = moment(booking.value.preferredDate).endOf('day').format()
+}
+const addLoadingDate = () => {
+  newBookings.value.push({
+    id: uid(16),
+    loadingDate: null,
+    containers: null,
+    scacList: bookingRulesStore.rules.truckers,
+    ...booking.value,
+  })
+}
+const removeLoadingDate = id => {
+  const index = newBookings.value.findIndex(i => i.id === id)
+  if (index > -1) {
+    newBookings.value.splice(index, 1)
+  }
 }
 const saveDraft = () => {
   updateDates()
@@ -160,9 +190,18 @@ const saveDraft = () => {
   emit('close')
 }
 const saveBooking = async () => {
-  updateDates()
-  createBooking(booking.value)
-  emit('close')
+  const validationData = await form.value.validate()
+  if (validationData.valid) {
+    updateDates()
+    newBookings.value[0] = {
+      ...booking.value,
+      ...newBookings.value[0],
+    }
+    newBookings.value.forEach(booking => {
+      createBooking(booking)
+    })
+    emit('close')
+  }
 }
 watch(clickedOutside, () => {
   if (isDirty.value) {
@@ -197,17 +236,10 @@ onMounted(async () => {
     class="flex justify-center flex-col"
     @submit.prevent="saveBooking"
   >
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-6 mb-6">
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
       <Textfield
         v-model.trim="booking.ref"
         label="Booking ref*"
-        required
-      />
-      <Textfield
-        v-model.number="booking.containers"
-        label="Number of containers*"
-        :rules="[rules.containers]"
-        type="number"
         required
       />
       <Autocomplete
@@ -220,22 +252,6 @@ onMounted(async () => {
         return-object
         class="h-fit"
       />
-      <Datepicker
-        :picked="booking.loadingDate"
-        label="Loading date *"
-        typeable
-        :lower-limit="(booking.preferredDate && new Date(booking.preferredDate)) || currentDate"
-        :error-messages="validateExpiryDates()"
-        @onUpdate="updateExpiryDate"
-      />
-      <Datepicker
-        :key="booking.preferredDate"
-        :picked="booking.preferredDate"
-        label="Preferred carrier window"
-        :upper-limit="booking.loadingDate && new Date(booking.loadingDate)"
-        :lower-limit="currentDate"
-        @onUpdate="updatePreferredDate"
-      />
       <Autocomplete
         v-model="booking.location"
         :items="
@@ -245,6 +261,7 @@ onMounted(async () => {
             label: yard.label,
             lat: yard.lat,
             lng: yard.lng,
+            details: yard.details,
           }))
         "
         label="Yard label *"
@@ -253,6 +270,14 @@ onMounted(async () => {
         item-value="address"
         return-object
         class="h-fit"
+        @update:modelValue="value => (booking.weight = value.details?.averageWeight || null)"
+      />
+      <Datepicker
+        :key="booking.preferredDate"
+        :picked="booking.preferredDate"
+        label="Preferred carrier window"
+        :lower-limit="currentDate"
+        @onUpdate="updatePreferredDate"
       />
       <Textfield
         v-model.trim="booking.commodity"
@@ -263,10 +288,10 @@ onMounted(async () => {
         v-model.number="booking.weight"
         label="Average weight*"
         type="number"
-        :rules="[rules.containers]"
+        :rules="[rules.containers, rules.averageWeight]"
         required
       />
-      <Autocomplete
+      <Select
         v-model="booking.insurance"
         :items="insuranceItems"
         label="Minimum Insurance*"
@@ -277,9 +302,6 @@ onMounted(async () => {
         class="h-fit"
       />
       <div class="grid grid-cols-subgrid gap-6 col-span-2 md:col-span-3">
-        <Typography type="text-body-xs-semibold col-span-2 md:col-span-3 -mb-3">
-          Target rate
-        </Typography>
         <Textfield
           v-model.number="booking.estimatedRate"
           label="Target rate*"
@@ -305,9 +327,6 @@ onMounted(async () => {
         </RadioGroup>
       </div>
       <div class="grid grid-cols-subgrid gap-6 col-span-2 md:col-span-3">
-        <Typography type="text-body-xs-semibold col-span-2 md:col-span-3 -mb-3">
-          Equipment type
-        </Typography>
         <Select
           v-model="booking.size"
           :items="containersSizes"
@@ -319,17 +338,61 @@ onMounted(async () => {
         />
         <Checkbox
           v-model="booking.flexibleBooking"
-          label="Flexible booking*"
+          label="Flexible booking"
           class="mt-3"
           @change="updateSize"
         />
       </div>
+      <div class="grid grid-cols-subgrid gap-6 col-span-2 md:col-span-3 relative">
+        <Typography type="text-body-xs-semibold col-span-2 md:col-span-3 -mb-3">
+          Track details
+        </Typography>
+        <template
+          v-for="(d, index) in newBookings"
+          :key="d.id"
+        >
+          <Datepicker
+            :picked="d.loadingDate"
+            label="Loading date *"
+            typeable
+            :lower-limit="(booking.preferredDate && new Date(booking.preferredDate)) || currentDate"
+            :error-messages="validateExpiryDates()"
+            :rules="[rules.required]"
+            @onUpdate="value => updateExpiryDate(value, index)"
+          />
+          <Textfield
+            v-model.number="d.containers"
+            label="Number of containers*"
+            :rules="[rules.containers]"
+            type="number"
+            required
+            class="h-fit"
+          />
+          <div class="relative">
+            <AutocompleteScac
+              :scac-list="d.scacList"
+              :menu-btn="false"
+              class="w-3/4"
+            />
+            <IconButton
+              icon="mdi-close"
+              class="absolute top-0 right-0"
+              @click="removeLoadingDate(d.id)"
+            >
+              <Tooltip> Remove loading date</Tooltip>
+            </IconButton>
+          </div>
+        </template>
+      </div>
     </div>
-    <AutocompleteScac
-      :scac-list="booking.scacList"
-      :menu-btn="false"
-      class="grid grid-cols-2 md:grid-cols-3 gap-6"
-    />
+    <Button
+      variant="plain"
+      prepend-icon="mdi-plus"
+      class="mr-auto"
+      @click="addLoadingDate"
+    >
+      add loading date
+    </Button>
     <Button
       type="submit"
       class="w-fit mt-10 ml-auto"

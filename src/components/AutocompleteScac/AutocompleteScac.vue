@@ -1,6 +1,6 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
-import { useBookingRulesStore } from '~/stores/bookingRules.store'
+import { getTruckers } from '~/stores/helpers'
 
 const props = defineProps({
   scacList: {
@@ -18,7 +18,6 @@ const props = defineProps({
 const emit = defineEmits(['onChange'])
 
 const attrs = useAttrs()
-const { getTruckers } = useBookingRulesStore()
 const truckers = ref([])
 const scacList = toRef(props.scacList, 'list')
 const sendDialog = ref(null)

@@ -10,7 +10,7 @@ import { groupedBookingLocations } from '~/stores/helpers'
 import { useAuthStore } from '~/stores/auth.store'
 import moment from 'moment-timezone'
 import { some } from 'lodash'
-import {checkVendorDetailsCompletion} from "~/helpers/validations-functions";
+import { checkVendorDetailsCompletion } from '~/helpers/validations-functions'
 
 const props = defineProps({
   mapToggled: Boolean,
@@ -154,7 +154,7 @@ const applyFilter = () => {
   if (filters.value.loadingDate) {
     filteredData = useArrayFilter(
       filteredData,
-      booking => booking.bookingExpiry === moment(filters.value.loadingDate).endOf('day').format(),
+      booking => booking.loadingDate === moment(filters.value.loadingDate).endOf('day').format(),
     ).value
   }
   const isFiltered = some(filters.value, value => !!value)

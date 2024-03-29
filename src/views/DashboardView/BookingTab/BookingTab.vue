@@ -11,6 +11,7 @@ import { useAuthStore } from '~/stores/auth.store'
 import moment from 'moment-timezone'
 import { some } from 'lodash'
 import { checkVendorDetailsCompletion } from '~/helpers/validations-functions'
+import { getSmallerDate } from '~/composables/useDate'
 
 const props = defineProps({
   mapToggled: Boolean,
@@ -28,9 +29,9 @@ const { mapToggled } = toRefs(props)
 const getPanes = () => {
   return mapToggled.value
     ? [
-      { name: 'content', size: 60 },
-      { name: 'map', size: 40 },
-    ]
+        { name: 'content', size: 60 },
+        { name: 'map', size: 40 },
+      ]
     : [{ name: 'content', size: 100 }]
 }
 const panes = ref(getPanes())
@@ -160,7 +161,9 @@ const applyFilter = () => {
   if (filters.value.loadingDate) {
     filteredData = useArrayFilter(
       filteredData,
-      booking => booking.bookingExpiry === moment(filters.value.loadingDate).endOf('day').format(),
+      booking =>
+        getSmallerDate(booking.loadingDate) ===
+        moment(filters.value.loadingDate).endOf('day').format(),
     ).value
   }
   const isFiltered = some(filters.value, value => !!value)
@@ -211,7 +214,9 @@ watch(searchValue, value => {
       >
         <div class="flex flex-wrap items-center gap-4 mb-7">
           <div class="flex justify-between sm:justify-normal items-center gap-4">
-            <Typography type="text-h1 shrink-0"> Bookings</Typography>
+            <Typography type="text-h1 shrink-0">
+              Bookings
+            </Typography>
           </div>
           <Button
             class="ml-auto px-12"

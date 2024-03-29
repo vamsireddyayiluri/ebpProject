@@ -49,5 +49,47 @@ export const getUserIdByEmail = async email => {
 export const getRequestLoadFee = async () => {
   const settingsCollection = query(doc(db, 'settings', 'request_loads'))
   const settings = await getDoc(settingsCollection)
+
   return settings.data()
+}
+
+export const getTruckers = async () => {
+  const truckersQuery = query(collection(db, 'organizations'), where('org_type', '==', 'asset'))
+  const querySnapshot = await getDocs(truckersQuery)
+
+  return querySnapshot.docs.map(doc => {
+    const { orgId, scac, email, company } = doc.data()
+
+    return {
+      id: orgId,
+      scac,
+      email,
+      company,
+    }
+  })
+}
+
+export const groupBookings = objects => {
+  const groupedObject = {}
+
+  objects.forEach(obj => {
+    const key = `${obj.ref}-${obj.orgId}-${obj.createdAt}`
+
+    if (groupedObject[key]) {
+      groupedObject[key].containers += obj.containers
+      groupedObject[key].scacList.list.push(...obj.scacList.list)
+      groupedObject[key].loadingDate.push(obj.loadingDate)
+      groupedObject[key].ids.push(obj.id)
+
+      // groupedObject[key].id += key
+    } else {
+      groupedObject[key] = { ...obj }
+      groupedObject[key].loadingDate = [obj.loadingDate]
+      groupedObject[key].ids = [obj.id]
+
+      // groupedObject[key].id = key
+    }
+  })
+
+  return Object.values(groupedObject)
 }

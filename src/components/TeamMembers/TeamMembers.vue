@@ -113,7 +113,7 @@ const removeMember = async id => {
     max-width="480"
   >
     <template #text>
-      <RemoveCancelDialog
+      <ConfirmationDialog
         btn-name="Remove"
         @close="removeMemberDialog.show(false)"
         @onClickBtn="removeMember(removeMemberDialog.data.docId || removeMemberDialog.data.id)"
@@ -122,7 +122,7 @@ const removeMember = async id => {
           Are you sure you want to remove <b>Member {{ removeMemberDialog?.data.value }}</b>
           from the team?
         </Typography>
-      </RemoveCancelDialog>
+      </ConfirmationDialog>
     </template>
   </Dialog>
 </template>

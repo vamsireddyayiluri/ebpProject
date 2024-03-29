@@ -9,6 +9,7 @@ import { emailRegex, phoneRegex } from '@qualle-admin/qutil/dist/patterns'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { useTruckerManagementStore } from '~/stores/truckerManagement.store'
 import listRequiresForTruckers from '~/fixtures/requiresForTruckers.json'
+import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
 
 const authStore = useAuthStore()
 const workDetailsStore = useWorkDetailsStore()
@@ -23,9 +24,11 @@ const form = reactive({
   confirmPassword: '',
 })
 const loading = ref(false)
-const { yards } = storeToRefs(workDetailsStore)
-const { requiresForTruckers, preferredTruckersList, questionList, onboardingDocuments } =
+const { yards, vendorDetails } = storeToRefs(workDetailsStore)
+const { requiresForTruckers, questionList, onboardingDocuments } =
   storeToRefs(truckerManagement)
+const { getVendorDetails } = useWorkDetailsStore()
+const preferredTruckersStore = usePreferredTruckersStore()
 const invitations = ref([])
 const rules = {
   cell(value) {
@@ -80,10 +83,12 @@ const onSubmit = async () => {
     await authStore.register({
       form,
       yards: yards.value,
+      vendorDetails: vendorDetails.value,
       invitations: invitations.value,
       requiresForTruckers: requiresForTruckers.value,
       questionList: questionList.value,
       onboardingDocuments: onboardingDocuments.value,
+      preferredTruckers: preferredTruckersStore.preferredTruckers,
     })
     loading.value = false
   }
@@ -96,7 +101,7 @@ onMounted(async () => {
   truckerManagement.requiresForTruckers = JSON.parse(JSON.stringify(listRequiresForTruckers))
   truckerManagement.questionList = []
   truckerManagement.onboardingDocuments = []
-  truckerManagement.preferredTruckersList = []
+  getVendorDetails()
 })
 </script>
 

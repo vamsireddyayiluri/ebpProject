@@ -2,8 +2,14 @@ import moment from 'moment-timezone'
 import { useAlertStore } from '~/stores/alert.store'
 import { isNull } from 'lodash'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
+import { getLocalTime } from '@qualle-admin/qutil/dist/date'
+import { collection, getDocs, query, where } from 'firebase/firestore'
+import { db } from '~/firebase'
+import { useBookingsStore } from '~/stores/bookings.store'
+import { defaultOverWeight, maximumOverWeight, minimumLegalWeight } from '~/constants/settings'
 
 const alertStore = useAlertStore()
+const bookingsStore = useBookingsStore()
 
 export const checkCommittedValue = (value, booking) => {
   if (value < booking?.committed) {
@@ -73,5 +79,42 @@ export const checkVendorDetailsCompletion = () => {
   } else
     alertStore.warning({
       content: 'Please add yard details in settings to perform actions',
+      button: { name: 'Go to yard details', callback: async () => await alertStore.routerPush({name: 'settings' })},
     })
+}
+export const isExistName = (list, value, key) => {
+  return list.some(i => i[key] === value)
+}
+export const validateAverageWeight = (value, location) => {
+  if (location.details?.overweight) {
+    return value < defaultOverWeight || value > maximumOverWeight
+      ? `Weight must be b/w ${defaultOverWeight} to ${maximumOverWeight}`
+      : true
+  } else {
+    return value < minimumLegalWeight || value >= defaultOverWeight?
+      `Weight must be b/w ${minimumLegalWeight} to ${
+        defaultOverWeight - 1
+      }`: true
+  }
+}
+const checkPendingBookings = () => {
+  const currentTimestamp = getLocalTime().format()
+
+  return bookingsStore.bookings.filter(
+    b => (b.status === 'active' || b.status === 'pending') && b.loadingDate < currentTimestamp,
+  )
+}
+export const checkPendingCommitments = async () => {
+  const pendingBookings = checkPendingBookings()
+
+  return pendingBookings.map(async i => {
+    const q = query(
+      collection(db, 'commitments'),
+      where('bookingId', '==', i.id),
+      where('status', 'in', ['approved', 'pending']),
+    )
+    const querySnapshot = await getDocs(q)
+
+    return querySnapshot.docs.map(doc => doc.data())
+  })
 }

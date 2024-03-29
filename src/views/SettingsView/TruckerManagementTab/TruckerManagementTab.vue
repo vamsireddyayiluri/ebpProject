@@ -67,6 +67,7 @@ const updateDocumentStatus = async (reason = null) => {
 
 const getTruncatedFileName = fileName => {
   const name = `${fileName?.substring(0, 15)}...`
+  
   return fileName?.length > 15 ? name : fileName
 }
 onMounted(async () => {
@@ -92,7 +93,9 @@ onMounted(async () => {
   >
     <ExpansionPanel elevation="0">
       <ExpansionPanelTitle :color="getColor('uiSecondary-02')">
-        <Typography type="text-h4"> Trucker requirements </Typography>
+        <Typography type="text-h4">
+          Trucker requirements
+        </Typography>
       </ExpansionPanelTitle>
       <ExpansionPanelText class="w-full md:w-2/3 lg:w-4/3 pt-4">
         <div>
@@ -108,7 +111,9 @@ onMounted(async () => {
     </ExpansionPanel>
     <ExpansionPanel elevation="0">
       <ExpansionPanelTitle :color="getColor('uiSecondary-02')">
-        <Typography type="text-h4"> Required onboarding documents </Typography>
+        <Typography type="text-h4">
+          Required onboarding documents
+        </Typography>
       </ExpansionPanelTitle>
       <ExpansionPanelText class="w-full md:w-2/3 lg:w-4/3 pt-4">
         <div>
@@ -118,7 +123,9 @@ onMounted(async () => {
     </ExpansionPanel>
     <ExpansionPanel elevation="0">
       <ExpansionPanelTitle :color="getColor('uiSecondary-02')">
-        <Typography type="text-h4"> Onboarding </Typography>
+        <Typography type="text-h4">
+          Onboarding
+        </Typography>
       </ExpansionPanelTitle>
       <ExpansionPanelText class="pt-4">
         <VirtualTable
@@ -203,8 +210,8 @@ onMounted(async () => {
                   <template #activator="{ props }">
                     <span
                       v-bind="props"
-                      v-on="on"
                       class="mt-2"
+                      v-on="on"
                     >
                       +{{ item.documents?.length - 1 }}
                       more
@@ -248,7 +255,7 @@ onMounted(async () => {
     <template #text>
       <DocumentViewerDialog
         :doc="documentsDialog.data"
-        @acceptDoc="acceptDocument()"
+        @acceptDoc="acceptDocument"
         @declineDoc="declineDocument"
         @close="documentsDialog.show(false)"
       />

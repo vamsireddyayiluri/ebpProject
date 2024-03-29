@@ -42,7 +42,7 @@ const commitBooking = async booking => {
     commitmentDate: commitmentDate,
     bookingOrgId: booking.orgId,
     status: statuses.pending,
-    timeline: [
+    timeLine: [
       {
         title: `${trucker.value.scac} committed ${booking.committed} containers`,
         data: commitmentDate,
@@ -57,7 +57,7 @@ const commitBooking = async booking => {
     await setDoc(doc(db, 'commitments', id), commit)
   } catch ({ message }) {
     alertStore.warning({ content: message })
-  }
+  }view
 }
 const openCancelDialog = async commit => {
   cancelCommitDialog.value.show(true)

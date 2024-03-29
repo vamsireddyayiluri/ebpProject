@@ -4,6 +4,7 @@ import { useChatStore } from '~/stores/chat.store'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth.store'
 import { useAlertStore } from '~/stores/alert.store'
+import { getTruckers } from '~/stores/helpers'
 
 const messageActions = [
   {
@@ -72,6 +73,13 @@ onMounted(async () => {
     }
   }, 200)
   await markUserAsOnlineOffline('online')
+  const allTruckers = await getTruckers()
+  allParticipants.value = allTruckers.map(trucker => {
+    return {
+      name: trucker.company,
+      id: trucker.id,
+    }
+  })
 })
 onBeforeUnmount(async () => {
   activeChat.value = null
@@ -85,8 +93,12 @@ const createChat = async participantId => {
 
 <template>
   <Main>
+    <ProgressLinear
+      v-if="!chats.length && !allParticipants.length"
+      indeterminate
+    />
     <ChatWindow
-      v-if="allParticipants.length"
+      v-else
       :current-participant-id="currentParticipantId"
       :current-user-id="currentUserId"
       :messages="activeChatMessages || []"
