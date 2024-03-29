@@ -17,7 +17,7 @@ const { getCommitmentsByBookingId, closeBookingExpansion } = bookingsStore
 const { smAndDown } = useDisplay()
 const { bookingsHistoryHeaders, commitmentsHeaders } = useHeaders()
 const { bookingHistoryActions, commitmentsActions } = useActions()
-const { getFormattedDateTime, getFormattedDate } = useDate()
+const { getFormattedDateTime, getFormattedDate, getSmallerDate } = useDate()
 const router = useRouter()
 const statistics = ref(truckersData)
 const tableHeight = ref(0)
@@ -94,7 +94,9 @@ const applyFilter = () => {
   if (filters.value.loadingDate) {
     filteredData = useArrayFilter(
       filteredData,
-      booking => booking.loadingDate === moment(filters.value.loadingDate).endOf('day').format(),
+      booking =>
+        getSmallerDate(booking.loadingDate) ===
+        moment(filters.value.loadingDate).endOf('day').format(),
     ).value
   }
   computedFilteredEntities.value = filteredData
@@ -126,11 +128,11 @@ const onSelectRow = e => {
   router.push({ path: `booking/${e.id}`, query: { from: 'history' } })
 }
 const rowExpanded = async (event, data) => {
-  const { id } = toRaw(data.value)
+  const { referenceId } = toRaw(data.value)
   if (event) {
-    await getCommitmentsByBookingId(id)
+    await getCommitmentsByBookingId(referenceId)
   } else {
-    await closeBookingExpansion(id)
+    await closeBookingExpansion(referenceId)
   }
 }
 const downloadData = async () => {
@@ -144,6 +146,14 @@ const downloadData = async () => {
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
+}
+const formateTime = date => {
+  return getFormattedDate(date)
+}
+const formateMinTime = dates => {
+  // const maxDate = new Date(Math.max(...dates))
+  const minData = getSmallerDate(dates)
+  return getFormattedDate(minData)
 }
 onMounted(async () => {
   await bookingsStore.getBookingHistory()
@@ -265,11 +275,43 @@ watch(searchValue, value => {
         </Typography>
       </template>
       <template #bookingExpiry="{ item }">
-        <Typography>
-          {{ getFormattedDate(item.loadingDate) }}
-          <Tooltip>
-            {{ getFormattedDateTime(item.loadingDate) }}
-          </Tooltip>
+        <Typography type="text-body-m-regular">
+          {{ formateMinTime(item.loadingDate) }}
+          <Popover
+            activator="parent"
+            location="top center"
+          >
+            <div class="flex justify-center gap-2 py-1">
+              <v-table>
+                <thead>
+                  <tr>
+                    <th class="text-left">Committed/Total</th>
+                    <th class="text-left">Loading Date</th>
+                    <th class="text-left">SCAC</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="data in item.loadingDate"
+                    :key="data.loadingDate"
+                  >
+                    <td class="text-center">{{ data.committed }}/{{ data.containers }}</td>
+                    <td>{{ formateTime(data.date) }}</td>
+                    <td>
+                      <template
+                        v-for="scac in data.scacs"
+                        :key="scac"
+                      >
+                        <Chip>
+                          {{ scac }}
+                        </Chip>
+                      </template>
+                    </td>
+                  </tr>
+                </tbody>
+              </v-table>
+            </div>
+          </Popover>
         </Typography>
       </template>
       <template #status="{ item }">

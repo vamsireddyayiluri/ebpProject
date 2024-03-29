@@ -19,7 +19,15 @@ const deleteDraftDialog = ref(false)
 
 const { draftsHeaders } = useHeaders()
 const { draftsActions } = useActions()
-const { getFormattedDateTime, getFormattedDate } = useDate()
+const { getFormattedDateTime, getFormattedDate, getSmallerDate } = useDate()
+const formateTime = date => {
+  return getFormattedDate(date)
+}
+const formateMinTime = dates => {
+  // const maxDate = new Date(Math.max(...dates))
+  const minData = getSmallerDate(dates)
+  return getFormattedDate(minData)
+}
 
 const containerActionHandler = ({ action, e }) => {
   if (action === 'edit-draft') emit('editDraft', e[0].id)
@@ -98,10 +106,42 @@ onMounted(() => {
     </template>
     <template #bookingExpiry="{ item }">
       <Typography type="text-body-m-regular">
-        {{ getFormattedDate(item.loadingDate) }}
-        <Tooltip>
-          {{ getFormattedDateTime(item.loadingDate) }}
-        </Tooltip>
+        {{ formateMinTime(item.loadingDate) }}
+        <Popover
+          activator="parent"
+          location="top center"
+        >
+          <div class="flex justify-center gap-2 py-1">
+            <v-table>
+              <thead>
+                <tr>
+                  <th class="text-left">Committed/Total</th>
+                  <th class="text-left">Loading Date</th>
+                  <th class="text-left">SCAC</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="data in item.loadingDate"
+                  :key="data.loadingDate"
+                >
+                  <td class="text-center">{{ data.committed }}/{{ data.containers }}</td>
+                  <td>{{ formateTime(data.date) }}</td>
+                  <td>
+                    <template
+                      v-for="scac in data.scacs"
+                      :key="scac"
+                    >
+                      <Chip>
+                        {{ scac }}
+                      </Chip>
+                    </template>
+                  </td>
+                </tr>
+              </tbody>
+            </v-table>
+          </div>
+        </Popover>
       </Typography>
     </template>
     <template #location="{ item }">
@@ -129,7 +169,8 @@ onMounted(() => {
       >
         <Typography>
           Are you sure you want to delete draft#
-          <b>{{ deleteDraftDialog.data.ref }}</b>?
+          <b>{{ deleteDraftDialog.data.ref }}</b
+          >?
         </Typography>
       </ConfirmationDialog>
     </template>

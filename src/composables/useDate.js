@@ -26,10 +26,10 @@ export const todayYesterdayDate = date => {
 }
 
 export const getSmallerDate = dates => {
-  if (dates?.length === 0) {
+  if (!Array.isArray(dates) || dates?.length === 0) {
     return null
   }
-  const momentDates = dates.map(date => moment(date.date))
+  const momentDates = dates?.map(date => moment(date.date))
 
   const smallestDate = moment.min(momentDates)
 

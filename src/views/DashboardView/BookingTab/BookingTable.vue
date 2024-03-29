@@ -73,13 +73,13 @@ const containerActionHandler = async ({ action, e }) => {
     removeBookingDialog.value.data = e[0]
   }
   if (action === 'cancel-booking') {
-    openCancelBookingDialog(e[0].id)
+    openCancelBookingDialog(e[0])
   }
   if (action === 'pause-booking') {
-    await updateBookingStatus(e[0].id, statuses.paused)
+    await updateBookingStatus(e[0], statuses.paused)
   }
   if (action === 'reactive-booking') {
-    await updateBookingStatus(e[0].id, statuses.active)
+    await updateBookingStatus(e[0], statuses.active)
   }
   if (action === 'duplicate-booking') {
     emit('duplicateBooking', e[0])
@@ -98,7 +98,7 @@ const containerActionHandler = async ({ action, e }) => {
     openDeclineCommitmentDialog(e[0].id)
   }
   if (action === 'cancel-commitment') {
-    openCancelCommitmentDialog(e[0].id)
+    openCancelCommitmentDialog(e[0])
   }
 }
 const onSelectRow = e => {
@@ -116,9 +116,9 @@ const openApproveCommitmentDialog = commitment => {
   approveCommitmentDialog.value.show(true)
   approveCommitmentDialog.value.data = commitment
 }
-const openCancelBookingDialog = id => {
+const openCancelBookingDialog = booking => {
   cancelBookingDialog.value.show(true)
-  cancelBookingDialog.value.data = id
+  cancelBookingDialog.value.data = booking
 }
 const openCompleteCommitmentDialog = commitment => {
   completeCommitmentDialog.value.show(true)
@@ -128,12 +128,12 @@ const openDeclineCommitmentDialog = id => {
   declineCommitmentDialog.value.show(true)
   declineCommitmentDialog.value.data = id
 }
-const openCancelCommitmentDialog = id => {
+const openCancelCommitmentDialog = commiment => {
   cancelCommitmentDialog.value.show(true)
-  cancelCommitmentDialog.value.data = id
+  cancelCommitmentDialog.value.data = commiment
 }
-const removeBooking = id => {
-  deleteBooking(id)
+const removeBooking = booking => {
+  deleteBooking(booking)
   removeBookingDialog.value.show(false)
 }
 const onApproveCommitment = async commitment => {
@@ -141,8 +141,8 @@ const onApproveCommitment = async commitment => {
   commitmentDetailsDialog.value.show(false)
   await approveCommitment(commitment)
 }
-const onCancelBooking = async (id, reason) => {
-  await updateBookingStatus(id, statuses.canceled, reason)
+const onCancelBooking = async (booking, reason) => {
+  await updateBookingStatus(booking, statuses.canceled, reason)
   cancelBookingDialog.value.show(false)
   commitmentDetailsDialog.value.show(false)
 }
@@ -158,10 +158,10 @@ const onDeclineCommitment = async (id, reason) => {
   commitmentDetailsDialog.value.show(false)
   await declineCommitment(id, reason)
 }
-const onCancelCommitment = async (id, reason) => {
+const onCancelCommitment = async (commiment, reason) => {
   cancelCommitmentDialog.value.show(false)
   commitmentDetailsDialog.value.show(false)
-  await cancelCommitment(id, reason)
+  await cancelCommitment(commiment.id, reason)
 }
 const openCommitmentsDialogOnUrlChange = async () => {
   const commitment = await handleQueryUrlForCommitments(router.currentRoute.value.query)
@@ -366,7 +366,7 @@ watch(
       <ConfirmationDialog
         btn-name="Remove"
         @close="removeBookingDialog.show(false)"
-        @onClickBtn="removeBooking(removeBookingDialog.data.id)"
+        @onClickBtn="removeBooking(removeBookingDialog.data)"
       >
         <Typography>
           Are you sure you want to remove ref#
