@@ -79,7 +79,7 @@ export const groupBookings = objects => {
       groupedObject[key].containers += obj.containers
       groupedObject[key].committed += obj.committed
       groupedObject[key].scacList.list.push(...obj.scacList.list)
-      groupedObject[key].loadingDate.push({
+      groupedObject[key].details.push({
         date: obj.loadingDate,
         containers: obj.containers,
         committed: obj.committed || 0,
@@ -91,7 +91,7 @@ export const groupBookings = objects => {
       // groupedObject[key].id += key
     } else {
       groupedObject[key] = { ...obj }
-      groupedObject[key].loadingDate = [
+      groupedObject[key].details = [
         {
           date: obj.loadingDate,
           containers: obj.containers,

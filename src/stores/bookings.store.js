@@ -337,7 +337,7 @@ export const useBookingsStore = defineStore('bookings', () => {
             if (type === 'approved') {
               booking.committed = commitment.committed + booking.committed
             } else if (type === 'canceled') {
-              booking.committed = commitment.committed - booking.committed
+              booking.committed = booking.committed - commitment.committed
             }
             booking.status = toRaw(updatedBooking.status)
           }

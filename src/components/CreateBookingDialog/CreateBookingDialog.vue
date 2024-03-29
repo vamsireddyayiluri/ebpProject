@@ -86,7 +86,7 @@ const emptyBooking = {
   estimatedRateType: 'All in rate',
   estimatedRate: 1,
   flexibleBooking: false,
-  size: '40 OT',
+  size: '40 HC',
   insurance: '100,000',
 }
 const booking = ref(props?.duplicate ? copyBooking : emptyBooking)

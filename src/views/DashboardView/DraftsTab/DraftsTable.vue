@@ -106,7 +106,7 @@ onMounted(() => {
     </template>
     <template #bookingExpiry="{ item }">
       <Typography type="text-body-m-regular">
-        {{ formateMinTime(item.loadingDate) }}
+        {{ formateMinTime(item.details) }}
         <Popover
           activator="parent"
           location="top center"
@@ -122,8 +122,8 @@ onMounted(() => {
               </thead>
               <tbody>
                 <tr
-                  v-for="data in item.loadingDate"
-                  :key="data.loadingDate"
+                  v-for="data in item.details"
+                  :key="data.date"
                 >
                   <td class="text-center">{{ data.committed }}/{{ data.containers }}</td>
                   <td>{{ formateTime(data.date) }}</td>

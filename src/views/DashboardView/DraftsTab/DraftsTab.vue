@@ -145,8 +145,7 @@ const applyFilter = () => {
     filteredData = useArrayFilter(
       filteredData,
       booking =>
-        getSmallerDate(booking.loadingDate) ===
-        moment(filters.value.loadingDate).endOf('day').format(),
+        getSmallerDate(booking.details) === moment(filters.value.loadingDate).endOf('day').format(),
     ).value
   }
   const isFiltered = some(filters.value, value => !!value)

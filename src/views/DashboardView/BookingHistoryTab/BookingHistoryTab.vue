@@ -95,8 +95,7 @@ const applyFilter = () => {
     filteredData = useArrayFilter(
       filteredData,
       booking =>
-        getSmallerDate(booking.loadingDate) ===
-        moment(filters.value.loadingDate).endOf('day').format(),
+        getSmallerDate(booking.details) === moment(filters.value.loadingDate).endOf('day').format(),
     ).value
   }
   computedFilteredEntities.value = filteredData
@@ -276,7 +275,7 @@ watch(searchValue, value => {
       </template>
       <template #bookingExpiry="{ item }">
         <Typography type="text-body-m-regular">
-          {{ formateMinTime(item.loadingDate) }}
+          {{ formateMinTime(item.details) }}
           <Popover
             activator="parent"
             location="top center"
@@ -292,8 +291,8 @@ watch(searchValue, value => {
                 </thead>
                 <tbody>
                   <tr
-                    v-for="data in item.loadingDate"
-                    :key="data.loadingDate"
+                    v-for="data in item.details"
+                    :key="data.date"
                   >
                     <td class="text-center">{{ data.committed }}/{{ data.containers }}</td>
                     <td>{{ formateTime(data.date) }}</td>
