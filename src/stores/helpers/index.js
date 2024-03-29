@@ -68,3 +68,24 @@ export const getTruckers = async () => {
     }
   })
 }
+
+export const groupBookings = objects => {
+  const groupedObject = {}
+
+  objects.forEach(obj => {
+    const key = `${obj.ref}-${obj.orgId}-${obj.createdAt}`
+
+    if (groupedObject[key]) {
+      groupedObject[key].containers += obj.containers
+      groupedObject[key].scacList.list.push(...obj.scacList.list)
+      groupedObject[key].loadingDate.push(obj.loadingDate)
+      groupedObject[key].ids.push(obj.id)
+    } else {
+      groupedObject[key] = { ...obj }
+      groupedObject[key].loadingDate = [obj.loadingDate]
+      groupedObject[key].ids = [obj.id]
+    }
+  })
+
+  return Object.values(groupedObject)
+}

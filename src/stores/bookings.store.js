@@ -20,6 +20,7 @@ import { capitalize } from 'lodash'
 import moment from 'moment-timezone'
 import { statuses } from '~/constants/statuses'
 import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
+import { groupBookings } from '~/stores/helpers'
 
 export const useBookingsStore = defineStore('bookings', () => {
   const alertStore = useAlertStore()
@@ -52,12 +53,14 @@ export const useBookingsStore = defineStore('bookings', () => {
       drafts.value = querySnapshot.docs.map(doc => doc.data())
     } else {
       await getallBookings()
-      bookings.value = bookings.value.filter(
+      const filteredBookings = bookings.value.filter(
         booking =>
           booking.status !== statuses.completed &&
           booking.status !== statuses.expired &&
           booking.status !== statuses.canceled,
       )
+      const group = groupBookings(filteredBookings)
+      bookings.value = group
     }
     loading.value = false
   }
@@ -151,7 +154,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     try {
       await setDoc(doc(collection(db, 'bookings'), newBooking.id), newBooking)
 
-      bookings.value.unshift(newBooking)
+      bookings.value.unshift(groupBookings([newBooking])[0])
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }

@@ -50,7 +50,7 @@ const cancelReasonList = [
 ]
 const { bookingsHeaders, commitmentsHeaders } = useHeaders()
 const { bookingsActions, commitmentsActions } = useActions()
-const { getFormattedDateTime, getFormattedDate } = useDate()
+const { getFormattedDateTime, getFormattedDate, getSmallerDate } = useDate()
 const commitmentDetailsDialog = ref(null)
 const bookingStatus = id => {
   const bookings = computedEntities.value
@@ -244,10 +244,22 @@ watch(
     </template>
     <template #bookingExpiry="{ item }">
       <Typography type="text-body-m-regular">
-        {{ getFormattedDate(item.loadingDate) }}
-        <Tooltip>
-          {{ getFormattedDateTime(item.loadingDate) }}
-        </Tooltip>
+        {{ getFormattedDate(getSmallerDate(item.loadingDate)) }}
+        <Popover
+          activator="parent"
+          location="top center"
+        >
+          <div class="flex justify-center gap-2 py-1">
+            <template
+              v-for="date in item.loadingDate"
+              :key="date"
+            >
+              <Chip>
+                {{ getFormattedDateTime(date) }}
+              </Chip>
+            </template>
+          </div>
+        </Popover>
       </Typography>
     </template>
     <template #location="{ item }">
