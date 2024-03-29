@@ -32,20 +32,24 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       await updateDoc(doc(db, 'commitments', commitment.id), {
         status: statuses.approved,
       })
-      const carrierIndex = booking.carriers.findIndex(carrier => carrier.scac === commitment.scac)
-      if (carrierIndex !== -1) {
-        booking.carriers[carrierIndex].total =
-          booking.carriers[carrierIndex].total + commitment.committed
-      } else {
-        booking.carriers.push({
-          scac: commitment.scac,
-          fulfilled: 0,
-          total: commitment.committed,
-        })
+      if (booking?.carriers) {
+        const carrierIndex = booking?.carriers?.findIndex(
+          carrier => carrier?.scac === commitment?.scac,
+        )
+        if (carrierIndex !== -1) {
+          booking.carriers[carrierIndex].total =
+            booking.carriers[carrierIndex].total + commitment.committed
+        } else {
+          booking.carriers.push({
+            scac: commitment.scac,
+            fulfilled: 0,
+            total: commitment.committed,
+          })
+        }
       }
       await updateDoc(doc(db, 'bookings', commitment.bookingId), {
         committed: increment(commitment.committed),
-        carriers: booking.carriers,
+        carriers: booking?.carriers || [],
       })
 
       const index = bookingsStore.bookings.findIndex(i => i.id === commitment.bookingId)

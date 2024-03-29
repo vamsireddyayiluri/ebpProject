@@ -21,7 +21,23 @@ const commodity = ref(null)
 const removeLocationDialog = ref(null)
 const defaultDetails = ref(vendorDetails.value)
 const locationDetailsDialog = ref(null)
-
+const form = ref(null)
+const rules = {
+  required(value) {
+    return !!value ? true : 'Required field'
+  },
+  locationLabel: value => !isExistName(yards.value, value, 'label') || 'Label already exists',
+}
+const isDisabled = computed(() => !!form.value?.errors.length || form.value?.isValidating)
+const computedYards = computed(() => {
+  return yards.value?.map(yard => {
+    return {
+      ...yard,
+      value: yard?.value || yard.address,
+      commodity: yard?.commodity || '',
+    }
+  })
+})
 const onSelectLocation = location => {
   newLocation.value.address = location.fullAddress
   newLocation.value.lat = location.lat
@@ -127,7 +143,7 @@ const onClickOutsideDialog = () => {
                   ? 'Details'
                   : !defaultDetails?.primaryContactName
                   ? 'Location details'
-                  : 'Edit default details'
+                  : 'Default details'
               }}
             </Typography>
             <Button
@@ -163,7 +179,7 @@ const onClickOutsideDialog = () => {
       </div>
     </div>
     <LocationItems
-      :locations="yards"
+      :locations="computedYards"
       is-close-btn
       :is-edit-btn="!!defaultDetails"
       class="mt-5 sm:!mt-2"
