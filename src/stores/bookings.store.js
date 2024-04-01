@@ -27,6 +27,8 @@ export const useBookingsStore = defineStore('bookings', () => {
   const authStore = useAuthStore()
   const { preferredTruckers } = usePreferredTruckersStore()
   let bookings = ref([])
+  let allBookings = ref([])
+
   const bookingsForCalendar = ref([])
   let pastBookings = ref([])
   const drafts = ref([])
@@ -44,6 +46,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     })
     const data = await Promise.all(dataPromises)
     bookings.value = data.sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
+    allBookings.value = data.sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
     await validateBookingsExpiry(data)
   }
   const getBookings = async ({ draft = false }) => {
@@ -89,19 +92,27 @@ export const useBookingsStore = defineStore('bookings', () => {
     pastBookings.value = group
     loading.value = false
   }
-  const getCommitmentsByBookingId = async referenceId => {
-    const q = await query(collection(db, 'commitments'), where('referenceId', '==', referenceId))
-    const docData = await getDocs(q)
-    const commitments = docData.docs
-      .map(doc => doc.data())
-      .sort((a, b) => moment(b.commitmentDate).diff(moment(a.commitmentDate)))
-    await updateBookingCommitments(referenceId, commitments)
+  const getCommitmentsByBookingId = async (id, ids, fromHistory = false) => {
+    const allCommitments = []
+    await Promise.all(
+      ids.map(async bookingId => {
+        const q = await query(collection(db, 'commitments'), where('bookingId', '==', bookingId))
+        const docData = await getDocs(q)
+        const commitments = docData.docs
+          .map(doc => doc.data())
+          .sort((a, b) => moment(b.commitmentDate).diff(moment(a.commitmentDate)))
+        allCommitments.push(...commitments)
+      }),
+    )
+    if (!fromHistory) {
+      await updateBookingCommitments(id, allCommitments)
+    }
 
-    return commitments
+    return allCommitments
   }
-  const updateBookingCommitments = async (referenceId, commitments) => {
+  const updateBookingCommitments = async (id, commitments) => {
     bookings.value.forEach(b => {
-      if (b.referenceId == referenceId) {
+      if (b.id == id) {
         b['entities'] = commitments
         b.expand = true
       }
@@ -200,12 +211,13 @@ export const useBookingsStore = defineStore('bookings', () => {
         })
       })
       bookings.value.forEach(b => {
-        if (b.referenceId === booking.referenceId) {
+        const ids = b.ids
+        if (ids.includes(booking.id)) {
           b.status = status
         }
       })
       if (status === statuses.canceled) {
-        const commitments = await getCommitmentsByBookingId(booking.referenceId)
+        const commitments = await getCommitmentsByBookingId(booking.id, booking.ids)
         commitments.map(async i => {
           if (i.status === statuses.approved) {
             await updateDoc(doc(db, 'commitments', i.id), {
@@ -262,7 +274,10 @@ export const useBookingsStore = defineStore('bookings', () => {
         ids.forEach(async id => {
           await deleteDoc(doc(db, 'bookings', id))
         })
-        const index = bookings.value.findIndex(i => i.referenceId === booking.referenceId)
+        const index = bookings.value.findIndex(i => {
+          const ids = i.ids
+          return ids.includes(data.bookingId)
+        })
 
         if (index > -1) {
           bookings.value.splice(index, 1)
@@ -335,23 +350,27 @@ export const useBookingsStore = defineStore('bookings', () => {
         const id = commitment?.bookingId || commitment.id
         const updatedBooking = await getBooking({ id: id, draft: false })
         bookings.value.forEach(booking => {
-          if (booking.referenceId === commitment.referenceId) {
+          const ids = booking.ids
+          if (ids.includes(commitment.bookingId)) {
             if (type === 'approved') {
               booking.committed = commitment.committed + booking.committed
             } else if (type === 'canceled') {
               booking.committed = booking.committed - commitment.committed
             }
             booking.status = toRaw(updatedBooking.status)
+            const index = booking.details.findIndex(i => i.id === updatedBooking.id)
+            booking.details[index].committed = updatedBooking.committed || 0
           }
         })
-        await getCommitmentsByBookingId(commitment.referenceId)
+
+        // await getCommitmentsByBookingId(commitment.referenceId)
       }, 3000)
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
   }
-  const closeBookingExpansion = async referenceId => {
-    const index = bookings.value.findIndex(val => val?.referenceId === referenceId)
+  const closeBookingExpansion = async id => {
+    const index = bookings.value.findIndex(val => val?.id === id)
     bookings.value[index].expand = false
   }
   const reset = () => {
@@ -362,6 +381,7 @@ export const useBookingsStore = defineStore('bookings', () => {
 
   return {
     bookings,
+    allBookings,
     pastBookings,
     bookingsForCalendar,
     drafts,

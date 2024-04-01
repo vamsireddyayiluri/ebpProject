@@ -127,11 +127,13 @@ const onSelectRow = e => {
   router.push({ path: `booking/${e.id}`, query: { from: 'history' } })
 }
 const rowExpanded = async (event, data) => {
-  const { referenceId } = toRaw(data.value)
+  const { id, ids } = toRaw(data.value)
   if (event) {
-    await getCommitmentsByBookingId(referenceId)
+    const commitments = await getCommitmentsByBookingId(id, ids, true)
+    data.value.expand = true
+    data.value.entities = commitments
   } else {
-    await closeBookingExpansion(referenceId)
+    await closeBookingExpansion(id)
   }
 }
 const downloadData = async () => {

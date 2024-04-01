@@ -8,6 +8,7 @@ import { useCommitmentsStore } from '~/stores/commitments.store'
 import { canceledCodes, declineCodes, onboardingCodes } from '~/constants/reasonCodes'
 import { statuses } from '~/constants/statuses'
 import { handleQueryUrlForCommitments } from '~/helpers/links'
+const bookingsStore = useBookingsStore()
 
 const props = defineProps({
   computedEntities: Array,
@@ -17,9 +18,14 @@ const props = defineProps({
 const emit = defineEmits(['selectTableRow', 'editBooking', 'duplicateBooking'])
 const { deleteBooking, updateBookingStatus, getCommitmentsByBookingId, closeBookingExpansion } =
   useBookingsStore()
-const { approveCommitment, declineCommitment, cancelCommitment, completeCommitment } =
-  useCommitmentsStore()
-const { computedEntities } = toRefs(props)
+const {
+  approveCommitment,
+  declineCommitment,
+  cancelCommitment,
+  completeCommitment,
+  edit_commitment_loadingDate,
+} = useCommitmentsStore()
+// const { computedEntities } = toRefs(props)
 const authStore = useAuthStore()
 const { smAndDown } = useDisplay()
 const router = useRouter()
@@ -30,8 +36,10 @@ const cancelBookingDialog = ref(false)
 const approveCommitmentDialog = ref(false)
 const completeCommitmentDialog = ref(false)
 const declineCommitmentDialog = ref(false)
+const loadingDateDialog = ref(false)
 const cancelCommitmentDialog = ref(false)
 const loadCompleteCommitment = ref(false)
+const isloading = ref(false)
 const completeReasonList = [
   onboardingCodes.onboarded,
   onboardingCodes.onboardMovedLoad,
@@ -52,6 +60,7 @@ const { bookingsHeaders, commitmentsHeaders } = useHeaders()
 const { bookingsActions, commitmentsActions } = useActions()
 const { getFormattedDateTime, getFormattedDate, getSmallerDate } = useDate()
 const commitmentDetailsDialog = ref(null)
+const computedEntities = computed(() => bookingsStore.bookings)
 const formateTime = date => {
   return getFormattedDate(date)
 }
@@ -60,10 +69,12 @@ const formateMinTime = dates => {
   const minData = getSmallerDate(dates)
   return getFormattedDate(minData)
 }
-const bookingStatus = referenceId => {
+const bookingStatus = item => {
   const bookings = computedEntities.value
-  const booking = bookings.find(i => i.referenceId === referenceId)
-
+  const booking = bookings.find(i => {
+    const ids = i.ids
+    return ids.includes(item.bookingId)
+  })
   return booking?.status
 }
 const containerActionHandler = async ({ action, e }) => {
@@ -94,8 +105,11 @@ const containerActionHandler = async ({ action, e }) => {
   if (action === 'complete-commitment') {
     openCompleteCommitmentDialog(e[0])
   }
+  if (action === 'update-loadingdate') {
+    openLoadingDateDialog(e[0])
+  }
   if (action === 'decline-commitment') {
-    openDeclineCommitmentDialog(e[0].id)
+    openDeclineCommitmentDialog(e[0])
   }
   if (action === 'cancel-commitment') {
     openCancelCommitmentDialog(e[0])
@@ -105,11 +119,11 @@ const onSelectRow = e => {
   emit('selectTableRow', e)
 }
 const rowExpanded = async (event, data) => {
-  const { referenceId } = toRaw(data.value)
+  const { ids, id } = toRaw(data.value)
   if (event) {
-    await getCommitmentsByBookingId(referenceId)
+    await getCommitmentsByBookingId(id, ids)
   } else {
-    await closeBookingExpansion(referenceId)
+    await closeBookingExpansion(id)
   }
 }
 const openApproveCommitmentDialog = commitment => {
@@ -124,9 +138,13 @@ const openCompleteCommitmentDialog = commitment => {
   completeCommitmentDialog.value.show(true)
   completeCommitmentDialog.value.data = commitment
 }
-const openDeclineCommitmentDialog = id => {
+const openLoadingDateDialog = commitment => {
+  loadingDateDialog.value.show(true)
+  loadingDateDialog.value.data = commitment
+}
+const openDeclineCommitmentDialog = data => {
   declineCommitmentDialog.value.show(true)
-  declineCommitmentDialog.value.data = id
+  declineCommitmentDialog.value.data = data
 }
 const openCancelCommitmentDialog = commiment => {
   cancelCommitmentDialog.value.show(true)
@@ -153,15 +171,22 @@ const onCompleteCommitment = async (data, reason, onBoardedContainers) => {
   commitmentDetailsDialog.value.show(false)
   loadCompleteCommitment.value = false
 }
-const onDeclineCommitment = async (id, reason) => {
+const onLoadingDateUpdated = async (data, loadingDate) => {
+  isloading.value = true
+  await edit_commitment_loadingDate(data.id, loadingDate)
+  loadingDateDialog.value.show(false)
+  isloading.value = false
+}
+
+const onDeclineCommitment = async reason => {
   declineCommitmentDialog.value.show(false)
   commitmentDetailsDialog.value.show(false)
-  await declineCommitment(id, reason)
+  await declineCommitment(declineCommitmentDialog.value.data, reason)
 }
 const onCancelCommitment = async (commiment, reason) => {
   cancelCommitmentDialog.value.show(false)
   commitmentDetailsDialog.value.show(false)
-  await cancelCommitment(commiment.id, reason)
+  await cancelCommitment(commiment, reason)
 }
 const openCommitmentsDialogOnUrlChange = async () => {
   const commitment = await handleQueryUrlForCommitments(router.currentRoute.value.query)
@@ -348,7 +373,7 @@ watch(
         </template>
         <template #actions="{ item, selected }">
           <MenuActions
-            :actions="() => commitmentsActions(item.status, bookingStatus(item.referenceId))"
+            :actions="() => commitmentsActions(item.status, bookingStatus(item))"
             :selected="selected"
             :container="item"
             @containerActionHandler="containerActionHandler"

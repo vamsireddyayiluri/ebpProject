@@ -187,10 +187,8 @@ const saveDraft = async () => {
       ...booking.value,
       ...newBookings.value[0],
     }
-    const referenceId = uid(16)
     updateDates()
     newBookings.value.forEach(booking => {
-      booking.referenceId = referenceId
       createDraft(booking)
     })
     confirmDraftsDialog.value.show(false)
@@ -205,9 +203,7 @@ const saveBooking = async () => {
       ...booking.value,
       ...newBookings.value[0],
     }
-    const referenceId = uid(16)
     newBookings.value.forEach(booking => {
-      booking.referenceId = referenceId
       createBooking(booking)
     })
     emit('close')

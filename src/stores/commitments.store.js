@@ -8,6 +8,8 @@ const { updateBookingStore } = useBookingsStore()
 
 import { onboardingCodes } from '~/constants/reasonCodes'
 import { getRequestLoadFee } from './helpers'
+import { getLocalTime } from '@qualle-admin/qutil/dist/date'
+import moment from 'moment-timezone'
 
 export const useCommitmentsStore = defineStore('commitments', () => {
   const alertStore = useAlertStore()
@@ -57,8 +59,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         carriers: booking?.carriers || [],
       })
 
-      const index = bookingsStore.bookings.findIndex(i => i.referenceId === commitment.referenceId)
-
+      const index = bookingsStore.bookings.findIndex(i => i.ids.includes(commitment.bookingId))
       bookingsStore.bookings[index].entities.forEach(j => {
         // i.expand = true
         if (j.id === commitment.id) {
@@ -108,14 +109,15 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       await updateDoc(doc(db, 'commitments', data.id), {
         ...obj,
       })
-      bookingsStore.bookings.forEach(i => {
-        i.entities.forEach(j => {
-          // i.expand = true
-          if (j.id === data.id) {
-            ;(j.status = obj.status), (j.reason = reason)
-          }
-        })
+      const index = bookingsStore.bookings.findIndex(i => i.ids.includes(data.bookingId))
+      bookingsStore.bookings[index].entities.forEach(j => {
+        // i.expand = true
+        if (j.id === data.id) {
+          j.status = obj.status
+          j.reason = reason
+        }
       })
+
       const commitment = await getCommitment(data.id)
       await updateBookingStore(commitment)
       alertStore.info({ content: 'Booking commitment completed' })
@@ -124,43 +126,59 @@ export const useCommitmentsStore = defineStore('commitments', () => {
     }
   }
 
-  const declineCommitment = async (id, reason) => {
+  const declineCommitment = async (commitment, reason) => {
     try {
-      await updateDoc(doc(db, 'commitments', id), {
+      await updateDoc(doc(db, 'commitments', commitment.id), {
         status: statuses.declined,
         reason,
       })
-      bookingsStore.bookings.forEach(i => {
-        i.entities.forEach(j => {
-          // i.expand = true
-          if (j.id === id) {
-            ;(j.status = statuses.declined), (j.reason = reason)
-          }
-        })
+      const index = bookingsStore.bookings.findIndex(i => i.ids.includes(commitment.bookingId))
+      bookingsStore.bookings[index].entities.forEach(j => {
+        if (j.id === commitment.id) {
+          j.status = statuses.declined
+          j.reason = reason
+        }
       })
-      const commitment = await getCommitment(id)
+
       await updateBookingStore(commitment)
       alertStore.info({ content: 'Booking commitment declined' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
   }
-  const cancelCommitment = async (id, reason) => {
+  const cancelCommitment = async (commitment, reason) => {
     try {
-      await updateDoc(doc(db, 'commitments', id), {
+      await updateDoc(doc(db, 'commitments', commitment.id), {
         status: statuses.canceled,
         reason,
+      })
+      const index = bookingsStore.bookings.findIndex(i => i.ids.includes(commitment.bookingId))
+      bookingsStore.bookings[index].entities.forEach(j => {
+        if (j.id === commitment.id) {
+          j.status = statuses.canceled
+          j.reason = reason
+        }
+      })
+      await updateBookingStore(commitment, 'canceled')
+      alertStore.info({ content: 'Booking commitment canceled' })
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
+  const edit_commitment_loadingDate = async (id, loadingDate) => {
+    try {
+      await updateDoc(doc(db, 'commitments', id), {
+        loadingDate: moment(loadingDate).endOf('day').format(),
+        updated: getLocalTime().format(),
       })
       bookingsStore.bookings.forEach(i => {
         i.entities.forEach(j => {
           if (j.id === id) {
-            ;(j.status = statuses.canceled), (j.reason = reason)
+            j.loadingDate = moment(loadingDate).endOf('day').format()
           }
         })
       })
-      const commitment = await getCommitment(id)
-      await updateBookingStore(commitment, 'canceled')
-      alertStore.info({ content: 'Booking commitment canceled' })
+      alertStore.info({ content: 'Booking commitment updated' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
@@ -181,5 +199,6 @@ export const useCommitmentsStore = defineStore('commitments', () => {
     completeCommitment,
     declineCommitment,
     cancelCommitment,
+    edit_commitment_loadingDate,
   }
 })

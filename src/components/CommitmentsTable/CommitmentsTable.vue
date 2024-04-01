@@ -59,10 +59,10 @@ const onCompleteCommitment = async (id, reason) => {
   completeCommitmentDialog.value.show(false)
   commitmentDetailsDialog.value.show(false)
 }
-const onDeclineCommitment = async (id, reason) => {
+const onDeclineCommitment = async reason => {
   declineCommitmentDialog.value.show(false)
   commitmentDetailsDialog.value.show(false)
-  await declineCommitment(id, reason)
+  await declineCommitment(declineCommitmentDialog.value.data, reason)
 }
 </script>
 
