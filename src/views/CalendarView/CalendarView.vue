@@ -20,10 +20,11 @@ const createBookingDialog = ref(null)
 
 const getEvents = bookings => {
   return bookings.map(i => {
+
     return {
       id: i.id,
       title: `Ref# ${i.ref}`,
-      start: i.createdAt,
+      start: moment(i.loadingDate).startOf('day').format(),
       end: i.loadingDate,
       metadata: {
         name: `event-${Math.floor(Math.random() * 9) + 1}`,
@@ -61,6 +62,7 @@ const nextExpiring = computed(() => {
   const datesArray = bookingsForCalendar.value
     .filter(b => b)
     .sort((a, b) => moment(a.loadingDate).diff(moment(b.loadingDate)))
+
   return getFormattedDate(datesArray[0]?.loadingDate)
 })
 const openCreateBookingDialog = () => {
