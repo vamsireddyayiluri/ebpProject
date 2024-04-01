@@ -2,9 +2,11 @@
 import { Main } from '@layouts'
 import { useAuthStore } from '~/stores/auth.store'
 import { storeToRefs } from 'pinia'
-import { emailRegex, phoneRegex } from '@qualle-admin/qutil/dist/patterns'
+import { emailRegex } from '@qualle-admin/qutil/dist/patterns'
 import { useProfileStore } from '~/stores/profile.store'
 import { useAlertStore } from '~/stores/alert.store'
+import { vMaska, Mask } from 'maska'
+import { cellMask } from '~/helpers/mask'
 
 const authStore = useAuthStore()
 const alertStore = useAlertStore()
@@ -14,12 +16,14 @@ const { accountInfo } = storeToRefs(profileStore)
 
 const isPasswordVisible = ref(false)
 const router = useRouter()
+const unMaskedCell = ref({})
+const options = { mask: cellMask }
 const rules = {
   email(value) {
     return emailRegex.test(value) || 'Invalid e-mail'
   },
-  cell(value) {
-    return phoneRegex.test(value) || 'Invalid phone number'
+  cell() {
+    return /^\+1 \d{3} \d{3}-\d{2}-\d{2}$/ || 'Invalid phone number'
   },
   password(value) {
     return value > 8 || 'Min length 8'
@@ -31,7 +35,8 @@ const updateUserAvatar = async (_, file) => {
 const validateName = computed(() => {
   return (
     accountInfo.value.name !== userData.value.name ||
-    accountInfo.value.company !== userData.value.company
+    accountInfo.value.company !== userData.value.company ||
+    unMaskedCell.value.unmasked !== userData.value.cell
   )
 })
 const validateEmail = computed(() => {
@@ -42,7 +47,7 @@ const onSave = async () => {
 
   try {
     if (validateName.value) {
-      await profileStore.updateUserData({ userId, ...accountInfo.value })
+      await profileStore.updateUserData({ userId, ...accountInfo.value, cell: unMaskedCell.value.unmasked })
     }
     if (validateEmail.value) {
       await profileStore.updateUserEmailAddress({
@@ -123,7 +128,8 @@ const cancelChanges = () => {
         <VCol cols="auto">
           <Textfield
             v-model.trim="accountInfo.cell"
-            type="number"
+            v-maska:[options]="unMaskedCell"
+            type="tel"
             label="Work phone"
             required
             :rules="[rules.cell]"

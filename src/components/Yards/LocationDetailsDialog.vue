@@ -7,6 +7,8 @@ import { cloneDeep, isEqual } from 'lodash'
 import { useAuthStore } from '~/stores/auth.store'
 import { storeToRefs } from 'pinia'
 import moment from 'moment-timezone'
+import { cellMask } from '~/helpers/mask'
+import { vMaska, Mask } from 'maska'
 
 const props = defineProps({
   editedLocation: Object,
@@ -16,6 +18,7 @@ const authStore = useAuthStore()
 const workDetailsStore = useWorkDetailsStore()
 const { saveVendorDetails, saveYardDetails, getVendorDetails } = workDetailsStore
 const { vendorDetails } = storeToRefs(workDetailsStore)
+const options = { mask: cellMask }
 
 const details = ref(
   props.editedLocation
@@ -30,7 +33,7 @@ const details = ref(
     : vendorDetails.value,
 )
 const initDetails = cloneDeep(details.value)
-const isSecondaryContact = ref(false)
+const isSecondaryContact = ref(details.value?.secondaryContactName || false)
 const createDefaultTimeArray = () => {
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
   const defaultTimeFrom = {
@@ -113,7 +116,7 @@ const onChangeTo = (e, day) => {
 const rules = {
   cell(value) {
     return (
-      /^(\+\d{1,2}\s?)?(\(\d{3}\)|\d{3})[\s.-]?\d{3}[\s.-]?\d{4}$/.test(value) ||
+      /^\+1 \d{3} \d{3}-\d{2}-\d{2}$/.test(value) ||
       'Invalid phone number format'
     )
   },
@@ -191,6 +194,7 @@ onUnmounted(() => {
       />
       <Textfield
         v-model="details.primaryContact"
+        v-maska:[options]
         label="Primary contact number *"
         :rules="[rules.cell]"
       />
@@ -228,6 +232,7 @@ onUnmounted(() => {
       />
       <Textfield
         v-model="details.secondaryContact"
+        v-maska:[options]
         label="Secondary contact number *"
         :rules="[rules.cell]"
       />
@@ -237,9 +242,7 @@ onUnmounted(() => {
         :rules="[rules.email]"
       />
     </div>
-    <Typography type="text-body-xs-semibold mt-6 mb-2">
-      Operation hours
-    </Typography>
+    <Typography type="text-body-xs-semibold mt-6 mb-2"> Operation hours </Typography>
     <div class="flex gap-6 flex-col sm:flex-row">
       <template
         v-for="(item, n) in checkboxes"
@@ -295,9 +298,7 @@ onUnmounted(() => {
       </VRow>
     </template>
 
-    <Typography type="text-body-xs-semibold mt-6 mb-4">
-      Pickup instructions
-    </Typography>
+    <Typography type="text-body-xs-semibold mt-6 mb-4"> Pickup instructions </Typography>
     <Textarea
       v-model="details.pickupInstructions"
       label="Instructions for the pickup *"

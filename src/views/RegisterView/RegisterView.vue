@@ -5,11 +5,13 @@ import { getColor } from '~/helpers/colors'
 import { useAuthStore } from '~/stores/auth.store'
 import { storeToRefs } from 'pinia'
 import { patterns } from '@qualle-admin/qutil'
-import { emailRegex, phoneRegex } from '@qualle-admin/qutil/dist/patterns'
+import { emailRegex } from '@qualle-admin/qutil/dist/patterns'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { useTruckerManagementStore } from '~/stores/truckerManagement.store'
 import listRequiresForTruckers from '~/fixtures/requiresForTruckers.json'
 import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
+import { vMaska, Mask } from 'maska'
+import { cellMask } from '~/helpers/mask'
 
 const authStore = useAuthStore()
 const workDetailsStore = useWorkDetailsStore()
@@ -25,15 +27,14 @@ const form = reactive({
 })
 const loading = ref(false)
 const { yards, vendorDetails } = storeToRefs(workDetailsStore)
-const { requiresForTruckers, questionList, onboardingDocuments } =
-  storeToRefs(truckerManagement)
+const { requiresForTruckers, questionList, onboardingDocuments } = storeToRefs(truckerManagement)
 const { getVendorDetails } = useWorkDetailsStore()
 const preferredTruckersStore = usePreferredTruckersStore()
 const invitations = ref([])
+const unMaskedCell = ref({})
+const options = { mask: cellMask }
+
 const rules = {
-  cell(value) {
-    return phoneRegex.test(value) || 'Invalid phone number format'
-  },
   email(value) {
     return emailRegex.test(value) || 'Invalid e-mail'
   },
@@ -45,7 +46,7 @@ const steps = {
       form.fullName?.trim() !== '' &&
       form.email.match(patterns.emailRegex) &&
       form.companyName?.trim() !== '' &&
-      form.cell.match(patterns.phoneRegex) &&
+      unMaskedCell.value?.completed &&
       form.password &&
       form.confirmPassword &&
       form.password === form.confirmPassword,
@@ -81,7 +82,8 @@ const onSubmit = async () => {
   if (stepper.isLast.value) {
     loading.value = true
     await authStore.register({
-      form,
+      form: {...form, cell: unMaskedCell.value.unmasked},
+      cell: unMaskedCell.value.unmasked,
       yards: yards.value,
       vendorDetails: vendorDetails.value,
       invitations: invitations.value,
@@ -147,9 +149,12 @@ onMounted(async () => {
             />
             <Textfield
               v-model.trim="form.cell"
+              v-maska:[options]="unMaskedCell"
               type="tel"
               label="Work phone *"
-              :rules="[rules.cell]"
+              :error-messages="
+                form.cell ? unMaskedCell.completed || 'Invalid phone number format' : true
+              "
               required
             />
             <div>
