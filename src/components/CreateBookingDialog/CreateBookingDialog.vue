@@ -81,6 +81,7 @@ const emptyBooking = {
     ? bookingRulesStore.rules.yard?.details?.averageWeight
     : null,
   estimatedRateType: 'All in rate',
+  estimatedRate: null,
   flexibleBooking: false,
   size: '40 HC',
   insurance: '100,000',
@@ -134,7 +135,7 @@ const isDisabled = computed(() => {
   let condition = false
   if (!props.duplicate) {
     const values = Object.values(booking.value)
-    values.splice(7, 1)
+    delete booking.value.flexibleBooking
     condition = values.some(i => !i)
   }
   if (!condition) {
@@ -150,7 +151,7 @@ const isDisabled = computed(() => {
 // if true shows save to draft dialog
 const isDirty = computed(() => {
   const values = Object.values(booking.value)
-  values.splice(7, 1)
+  delete booking.value.flexibleBooking
 
   return !values.some(i => !i) && form.value?.errors.length
 })
@@ -239,7 +240,7 @@ onMounted(async () => {
   </VRow>
   <VForm
     ref="form"
-    class="flex justify-center flex-col"
+    class="flex justify-center flex-col styleCreateBookingDialog"
     @submit.prevent="saveBooking"
   >
     <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
@@ -312,7 +313,7 @@ onMounted(async () => {
       />
       <div>
         <TextFieldWithSelector
-          v-model.number="booking.targetRate"
+          v-model.number="booking.estimatedRate"
           type="number"
           label="Target rate*"
           :items="['All in rate', 'Linehaul + FSC Only']"
@@ -457,13 +458,14 @@ onMounted(async () => {
 </template>
 
 <style lang="scss">
-.styledTextFieldWithSelector {
-  .select {
-    width: 130%;
-
-    .v-field__input {
-      padding-inline-start: 0;
-      padding-inline-end: 2px;
+.styleCreateBookingDialog {
+  .styledTextFieldWithSelector {
+    .select {
+      width: 130%;
+      .v-field__input {
+        padding-inline-start: 0;
+        padding-inline-end: 0;
+      }
     }
   }
 }

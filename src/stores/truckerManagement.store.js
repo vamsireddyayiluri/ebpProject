@@ -80,7 +80,6 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
 
       return
     }
-    console.log()
     try {
       const fileRef = firebaseRef(storage, `uploads/exporter/${userData.orgId}/${file.name}`)
       const exist = await isFileExists(fileRef)
@@ -170,7 +169,7 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
           return { ...docSnapshot.data(), documents: documentsData }
         })
         const docData = await Promise.all(docDataPromises)
-        
+
         return docData
       }
 
