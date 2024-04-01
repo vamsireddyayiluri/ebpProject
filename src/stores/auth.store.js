@@ -1,4 +1,4 @@
-import {defineStore, storeToRefs} from 'pinia'
+import { defineStore, storeToRefs } from 'pinia'
 import { auth, db } from '~/firebase'
 import moment from 'moment-timezone'
 import {
@@ -14,7 +14,7 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore'
-import { getStorage, ref as firebaseRef, uploadBytes } from 'firebase/storage'
+import { getStorage, ref as firebaseRef, uploadBytes, listAll, getMetadata } from 'firebase/storage'
 import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
@@ -57,17 +57,17 @@ export const useAuthStore = defineStore('auth', () => {
     } catch (error) {
       isLoading.value = false
       switch (error.code) {
-      case 'auth/user-not-found':
-        alertStore.warning({ content: 'User not found' })
-        break
-      case 'auth/wrong-password':
-        alertStore.warning({ content: 'Wrong password' })
-        break
-      case 'auth/invalid-login-credentials':
-        alertStore.warning({ content: 'Invalid credentials' })
-        break
-      default:
-        alertStore.warning({ content: 'Something went wrong' })
+        case 'auth/user-not-found':
+          alertStore.warning({ content: 'User not found' })
+          break
+        case 'auth/wrong-password':
+          alertStore.warning({ content: 'Wrong password' })
+          break
+        case 'auth/invalid-login-credentials':
+          alertStore.warning({ content: 'Invalid credentials' })
+          break
+        default:
+          alertStore.warning({ content: 'Something went wrong' })
       }
     }
   }
@@ -112,7 +112,7 @@ export const useAuthStore = defineStore('auth', () => {
       })
       for (const file of onboardingDocuments) {
         try {
-          const fileRef = firebaseRef(storage, `uploads/${orgId}/${file.name}`)
+          const fileRef = firebaseRef(storage, `uploads/exporter/${orgId}/${file.name}`)
           await uploadBytes(fileRef, file)
         } catch ({ message }) {
           alertStore.warning({ content: "File wasn't uploaded " + message })
@@ -123,20 +123,20 @@ export const useAuthStore = defineStore('auth', () => {
       await sendVerificationEmail()
     } catch (error) {
       switch (error.code) {
-      case 'auth/email-already-in-use':
-        alertStore.warning({ content: 'Email already in use' })
-        break
-      case 'auth/invalid-email':
-        alertStore.warning({ content: 'Invalid email' })
-        break
-      case 'auth/operation-not-allowed':
-        alertStore.warning({ content: 'Operation not allowed' })
-        break
-      case 'auth/weak-password':
-        alertStore.warning({ content: 'Weak password' })
-        break
-      default:
-        alertStore.warning({ content: 'Something went wrong' })
+        case 'auth/email-already-in-use':
+          alertStore.warning({ content: 'Email already in use' })
+          break
+        case 'auth/invalid-email':
+          alertStore.warning({ content: 'Invalid email' })
+          break
+        case 'auth/operation-not-allowed':
+          alertStore.warning({ content: 'Operation not allowed' })
+          break
+        case 'auth/weak-password':
+          alertStore.warning({ content: 'Weak password' })
+          break
+        default:
+          alertStore.warning({ content: 'Something went wrong' })
       }
       isLoading.value = false
     }
@@ -234,7 +234,23 @@ export const useAuthStore = defineStore('auth', () => {
       if (data.invitations) {
         await invitationStore.sendInvitationLink(data.invitations)
       }
+      const folderPath = `uploads/exporter/${data.orgId}`
+      const folderRef = firebaseRef(storage, folderPath)
+      const filesList = await listAll(folderRef)
+      const onboardingDocuments = await Promise.all(
+        filesList.items.map(async fileRef => {
+          const url = await getDownloadURL(fileRef)
+          const type = (await getMetadata(fileRef)).contentType
+          return {
+            filename: fileRef.name,
+            id: uid(),
+            path: url,
+            type: type,
+          }
+        }),
+      )
       await setDoc(doc(db, 'trucker_requirements', data.orgId), {
+        onBoardingDocuments: onboardingDocuments || [],
         requiresForTruckers: data.requiresForTruckers,
         questionList: data.questionList,
       })
