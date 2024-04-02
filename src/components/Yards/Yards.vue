@@ -147,8 +147,8 @@ const onClickOutsideDialog = () => {
                 width >= 600 && width <= 770
                   ? 'Details'
                   : !defaultDetails?.primaryContactName
-                  ? 'Location details'
-                  : 'Default details'
+                    ? 'Location details'
+                    : 'Default details'
               }}
             </Typography>
             <Button

@@ -16,6 +16,8 @@ export const useBookingRulesStore = defineStore('bookingRules', () => {
       truckers: bookingRules?.truckers || { list: [] },
       timeForTruckersFromMarketplace: bookingRules.timeForTruckersFromMarketplace,
       timeForNotificationBeforeCutoff: bookingRules.timeForNotificationBeforeCutoff,
+      isPreferredCarrierWindow: bookingRules.isPreferredCarrierWindow,
+      preferredCarrierWindow: bookingRules.preferredCarrierWindow,
     }),
   )
 

@@ -154,6 +154,7 @@ const formateTime = date => {
 const formateMinTime = dates => {
   // const maxDate = new Date(Math.max(...dates))
   const minData = getSmallerDate(dates)
+  
   return getFormattedDate(minData)
 }
 onMounted(async () => {
@@ -283,12 +284,18 @@ watch(searchValue, value => {
             location="top center"
           >
             <div class="flex justify-center gap-2 py-1">
-              <v-table>
+              <VTable>
                 <thead>
                   <tr>
-                    <th class="text-left">Committed/Total</th>
-                    <th class="text-left">Loading Date</th>
-                    <th class="text-left">SCAC</th>
+                    <th class="text-left">
+                      Committed/Total
+                    </th>
+                    <th class="text-left">
+                      Loading Date
+                    </th>
+                    <th class="text-left">
+                      SCAC
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -296,7 +303,9 @@ watch(searchValue, value => {
                     v-for="data in item.details"
                     :key="data.date"
                   >
-                    <td class="text-center">{{ data.committed }}/{{ data.containers }}</td>
+                    <td class="text-center">
+                      {{ data.committed }}/{{ data.containers }}
+                    </td>
                     <td>{{ formateTime(data.date) }}</td>
                     <td>
                       <template
@@ -310,7 +319,7 @@ watch(searchValue, value => {
                     </td>
                   </tr>
                 </tbody>
-              </v-table>
+              </VTable>
             </div>
           </Popover>
         </Typography>

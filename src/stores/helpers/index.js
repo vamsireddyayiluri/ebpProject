@@ -108,8 +108,10 @@ export const groupBookings = objects => {
       ]
       groupedObject[key].ids = [obj.id]
       groupedObject[key].committed = obj.committed
+
       // groupedObject[key].id = key
     }
   })
+  
   return Object.values(groupedObject)
 }
