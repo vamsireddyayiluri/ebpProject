@@ -47,14 +47,14 @@ export const validateExpiryDate = (entities, entity) => {
         val.id !== entity.id,
     )
   ) {
-    alertStore.warning({
+    /*alertStore.warning({
       content:
         'Booking expiry date with booking number already exists. Update booking expiry date to new date.',
-    })
+    })*/
 
-    return false
+    return 'Booking expiry date with booking number already exists. Update booking expiry date to new date.'
   } else {
-    return true
+    return false
   }
 }
 

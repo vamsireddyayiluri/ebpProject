@@ -32,7 +32,7 @@ const bookingsStore = useBookingsStore()
 const alertStore = useAlertStore()
 
 const { yards } = storeToRefs(workDetailsStore)
-const { bookings } = storeToRefs(bookingsStore)
+const { bookingsForCalendar: bookings } = storeToRefs(bookingsStore)
 const form = ref(null)
 const validExpiryDate = ref(false)
 const insuranceItems = ref(insuranceTypes)
@@ -56,14 +56,13 @@ const loadingsDateCopy = props?.duplicate?.map(booking => {
   const i = deepCopy(booking)
 
   return {
-    id: i.id,
+    id: uid(28),
     loadingDate: i.loadingDate,
     preferredDate: i.preferredDate,
     containers: i.containers,
     scacList: i.scacList,
   }
 })
-
 const copyBooking = {
   ref: bookingRef,
   containers,
@@ -99,7 +98,7 @@ const newBookings = ref(
     ? loadingsDateCopy
     : [
         {
-          id: uid(16),
+          id: uid(28),
           loadingDate: null,
           preferredDate: null,
           containers: null,
@@ -118,6 +117,7 @@ const rules = {
   required(value) {
     return value?.toString().trim() ? true : 'Required field'
   },
+  validateDate: value => validateExpiryDate(bookings?.value, value),
 }
 const updateExpiryDate = (value, index) => {
   newBookings.value[index].loadingDate = moment(value).endOf('day').format()
@@ -131,25 +131,15 @@ const updateExpiryDate = (value, index) => {
 const updateSize = () => {
   booking.value.size = null
 }
-
-const validateExpiryDates = useDebounceFn(index => {
-  // validExpiryDate.value = validateExpiryDate(bookings?.value, newBookings.value[index])
-  const test = newBookings.value.any(i => {
-    return validateExpiryDate(bookings?.value, {ref: booking.value.ref, loadingDate: newBookings.value[index].loadingDate, id: i.id})
-  })
-  validExpiryDate.value = test
-}, 200)
-
 const isDisabled = computed(() => {
   let condition = false
   if (!props.duplicate) {
     const values = Object.values(booking.value)
-    condition = values.some(i => isBoolean(i)? false: !i)
+    condition = values.some(i => (isBoolean(i) ? false : !i))
   }
   if (!condition) {
     condition =
       form.value?.errors.length ||
-      !validExpiryDate.value ||
       validateFlexibleSizes(booking.value.size, booking.value.flexibleBooking)?.length > 0
   }
 
@@ -159,9 +149,8 @@ const isDisabled = computed(() => {
 // if true shows save to draft dialog
 const isDirty = computed(() => {
   const values = Object.values(booking.value)
-  delete booking.value.flexibleBooking
 
-  return !values.some(i => !i) && form.value?.errors.length
+  return !values.some(i => (isBoolean(i) ? false : !i)) && form.value?.errors.length
 })
 
 const closeBookingDialog = () => {
@@ -202,25 +191,19 @@ const saveDraft = async () => {
 const saveBooking = async () => {
   const validationData = await form.value.validate()
   if (validationData.valid) {
-    newBookings.value[0] = {
-      ...booking.value,
-      ...newBookings.value[0],
-    }
-    newBookings.value.forEach(booking => {
-      createBooking(booking)
+    newBookings.value.forEach(b => {
+      createBooking({ ...booking.value, ...b })
     })
     emit('close')
   }
 }
+const updateRef = e => {
+  if (form.value.errors.length) {
+    form.value.validate()
+  }
+}
 onMounted(async () => {
   await workDetailsStore.getYards()
-  if (props.duplicate) {
-    newBookings.value[0] = {
-      ...booking.value,
-      ...newBookings.value[0],
-      id: uid(16),
-    }
-  }
 })
 watch(clickedOutside, () => {
   if (isDirty.value) {
@@ -259,7 +242,8 @@ watch(clickedOutside, () => {
       <Textfield
         v-model.trim="booking.ref"
         label="Booking ref*"
-        required
+        :rules="[rules.required, rules.validateDate(null)]"
+        @update:modelValue="updateRef"
       />
       <Autocomplete
         v-model="booking.line"
@@ -365,8 +349,8 @@ watch(clickedOutside, () => {
             label="Loading date *"
             typeable
             :lower-limit="currentDate"
-            :error-messages="validateExpiryDates(index)"
-            :rules="[rules.required]"
+            :error-messages="validateExpiryDate(bookings, { ...d, ref: booking.ref })"
+            :rules="[rules.required, rules.validateDate({ ...d, ref: booking.ref })]"
             @onUpdate="value => updateExpiryDate(value, index)"
           />
           <Textfield
