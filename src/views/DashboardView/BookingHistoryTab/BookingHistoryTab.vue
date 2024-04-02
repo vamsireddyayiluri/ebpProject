@@ -414,6 +414,11 @@ watch(searchValue, value => {
               {{ item.committed }}
             </Typography>
           </template>
+          <template #loadingDate="{ item }">
+            <Typography type="text-body-m-regular">
+              {{ formateTime(item.loadingDate) }}
+            </Typography>
+          </template>
           <template #status="{ item }">
             <Classification
               type="status"

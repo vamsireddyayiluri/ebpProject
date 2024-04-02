@@ -276,7 +276,7 @@ export const useBookingsStore = defineStore('bookings', () => {
         })
         const index = bookings.value.findIndex(i => {
           const ids = i.ids
-          return ids.includes(data.bookingId)
+          return ids.includes(booking.id)
         })
 
         if (index > -1) {

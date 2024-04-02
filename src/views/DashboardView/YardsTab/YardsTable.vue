@@ -4,6 +4,8 @@ import { useDisplay } from 'vuetify'
 import { getYardBookingLoad, getBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { useAuthStore } from '~/stores/auth.store'
+import { statuses } from '~/constants/statuses'
+import { getSmallerDate } from '~/composables/useDate'
 
 const props = defineProps({
   computedEntities: Array,
@@ -12,7 +14,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['selectTableRow', 'editBooking'])
 const { userData } = useAuthStore()
-const { deleteBooking } = useBookingsStore()
+const { deleteBooking, updateBookingStatus } = useBookingsStore()
 const { smAndDown, width } = useDisplay()
 const showActions = ref(true)
 const tableHeight = ref(1)
@@ -22,18 +24,31 @@ const { yardsHeaders, bookingsHeaders } = useHeaders()
 const { bookingsActions } = useActions()
 const { getFormattedDateTime, getFormattedDate } = useDate()
 
-const containerActionHandler = ({ action, e }) => {
+const containerActionHandler = async ({ action, e }) => {
   if (action === 'edit-booking') emit('editBooking', e[0].id)
   if (action === 'remove-booking') {
     removeBookingDialog.value.show(true)
     removeBookingDialog.value.data = e[0]
   }
+  if (action === 'pause-booking') {
+    await updateBookingStatus(e[0], statuses.paused)
+  }
+  if (action === 'reactive-booking') {
+    await updateBookingStatus(e[0], statuses.active)
+  }
 }
 const onSelectRow = e => {
   emit('selectTableRow', e)
 }
-const removeBooking = id => {
-  deleteBooking(id)
+const formateMinTime = dates => {
+  const minData = getSmallerDate(dates)
+  return getFormattedDate(minData)
+}
+const formateTime = date => {
+  return getFormattedDate(date)
+}
+const removeBooking = booking => {
+  deleteBooking(booking)
   removeBookingDialog.value.show(false)
 }
 const tableId = 'yardsTable'
@@ -136,7 +151,7 @@ onMounted(() => {
                 :key="i"
               >
                 {{ i }}
-                <br>
+                <br />
               </template>
             </template>
             <template v-else>
@@ -152,10 +167,42 @@ onMounted(() => {
         </template>
         <template #bookingExpiry="{ item }">
           <Typography type="text-body-m-regular">
-            {{ getFormattedDate(item.loadingDate) }}
-            <Tooltip>
-              {{ getFormattedDateTime(item.loadingDate) }}
-            </Tooltip>
+            {{ formateMinTime(item.details) || '--' }}
+            <Popover
+              activator="parent"
+              location="top center"
+            >
+              <div class="flex justify-center gap-2 py-1">
+                <v-table>
+                  <thead>
+                    <tr>
+                      <th class="text-left">Committed/Total</th>
+                      <th class="text-left">Loading Date</th>
+                      <th class="text-left">SCAC</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="data in item.details"
+                      :key="data.date"
+                    >
+                      <td class="text-center">{{ data.committed }}/{{ data.containers }}</td>
+                      <td>{{ formateTime(data.date) || '--' }}</td>
+                      <td>
+                        <template
+                          v-for="scac in data.scacs"
+                          :key="scac"
+                        >
+                          <Chip class="m-1">
+                            {{ scac }}
+                          </Chip>
+                        </template>
+                      </td>
+                    </tr>
+                  </tbody>
+                </v-table>
+              </div>
+            </Popover>
           </Typography>
         </template>
         <template #location="{ item }">
@@ -192,7 +239,7 @@ onMounted(() => {
       <ConfirmationDialog
         btn-name="Remove"
         @close="removeBookingDialog.show(false)"
-        @onClickBtn="removeBooking(removeBookingDialog.data.id)"
+        @onClickBtn="removeBooking(removeBookingDialog.data)"
       >
         <Typography>
           Are you sure you want to remove ref#
