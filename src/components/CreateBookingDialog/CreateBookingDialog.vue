@@ -17,13 +17,12 @@ import {
 import { insuranceTypes } from '~/constants/settings'
 import { deepCopy } from 'json-2-csv/lib/utils'
 import { uid } from 'uid'
-import { cloneDeep } from 'lodash'
+import { cloneDeep, isBoolean } from 'lodash'
 
 const props = defineProps({
-  duplicate: Object,
+  duplicate: Array,
   clickedOutside: Boolean,
 })
-
 const emit = defineEmits(['close'])
 
 const { createBooking, createDraft } = useBookingsStore()
@@ -52,7 +51,18 @@ const {
   size,
   scacList,
   insurance,
-} = deepCopy(props?.duplicate || {})
+} = deepCopy(props?.duplicate?.length ? props.duplicate[0] : {})
+const loadingsDateCopy = props?.duplicate?.map(booking => {
+  const i = deepCopy(booking)
+
+  return {
+    id: i.id,
+    loadingDate: i.loadingDate,
+    preferredDate: i.preferredDate,
+    containers: i.containers,
+    scacList: i.scacList,
+  }
+})
 
 const copyBooking = {
   ref: bookingRef,
@@ -84,15 +94,19 @@ const emptyBooking = {
   insurance: '100,000',
 }
 const booking = ref(props?.duplicate ? copyBooking : emptyBooking)
-const newBookings = ref([
-  {
-    id: uid(16),
-    loadingDate: null,
-    preferredDate: null,
-    containers: null,
-    scacList: bookingRulesStore.rules.truckers,
-  },
-])
+const newBookings = ref(
+  props.duplicate
+    ? loadingsDateCopy
+    : [
+        {
+          id: uid(16),
+          loadingDate: null,
+          preferredDate: null,
+          containers: null,
+          scacList: bookingRulesStore.rules.truckers,
+        },
+      ],
+)
 const confirmDraftsDialog = ref(null)
 const { clickedOutside } = toRefs(props)
 
@@ -109,23 +123,28 @@ const updateExpiryDate = (value, index) => {
   newBookings.value[index].loadingDate = moment(value).endOf('day').format()
   const { preferredCarrierWindow } = bookingRulesStore.rules
   if (preferredCarrierWindow) {
-    newBookings.value[index].preferredDate = moment(newBookings.value[index].loadingDate).subtract(preferredCarrierWindow, "days").format()
+    newBookings.value[index].preferredDate = moment(newBookings.value[index].loadingDate)
+      .subtract(preferredCarrierWindow, 'days')
+      .format()
   }
 }
 const updateSize = () => {
   booking.value.size = null
 }
 
-const validateExpiryDates = useDebounceFn(() => {
-  validExpiryDate.value = validateExpiryDate(bookings?.value, booking.value)
+const validateExpiryDates = useDebounceFn(index => {
+  // validExpiryDate.value = validateExpiryDate(bookings?.value, newBookings.value[index])
+  const test = newBookings.value.any(i => {
+    return validateExpiryDate(bookings?.value, {ref: booking.value.ref, loadingDate: newBookings.value[index].loadingDate, id: i.id})
+  })
+  validExpiryDate.value = test
 }, 200)
 
 const isDisabled = computed(() => {
   let condition = false
   if (!props.duplicate) {
     const values = Object.values(booking.value)
-    delete booking.value.flexibleBooking
-    condition = values.some(i => !i)
+    condition = values.some(i => isBoolean(i)? false: !i)
   }
   if (!condition) {
     condition =
@@ -193,13 +212,20 @@ const saveBooking = async () => {
     emit('close')
   }
 }
+onMounted(async () => {
+  await workDetailsStore.getYards()
+  if (props.duplicate) {
+    newBookings.value[0] = {
+      ...booking.value,
+      ...newBookings.value[0],
+      id: uid(16),
+    }
+  }
+})
 watch(clickedOutside, () => {
   if (isDirty.value) {
     confirmDraftsDialog.value.show(true)
   } else emit('close')
-})
-onMounted(async () => {
-  workDetailsStore.getYards()
 })
 </script>
 
@@ -339,7 +365,7 @@ onMounted(async () => {
             label="Loading date *"
             typeable
             :lower-limit="currentDate"
-            :error-messages="validateExpiryDates()"
+            :error-messages="validateExpiryDates(index)"
             :rules="[rules.required]"
             @onUpdate="value => updateExpiryDate(value, index)"
           />

@@ -113,9 +113,10 @@ const handleCreateBookingDialog = () => {
     createBookingDialog.value.show(true)
   }
 }
-const duplicateBooking = booking => {
+const duplicateBooking = async ids => {
+  const bookings = await bookingsStore.getBookingsByIds({bookingIds: ids })
   createBookingDialog.value.show(true)
-  createBookingDialog.value.data = booking
+  createBookingDialog.value.data = bookings
 }
 const closeCreateBookingDialog = () => {
   createBookingDialog.value.show(false)

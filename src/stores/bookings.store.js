@@ -135,7 +135,7 @@ export const useBookingsStore = defineStore('bookings', () => {
         // updatePromises.push(updateBooking(updatedBookingData, 'bookings', true))
       }
     }
-    
+
     return updateBookings
   }
 
@@ -153,6 +153,22 @@ export const useBookingsStore = defineStore('bookings', () => {
 
         return docData.data()
       }
+    } catch (e) {
+      alertStore.info({ content: 'Booking not found' })
+    }
+  }
+
+  const getBookingsByIds = async ({ bookingIds, draft = false }) => {
+    try {
+      const q = query(
+        collection(db, draft? 'drafts': 'bookings'),
+        where('id', 'in', bookingIds),
+      )
+      const querySnapshot = await getDocs(q)
+
+      const results = querySnapshot.docs.map(doc => doc.data())
+
+      return results
     } catch (e) {
       alertStore.info({ content: 'Booking not found' })
     }
@@ -279,7 +295,8 @@ export const useBookingsStore = defineStore('bookings', () => {
         })
         const index = bookings.value.findIndex(i => {
           const ids = i.ids
-          return ids.includes(booking.id)
+
+          return ids.includes(data.bookingId)
         })
 
         if (index > -1) {
@@ -392,6 +409,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     getBookings,
     getCommitmentsByBookingId,
     getBooking,
+    getBookingsByIds,
     createBooking,
     deleteBooking,
     createDraft,
