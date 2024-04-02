@@ -57,9 +57,12 @@ const validExpiryDate = ref(false)
 const insuranceItems = ref(insuranceTypes)
 const isSaveLoading = ref(false)
 const rules = {
-  containers: value => checkPositiveInteger(value, booking.value),
   checkcommitted: value => checkCommittedValue(value, booking.value),
   averageWeight: value => validateAverageWeight(value, booking.value.location),
+  containers: value => checkPositiveInteger(value),
+  required(value) {
+    return value?.toString().trim() ? true : 'Required field'
+  },
 }
 
 const updateExpiryDate = value => {
@@ -194,36 +197,45 @@ const cancelChanges = async () => {
 }
 const onSave = async () => {
   isSaveLoading.value = true
-  booking.value.loadingDate = moment(booking.value.loadingDate).endOf('day').format()
-  booking.value.preferredDate = moment(booking.value.preferredDate).endOf('day').format()
-  if (activated) {
-    if (expired.value) {
-      await reactivateBooking(booking.value)
-      await router.push({ name: 'dashboard' })
-      activated.value = false
+  // booking.value.loadingDate = moment(booking.value.loadingDate).endOf('day').format()
+  // booking.value.preferredDate = moment(booking.value.preferredDate).endOf('day').format()
+  // if (activated) {
+  //   if (expired.value) {
+  //     await reactivateBooking(booking.value)
+  //     await router.push({ name: 'dashboard' })
+  //     activated.value = false
 
-      return
-    }
-    if (completed.value) {
-      await duplicateBooking(booking.value)
-      await router.push({ name: 'dashboard' })
-      activated.value = false
+  //     return
+  //   }
+  //   if (completed.value) {
+  //     await duplicateBooking(booking.value)
+  //     await router.push({ name: 'dashboard' })
+  //     activated.value = false
 
-      return
-    }
-  }
-  await updateBooking(booking.value, fromDraft ? 'drafts' : 'bookings')
-  await new Promise(resolve => setTimeout(resolve, 1000))
+  //     return
+  //   }
+  // }
+  // await updateBooking(booking.value, fromDraft ? 'drafts' : 'bookings')
+  // await new Promise(resolve => setTimeout(resolve, 1000))
 
-  await router.push({ name: 'dashboard' })
+  // await router.push({ name: 'dashboard' })
   isSaveLoading.value = false
 }
 const validateExpiryDates = () => {
   validExpiryDate.value = validateExpiryDate(bookings?.value, booking.value)
 }
-
+const removeLoadingDate = id => {
+  console.log('remove booking dia', id)
+  // const index = bookings.value.findIndex(i => i.id === id)
+  // if (index > -1) {
+  //   newBookings.value.splice(index, 1)
+  // }
+}
 onMounted(async () => {
   loading.value = true
+  await getBookings(fromDraft ? { draft: true } : {})
+  await getBookings({})
+  bookings.value = useBookingsStore().bookings
   if (fromHistory) {
     booking.value = await getBooking({ id: route.params.id })
     if (queryParams.activated) {
@@ -232,11 +244,10 @@ onMounted(async () => {
   } else if (fromDraft) {
     booking.value = await getBooking({ id: route.params.id, draft: true })
   } else {
-    booking.value = await getBooking({ id: route.params.id })
+    booking.value = bookings.value.find(val => val.id === route.params.id)
+    // await getBooking({ id: route.params.id })
   }
-  await getBookings(fromDraft ? { draft: true } : {})
-  await getBookings({})
-  bookings.value = useBookingsStore().bookings
+
   yards.value = workDetailsStore.yards
   loading.value = false
 })
@@ -382,17 +393,8 @@ onMounted(async () => {
             required
             :disabled="pending || expired || completed"
           />
-          <Datepicker
-            :key="booking.loadingDate"
-            :picked="booking.loadingDate ? moment(booking.loadingDate).toDate() : null"
-            label="Loading date *"
-            :disabled="!activated && (pending || expired || completed)"
-            :class="{ 'pointer-events-none': !activated && (expired || completed) }"
-            :lower-limit="(booking.preferredDate && new Date(booking.preferredDate)) || currentDate"
-            :error-messages="validateExpiryDates()"
-            @onUpdate="updateExpiryDate"
-          />
-          <Datepicker
+
+          <!-- <Datepicker
             :key="booking.preferredDate"
             :picked="booking.preferredDate ? moment(booking.preferredDate).toDate() : null"
             label="Preferred carrier window"
@@ -401,7 +403,7 @@ onMounted(async () => {
             :upper-limit="booking.loadingDate && new Date(booking.loadingDate)"
             :lower-limit="currentDate"
             @onUpdate="updatePreferredDate"
-          />
+          /> -->
           <Autocomplete
             v-model="booking.location"
             :items="
@@ -440,15 +442,89 @@ onMounted(async () => {
             return-object
             :disabled="pending || expired || completed"
           />
-          <Textfield
+          <TextFieldWithSelector
             v-model.number="booking.estimatedRate"
-            label="Target Rate*"
-            :rules="[rules.containers]"
             type="number"
-            required
-            :disabled="pending || expired || completed"
+            label="Target rate*"
+            :items="['All in rate', 'Linehaul + FSC Only']"
+            return-object="true"
+            :rules="[rules.containers]"
+            @onSelect="value => (booking.estimatedRateType = value)"
           />
-          <RadioGroup
+          <Autocomplete
+            v-model="booking.size"
+            :items="containersSizes"
+            label="Equipment type*"
+            :multiple="booking.flexibleBooking"
+            item-title="label"
+            item-value="size"
+            :menu-props="{ maxHeight: 350 }"
+            class="h-fit"
+            :error-messages="validateFlexibleSizes(booking.size, booking.flexibleBooking)"
+          >
+            <template #prepend-item>
+              <div class="mt-3 ml-5">
+                <Checkbox
+                  v-model="booking.flexibleBooking"
+                  label="Flexible booking"
+                  @change="updateSize"
+                />
+                <Typography
+                  type="w-3/5 text-body-xs-regular ml-9 mt-1.5 -pr-4"
+                  :color="getColor('textSecondary')"
+                >
+                  Allows more than 1 equipment type to be chosen (maximum of 2)
+                </Typography>
+              </div>
+              <Divider class="w-[calc(100%+16px)] mt-3 -ml-2" />
+            </template>
+          </Autocomplete>
+
+          <div class="grid grid-cols-subgrid gap-6 col-span-2 md:col-span-3 relative">
+            <Typography type="text-body-xs-semibold col-span-2 md:col-span-3 -mb-2">
+              Loading dates
+            </Typography>
+            <template
+              v-for="(d, index) in booking.details"
+              :key="d.id"
+            >
+              <Datepicker
+                :picked="d.date"
+                label="Loading date *"
+                typeable
+                :lower-limit="currentDate"
+                :error-messages="validateExpiryDates(index)"
+                :rules="[rules.required]"
+                @onUpdate="value => updateExpiryDate(value, index)"
+              />
+              <Textfield
+                v-model.number="d.containers"
+                label="Number of containers*"
+                :rules="[rules.containers]"
+                type="number"
+                required
+                class="h-fit"
+              />
+              <div class="relative">
+                <AutocompleteScac
+                  :scac-list="{ list: [...d.scacs] || [] }"
+                  :menu-btn="false"
+                  :rules="[rules.required]"
+                  class="w-3/4"
+                />
+                <IconButton
+                  v-if="index"
+                  icon="mdi-close"
+                  class="absolute top-0 right-0"
+                  @click="removeLoadingDate(d.id)"
+                >
+                  <Tooltip> Remove loading date</Tooltip>
+                </IconButton>
+              </div>
+            </template>
+          </div>
+
+          <!-- <RadioGroup
             v-model="booking.estimatedRateType"
             inline
             class="mt-3"
@@ -464,8 +540,8 @@ onMounted(async () => {
               label="Linehaul + FSC Only"
               :disabled="pending || expired || completed"
             />
-          </RadioGroup>
-          <Select
+          </RadioGroup> -->
+          <!-- <Select
             v-model="booking.size"
             :items="containersSizes"
             label="Equipment type*"
@@ -474,25 +550,25 @@ onMounted(async () => {
             :multiple="booking.flexibleBooking"
             :disabled="pending || expired || completed"
             :error-messages="validateFlexibleSizes(booking.size, booking.flexibleBooking)"
-          />
-          <Checkbox
+          /> -->
+          <!-- <Checkbox
             v-model="booking.flexibleBooking"
             label="Flexible Booking*"
             :disabled="pending || expired || completed"
             class="mt-3"
             @change="updateSize"
-          />
-          <div>
+          /> -->
+          <!-- <div>
             <AutocompleteScac
               :key="booking.scacList"
               :scac-list="booking.scacList"
               :disabled="pending || expired || completed"
             />
-          </div>
+          </div> -->
         </VForm>
         <SaveCancelChanges
           v-if="!(expired || completed) || activated"
-          :disabled="validateBooking"
+          :disabled="false"
           class="mt-10"
           :loading="isSaveLoading"
           @onSave="onSave"
@@ -504,9 +580,7 @@ onMounted(async () => {
         :class="[flyoutBottom || smAndDown ? 'bottom' : 'right', drawer ? 'active' : '']"
       >
         <div class="flex justify-between items-center">
-          <Typography type="text-h1">
-            Statistics
-          </Typography>
+          <Typography type="text-h1"> Statistics </Typography>
           <IconButton
             v-if="!smAndDown"
             :icon="!flyoutBottom ? 'mdi-dock-bottom' : 'mdi-dock-right'"
@@ -516,9 +590,7 @@ onMounted(async () => {
         </div>
         <div class="statisticsContent">
           <div class="statisticsProgress">
-            <Typography type="text-h4">
-              Fulfillment progress
-            </Typography>
+            <Typography type="text-h4"> Fulfillment progress </Typography>
             <ProgressCircular
               :size="260"
               :value="getBookingLoad(booking.committed, booking.containers)"
@@ -529,9 +601,7 @@ onMounted(async () => {
             </ProgressCircular>
           </div>
           <div class="statisticsTimeline">
-            <Typography type="text-h4">
-              Booking timeline
-            </Typography>
+            <Typography type="text-h4"> Booking timeline </Typography>
             <div class="timeline scrollbar">
               <Timeline
                 :items="booking.timeLine"
@@ -551,7 +621,7 @@ onMounted(async () => {
         :src="container"
         class="container-img"
         alt="qualle container"
-      >
+      />
       <Typography
         type="text-h1"
         class="!text-7xl mb-4 text-center"
