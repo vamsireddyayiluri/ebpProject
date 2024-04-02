@@ -44,7 +44,6 @@ const {
   line,
   commodity,
   loadingDate,
-  preferredDate,
   location,
   weight,
   estimatedRateType,
@@ -61,7 +60,6 @@ const copyBooking = {
   line,
   commodity,
   loadingDate,
-  preferredDate,
   location,
   weight,
   estimatedRateType,
@@ -75,7 +73,6 @@ const emptyBooking = {
   ref: '',
   line: null,
   commodity: '',
-  preferredDate: null,
   location: bookingRulesStore.rules.yard,
   weight: bookingRulesStore.rules.yard?.details?.overweight
     ? bookingRulesStore.rules.yard?.details?.averageWeight
@@ -91,6 +88,7 @@ const newBookings = ref([
   {
     id: uid(16),
     loadingDate: null,
+    preferredDate: null,
     containers: null,
     scacList: bookingRulesStore.rules.truckers,
   },
@@ -109,20 +107,11 @@ const rules = {
 }
 const updateExpiryDate = (value, index) => {
   newBookings.value[index].loadingDate = moment(value).endOf('day').format()
-
-  /*if (bookingRulesStore?.rules?.timeForTruckersFromMarketplace) {
-    booking.value.preferredDate = moment(value)
-      .subtract(bookingRulesStore?.rules?.timeForTruckersFromMarketplace, 'day')
-      .format()
-    if (moment(booking.value.preferredDate).endOf('day').isBefore(currentDate.value)) {
-      booking.value.preferredDate = moment(currentDate.value).format()
-    }
-  }*/
+  const { preferredCarrierWindow } = bookingRulesStore.rules
+  if (preferredCarrierWindow) {
+    newBookings.value[index].preferredDate = moment(newBookings.value[index].loadingDate).subtract(preferredCarrierWindow, "days").format()
+  }
 }
-const updatePreferredDate = value => {
-  booking.value.preferredDate = moment(value).endOf('day').format()
-}
-
 const updateSize = () => {
   booking.value.size = null
 }
@@ -161,14 +150,11 @@ const closeBookingDialog = () => {
     confirmDraftsDialog.value.show(true)
   } else emit('close')
 }
-const updateDates = () => {
-  booking.value.loadingDate = moment(newBookings.value.loadingDate).endOf('day').format()
-  booking.value.preferredDate = moment(booking.value.preferredDate).endOf('day').format()
-}
 const addLoadingDate = () => {
   newBookings.value.push({
     id: uid(16),
     loadingDate: null,
+    preferredDate: null,
     containers: null,
     scacList: cloneDeep(bookingRulesStore.rules.truckers),
     ...booking.value,
@@ -183,12 +169,10 @@ const removeLoadingDate = id => {
 const saveDraft = async () => {
   const validationData = await form.value.validate()
   if (validationData.valid) {
-    updateDates()
     newBookings.value[0] = {
       ...booking.value,
       ...newBookings.value[0],
     }
-    updateDates()
     newBookings.value.forEach(booking => {
       createDraft(booking)
     })
@@ -199,7 +183,6 @@ const saveDraft = async () => {
 const saveBooking = async () => {
   const validationData = await form.value.validate()
   if (validationData.valid) {
-    updateDates()
     newBookings.value[0] = {
       ...booking.value,
       ...newBookings.value[0],
@@ -282,13 +265,6 @@ onMounted(async () => {
         class="h-fit"
         @update:modelValue="value => (booking.weight = value.details?.averageWeight || null)"
       />
-      <Datepicker
-        :key="booking.preferredDate"
-        :picked="booking.preferredDate"
-        label="Preferred carrier window"
-        :lower-limit="currentDate"
-        @onUpdate="updatePreferredDate"
-      />
       <Textfield
         v-model.trim="booking.commodity"
         label="Commodity*"
@@ -362,7 +338,7 @@ onMounted(async () => {
             :picked="d.loadingDate"
             label="Loading date *"
             typeable
-            :lower-limit="(booking.preferredDate && new Date(booking.preferredDate)) || currentDate"
+            :lower-limit="currentDate"
             :error-messages="validateExpiryDates()"
             :rules="[rules.required]"
             @onUpdate="value => updateExpiryDate(value, index)"
@@ -461,11 +437,14 @@ onMounted(async () => {
 .styleCreateBookingDialog {
   .styledTextFieldWithSelector {
     .select {
-      width: 130%;
+      width: 100%;
       .v-field__input {
         padding-inline-start: 0;
         padding-inline-end: 0;
       }
+    }
+    .v-field__input {
+      padding-inline-end: 0;
     }
   }
 }

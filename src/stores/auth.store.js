@@ -223,6 +223,8 @@ export const useAuthStore = defineStore('auth', () => {
             timeForNotificationBeforeCutoff: '',
             timeForTruckersFromMarketplace: '',
             truckers: { list: [] },
+            isPreferredCarrierWindow: false,
+            preferredCarrierWindow: '',
           },
           org_type: 'exporter',
           owner_uid: userId,
@@ -241,6 +243,7 @@ export const useAuthStore = defineStore('auth', () => {
         filesList.items.map(async fileRef => {
           const url = await getDownloadURL(fileRef)
           const type = (await getMetadata(fileRef)).contentType
+
           return {
             filename: fileRef.name,
             id: uid(),

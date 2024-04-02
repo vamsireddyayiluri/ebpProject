@@ -8,14 +8,16 @@ import { useCommitmentsStore } from '~/stores/commitments.store'
 import { canceledCodes, declineCodes, onboardingCodes } from '~/constants/reasonCodes'
 import { statuses } from '~/constants/statuses'
 import { handleQueryUrlForCommitments } from '~/helpers/links'
-const bookingsStore = useBookingsStore()
-
 const props = defineProps({
   computedEntities: Array,
   searchValue: String,
   loading: Boolean,
 })
+
 const emit = defineEmits(['selectTableRow', 'editBooking', 'duplicateBooking'])
+
+const bookingsStore = useBookingsStore()
+
 const { deleteBooking, updateBookingStatus, getCommitmentsByBookingId, closeBookingExpansion } =
   useBookingsStore()
 const {
@@ -25,6 +27,7 @@ const {
   completeCommitment,
   edit_commitment_loadingDate,
 } = useCommitmentsStore()
+
 // const { computedEntities } = toRefs(props)
 const authStore = useAuthStore()
 const { smAndDown } = useDisplay()
@@ -67,14 +70,17 @@ const formateTime = date => {
 const formateMinTime = dates => {
   // const maxDate = new Date(Math.max(...dates))
   const minData = getSmallerDate(dates)
+  
   return getFormattedDate(minData)
 }
 const bookingStatus = item => {
   const bookings = computedEntities.value
   const booking = bookings.find(i => {
     const ids = i.ids
+    
     return ids.includes(item.bookingId)
   })
+  
   return booking?.status
 }
 const containerActionHandler = async ({ action, e }) => {
@@ -261,7 +267,7 @@ watch(
             :key="i"
           >
             {{ i }}
-            <br />
+            <br>
           </template>
         </template>
         <template v-else>
@@ -283,12 +289,18 @@ watch(
           location="top center"
         >
           <div class="flex justify-center gap-2 py-1">
-            <v-table>
+            <VTable>
               <thead>
                 <tr>
-                  <th class="text-left">Committed/Total</th>
-                  <th class="text-left">Loading Date</th>
-                  <th class="text-left">SCAC</th>
+                  <th class="text-left">
+                    Committed/Total
+                  </th>
+                  <th class="text-left">
+                    Loading Date
+                  </th>
+                  <th class="text-left">
+                    SCAC
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -296,7 +308,9 @@ watch(
                   v-for="data in item.details"
                   :key="data.date"
                 >
-                  <td class="text-center">{{ data.committed }}/{{ data.containers }}</td>
+                  <td class="text-center">
+                    {{ data.committed }}/{{ data.containers }}
+                  </td>
                   <td>{{ formateTime(data.date) || '--' }}</td>
                   <td>
                     <template
@@ -310,7 +324,7 @@ watch(
                   </td>
                 </tr>
               </tbody>
-            </v-table>
+            </VTable>
           </div>
         </Popover>
       </Typography>

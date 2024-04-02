@@ -87,6 +87,7 @@ export const useBookingsStore = defineStore('bookings', () => {
         booking.status === statuses.expired ||
         booking.status === statuses.canceled,
     )
+
     // const pastbook = await validateBookingsExpiry(filteredBookings)
     const group = groupBookings(filteredBookings)
     pastBookings.value = group
@@ -130,9 +131,11 @@ export const useBookingsStore = defineStore('bookings', () => {
         }
 
         updateBookings.push(updatedBookingData)
+
         // updatePromises.push(updateBooking(updatedBookingData, 'bookings', true))
       }
     }
+    
     return updateBookings
   }
 
@@ -276,6 +279,7 @@ export const useBookingsStore = defineStore('bookings', () => {
         })
         const index = bookings.value.findIndex(i => {
           const ids = i.ids
+          
           return ids.includes(data.bookingId)
         })
 

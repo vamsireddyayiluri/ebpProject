@@ -26,6 +26,7 @@ const formateTime = date => {
 const formateMinTime = dates => {
   // const maxDate = new Date(Math.max(...dates))
   const minData = getSmallerDate(dates)
+  
   return getFormattedDate(minData)
 }
 
@@ -112,12 +113,18 @@ onMounted(() => {
           location="top center"
         >
           <div class="flex justify-center gap-2 py-1">
-            <v-table>
+            <VTable>
               <thead>
                 <tr>
-                  <th class="text-left">Committed/Total</th>
-                  <th class="text-left">Loading Date</th>
-                  <th class="text-left">SCAC</th>
+                  <th class="text-left">
+                    Committed/Total
+                  </th>
+                  <th class="text-left">
+                    Loading Date
+                  </th>
+                  <th class="text-left">
+                    SCAC
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -125,7 +132,9 @@ onMounted(() => {
                   v-for="data in item.details"
                   :key="data.date"
                 >
-                  <td class="text-center">{{ data.committed }}/{{ data.containers }}</td>
+                  <td class="text-center">
+                    {{ data.committed }}/{{ data.containers }}
+                  </td>
                   <td>{{ formateTime(data.date) }}</td>
                   <td>
                     <template
@@ -139,7 +148,7 @@ onMounted(() => {
                   </td>
                 </tr>
               </tbody>
-            </v-table>
+            </VTable>
           </div>
         </Popover>
       </Typography>
@@ -169,8 +178,7 @@ onMounted(() => {
       >
         <Typography>
           Are you sure you want to delete draft#
-          <b>{{ deleteDraftDialog.data.ref }}</b
-          >?
+          <b>{{ deleteDraftDialog.data.ref }}</b>?
         </Typography>
       </ConfirmationDialog>
     </template>

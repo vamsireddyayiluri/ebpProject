@@ -86,6 +86,7 @@ export const groupBookings = objects => {
         scacs: [...(obj?.scacList?.list || [])],
         id: obj.id,
       })
+
       // groupedObject[key].loadingDate.push(obj.loadingDate)
       groupedObject[key].ids.push(obj.id)
 
@@ -103,8 +104,10 @@ export const groupBookings = objects => {
       ]
       groupedObject[key].ids = [obj.id]
       groupedObject[key].committed = obj.committed
+
       // groupedObject[key].id = key
     }
   })
+  
   return Object.values(groupedObject)
 }
