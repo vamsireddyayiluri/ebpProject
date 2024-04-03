@@ -11,7 +11,7 @@ import { checkVendorDetailsCompletion } from '~/helpers/validations-functions'
 const router = useRouter()
 const { getFormattedDate } = useDate()
 const bookingsStore = useBookingsStore()
-const { loading, bookingsForCalendar } = storeToRefs(bookingsStore)
+const { loading, notGroupedBookings } = storeToRefs(bookingsStore)
 const options = ref({
   initialEvents: [],
 })
@@ -35,7 +35,7 @@ const getEvents = bookings => {
     }
   })
 }
-const events = computed(() => getEvents(bookingsStore.bookingsForCalendar))
+const events = computed(() => getEvents(bookingsStore.notGroupedBookings))
 
 const onEventClick = e => console.log(e.event)
 const onEvents = e => console.log(e)
@@ -59,7 +59,7 @@ const removeBooking = async id => {
 const today = moment()
 
 const nextExpiring = computed(() => {
-  const datesArray = bookingsForCalendar.value
+  const datesArray = notGroupedBookings.value
     .filter(b => b)
     .sort((a, b) => moment(a.loadingDate).diff(moment(b.loadingDate)))
 
@@ -98,7 +98,7 @@ onMounted(async () => {
             class="mx-4"
           />
           <Typography class="flex justify-center flex-wrap gap-2">
-            <b>{{ bookingsForCalendar.length }}</b>
+            <b>{{ notGroupedBookings.length }}</b>
             <div
               class="text-center"
               :style="{ color: getColor('textSecondary') }"
@@ -111,7 +111,7 @@ onMounted(async () => {
             class="mx-4"
           />
           <Typography class="flex justify-center flex-wrap gap-2">
-            <b>{{ totalFulfilledBookings(bookingsForCalendar) }}</b>
+            <b>{{ totalFulfilledBookings(notGroupedBookings) }}</b>
             <div
               class="text-center"
               :style="{ color: getColor('textSecondary') }"
