@@ -9,7 +9,7 @@ import { getBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { storeToRefs } from 'pinia'
 import { statuses } from '~/constants/statuses'
-import { cloneDeep, isEqual, pickBy } from 'lodash'
+import { cloneDeep, isEqual, pickBy, isNull } from 'lodash'
 import container from '~/assets/images/container.png'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import containersSizes from '~/fixtures/containersSizes.json'
@@ -20,9 +20,9 @@ import {
   validateFlexibleSizes,
   checkCommittedValue,
   validateAverageWeight,
+  checkUniqueDates,
 } from '~/helpers/validations-functions'
 import { insuranceTypes } from '~/constants/settings'
-import { deepCopy } from 'json-2-csv/lib/utils'
 
 const authStore = useAuthStore()
 const alertStore = useAlertStore()
@@ -41,7 +41,7 @@ const {
 
 const workDetailsStore = useWorkDetailsStore()
 const { yards } = storeToRefs(workDetailsStore)
-const { bookings, drafts, bookingsForCalendar: activeBookings } = storeToRefs(useBookingsStore())
+const { bookings, drafts, notGroupedBookings: activeBookings } = storeToRefs(useBookingsStore())
 const route = useRoute()
 const router = useRouter()
 const { smAndDown } = useDisplay()
@@ -65,6 +65,9 @@ const rules = {
   required(value) {
     return value?.toString().trim() ? true : 'Required field'
   },
+  validateDate: value => (isNull(value) ? true : validateExpiryDate(activeBookings?.value, value)),
+  uniqueDate: () =>
+    checkUniqueDates(booking.value.details) || 'Loading date already exists. Select another date.',
 }
 
 const updateExpiryDate = (value, index) => {
@@ -132,31 +135,31 @@ const validateRequiredFields = () => {
   return (
     !(booking.value.ref &&
     booking.value.containers &&
-    rules.checkcommitted(booking.value.containers) === true &&
     booking.value.commodity &&
     booking.value.insurance &&
     booking.value.weight &&
     rules.containers(booking.value.weight) === true &&
     booking.value.estimatedRate &&
     rules.containers(booking.value.estimatedRate) === true &&
-    booking.value.loadingDate &&
     booking.value.preferredDate &&
-    booking.value.scacList.list?.length &&
     booking.value.size &&
     booking.value.size
       ? booking.value.size.length > 0
-      : false && booking.value.estimatedRateType) ||
+      : false && booking.value.estimatedRateType && isLoadingDatesFieldsEmpty) ||
     validateFlexibleSizes(booking.value.size, booking.value.flexibleBooking)?.length > 0
   )
 }
 
+const isLoadingDatesFieldsEmpty = computed(() => {
+  return cloneDeep(booking.value.details).some(object => {
+    return Object.values(object).some(
+      value => value === null || (Array.isArray(value) && value.some(item => item === null)),
+    )
+  })
+})
+
 const isDisabledPublish = computed(() => {
-  return (
-    validateRequiredFields() ||
-    !validExpiryDate.value ||
-    moment(booking.value.loadingDate).endOf('day').isBefore(currentDate.value) ||
-    moment(booking.value.preferredDate).endOf('day').isBefore(currentDate.value)
-  )
+  return validateRequiredFields() || form.value?.errors.length
 })
 
 const validateBooking = computed(() => {
@@ -164,23 +167,15 @@ const validateBooking = computed(() => {
     const selectedBooking = bookings.value.find(i => i.id === booking.value.id)
     booking.value.entities = selectedBooking?.entities
   }
-  let condition = isEqual(
-    booking.value,
-    fromDraft
-      ? drafts.value.find(i => i.id === booking.value.id)
-      : bookings.value.find(i => i.id === booking.value.id),
-  )
+  let condition = isEqual(booking.value, originalBooking.value)
   condition = condition || validateRequiredFields()
-  condition =
-    condition ||
-    moment(booking.value.loadingDate).endOf('day').isBefore(currentDate.value) ||
-    moment(booking.value.preferredDate).endOf('day').isBefore(currentDate.value)
+  condition = condition || form.value?.errors.length
 
   if (!fromDraft) {
     condition = condition || !validExpiryDate.value
   }
   if (!fromDraft && !fromHistory && !condition) {
-    condition = condition || booking.value.containers < booking.value.committed
+    condition = condition || booking.value.details.some(val => val?.containers < val?.committed)
   }
 
   return condition
@@ -189,13 +184,9 @@ const cancelChanges = async () => {
   if (expired.value || completed.value) {
     activated.value = false
     hideChip.value = false
-    booking.value = await getBooking({ id: route.params.id })
-
-    return
   }
-  booking.value = cloneDeep(
-    useArrayFind(fromDraft ? drafts.value : bookings.value, i => i.id === route.params.id).value,
-  )
+
+  booking.value = cloneDeep(originalBooking.value)
 }
 
 const onSave = async () => {
@@ -206,9 +197,9 @@ const onSave = async () => {
   // booking.value.preferredDate = moment(booking.value.preferredDate).endOf('day').format()
   if (activated) {
     if (expired.value) {
-      // await reactivateBooking(booking.value)
-      // await router.push({ name: 'dashboard' })
-      // activated.value = false
+      await reactivateBooking(booking.value)
+      await router.push({ name: 'dashboard' })
+      activated.value = false
 
       return
     }
@@ -245,16 +236,16 @@ onMounted(async () => {
   await getBookings(fromDraft ? { draft: true } : {})
   let targetBookings
   if (fromHistory) {
-    targetBookings = useBookingsStore().bookings
+    targetBookings = useBookingsStore().pastBookings
   } else if (fromDraft) {
     targetBookings = useBookingsStore().drafts
   } else {
     targetBookings = useBookingsStore().bookings
   }
 
-  bookings.value = targetBookings
-  booking.value = cloneDeep(targetBookings.find(val => val.id === route.params.id))
-  // originalBooking.value = JSON.stringify(JSON.parse(toRaw(booking.value)))
+  // bookings.value = targetBookings
+  originalBooking.value = cloneDeep(targetBookings.find(val => val.id === route.params.id))
+  booking.value = JSON.parse(JSON.stringify(originalBooking.value))
   if (fromHistory && queryParams.activated) {
     animate()
   }
@@ -368,7 +359,7 @@ onMounted(async () => {
         </div>
         <VForm
           ref="form"
-          class="w-full md:w-3/4 grid sm:grid-cols-2 grid-cols-1 gap-6 mt-10 [&>div]:h-fit"
+          class="w-full md:w-3/4 grid grid-cols-2 md:grid-cols-3 gap-6 mt-10 [&>div]:h-fit"
           :class="{
             'md:w-full': drawer && !flyoutBottom,
           }"
@@ -491,15 +482,19 @@ onMounted(async () => {
             </Typography>
             <template
               v-for="(d, index) in booking.details"
-              :key="d.id"
+              :key="d"
             >
               <Datepicker
                 :picked="d.loadingDate"
                 label="Loading date *"
                 typeable
                 :lower-limit="currentDate"
-                :error-messages="validateExpiryDates(index)"
-                :rules="[rules.required]"
+                :error-messages="validateExpiryDate(activeBookings, { ...d, ref: booking.ref })"
+                :rules="[
+                  rules.required,
+                  rules.validateDate({ ...d, ref: booking.ref }),
+                  rules.uniqueDate,
+                ]"
                 :disabled="!activated && (pending || expired || completed)"
                 required
                 @onUpdate="value => updateExpiryDate(value, index)"
