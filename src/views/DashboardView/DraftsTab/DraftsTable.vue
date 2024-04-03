@@ -26,7 +26,7 @@ const formateTime = date => {
 const formateMinTime = dates => {
   // const maxDate = new Date(Math.max(...dates))
   const minData = getSmallerDate(dates)
-  
+
   return getFormattedDate(minData)
 }
 
@@ -116,29 +116,21 @@ onMounted(() => {
             <VTable>
               <thead>
                 <tr>
-                  <th class="text-left">
-                    Committed/Total
-                  </th>
-                  <th class="text-left">
-                    Loading Date
-                  </th>
-                  <th class="text-left">
-                    SCAC
-                  </th>
+                  <th class="text-left">Committed/Total</th>
+                  <th class="text-left">Loading Date</th>
+                  <th class="text-left">SCAC</th>
                 </tr>
               </thead>
               <tbody>
                 <tr
                   v-for="data in item.details"
-                  :key="data.date"
+                  :key="data.loadingDate"
                 >
-                  <td class="text-center">
-                    {{ data.committed }}/{{ data.containers }}
-                  </td>
-                  <td>{{ formateTime(data.date) }}</td>
+                  <td class="text-center">{{ data.committed }}/{{ data.containers }}</td>
+                  <td>{{ formateTime(data.loadingDate) }}</td>
                   <td>
                     <template
-                      v-for="scac in data.scacs"
+                      v-for="scac in data.scacList?.list"
                       :key="scac"
                     >
                       <Chip>
@@ -174,11 +166,12 @@ onMounted(() => {
       <ConfirmationDialog
         btn-name="Delete"
         @close="deleteDraftDialog.show(false)"
-        @onClickBtn="deleteDraft(deleteDraftDialog.data.id)"
+        @onClickBtn="deleteDraft(deleteDraftDialog.data.ids)"
       >
         <Typography>
           Are you sure you want to delete draft#
-          <b>{{ deleteDraftDialog.data.ref }}</b>?
+          <b>{{ deleteDraftDialog.data.ref }}</b
+          >?
         </Typography>
       </ConfirmationDialog>
     </template>

@@ -97,14 +97,14 @@ const newBookings = ref(
   props.duplicate
     ? loadingsDateCopy
     : [
-      {
-        id: uid(28),
-        loadingDate: null,
-        preferredDate: null,
-        containers: null,
-        scacList: bookingRulesStore.rules.truckers,
-      },
-    ],
+        {
+          id: uid(28),
+          loadingDate: null,
+          preferredDate: null,
+          containers: null,
+          scacList: bookingRulesStore.rules.truckers,
+        },
+      ],
 )
 const confirmDraftsDialog = ref(null)
 const { clickedOutside } = toRefs(props)
@@ -118,7 +118,8 @@ const rules = {
     return value?.toString().trim() ? true : 'Required field'
   },
   validateDate: value => validateExpiryDate(bookings?.value, value),
-  uniqueDate: () => checkUniqueDates(newBookings.value) || 'Loading date already exists. Select another date.',
+  uniqueDate: () =>
+    checkUniqueDates(newBookings.value) || 'Loading date already exists. Select another date.',
 }
 const updateExpiryDate = (value, index) => {
   newBookings.value[index].loadingDate = moment(value).endOf('day').format()
@@ -193,9 +194,10 @@ const saveDraft = async () => {
 const saveBooking = async () => {
   const validationData = await form.value.validate()
   if (validationData.valid) {
-    newBookings.value.forEach(b => {
-      createBooking({ ...booking.value, ...b })
-    })
+    await createBooking(newBookings.value)
+    // newBookings.value.forEach(b => {
+    //   createBooking({ ...booking.value, ...b })
+    // })
     emit('close')
   }
 }
@@ -352,7 +354,11 @@ watch(clickedOutside, () => {
             typeable
             :lower-limit="currentDate"
             :error-messages="validateExpiryDate(bookings, { ...d, ref: booking.ref })"
-            :rules="[rules.required, rules.validateDate({ ...d, ref: booking.ref }), rules.uniqueDate]"
+            :rules="[
+              rules.required,
+              rules.validateDate({ ...d, ref: booking.ref }),
+              rules.uniqueDate,
+            ]"
             @onUpdate="value => updateExpiryDate(value, index)"
           />
           <Textfield

@@ -79,19 +79,16 @@ export const groupBookings = objects => {
       groupedObject[key].containers += obj.containers
       groupedObject[key].committed += obj.committed
       groupedObject[key].scacList.list.push(...obj.scacList.list)
-      if (obj?.details) {
-        groupedObject[key].details.push(...obj?.details)
-        groupedObject[key].ids.push(...obj.ids)
-      } else {
-        groupedObject[key].details.push({
-          date: obj.loadingDate,
-          containers: obj.containers,
-          committed: obj.committed || 0,
-          scacs: [...(obj?.scacList?.list || [])],
-          id: obj.id,
-        })
-        groupedObject[key].ids.push(obj.id)
-      }
+
+      groupedObject[key].details.push({
+        loadingDate: obj.loadingDate,
+        containers: obj.containers,
+        committed: obj.committed || 0,
+        scacList: { ...(obj?.scacList || { list: [] }) },
+        id: obj.id,
+      })
+      groupedObject[key].ids.push(obj.id)
+
       // groupedObject[key].loadingDate.push(obj.loadingDate)
 
       // groupedObject[key].id += key
@@ -99,10 +96,10 @@ export const groupBookings = objects => {
       groupedObject[key] = { ...obj }
       groupedObject[key].details = [
         {
-          date: obj.loadingDate,
+          loadingDate: obj.loadingDate,
           containers: obj.containers,
           committed: obj.committed || 0,
-          scacs: [...(obj?.scacList?.list || [])],
+          scacList: { ...(obj?.scacList || { list: [] }) },
           id: obj.id,
         },
       ]
@@ -112,6 +109,6 @@ export const groupBookings = objects => {
       // groupedObject[key].id = key
     }
   })
-  
+
   return Object.values(groupedObject)
 }

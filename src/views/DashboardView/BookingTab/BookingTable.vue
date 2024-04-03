@@ -267,7 +267,7 @@ watch(
             :key="i"
           >
             {{ i }}
-            <br>
+            <br />
           </template>
         </template>
         <template v-else>
@@ -292,29 +292,21 @@ watch(
             <VTable>
               <thead>
                 <tr>
-                  <th class="text-left">
-                    Committed/Total
-                  </th>
-                  <th class="text-left">
-                    Loading Date
-                  </th>
-                  <th class="text-left">
-                    SCAC
-                  </th>
+                  <th class="text-left">Committed/Total</th>
+                  <th class="text-left">Loading Date</th>
+                  <th class="text-left">SCAC</th>
                 </tr>
               </thead>
               <tbody>
                 <tr
                   v-for="data in item.details"
-                  :key="data.date"
+                  :key="data.loadingDate"
                 >
-                  <td class="text-center">
-                    {{ data.committed }}/{{ data.containers }}
-                  </td>
-                  <td>{{ formateTime(data.date) || '--' }}</td>
+                  <td class="text-center">{{ data.committed }}/{{ data.containers }}</td>
+                  <td>{{ formateTime(data.loadingDate) || '--' }}</td>
                   <td>
                     <template
-                      v-for="scac in data.scacs"
+                      v-for="scac in data.scacList?.list"
                       :key="scac"
                     >
                       <Chip class="m-1">

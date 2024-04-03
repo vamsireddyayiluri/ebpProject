@@ -29,7 +29,6 @@ export const useBookingsStore = defineStore('bookings', () => {
   const { preferredTruckers } = usePreferredTruckersStore()
   let bookings = ref([])
   let allBookings = ref([])
-
   const bookingsForCalendar = ref([])
   let pastBookings = ref([])
   const drafts = ref([])
@@ -161,10 +160,7 @@ export const useBookingsStore = defineStore('bookings', () => {
 
   const getBookingsByIds = async ({ bookingIds, draft = false }) => {
     try {
-      const q = query(
-        collection(db, draft? 'drafts': 'bookings'),
-        where('id', 'in', bookingIds),
-      )
+      const q = query(collection(db, draft ? 'drafts' : 'bookings'), where('id', 'in', bookingIds))
       const querySnapshot = await getDocs(q)
 
       const results = querySnapshot.docs.map(doc => doc.data())
@@ -197,15 +193,21 @@ export const useBookingsStore = defineStore('bookings', () => {
       },
     }
   }
-  const createBooking = async booking => {
-    const newBooking = createBookingObj(booking)
+  const createBooking = async selectedBookings => {
     try {
-      await setDoc(doc(collection(db, 'bookings'), newBooking.id), newBooking)
-      bookingsForCalendar.value.unshift(newBooking)
-      const newArray = [newBooking, ...cloneDeep(bookings.value)]
+      const batch = writeBatch(db)
+      selectedBookings.forEach(booking => {
+        const newBooking = createBookingObj(booking)
+        const docRef = doc(collection(db, 'bookings'), newBooking.id)
+        batch.set(docRef, newBooking)
+
+        bookingsForCalendar.value.unshift(newBooking)
+      })
+
+      await batch.commit()
 
       bookings.value.length = 0
-      bookings.value.push(...groupBookings(newArray))
+      bookings.value.push(...groupBookings(bookingsForCalendar.value))
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
@@ -223,13 +225,16 @@ export const useBookingsStore = defineStore('bookings', () => {
   const updateBookingStatus = async (booking, status, reason) => {
     try {
       const ids = booking.ids
+      const batch = writeBatch(db)
 
       ids.forEach(async id => {
-        await updateDoc(doc(db, 'bookings', id), {
+        const docref = doc(db, 'bookings', id)
+        batch.update(docref, {
           status,
           ...(reason ? { reason: reason?.trim() } : {}),
         })
       })
+      batch.commit()
       bookings.value.forEach(b => {
         const ids = b.ids
         if (ids.includes(booking.id)) {
@@ -274,13 +279,17 @@ export const useBookingsStore = defineStore('bookings', () => {
   }
   const deleteBooking = async (booking, draft = false, fromHistory = false) => {
     try {
+      const batch = writeBatch(db)
+
       if (draft) {
-        const index = drafts.value.findIndex(i => i.id === id)
+        const index = drafts.value.findIndex(i => booking.includes(i.id))
         if (index > -1) {
+          booking.forEach(id => {
+            batch.delete(doc(db, 'drafts', id))
+          })
           drafts.value.splice(index, 1)
-          await deleteDoc(doc(db, 'drafts', id))
           alertStore.info({ content: 'Draft was deleted' })
-        } else alertStore.warning({ content: 'Draft not found' })
+        }
       } else if (fromHistory) {
         const index = pastBookings.value.findIndex(i => i.id === id)
         if (index > -1) {
@@ -292,27 +301,37 @@ export const useBookingsStore = defineStore('bookings', () => {
         const ids = booking.ids
 
         ids.forEach(async id => {
-          await deleteDoc(doc(db, 'bookings', id))
+          batch.delete(doc(db, 'bookings', id))
         })
         const index = bookings.value.findIndex(i => {
           const ids = i.ids
-
           return ids.includes(data.bookingId)
         })
-
         if (index > -1) {
           bookings.value.splice(index, 1)
           alertStore.info({ content: 'Bookings removed!' })
         } else alertStore.warning({ content: 'Booking not found' })
       }
+      await batch.commit()
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
   }
   const publishDraft = async booking => {
     try {
-      await deleteBooking(booking.id, true)
-      await setDoc(doc(collection(db, 'bookings'), booking.id), booking)
+      const batch = writeBatch(db)
+      await deleteBooking(booking.ids, true)
+      booking.ids.forEach(id => {
+        const loadingDate = booking.details.find(val => val.id === id)
+        const data = { ...booking, ...loadingDate }
+        delete data['details']
+        delete data['ids']
+        const docRef = doc(collection(db, 'bookings'), id)
+        batch.set(docRef, data)
+        // batch.set
+      })
+
+      await batch.commit()
       bookings.value.unshift(booking)
       alertStore.info({ content: `Booking Ref# ${booking.ref} was published` })
 
@@ -338,14 +357,25 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.warning({ content: message })
     }
   }
+  const createEditedBookingObj = (booking, id) => {
+    const loadingDate = booking.details.find(val => val.id === id)
+    const data = { ...booking, ...loadingDate }
+    delete data['details']
+    delete data['ids']
+
+    return createBookingObj(data)
+  }
   const removeFromNetwork = async booking => {
     try {
-      const newDraft = createBookingObj(booking)
-      await deleteBooking(booking.id)
-      await setDoc(doc(collection(db, 'drafts'), newDraft.id), newDraft)
+      await deleteBooking(booking)
+      const batch = writeBatch(db)
+      booking.ids.forEach(id => {
+        const newDraft = createEditedBookingObj(booking, id)
+        batch.set(doc(collection(db, 'drafts'), newDraft.id), newDraft)
+      })
+      await batch.commit()
       drafts.value.unshift(booking)
       alertStore.info({ content: `Booking Ref# ${booking.ref} moved to the draft` })
-
       return 'deleted'
     } catch ({ message }) {
       alertStore.warning({ content: message })
@@ -363,7 +393,7 @@ export const useBookingsStore = defineStore('bookings', () => {
         const docRef = doc(db, collectionName, id)
         const loadData = details?.find(val => val.id === id)
         if (loadData) {
-          data.loadingDate = moment(loadData.date).endOf('day').format()
+          data.loadingDate = moment(loadData.loadingDate).endOf('day').format()
           data.containers = loadData.containers
         }
         if (Object.keys(data).length) {

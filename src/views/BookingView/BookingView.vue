@@ -41,7 +41,7 @@ const {
 
 const workDetailsStore = useWorkDetailsStore()
 const { yards } = storeToRefs(workDetailsStore)
-const { bookings, drafts } = storeToRefs(useBookingsStore())
+const { bookings, drafts, bookingsForCalendar: activeBookings } = storeToRefs(useBookingsStore())
 const route = useRoute()
 const router = useRouter()
 const { smAndDown } = useDisplay()
@@ -57,6 +57,7 @@ const form = ref(null)
 const validExpiryDate = ref(false)
 const insuranceItems = ref(insuranceTypes)
 const isSaveLoading = ref(false)
+const originalBooking = ref(null)
 const rules = {
   checkcommitted: value => checkCommittedValue(value, booking.value),
   averageWeight: value => validateAverageWeight(value, booking.value.location),
@@ -67,7 +68,7 @@ const rules = {
 }
 
 const updateExpiryDate = (value, index) => {
-  booking.value.details[index].date = moment(value).endOf('day').format()
+  booking.value.details[index].loadingDate = moment(value).endOf('day').format()
 }
 const updatePreferredDate = value => {
   booking.value.preferredDate = moment(value).endOf('day').format()
@@ -92,8 +93,8 @@ const pending = computed(() => booking.value?.status === statuses.pending)
 
 const handleBookingChanges = async () => {
   if (fromDraft) {
-    booking.value.loadingDate = moment(booking.value.loadingDate).endOf('day').format()
-    booking.value.preferredDate = moment(booking.value.preferredDate).endOf('day').format()
+    // booking.value.loadingDate = moment(booking.value.loadingDate).endOf('day').format()
+    // booking.value.preferredDate = moment(booking.value.preferredDate).endOf('day').format()
     const res = await publishDraft(booking.value)
     if (res === 'published') {
       router.push('/dashboard')
@@ -110,7 +111,7 @@ const openRemoveDialog = () => {
   removeBookingDialog.value.data = booking.value
 }
 const deleteFromPlatform = async () => {
-  await deleteBooking(booking.value.id, fromDraft, fromHistory)
+  await deleteBooking(booking.value.ids, fromDraft, fromHistory)
   router.push('/dashboard')
 }
 const handleAction = async e => {
@@ -225,8 +226,12 @@ const onSave = async () => {
   await router.push({ name: 'dashboard' })
   isSaveLoading.value = false
 }
-const validateExpiryDates = () => {
-  validExpiryDate.value = validateExpiryDate(bookings?.value, booking.value)
+// checking active bookings loadingDate
+const validateExpiryDates = index => {
+  validExpiryDate.value = validateExpiryDate(activeBookings?.value, {
+    ...booking.value.details[index],
+    ref: booking.value.ref,
+  })
 }
 const removeLoadingDate = id => {
   console.log('remove booking dia', id)
@@ -238,18 +243,20 @@ const removeLoadingDate = id => {
 onMounted(async () => {
   loading.value = true
   await getBookings(fromDraft ? { draft: true } : {})
-  await getBookings({})
-  bookings.value = useBookingsStore().bookings
+  let targetBookings
   if (fromHistory) {
-    booking.value = await getBooking({ id: route.params.id })
-    if (queryParams.activated) {
-      animate()
-    }
+    targetBookings = useBookingsStore().bookings
   } else if (fromDraft) {
-    booking.value = await getBooking({ id: route.params.id, draft: true })
+    targetBookings = useBookingsStore().drafts
   } else {
-    booking.value = cloneDeep(bookings.value.find(val => val.id === route.params.id))
-    // await getBooking({ id: route.params.id })
+    targetBookings = useBookingsStore().bookings
+  }
+
+  bookings.value = targetBookings
+  booking.value = cloneDeep(targetBookings.find(val => val.id === route.params.id))
+  // originalBooking.value = JSON.stringify(JSON.parse(toRaw(booking.value)))
+  if (fromHistory && queryParams.activated) {
+    animate()
   }
 
   yards.value = workDetailsStore.yards
@@ -445,6 +452,7 @@ onMounted(async () => {
             :items="['All in rate', 'Linehaul + FSC Only']"
             return-object="true"
             :rules="[rules.containers]"
+            :disabled="pending || expired || completed"
             @onSelect="value => (booking.estimatedRateType = value)"
           />
           <Autocomplete
@@ -456,6 +464,7 @@ onMounted(async () => {
             item-value="size"
             :menu-props="{ maxHeight: 350 }"
             class="h-fit"
+            :disabled="pending || expired || completed"
             :error-messages="validateFlexibleSizes(booking.size, booking.flexibleBooking)"
           >
             <template #prepend-item>
@@ -485,12 +494,14 @@ onMounted(async () => {
               :key="d.id"
             >
               <Datepicker
-                :picked="d.date"
+                :picked="d.loadingDate"
                 label="Loading date *"
                 typeable
                 :lower-limit="currentDate"
                 :error-messages="validateExpiryDates(index)"
                 :rules="[rules.required]"
+                :disabled="!activated && (pending || expired || completed)"
+                required
                 @onUpdate="value => updateExpiryDate(value, index)"
               />
               <Textfield
@@ -499,13 +510,16 @@ onMounted(async () => {
                 :rules="[rules.containers]"
                 type="number"
                 required
+                :disabled="expired || completed"
                 class="h-fit"
               />
               <div class="relative">
                 <AutocompleteScac
-                  :scac-list="{ list: [...d.scacs] || [] }"
+                  :scac-list="d.scacList"
                   :menu-btn="false"
                   :rules="[rules.required]"
+                  required
+                  :disabled="pending || expired || completed"
                   class="w-3/4"
                 />
                 <!-- <IconButton
@@ -519,52 +533,10 @@ onMounted(async () => {
               </div>
             </template>
           </div>
-
-          <!-- <RadioGroup
-            v-model="booking.estimatedRateType"
-            inline
-            class="mt-3"
-          >
-            <Radio
-              value="All in rate"
-              label="All in rate"
-              :disabled="pending || expired || completed"
-              class="mr-6"
-            />
-            <Radio
-              value="Linehaul + FSC Only"
-              label="Linehaul + FSC Only"
-              :disabled="pending || expired || completed"
-            />
-          </RadioGroup> -->
-          <!-- <Select
-            v-model="booking.size"
-            :items="containersSizes"
-            label="Equipment type*"
-            item-title="label"
-            item-value="size"
-            :multiple="booking.flexibleBooking"
-            :disabled="pending || expired || completed"
-            :error-messages="validateFlexibleSizes(booking.size, booking.flexibleBooking)"
-          /> -->
-          <!-- <Checkbox
-            v-model="booking.flexibleBooking"
-            label="Flexible Booking*"
-            :disabled="pending || expired || completed"
-            class="mt-3"
-            @change="updateSize"
-          /> -->
-          <!-- <div>
-            <AutocompleteScac
-              :key="booking.scacList"
-              :scac-list="booking.scacList"
-              :disabled="pending || expired || completed"
-            />
-          </div> -->
         </VForm>
         <SaveCancelChanges
           v-if="!(expired || completed) || activated"
-          :disabled="false"
+          :disabled="validateBooking"
           class="mt-10"
           :loading="isSaveLoading"
           @onSave="onSave"
@@ -634,7 +606,7 @@ onMounted(async () => {
       <ConfirmationDialog
         btn-name="Remove"
         @close="removeBookingDialog.show(false)"
-        @onClickBtn="deleteFromPlatform(removeBookingDialog.data.id)"
+        @onClickBtn="deleteFromPlatform(removeBookingDialog.data.ids)"
       >
         <Typography>
           Are you sure you want to remove ref#
