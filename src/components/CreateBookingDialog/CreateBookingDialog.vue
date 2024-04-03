@@ -33,7 +33,7 @@ const bookingsStore = useBookingsStore()
 const alertStore = useAlertStore()
 
 const { yards } = storeToRefs(workDetailsStore)
-const { bookingsForCalendar: bookings } = storeToRefs(bookingsStore)
+const { notGroupedBookings: bookings } = storeToRefs(bookingsStore)
 const form = ref(null)
 const insuranceItems = ref(insuranceTypes)
 
@@ -177,7 +177,6 @@ const addLoadingDate = () => {
     preferredDate: null,
     containers: null,
     scacList: cloneDeep(bookingRulesStore.rules.truckers),
-    ...booking.value,
   })
 }
 const removeLoadingDate = id => {

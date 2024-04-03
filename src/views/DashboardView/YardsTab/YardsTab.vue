@@ -18,7 +18,7 @@ const props = defineProps({
 const emit = defineEmits(['closeMap', 'selectRow'])
 const bookingsStore = useBookingsStore()
 const { userData } = useAuthStore()
-const { bookings } = storeToRefs(bookingsStore)
+const { loading } = storeToRefs(bookingsStore)
 const { smAndDown } = useDisplay()
 const router = useRouter()
 const paneOpened = ref(false)
@@ -36,10 +36,9 @@ const panes = ref(getPanes())
 const vuetifyTheme = useTheme()
 const theme = computed(() => vuetifyTheme.global.name.value)
 const panesRef = ref(null)
-const mutableSearchedEntities = ref(bookings.value)
-const mutableFilteredEntities = ref(bookings.value)
+const mutableSearchedEntities = ref(bookingsStore.bookings)
+const mutableFilteredEntities = ref(bookingsStore.bookings)
 const searchValue = ref(null)
-const loading = ref(false)
 const newId = ref(uid(8))
 const bookingStatisticsDialog = ref(null)
 const filters = ref({
@@ -121,7 +120,7 @@ const viewStatistics = e => {
 const onClearSearch = () => {
   loading.value = true
   setTimeout(() => {
-    computedSearchedEntities.value = bookings.value
+    computedSearchedEntities.value = bookingsStore.bookings
     loading.value = false
   }, 1000)
 }
@@ -131,7 +130,7 @@ const debouncedSearch = useDebounceFn(searchValue => {
     onClearSearch()
   } else {
     computedSearchedEntities.value = useArrayFilter(
-      bookings.value,
+      bookingsStore.bookings,
       ({ location: { address, label } }) =>
         useArraySome(
           useArrayMap(Object.values({ address, label }), value => String(value).toLowerCase())
@@ -143,7 +142,7 @@ const debouncedSearch = useDebounceFn(searchValue => {
 }, 300)
 
 const applyFilter = () => {
-  let filteredData = bookings.value
+  let filteredData = bookingsStore.bookings
 
   if (filters.value.line) {
     filteredData = useArrayFilter(
@@ -174,7 +173,11 @@ const onClickOutsideDialog = () => {
     clickedOutside.value = false
   }, 1000)
 }
-
+onMounted(async () => {
+  await bookingsStore.getBookings({})
+  computedSearchedEntities.value = bookingsStore.bookings
+  computedFilteredEntities.value = bookingsStore.bookings
+})
 watch(mapToggled, () => {
   toggleMap()
   panes.value = getPanes()

@@ -29,7 +29,8 @@ export const useBookingsStore = defineStore('bookings', () => {
   const { preferredTruckers } = usePreferredTruckersStore()
   let bookings = ref([])
   let allBookings = ref([])
-  const bookingsForCalendar = ref([])
+
+  const notGroupedBookings = ref([])
   let pastBookings = ref([])
   const drafts = ref([])
   const loading = ref(false)
@@ -70,7 +71,7 @@ export const useBookingsStore = defineStore('bookings', () => {
           booking.status !== statuses.expired &&
           booking.status !== statuses.canceled,
       )
-      bookingsForCalendar.value = filteredBookings
+      notGroupedBookings.value = filteredBookings
       const group = groupBookings(filteredBookings)
       bookings.value = group
     }
@@ -200,14 +201,13 @@ export const useBookingsStore = defineStore('bookings', () => {
         const newBooking = createBookingObj({ ...selectedBooking, ...b })
         const docRef = doc(collection(db, 'bookings'), newBooking.id)
         batch.set(docRef, newBooking)
-
-        bookingsForCalendar.value.unshift(newBooking)
+        notGroupedBookings.value.unshift(newBooking)
       })
 
       await batch.commit()
 
       bookings.value.length = 0
-      bookings.value.push(...groupBookings(bookingsForCalendar.value))
+      bookings.value.push(...groupBookings(notGroupedBookings.value))
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
@@ -308,6 +308,7 @@ export const useBookingsStore = defineStore('bookings', () => {
         })
         if (index > -1) {
           bookings.value.splice(index, 1)
+          notGroupedBookings.value.splice(index, 1)
           alertStore.info({ content: 'Bookings removed!' })
         } else alertStore.warning({ content: 'Booking not found' })
       }
@@ -451,7 +452,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     bookings,
     allBookings,
     pastBookings,
-    bookingsForCalendar,
+    notGroupedBookings,
     drafts,
     loading,
     getBookings,
