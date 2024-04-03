@@ -18,7 +18,7 @@ import {
 import { insuranceTypes } from '~/constants/settings'
 import { deepCopy } from 'json-2-csv/lib/utils'
 import { uid } from 'uid'
-import { cloneDeep, isBoolean } from 'lodash'
+import { cloneDeep, isBoolean, isNull } from 'lodash'
 
 const props = defineProps({
   duplicate: Array,
@@ -117,8 +117,9 @@ const rules = {
   required(value) {
     return value?.toString().trim() ? true : 'Required field'
   },
-  validateDate: value => validateExpiryDate(bookings?.value, value),
-  uniqueDate: () => checkUniqueDates(newBookings.value) || 'Loading date already exists. Select another date.',
+  validateDate: value => isNull(value)? true: validateExpiryDate(bookings?.value, value),
+  uniqueDate: () =>
+    checkUniqueDates(newBookings.value) || 'Loading date already exists. Select another date.',
 }
 const updateExpiryDate = (value, index) => {
   newBookings.value[index].loadingDate = moment(value).endOf('day').format()
@@ -145,6 +146,14 @@ const isDisabled = computed(() => {
   }
 
   return condition
+})
+const isLoadingDatesFieldsEmpty = computed(() => {
+  return cloneDeep(newBookings.value).some(object => {
+    delete object?.preferredDate
+
+    return Object.values(object).some(value => value === null || (Array.isArray(value) && value.some(item => item === null)))
+  })
+
 })
 
 // if true shows save to draft dialog
@@ -177,27 +186,17 @@ const removeLoadingDate = id => {
   }
 }
 const saveDraft = async () => {
-  const validationData = await form.value.validate()
-  if (validationData.valid) {
-    newBookings.value[0] = {
-      ...booking.value,
-      ...newBookings.value[0],
-    }
-    newBookings.value.forEach(booking => {
-      createDraft(booking)
-    })
-    confirmDraftsDialog.value.show(false)
-    emit('close')
-  }
+  newBookings.value.forEach(b => {
+    createDraft({ ...booking.value, ...b })
+  })
+  confirmDraftsDialog.value.show(false)
+  emit('close')
 }
 const saveBooking = async () => {
-  const validationData = await form.value.validate()
-  if (validationData.valid) {
-    newBookings.value.forEach(b => {
-      createBooking({ ...booking.value, ...b })
-    })
-    emit('close')
-  }
+  newBookings.value.forEach(b => {
+    createBooking({ ...booking.value, ...b })
+  })
+  emit('close')
 }
 const updateRef = e => {
   if (form.value.errors.length) {
@@ -352,7 +351,11 @@ watch(clickedOutside, () => {
             typeable
             :lower-limit="currentDate"
             :error-messages="validateExpiryDate(bookings, { ...d, ref: booking.ref })"
-            :rules="[rules.required, rules.validateDate({ ...d, ref: booking.ref }), rules.uniqueDate]"
+            :rules="[
+              rules.required,
+              rules.validateDate({ ...d, ref: booking.ref }),
+              rules.uniqueDate,
+            ]"
             @onUpdate="value => updateExpiryDate(value, index)"
           />
           <Textfield
@@ -394,7 +397,7 @@ watch(clickedOutside, () => {
       <Button
         variant="outlined"
         class="w-fit"
-        :disabled="isDisabled"
+        :disabled="isDisabled || isLoadingDatesFieldsEmpty"
         @click="saveDraft"
       >
         Save as draft
@@ -402,7 +405,7 @@ watch(clickedOutside, () => {
       <Button
         type="submit"
         class="w-fit"
-        :disabled="isDisabled"
+        :disabled="isDisabled || isLoadingDatesFieldsEmpty"
       >
         Create
       </Button>
@@ -450,11 +453,13 @@ watch(clickedOutside, () => {
   .styledTextFieldWithSelector {
     .select {
       width: 100%;
+
       .v-field__input {
         padding-inline-start: 0;
         padding-inline-end: 0;
       }
     }
+
     .v-field__input {
       padding-inline-end: 0;
     }
