@@ -20,7 +20,6 @@ const createBookingDialog = ref(null)
 
 const getEvents = bookings => {
   return bookings.map(i => {
-
     return {
       id: i.id,
       title: `Ref# ${i.ref}`,
@@ -50,7 +49,7 @@ const onRemove = e => {
 }
 
 const removeBooking = async id => {
-  await bookingsStore.deleteBooking(id)
+  await bookingsStore.deleteBookingById(id)
   removeBookingDialog.value.show(false)
 
   // remove in calendar
