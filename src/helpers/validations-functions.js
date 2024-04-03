@@ -118,3 +118,17 @@ export const checkPendingCommitments = async () => {
     return querySnapshot.docs.map(doc => doc.data())
   })
 }
+
+export const checkUniqueDates = entities => {
+  const datesCount = {}
+
+  for (const entity of entities) {
+    if (datesCount[entity.loadingDate]) {
+      return false
+    } else {
+      datesCount[entity.loadingDate] = true
+    }
+  }
+
+  return true
+}

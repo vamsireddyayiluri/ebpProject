@@ -10,6 +10,7 @@ import moment from 'moment'
 import { useAlertStore } from '~/stores/alert.store'
 import {
   checkPositiveInteger,
+  checkUniqueDates,
   validateAverageWeight,
   validateExpiryDate,
   validateFlexibleSizes,
@@ -34,7 +35,6 @@ const alertStore = useAlertStore()
 const { yards } = storeToRefs(workDetailsStore)
 const { bookingsForCalendar: bookings } = storeToRefs(bookingsStore)
 const form = ref(null)
-const validExpiryDate = ref(false)
 const insuranceItems = ref(insuranceTypes)
 
 const {
@@ -97,14 +97,14 @@ const newBookings = ref(
   props.duplicate
     ? loadingsDateCopy
     : [
-        {
-          id: uid(28),
-          loadingDate: null,
-          preferredDate: null,
-          containers: null,
-          scacList: bookingRulesStore.rules.truckers,
-        },
-      ],
+      {
+        id: uid(28),
+        loadingDate: null,
+        preferredDate: null,
+        containers: null,
+        scacList: bookingRulesStore.rules.truckers,
+      },
+    ],
 )
 const confirmDraftsDialog = ref(null)
 const { clickedOutside } = toRefs(props)
@@ -118,6 +118,7 @@ const rules = {
     return value?.toString().trim() ? true : 'Required field'
   },
   validateDate: value => validateExpiryDate(bookings?.value, value),
+  uniqueDate: () => checkUniqueDates(newBookings.value) || 'Loading date already exists. Select another date.',
 }
 const updateExpiryDate = (value, index) => {
   newBookings.value[index].loadingDate = moment(value).endOf('day').format()
@@ -351,7 +352,7 @@ watch(clickedOutside, () => {
             typeable
             :lower-limit="currentDate"
             :error-messages="validateExpiryDate(bookings, { ...d, ref: booking.ref })"
-            :rules="[rules.required, rules.validateDate({ ...d, ref: booking.ref })]"
+            :rules="[rules.required, rules.validateDate({ ...d, ref: booking.ref }), rules.uniqueDate]"
             @onUpdate="value => updateExpiryDate(value, index)"
           />
           <Textfield
