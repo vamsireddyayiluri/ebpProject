@@ -214,7 +214,6 @@ export const useBookingsStore = defineStore('bookings', () => {
     try {
       await setDoc(doc(collection(db, 'drafts'), newDraft.id), newDraft)
       drafts.value.unshift(newDraft)
-      alertStore.info({ content: 'Draft created' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
