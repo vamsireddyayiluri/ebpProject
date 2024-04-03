@@ -446,7 +446,7 @@ watch(searchValue, value => {
       <ConfirmationDialog
         btn-name="Remove"
         @close="removeBookingDialog.show(false)"
-        @onClickBtn="removeBooking(removeBookingDialog.data.id)"
+        @onClickBtn="removeBooking(removeBookingDialog.data.ids)"
       >
         <Typography>
           Are you sure you want to remove ref#
