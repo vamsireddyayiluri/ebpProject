@@ -200,7 +200,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     const newBooking = createBookingObj(booking)
     try {
       await setDoc(doc(collection(db, 'bookings'), newBooking.id), newBooking)
-
+      bookingsForCalendar.value.unshift(newBooking)
       const newArray = [newBooking, ...cloneDeep(bookings.value)]
 
       bookings.value.length = 0

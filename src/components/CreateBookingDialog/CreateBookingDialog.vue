@@ -154,9 +154,10 @@ const isDirty = computed(() => {
 })
 
 const closeBookingDialog = () => {
-  if (isDirty.value) {
+  /*if (isDirty.value) {
     confirmDraftsDialog.value.show(true)
-  } else emit('close')
+  } else emit('close')*/
+  emit('close')
 }
 const addLoadingDate = () => {
   newBookings.value.push({
