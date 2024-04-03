@@ -70,17 +70,17 @@ const formateTime = date => {
 const formateMinTime = dates => {
   // const maxDate = new Date(Math.max(...dates))
   const minData = getSmallerDate(dates)
-  
+
   return getFormattedDate(minData)
 }
 const bookingStatus = item => {
   const bookings = computedEntities.value
   const booking = bookings.find(i => {
     const ids = i.ids
-    
+
     return ids.includes(item.bookingId)
   })
-  
+
   return booking?.status
 }
 const containerActionHandler = async ({ action, e }) => {
@@ -99,7 +99,7 @@ const containerActionHandler = async ({ action, e }) => {
     await updateBookingStatus(e[0], statuses.active)
   }
   if (action === 'duplicate-booking') {
-    emit('duplicateBooking', e[0])
+    emit('duplicateBooking', e[0].ids)
   }
   if (action === 'view-trucker-details') {
     commitmentDetailsDialog.value.show(true)

@@ -10,6 +10,7 @@ import moment from 'moment'
 import { useAlertStore } from '~/stores/alert.store'
 import {
   checkPositiveInteger,
+  checkUniqueDates,
   validateAverageWeight,
   validateExpiryDate,
   validateFlexibleSizes,
@@ -17,13 +18,12 @@ import {
 import { insuranceTypes } from '~/constants/settings'
 import { deepCopy } from 'json-2-csv/lib/utils'
 import { uid } from 'uid'
-import { cloneDeep } from 'lodash'
+import { cloneDeep, isBoolean } from 'lodash'
 
 const props = defineProps({
-  duplicate: Object,
+  duplicate: Array,
   clickedOutside: Boolean,
 })
-
 const emit = defineEmits(['close'])
 
 const { createBooking, createDraft } = useBookingsStore()
@@ -33,9 +33,8 @@ const bookingsStore = useBookingsStore()
 const alertStore = useAlertStore()
 
 const { yards } = storeToRefs(workDetailsStore)
-const { bookings } = storeToRefs(bookingsStore)
+const { bookingsForCalendar: bookings } = storeToRefs(bookingsStore)
 const form = ref(null)
-const validExpiryDate = ref(false)
 const insuranceItems = ref(insuranceTypes)
 
 const {
@@ -52,8 +51,18 @@ const {
   size,
   scacList,
   insurance,
-} = deepCopy(props?.duplicate || {})
+} = deepCopy(props?.duplicate?.length ? props.duplicate[0] : {})
+const loadingsDateCopy = props?.duplicate?.map(booking => {
+  const i = deepCopy(booking)
 
+  return {
+    id: uid(28),
+    loadingDate: i.loadingDate,
+    preferredDate: i.preferredDate,
+    containers: i.containers,
+    scacList: i.scacList,
+  }
+})
 const copyBooking = {
   ref: bookingRef,
   containers,
@@ -84,15 +93,19 @@ const emptyBooking = {
   insurance: '100,000',
 }
 const booking = ref(props?.duplicate ? copyBooking : emptyBooking)
-const newBookings = ref([
-  {
-    id: uid(16),
-    loadingDate: null,
-    preferredDate: null,
-    containers: null,
-    scacList: bookingRulesStore.rules.truckers,
-  },
-])
+const newBookings = ref(
+  props.duplicate
+    ? loadingsDateCopy
+    : [
+      {
+        id: uid(28),
+        loadingDate: null,
+        preferredDate: null,
+        containers: null,
+        scacList: bookingRulesStore.rules.truckers,
+      },
+    ],
+)
 const confirmDraftsDialog = ref(null)
 const { clickedOutside } = toRefs(props)
 
@@ -104,33 +117,30 @@ const rules = {
   required(value) {
     return value?.toString().trim() ? true : 'Required field'
   },
+  validateDate: value => validateExpiryDate(bookings?.value, value),
+  uniqueDate: () => checkUniqueDates(newBookings.value) || 'Loading date already exists. Select another date.',
 }
 const updateExpiryDate = (value, index) => {
   newBookings.value[index].loadingDate = moment(value).endOf('day').format()
   const { preferredCarrierWindow } = bookingRulesStore.rules
   if (preferredCarrierWindow) {
-    newBookings.value[index].preferredDate = moment(newBookings.value[index].loadingDate).subtract(preferredCarrierWindow, "days").format()
+    newBookings.value[index].preferredDate = moment(newBookings.value[index].loadingDate)
+      .subtract(preferredCarrierWindow, 'days')
+      .format()
   }
 }
 const updateSize = () => {
   booking.value.size = null
 }
-
-const validateExpiryDates = useDebounceFn(() => {
-  validExpiryDate.value = validateExpiryDate(bookings?.value, booking.value)
-}, 200)
-
 const isDisabled = computed(() => {
   let condition = false
   if (!props.duplicate) {
     const values = Object.values(booking.value)
-    delete booking.value.flexibleBooking
-    condition = values.some(i => !i)
+    condition = values.some(i => (isBoolean(i) ? false : !i))
   }
   if (!condition) {
     condition =
       form.value?.errors.length ||
-      !validExpiryDate.value ||
       validateFlexibleSizes(booking.value.size, booking.value.flexibleBooking)?.length > 0
   }
 
@@ -140,15 +150,15 @@ const isDisabled = computed(() => {
 // if true shows save to draft dialog
 const isDirty = computed(() => {
   const values = Object.values(booking.value)
-  delete booking.value.flexibleBooking
 
-  return !values.some(i => !i) && form.value?.errors.length
+  return !values.some(i => (isBoolean(i) ? false : !i)) && form.value?.errors.length
 })
 
 const closeBookingDialog = () => {
-  if (isDirty.value) {
+  /*if (isDirty.value) {
     confirmDraftsDialog.value.show(true)
-  } else emit('close')
+  } else emit('close')*/
+  emit('close')
 }
 const addLoadingDate = () => {
   newBookings.value.push({
@@ -183,23 +193,24 @@ const saveDraft = async () => {
 const saveBooking = async () => {
   const validationData = await form.value.validate()
   if (validationData.valid) {
-    newBookings.value[0] = {
-      ...booking.value,
-      ...newBookings.value[0],
-    }
-    newBookings.value.forEach(booking => {
-      createBooking(booking)
+    newBookings.value.forEach(b => {
+      createBooking({ ...booking.value, ...b })
     })
     emit('close')
   }
 }
+const updateRef = e => {
+  if (form.value.errors.length) {
+    form.value.validate()
+  }
+}
+onMounted(async () => {
+  await workDetailsStore.getYards()
+})
 watch(clickedOutside, () => {
   if (isDirty.value) {
     confirmDraftsDialog.value.show(true)
   } else emit('close')
-})
-onMounted(async () => {
-  workDetailsStore.getYards()
 })
 </script>
 
@@ -233,7 +244,8 @@ onMounted(async () => {
       <Textfield
         v-model.trim="booking.ref"
         label="Booking ref*"
-        required
+        :rules="[rules.required, rules.validateDate(null)]"
+        @update:modelValue="updateRef"
       />
       <Autocomplete
         v-model="booking.line"
@@ -339,8 +351,8 @@ onMounted(async () => {
             label="Loading date *"
             typeable
             :lower-limit="currentDate"
-            :error-messages="validateExpiryDates()"
-            :rules="[rules.required]"
+            :error-messages="validateExpiryDate(bookings, { ...d, ref: booking.ref })"
+            :rules="[rules.required, rules.validateDate({ ...d, ref: booking.ref }), rules.uniqueDate]"
             @onUpdate="value => updateExpiryDate(value, index)"
           />
           <Textfield

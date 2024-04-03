@@ -158,6 +158,22 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.info({ content: 'Booking not found' })
     }
   }
+
+  const getBookingsByIds = async ({ bookingIds, draft = false }) => {
+    try {
+      const q = query(
+        collection(db, draft? 'drafts': 'bookings'),
+        where('id', 'in', bookingIds),
+      )
+      const querySnapshot = await getDocs(q)
+
+      const results = querySnapshot.docs.map(doc => doc.data())
+
+      return results
+    } catch (e) {
+      alertStore.info({ content: 'Booking not found' })
+    }
+  }
   const createBookingObj = booking => {
     const { user_id: userId, name, orgId, type } = authStore.userData
     const bookingId = uid(28)
@@ -185,7 +201,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     const newBooking = createBookingObj(booking)
     try {
       await setDoc(doc(collection(db, 'bookings'), newBooking.id), newBooking)
-
+      bookingsForCalendar.value.unshift(newBooking)
       const newArray = [newBooking, ...cloneDeep(bookings.value)]
 
       bookings.value.length = 0
@@ -280,7 +296,8 @@ export const useBookingsStore = defineStore('bookings', () => {
         })
         const index = bookings.value.findIndex(i => {
           const ids = i.ids
-          return ids.includes(booking.id)
+
+          return ids.includes(data.bookingId)
         })
 
         if (index > -1) {
@@ -410,6 +427,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     getBookings,
     getCommitmentsByBookingId,
     getBooking,
+    getBookingsByIds,
     createBooking,
     deleteBooking,
     createDraft,

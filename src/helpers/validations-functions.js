@@ -47,14 +47,14 @@ export const validateExpiryDate = (entities, entity) => {
         val.id !== entity.id,
     )
   ) {
-    alertStore.warning({
+    /*alertStore.warning({
       content:
         'Booking expiry date with booking number already exists. Update booking expiry date to new date.',
-    })
+    })*/
 
-    return false
+    return 'Booking expiry date with booking number already exists. Update booking expiry date to new date.'
   } else {
-    return true
+    return false
   }
 }
 
@@ -117,4 +117,18 @@ export const checkPendingCommitments = async () => {
 
     return querySnapshot.docs.map(doc => doc.data())
   })
+}
+
+export const checkUniqueDates = entities => {
+  const datesCount = {}
+
+  for (const entity of entities) {
+    if (datesCount[entity.loadingDate]) {
+      return false
+    } else {
+      datesCount[entity.loadingDate] = true
+    }
+  }
+
+  return true
 }
