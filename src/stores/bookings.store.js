@@ -193,11 +193,11 @@ export const useBookingsStore = defineStore('bookings', () => {
       },
     }
   }
-  const createBooking = async selectedBookings => {
+  const createBooking = async (selectedBooking, details) => {
     try {
       const batch = writeBatch(db)
-      selectedBookings.forEach(booking => {
-        const newBooking = createBookingObj(booking)
+      details.forEach(b => {
+        const newBooking = createBookingObj({ ...selectedBooking, ...b })
         const docRef = doc(collection(db, 'bookings'), newBooking.id)
         batch.set(docRef, newBooking)
 
@@ -217,7 +217,6 @@ export const useBookingsStore = defineStore('bookings', () => {
     try {
       await setDoc(doc(collection(db, 'drafts'), newDraft.id), newDraft)
       drafts.value.unshift(newDraft)
-      alertStore.info({ content: 'Draft created' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
