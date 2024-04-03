@@ -9,7 +9,7 @@ import { getBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { storeToRefs } from 'pinia'
 import { statuses } from '~/constants/statuses'
-import { cloneDeep, isEqual } from 'lodash'
+import { cloneDeep, isEqual, pickBy } from 'lodash'
 import container from '~/assets/images/container.png'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import containersSizes from '~/fixtures/containersSizes.json'
@@ -22,6 +22,7 @@ import {
   validateAverageWeight,
 } from '~/helpers/validations-functions'
 import { insuranceTypes } from '~/constants/settings'
+import { deepCopy } from 'json-2-csv/lib/utils'
 
 const authStore = useAuthStore()
 const alertStore = useAlertStore()
@@ -65,8 +66,8 @@ const rules = {
   },
 }
 
-const updateExpiryDate = value => {
-  booking.value.loadingDate = moment(value).endOf('day').format()
+const updateExpiryDate = (value, index) => {
+  booking.value.details[index].date = moment(value).endOf('day').format()
 }
 const updatePreferredDate = value => {
   booking.value.preferredDate = moment(value).endOf('day').format()
@@ -195,30 +196,33 @@ const cancelChanges = async () => {
     useArrayFind(fromDraft ? drafts.value : bookings.value, i => i.id === route.params.id).value,
   )
 }
+
 const onSave = async () => {
   isSaveLoading.value = true
+  const original_booking = bookings.value.find(val => val.id === route.params.id)
+  const updatedObj = pickBy(booking.value, (value, key) => !isEqual(value, original_booking[key]))
   // booking.value.loadingDate = moment(booking.value.loadingDate).endOf('day').format()
   // booking.value.preferredDate = moment(booking.value.preferredDate).endOf('day').format()
-  // if (activated) {
-  //   if (expired.value) {
-  //     await reactivateBooking(booking.value)
-  //     await router.push({ name: 'dashboard' })
-  //     activated.value = false
+  if (activated) {
+    if (expired.value) {
+      // await reactivateBooking(booking.value)
+      // await router.push({ name: 'dashboard' })
+      // activated.value = false
 
-  //     return
-  //   }
-  //   if (completed.value) {
-  //     await duplicateBooking(booking.value)
-  //     await router.push({ name: 'dashboard' })
-  //     activated.value = false
+      return
+    }
+    if (completed.value) {
+      // await duplicateBooking(booking.value)
+      // await router.push({ name: 'dashboard' })
+      // activated.value = false
 
-  //     return
-  //   }
-  // }
-  // await updateBooking(booking.value, fromDraft ? 'drafts' : 'bookings')
-  // await new Promise(resolve => setTimeout(resolve, 1000))
+      return
+    }
+  }
+  await updateBooking(updatedObj, booking.value?.ids, fromDraft ? 'drafts' : 'bookings')
+  await new Promise(resolve => setTimeout(resolve, 1000))
 
-  // await router.push({ name: 'dashboard' })
+  await router.push({ name: 'dashboard' })
   isSaveLoading.value = false
 }
 const validateExpiryDates = () => {
@@ -244,7 +248,7 @@ onMounted(async () => {
   } else if (fromDraft) {
     booking.value = await getBooking({ id: route.params.id, draft: true })
   } else {
-    booking.value = bookings.value.find(val => val.id === route.params.id)
+    booking.value = cloneDeep(bookings.value.find(val => val.id === route.params.id))
     // await getBooking({ id: route.params.id })
   }
 
@@ -368,14 +372,6 @@ onMounted(async () => {
             label="Booking ref*"
             required
             :disabled="pending || expired || (completed && !activated)"
-          />
-          <Textfield
-            v-model.number="booking.containers"
-            label="Number of containers*"
-            type="number"
-            :rules="[rules.checkcommitted]"
-            required
-            :disabled="expired || completed"
           />
           <Autocomplete
             v-model="booking.line"
@@ -512,14 +508,14 @@ onMounted(async () => {
                   :rules="[rules.required]"
                   class="w-3/4"
                 />
-                <IconButton
+                <!-- <IconButton
                   v-if="index"
                   icon="mdi-close"
                   class="absolute top-0 right-0"
                   @click="removeLoadingDate(d.id)"
                 >
                   <Tooltip> Remove loading date</Tooltip>
-                </IconButton>
+                </IconButton> -->
               </div>
             </template>
           </div>

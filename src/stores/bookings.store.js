@@ -12,11 +12,12 @@ import {
   setDoc,
   updateDoc,
   where,
+  writeBatch,
 } from 'firebase/firestore'
 import { db } from '~/firebase'
 import { useAuthStore } from '~/stores/auth.store'
 import { getLocalServerTime, getLocalTime } from '@qualle-admin/qutil/dist/date'
-import { capitalize, cloneDeep } from 'lodash'
+import { capitalize, cloneDeep, pickBy } from 'lodash'
 import moment from 'moment-timezone'
 import { statuses } from '~/constants/statuses'
 import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
@@ -135,7 +136,7 @@ export const useBookingsStore = defineStore('bookings', () => {
         // updatePromises.push(updateBooking(updatedBookingData, 'bookings', true))
       }
     }
-    
+
     return updateBookings
   }
 
@@ -333,9 +334,26 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.warning({ content: message })
     }
   }
-  const updateBooking = async (booking, collectionName, completedStatus = false) => {
+
+  const updateBooking = async (booking, ids, collectionName, completedStatus = false) => {
     try {
-      await updateDoc(doc(db, collectionName, booking.id), { ...booking })
+      const { details } = booking || { details: [] }
+
+      const data = pickBy(booking, (value, key) => key !== 'details') || {}
+      const batch = writeBatch(db)
+
+      ids.forEach(id => {
+        const docRef = doc(db, collectionName, id)
+        const loadData = details?.find(val => val.id === id)
+        if (loadData) {
+          data.loadingDate = moment(loadData.date).endOf('day').format()
+          data.containers = loadData.containers
+        }
+        if (Object.keys(data).length) {
+          batch.update(docRef, { ...data })
+        }
+      }),
+        await batch.commit()
       if (!completedStatus) {
         alertStore.info({
           content: `${capitalize(collectionName).charAt(0) + collectionName.slice(1)} updated`,
