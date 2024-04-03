@@ -22,7 +22,7 @@ const removeBookingDialog = ref(false)
 
 const { yardsHeaders, bookingsHeaders } = useHeaders()
 const { bookingsActions } = useActions()
-const { getFormattedDateTime, getFormattedDate } = useDate()
+const { getFormattedDate } = useDate()
 
 const containerActionHandler = async ({ action, e }) => {
   if (action === 'edit-booking') emit('editBooking', e[0].id)

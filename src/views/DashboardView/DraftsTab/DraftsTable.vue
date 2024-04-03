@@ -19,14 +19,14 @@ const deleteDraftDialog = ref(false)
 
 const { draftsHeaders } = useHeaders()
 const { draftsActions } = useActions()
-const { getFormattedDateTime, getFormattedDate, getSmallerDate } = useDate()
+const { getFormattedDate, getSmallerDate } = useDate()
 const formateTime = date => {
   return getFormattedDate(date)
 }
 const formateMinTime = dates => {
   // const maxDate = new Date(Math.max(...dates))
   const minData = getSmallerDate(dates)
-  
+
   return getFormattedDate(minData)
 }
 

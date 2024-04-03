@@ -28,7 +28,6 @@ const {
   edit_commitment_loadingDate,
 } = useCommitmentsStore()
 
-// const { computedEntities } = toRefs(props)
 const authStore = useAuthStore()
 const { smAndDown } = useDisplay()
 const router = useRouter()
@@ -61,9 +60,9 @@ const cancelReasonList = [
 ]
 const { bookingsHeaders, commitmentsHeaders } = useHeaders()
 const { bookingsActions, commitmentsActions } = useActions()
-const { getFormattedDateTime, getFormattedDate, getSmallerDate } = useDate()
+const { getFormattedDate, getSmallerDate } = useDate()
 const commitmentDetailsDialog = ref(null)
-const computedEntities = computed(() => bookingsStore.bookings)
+const notGroupedBookings = computed(() => bookingsStore.notGroupedBookings)
 const formateTime = date => {
   return getFormattedDate(date)
 }
@@ -74,7 +73,7 @@ const formateMinTime = dates => {
   return getFormattedDate(minData)
 }
 const bookingStatus = item => {
-  const bookings = computedEntities.value
+  const bookings = notGroupedBookings.value
   const booking = bookings.find(i => {
     const ids = i.ids
 

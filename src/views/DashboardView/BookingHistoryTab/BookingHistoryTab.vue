@@ -17,7 +17,7 @@ const { getCommitmentsByBookingId, closeBookingExpansion } = bookingsStore
 const { smAndDown } = useDisplay()
 const { bookingsHistoryHeaders, commitmentsHeaders } = useHeaders()
 const { bookingHistoryActions, commitmentsActions } = useActions()
-const { getFormattedDateTime, getFormattedDate, getSmallerDate } = useDate()
+const { getFormattedDate, getSmallerDate } = useDate()
 const router = useRouter()
 const statistics = ref(truckersData)
 const tableHeight = ref(0)
@@ -154,7 +154,7 @@ const formateTime = date => {
 const formateMinTime = dates => {
   // const maxDate = new Date(Math.max(...dates))
   const minData = getSmallerDate(dates)
-  
+
   return getFormattedDate(minData)
 }
 onMounted(async () => {
