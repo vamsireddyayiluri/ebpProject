@@ -290,10 +290,14 @@ export const useBookingsStore = defineStore('bookings', () => {
           alertStore.info({ content: 'Draft was deleted' })
         }
       } else if (fromHistory) {
-        const index = pastBookings.value.findIndex(i => i.id === id)
+        const index = pastBookings.value.findIndex(i => booking.includes(i.id))
         if (index > -1) {
           pastBookings.value.splice(index, 1)
-          await deleteDoc(doc(db, 'bookings', id))
+
+          booking.forEach(id => {
+            batch.delete(doc(db, 'bookings', id))
+          })
+          // await deleteDoc(doc(db, 'bookings', id))
           alertStore.info({ content: 'Bookings removed!' })
         }
       } else {
@@ -322,13 +326,9 @@ export const useBookingsStore = defineStore('bookings', () => {
       const batch = writeBatch(db)
       await deleteBooking(booking.ids, true)
       booking.ids.forEach(id => {
-        const loadingDate = booking.details.find(val => val.id === id)
-        const data = { ...booking, ...loadingDate }
-        delete data['details']
-        delete data['ids']
+        const data = createEditedBookingObj(booking, id)
         const docRef = doc(collection(db, 'bookings'), id)
         batch.set(docRef, data)
-        // batch.set
       })
 
       await batch.commit()
@@ -341,17 +341,23 @@ export const useBookingsStore = defineStore('bookings', () => {
     }
   }
   const reactivateBooking = async booking => {
-    const bookingId = uid(28)
     try {
-      await deleteDoc(doc(db, 'bookings', booking.id))
-      await setDoc(doc(collection(db, 'bookings'), bookingId), {
-        ...booking,
-        committed: 0,
-        id: bookingId,
-        status: statuses.active,
-        updatedAt: getLocalTime().format(),
-        carriers: [],
+      await deleteBooking(booking, false, true)
+      const batch = writeBatch(db)
+      booking.ids.forEach(id => {
+        const bookingId = uid(28)
+
+        const booking = createEditedBookingObj(booking, id)
+        batch.set(doc(collection(db, 'bookings'), bookingId), {
+          ...booking,
+          committed: 0,
+          id: bookingId,
+          status: statuses.active,
+          updatedAt: getLocalTime().format(),
+          carriers: [],
+        })
       })
+      await batch.commit()
       alertStore.info({ content: 'Reactivated booking' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
@@ -364,14 +370,15 @@ export const useBookingsStore = defineStore('bookings', () => {
     delete data['details']
     delete data['ids']
 
-    return createBookingObj(data)
+    return data
   }
   const removeFromNetwork = async booking => {
     try {
       await deleteBooking(booking)
       const batch = writeBatch(db)
       booking.ids.forEach(id => {
-        const newDraft = createEditedBookingObj(booking, id)
+        const data = createEditedBookingObj(booking, id)
+        const newDraft = createBookingObj(data)
         batch.set(doc(collection(db, 'drafts'), newDraft.id), newDraft)
       })
       await batch.commit()
