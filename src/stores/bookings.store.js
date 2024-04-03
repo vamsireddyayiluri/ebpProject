@@ -304,7 +304,7 @@ export const useBookingsStore = defineStore('bookings', () => {
         })
         const index = bookings.value.findIndex(i => {
           const ids = i.ids
-          return ids.includes(data.bookingId)
+          return ids.includes(booking.id)
         })
         if (index > -1) {
           bookings.value.splice(index, 1)
@@ -358,7 +358,8 @@ export const useBookingsStore = defineStore('bookings', () => {
   }
   const createEditedBookingObj = (booking, id) => {
     const loadingDate = booking.details.find(val => val.id === id)
-    const data = { ...booking, ...loadingDate }
+    const data = { ...booking, ...loadingDate, entities: [] }
+
     delete data['details']
     delete data['ids']
 
