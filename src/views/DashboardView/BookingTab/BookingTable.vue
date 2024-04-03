@@ -74,11 +74,7 @@ const formateMinTime = dates => {
 }
 const bookingStatus = item => {
   const bookings = notGroupedBookings.value
-  const booking = bookings.find(i => {
-    const ids = i.ids
-
-    return ids.includes(item.bookingId)
-  })
+  const booking = bookings.find(i => i.id === item.bookingId)
 
   return booking?.status
 }

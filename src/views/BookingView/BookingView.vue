@@ -37,6 +37,7 @@ const {
   updateBooking,
   reactivateBooking,
   duplicateBooking,
+  getBookingHistory,
 } = useBookingsStore()
 
 const workDetailsStore = useWorkDetailsStore()
@@ -167,13 +168,20 @@ const validateBooking = computed(() => {
     const selectedBooking = bookings.value.find(i => i.id === booking.value.id)
     booking.value.entities = selectedBooking?.entities
   }
+
   let condition = isEqual(booking.value, originalBooking.value)
+
   condition = condition || validateRequiredFields()
   condition = condition || form.value?.errors.length
 
-  if (!fromDraft) {
-    condition = condition || !validExpiryDate.value
+  if (fromHistory) {
+    condition =
+      condition ||
+      booking.value.details.some(val =>
+        moment(val?.loadingDate).endOf('day').isBefore(moment().endOf('day')),
+      )
   }
+
   if (!fromDraft && !fromHistory && !condition) {
     condition = condition || booking.value.details.some(val => val?.containers < val?.committed)
   }
@@ -191,8 +199,10 @@ const cancelChanges = async () => {
 
 const onSave = async () => {
   isSaveLoading.value = true
-  const original_booking = bookings.value.find(val => val.id === route.params.id)
-  const updatedObj = pickBy(booking.value, (value, key) => !isEqual(value, original_booking[key]))
+  const updatedObj = pickBy(
+    booking.value,
+    (value, key) => !isEqual(value, originalBooking.value[key]),
+  )
   // booking.value.loadingDate = moment(booking.value.loadingDate).endOf('day').format()
   // booking.value.preferredDate = moment(booking.value.preferredDate).endOf('day').format()
   if (activated) {
@@ -236,6 +246,7 @@ onMounted(async () => {
   await getBookings(fromDraft ? { draft: true } : {})
   let targetBookings
   if (fromHistory) {
+    await getBookingHistory()
     targetBookings = useBookingsStore().pastBookings
   } else if (fromDraft) {
     targetBookings = useBookingsStore().drafts
@@ -244,8 +255,8 @@ onMounted(async () => {
   }
 
   // bookings.value = targetBookings
-  originalBooking.value = cloneDeep(targetBookings.find(val => val.id === route.params.id))
-  booking.value = JSON.parse(JSON.stringify(originalBooking.value))
+  originalBooking.value = cloneDeep(targetBookings.find(val => val.ids.includes(route.params.id)))
+  booking.value = JSON.parse(JSON.stringify(originalBooking?.value))
   if (fromHistory && queryParams.activated) {
     animate()
   }

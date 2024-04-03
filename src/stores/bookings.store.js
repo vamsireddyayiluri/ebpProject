@@ -276,6 +276,8 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.warning({ content: message })
     }
   }
+
+  // deleting multiple bookings using ids array
   const deleteBooking = async (booking, draft = false, fromHistory = false) => {
     try {
       const batch = writeBatch(db)
@@ -308,7 +310,7 @@ export const useBookingsStore = defineStore('bookings', () => {
         })
         const index = bookings.value.findIndex(i => {
           const ids = i.ids
-          return ids.includes(booking.id)
+          return ids.includes(i.id)
         })
         if (index > -1) {
           bookings.value.splice(index, 1)
@@ -342,14 +344,14 @@ export const useBookingsStore = defineStore('bookings', () => {
   }
   const reactivateBooking = async booking => {
     try {
-      await deleteBooking(booking, false, true)
+      await deleteBooking(booking.ids, false, true)
       const batch = writeBatch(db)
       booking.ids.forEach(id => {
         const bookingId = uid(28)
 
-        const booking = createEditedBookingObj(booking, id)
+        const newData = createEditedBookingObj(booking, id)
         batch.set(doc(collection(db, 'bookings'), bookingId), {
-          ...booking,
+          ...newData,
           committed: 0,
           id: bookingId,
           status: statuses.active,
@@ -403,6 +405,7 @@ export const useBookingsStore = defineStore('bookings', () => {
         if (loadData) {
           data.loadingDate = moment(loadData.loadingDate).endOf('day').format()
           data.containers = loadData.containers
+          data.scacList = loadData.scacList
         }
         if (Object.keys(data).length) {
           batch.update(docRef, { ...data })
@@ -445,6 +448,19 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.warning({ content: message })
     }
   }
+  // delete single booking based on the booking id
+  const deleteBookingById = async id => {
+    try {
+      const index = notGroupedBookings.value.findIndex(i => i.id === id)
+      if (index > -1) {
+        await deleteDoc(doc(db, 'bookings', id))
+        notGroupedBookings.value.splice(index, 1)
+        alertStore.info({ content: 'Bookings removed!' })
+      }
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
   const closeBookingExpansion = async id => {
     const index = bookings.value.findIndex(val => val?.id === id)
     bookings.value[index].expand = false
@@ -479,5 +495,6 @@ export const useBookingsStore = defineStore('bookings', () => {
     reset,
     duplicateBooking,
     closeBookingExpansion,
+    deleteBookingById,
   }
 })
