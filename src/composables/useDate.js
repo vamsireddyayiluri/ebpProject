@@ -29,7 +29,7 @@ export const getSmallerDate = dates => {
   if (!Array.isArray(dates) || dates?.length === 0) {
     return null
   }
-  const momentDates = dates?.map(date => moment(date.date))
+  const momentDates = dates?.map(date => moment(date.loadingDate))
 
   const smallestDate = moment.min(momentDates)
 

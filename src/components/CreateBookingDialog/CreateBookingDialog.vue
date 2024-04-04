@@ -192,8 +192,8 @@ const saveDraft = async () => {
   confirmDraftsDialog.value.show(false)
   emit('close')
 }
-const saveBooking = async () => {
-  await createBooking(booking.value, newBookings.value)
+const saveBooking = () => {
+  createBooking(booking.value, newBookings.value)
   emit('close')
 }
 const updateRef = e => {

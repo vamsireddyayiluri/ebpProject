@@ -23,7 +23,9 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         (Array.isArray(i.ids) && i.ids.includes(commitment.bookingId))
       )
     })
-    const availableContainers = booking?.containers - booking?.committed
+
+    const details = booking.details.find(obj => obj.id === commitment.bookingId)
+    const availableContainers = details.containers - details?.committed
 
     //throw error if commitment capacity is not available
     if (!availableContainers) {

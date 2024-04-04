@@ -14,7 +14,14 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore'
-import { getStorage, ref as firebaseRef, uploadBytes, listAll, getMetadata } from 'firebase/storage'
+import {
+  getStorage,
+  ref as firebaseRef,
+  uploadBytes,
+  listAll,
+  getMetadata,
+  getDownloadURL,
+} from 'firebase/storage'
 import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
