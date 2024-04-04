@@ -203,11 +203,11 @@ const updateRef = e => {
 onMounted(async () => {
   await workDetailsStore.getYards()
 })
-watch(clickedOutside, () => {
+/*watch(clickedOutside, () => {
   if (isDirty.value) {
     confirmDraftsDialog.value.show(true)
   } else emit('close')
-})
+})*/
 </script>
 
 <template>
@@ -373,7 +373,7 @@ watch(clickedOutside, () => {
             <IconButton
               v-if="index"
               icon="mdi-close"
-              class="absolute top-0 right-0"
+              class="absolute top-1 right-0"
               @click="removeLoadingDate(d.id)"
             >
               <Tooltip> Remove loading date</Tooltip>
@@ -385,7 +385,7 @@ watch(clickedOutside, () => {
     <Button
       variant="plain"
       prepend-icon="mdi-plus"
-      class="mr-auto"
+      class="mt-2.5 mr-auto"
       @click="addLoadingDate"
     >
       add loading date
@@ -408,7 +408,7 @@ watch(clickedOutside, () => {
       </Button>
     </div>
   </VForm>
-  <Dialog
+<!--  <Dialog
     ref="confirmDraftsDialog"
     class="max-w-[450px] md:max-w-[560px]"
   >
@@ -442,6 +442,6 @@ watch(clickedOutside, () => {
         </Button>
       </div>
     </template>
-  </Dialog>
+  </Dialog>-->
 </template>
 

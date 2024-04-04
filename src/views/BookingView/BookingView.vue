@@ -439,17 +439,19 @@ onMounted(async () => {
             return-object
             :disabled="pending || expired || completed"
           />
-          <TextFieldWithSelector
-            v-model.number="booking.estimatedRate"
-            type="number"
-            label="Target rate*"
-            :items="['All in rate', 'Linehaul + FSC Only']"
-            return-object="true"
-            :rules="[rules.containers]"
-            :disabled="pending || expired || completed"
-            select-width="197px"
-            @onSelect="value => (booking.estimatedRateType = value)"
-          />
+          <div>
+            <TextFieldWithSelector
+              v-model.number="booking.estimatedRate"
+              type="number"
+              label="Target rate*"
+              :items="['All in rate', 'Linehaul + FSC Only']"
+              return-object="true"
+              :rules="[rules.containers]"
+              :disabled="pending || expired || completed"
+              select-width="197px"
+              @onSelect="value => (booking.estimatedRateType = value)"
+            />
+          </div>
           <Autocomplete
             v-model="booking.size"
             :items="containersSizes"
