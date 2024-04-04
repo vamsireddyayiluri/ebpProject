@@ -179,7 +179,7 @@ const onLoadingDateUpdated = async (data, loadingDate) => {
   isloading.value = false
 }
 
-const onDeclineCommitment = async reason => {
+const onDeclineCommitment = async (commitment, reason) => {
   declineCommitmentDialog.value.show(false)
   commitmentDetailsDialog.value.show(false)
   await declineCommitment(declineCommitmentDialog.value.data, reason)
@@ -277,8 +277,14 @@ watch(
       />
     </template>
     <template #bookingExpiry="{ item }">
-      <Typography type="text-body-m-regular">
+      <Typography type="text-body-m-regular d-flex align-center">
         {{ formateMinTime(item.details) || '--' }}
+        <Typography
+          type="text-body-xs-semibold pl-2"
+          v-if="item.details?.length > 1"
+        >
+          +{{ item.details?.slice(1)?.length }} more</Typography
+        >
         <Popover
           activator="parent"
           location="top center"

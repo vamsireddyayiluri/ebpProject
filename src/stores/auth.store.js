@@ -38,6 +38,7 @@ import { useNotificationStore } from '~/stores/notification.store'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
+import { uid } from 'uid'
 
 export const useAuthStore = defineStore('auth', () => {
   const router = useRouter()

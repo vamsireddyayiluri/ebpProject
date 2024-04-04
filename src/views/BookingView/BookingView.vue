@@ -9,7 +9,7 @@ import { getBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { storeToRefs } from 'pinia'
 import { statuses } from '~/constants/statuses'
-import { cloneDeep, isEqual, pickBy, isNull } from 'lodash'
+import { cloneDeep, isEqual, pickBy, isNull, sumBy } from 'lodash'
 import container from '~/assets/images/container.png'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import containersSizes from '~/fixtures/containersSizes.json'
@@ -69,6 +69,8 @@ const rules = {
   validateDate: value => (isNull(value) ? true : validateExpiryDate(activeBookings?.value, value)),
   uniqueDate: () =>
     checkUniqueDates(booking.value.details) || 'Loading date already exists. Select another date.',
+  lessThanComitted: value =>
+    value?.containers >= value?.committed || `Value should not be less than ${value.committed}`,
 }
 
 const updateExpiryDate = (value, index) => {
@@ -506,7 +508,7 @@ onMounted(async () => {
               <Textfield
                 v-model.number="d.containers"
                 label="Number of containers*"
-                :rules="[rules.containers]"
+                :rules="[rules.containers, rules.lessThanComitted(d)]"
                 type="number"
                 required
                 :disabled="expired || completed"
@@ -516,7 +518,6 @@ onMounted(async () => {
                 <AutocompleteScac
                   :scac-list="d.scacList"
                   :menu-btn="false"
-                  :rules="[rules.required]"
                   required
                   :disabled="pending || expired || completed"
                   class="w-3/4"
@@ -560,11 +561,21 @@ onMounted(async () => {
             <Typography type="text-h4"> Fulfillment progress </Typography>
             <ProgressCircular
               :size="260"
-              :value="getBookingLoad(booking.committed, booking.containers)"
+              :value="
+                getBookingLoad(
+                  sumBy(booking.details, 'committed'),
+                  sumBy(booking.details, 'containers'),
+                )
+              "
               text="fullfilled"
               class="flex my-1 mx-auto"
             >
-              {{ getBookingLoad(booking.committed, booking.containers) }}%
+              {{
+                getBookingLoad(
+                  sumBy(booking.details, 'committed'),
+                  sumBy(booking.details, 'containers'),
+                )
+              }}%
             </ProgressCircular>
           </div>
           <div class="statisticsTimeline">

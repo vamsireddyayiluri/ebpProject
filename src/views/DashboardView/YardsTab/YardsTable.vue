@@ -168,6 +168,12 @@ onMounted(() => {
         <template #bookingExpiry="{ item }">
           <Typography type="text-body-m-regular">
             {{ formateMinTime(item.details) || '--' }}
+            <Typography
+              type="text-body-xs-semibold"
+              v-if="item.details?.length > 1"
+            >
+              + {{ item.details?.slice(1)?.length }} more</Typography
+            >
             <Popover
               activator="parent"
               location="top center"

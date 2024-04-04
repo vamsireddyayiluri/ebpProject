@@ -186,9 +186,8 @@ const removeLoadingDate = id => {
   }
 }
 const saveDraft = async () => {
-  newBookings.value.forEach(b => {
-    createDraft({ ...booking.value, ...b })
-  })
+  createDraft(booking.value, newBookings.value)
+
   confirmDraftsDialog.value.show(false)
   emit('close')
 }
@@ -369,8 +368,7 @@ onMounted(async () => {
             <AutocompleteScac
               :scac-list="d.scacList"
               :menu-btn="false"
-              :rules="[rules.required]"
-              :class="{'w-4/5 lg:w-10/12 xl:w-11/12': index}"
+              class="w-3/4"
             />
             <IconButton
               v-if="index"
@@ -446,3 +444,4 @@ onMounted(async () => {
     </template>
   </Dialog>-->
 </template>
+

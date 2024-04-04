@@ -208,19 +208,30 @@ export const useBookingsStore = defineStore('bookings', () => {
 
       bookings.value.length = 0
       bookings.value.push(...groupBookings(notGroupedBookings.value))
+      alertStore.info({ content: `Booking Created!` })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
   }
-  const createDraft = async draft => {
-    const newDraft = createBookingObj(draft)
+  const createDraft = async (selectedDraft, details) => {
     try {
-      await setDoc(doc(collection(db, 'drafts'), newDraft.id), newDraft)
-      drafts.value.unshift(newDraft)
+      const batch = writeBatch(db)
+      details.forEach(b => {
+        const newDraft = createBookingObj({ ...selectedDraft, ...b })
+        const docRef = doc(collection(db, 'drafts'), newDraft.id)
+        batch.set(docRef, newDraft)
+        drafts.value.unshift(newDraft)
+      })
+      await batch.commit()
+      const group = groupBookings(drafts.value)
+      drafts.value.length = 0
+      drafts.value.push(...group)
+      alertStore.info({ content: `Draft Created!` })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
   }
+
   const updateBookingStatus = async (booking, status, reason) => {
     try {
       const ids = booking.ids
@@ -241,6 +252,12 @@ export const useBookingsStore = defineStore('bookings', () => {
         }
       })
       if (status === statuses.canceled) {
+        const index = bookings.value.findIndex(i => {
+          return i.ids.includes(booking.id)
+        })
+        bookings.value.splice(index, 1)
+        notGroupedBookings.value.splice(index, 1)
+
         const commitments = await getCommitmentsByBookingId(booking.id, booking.ids)
         commitments.map(async i => {
           if (i.status === statuses.approved) {
@@ -309,7 +326,6 @@ export const useBookingsStore = defineStore('bookings', () => {
           batch.delete(doc(db, 'bookings', id))
         })
         const index = bookings.value.findIndex(i => {
-          const ids = i.ids
           return ids.includes(i.id)
         })
         if (index > -1) {
@@ -433,8 +449,12 @@ export const useBookingsStore = defineStore('bookings', () => {
           if (ids.includes(commitment.bookingId)) {
             if (type === 'approved') {
               booking.committed = commitment.committed + booking.committed
+              const index = booking.details.findIndex(i => i.id === updatedBooking.id)
+              booking.details[index].committed += commitment.committed || 0
             } else if (type === 'canceled') {
               booking.committed = booking.committed - commitment.committed
+              const index = booking.details.findIndex(i => i.id === updatedBooking.id)
+              booking.details[index].committed -= commitment.committed || 0
             }
             booking.status = toRaw(updatedBooking.status)
             const index = booking.details.findIndex(i => i.id === updatedBooking.id)
