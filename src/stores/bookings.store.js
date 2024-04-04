@@ -252,6 +252,12 @@ export const useBookingsStore = defineStore('bookings', () => {
         }
       })
       if (status === statuses.canceled) {
+        const index = bookings.value.findIndex(i => {
+          return i.ids.includes(booking.id)
+        })
+        bookings.value.splice(index, 1)
+        notGroupedBookings.value.splice(index, 1)
+
         const commitments = await getCommitmentsByBookingId(booking.id, booking.ids)
         commitments.map(async i => {
           if (i.status === statuses.approved) {
@@ -320,7 +326,6 @@ export const useBookingsStore = defineStore('bookings', () => {
           batch.delete(doc(db, 'bookings', id))
         })
         const index = bookings.value.findIndex(i => {
-          const ids = i.ids
           return ids.includes(i.id)
         })
         if (index > -1) {
