@@ -81,6 +81,7 @@ const removeMember = async id => {
           item-value="id"
           :select-disabled="!isAdmin"
           return-object="true"
+          select-width="130px"
           @onSelect="handleMemberType"
         />
       </div>

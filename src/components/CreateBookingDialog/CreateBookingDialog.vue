@@ -303,6 +303,7 @@ watch(clickedOutside, () => {
           label="Target rate*"
           :items="['All in rate', 'Linehaul + FSC Only']"
           return-object="true"
+          select-width="197px"
           :rules="[rules.containers]"
           @onSelect="value => (booking.estimatedRateType = value)"
         />
@@ -446,21 +447,3 @@ watch(clickedOutside, () => {
   </Dialog>
 </template>
 
-<style lang="scss">
-.styleCreateBookingDialog {
-  .styledTextFieldWithSelector {
-    .select {
-      width: 100%;
-
-      .v-field__input {
-        padding-inline-start: 0;
-        padding-inline-end: 0;
-      }
-    }
-
-    .v-field__input {
-      padding-inline-end: 0;
-    }
-  }
-}
-</style>

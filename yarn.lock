@@ -299,9 +299,9 @@
     "@babel/plugin-syntax-typescript" "^7.24.1"
 
 "@babel/runtime@^7.21.0":
-  version "7.24.1"
-  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.24.1.tgz#431f9a794d173b53720e69a6464abc6f0e2a5c57"
-  integrity sha512-+BIznRzyqBf+2wCTxcKE3wDjfGeCoVE61KSHGpkzqrLi8qxqFwBeUFyId2cxkTmm55fzDGnm0+yCxaxygrLUnQ==
+  version "7.24.4"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.24.4.tgz#de795accd698007a66ba44add6cc86542aff1edd"
+  integrity sha512-dkxf7+hn8mFBwKjs9bvBlArzLVxVbS8usaPUDd5p2a9JCL9tB8OaOVN1isD4+Xyk4ns89/xeOmbQvgdK7IIVdA==
   dependencies:
     regenerator-runtime "^0.14.0"
 
@@ -1503,9 +1503,9 @@
   integrity sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==
 
 "@qualle-admin/qui@latest":
-  version "1.213.0"
-  resolved "https://npm.pkg.github.com/download/@qualle-admin/qui/1.213.0/ff75dafd75e0c1408eb9dc098523d5b970848cfd#ff75dafd75e0c1408eb9dc098523d5b970848cfd"
-  integrity sha512-jDvxqACFqj76Wtd6qi73pb/TTsjKc8EVKz04A6wRpm3Y551EPNsIbA5+4tKnZjGmlfmq9QYtlig/IU6NZVbMGA==
+  version "1.215.0"
+  resolved "https://npm.pkg.github.com/download/@qualle-admin/qui/1.215.0/5fbc33176bd13b9f3b6a56ddbbfe4c4605ad0a68#5fbc33176bd13b9f3b6a56ddbbfe4c4605ad0a68"
+  integrity sha512-KQ6L/ihO+9Af3QFYrDzfRJihY3J1EZqUDBNolo7mvRRX+n8KYYteteloO+ne2L0n/2lyvIkS4X/ZHauL2CSeAA==
   dependencies:
     uid "^2.0.1"
     "@fullcalendar/core" "^6.0.3"
