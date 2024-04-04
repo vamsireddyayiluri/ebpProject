@@ -135,29 +135,19 @@ const animate = async () => {
 const validateRequiredFields = () => {
   return (
     !(booking.value.ref &&
-    booking.value.containers &&
     booking.value.commodity &&
     booking.value.insurance &&
     booking.value.weight &&
     rules.containers(booking.value.weight) === true &&
     booking.value.estimatedRate &&
     rules.containers(booking.value.estimatedRate) === true &&
-    booking.value.preferredDate &&
     booking.value.size &&
     booking.value.size
       ? booking.value.size.length > 0
-      : false && booking.value.estimatedRateType && isLoadingDatesFieldsEmpty) ||
+      : false && booking.value.estimatedRateType) ||
     validateFlexibleSizes(booking.value.size, booking.value.flexibleBooking)?.length > 0
   )
 }
-
-const isLoadingDatesFieldsEmpty = computed(() => {
-  return cloneDeep(booking.value.details).some(object => {
-    return Object.values(object).some(
-      value => value === null || (Array.isArray(value) && value.some(item => item === null)),
-    )
-  })
-})
 
 const isDisabledPublish = computed(() => {
   return validateRequiredFields() || form.value?.errors.length
