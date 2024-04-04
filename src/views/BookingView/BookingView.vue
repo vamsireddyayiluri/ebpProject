@@ -447,6 +447,7 @@ onMounted(async () => {
             return-object="true"
             :rules="[rules.containers]"
             :disabled="pending || expired || completed"
+            select-width="197px"
             @onSelect="value => (booking.estimatedRateType = value)"
           />
           <Autocomplete
