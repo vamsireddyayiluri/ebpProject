@@ -79,22 +79,24 @@ export const checkVendorDetailsCompletion = () => {
   } else
     alertStore.warning({
       content: 'Please add yard details in settings to perform actions',
-      button: { name: 'Go to yard details', callback: async () => await alertStore.routerPush({name: 'settings' })},
+      button: {
+        name: 'Go to yard details',
+        callback: async () => await alertStore.routerPush({ name: 'settings' }),
+      },
     })
 }
 export const isExistName = (list, value, key) => {
   return list.some(i => i[key] === value)
 }
 export const validateAverageWeight = (value, location) => {
-  if (location.details?.overweight) {
+  if (location?.details?.overweight) {
     return value < defaultOverWeight || value > maximumOverWeight
       ? `Weight must be b/w ${defaultOverWeight} to ${maximumOverWeight}`
       : true
   } else {
-    return value < minimumLegalWeight || value >= defaultOverWeight?
-      `Weight must be b/w ${minimumLegalWeight} to ${
-        defaultOverWeight - 1
-      }`: true
+    return value < minimumLegalWeight || value >= defaultOverWeight
+      ? `Weight must be b/w ${minimumLegalWeight} to ${defaultOverWeight - 1}`
+      : true
   }
 }
 const checkPendingBookings = () => {
