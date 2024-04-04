@@ -73,13 +73,7 @@ onMounted(async () => {
     }
   }, 200)
   await markUserAsOnlineOffline('online')
-  const allTruckers = await getTruckers()
-  allParticipants.value = allTruckers.map(trucker => {
-    return {
-      name: trucker.company,
-      id: trucker.id,
-    }
-  })
+
 })
 onBeforeUnmount(async () => {
   activeChat.value = null

@@ -78,6 +78,7 @@ export const groupBookings = objects => {
     if (groupedObject[key]) {
       groupedObject[key].containers += obj.containers
       groupedObject[key].committed += obj.committed
+      groupedObject[key].status = obj.status === 'active' ? obj.status : groupedObject[key].status
 
       groupedObject[key].details.push({
         loadingDate: obj.loadingDate,

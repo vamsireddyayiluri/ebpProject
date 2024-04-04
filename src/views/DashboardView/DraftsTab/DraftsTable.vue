@@ -140,7 +140,7 @@ onMounted(() => {
                       :key="scac"
                     >
                       <Chip>
-                        {{ scac }}
+                        {{ scac || '--' }}
                       </Chip>
                     </template>
                   </td>

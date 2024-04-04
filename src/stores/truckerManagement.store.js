@@ -68,7 +68,7 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
   const getOnboardingDocuments = async () => {
     try {
       const docData = await getDoc(doc(db, 'trucker_requirements', userData.orgId))
-      onboardingDocuments.value = docData.data().onBoardingDocuments
+      onboardingDocuments.value = docData.data()?.onBoardingDocuments || []
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
