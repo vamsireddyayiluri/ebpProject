@@ -277,8 +277,14 @@ watch(searchValue, value => {
         </Typography>
       </template>
       <template #bookingExpiry="{ item }">
-        <Typography type="text-body-m-regular">
-          {{ formateMinTime(item.details) }}
+        <Typography type="text-body-m-regular d-flex align-center">
+          {{ formateMinTime(item.details) || '--' }}
+          <Typography
+            type="text-body-xs-semibold pl-2"
+            v-if="item.details?.length > 1"
+          >
+            +{{ item.details?.slice(1)?.length }} more</Typography
+          >
           <Popover
             activator="parent"
             location="top center"

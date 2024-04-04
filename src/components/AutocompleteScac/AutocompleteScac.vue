@@ -48,7 +48,7 @@ onMounted(async () => {
     <Autocomplete
       v-model="scacList"
       :items="truckers.map(i => i.scac)"
-      placeholder="Choose truckers by SCAС *"
+      placeholder="Choose truckers by SCAС "
       multiple
       with-btn
       :menu-props="{ maxHeight: 300 }"

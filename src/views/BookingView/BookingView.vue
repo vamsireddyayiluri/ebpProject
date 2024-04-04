@@ -69,6 +69,8 @@ const rules = {
   validateDate: value => (isNull(value) ? true : validateExpiryDate(activeBookings?.value, value)),
   uniqueDate: () =>
     checkUniqueDates(booking.value.details) || 'Loading date already exists. Select another date.',
+  lessThanComitted: value =>
+    value?.containers >= value?.committed || `Value should not be less than ${value.committed}`,
 }
 
 const updateExpiryDate = (value, index) => {
@@ -503,7 +505,7 @@ onMounted(async () => {
               <Textfield
                 v-model.number="d.containers"
                 label="Number of containers*"
-                :rules="[rules.containers]"
+                :rules="[rules.containers, rules.lessThanComitted(d)]"
                 type="number"
                 required
                 :disabled="expired || completed"
@@ -513,7 +515,6 @@ onMounted(async () => {
                 <AutocompleteScac
                   :scac-list="d.scacList"
                   :menu-btn="false"
-                  :rules="[rules.required]"
                   required
                   :disabled="pending || expired || completed"
                   class="w-3/4"
