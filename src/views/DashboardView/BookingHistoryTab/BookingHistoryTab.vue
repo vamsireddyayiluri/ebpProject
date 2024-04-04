@@ -311,7 +311,7 @@ watch(searchValue, value => {
                         :key="scac"
                       >
                         <Chip>
-                          {{ scac }}
+                          {{ scac || '--' }}
                         </Chip>
                       </template>
                     </td>
@@ -340,7 +340,7 @@ watch(searchValue, value => {
                 :key="scac"
               >
                 <Chip>
-                  {{ scac }}
+                  {{ scac || '--' }}
                 </Chip>
               </template>
             </template>
@@ -350,7 +350,7 @@ watch(searchValue, value => {
                 :key="scac"
               >
                 <Chip>
-                  {{ scac }}
+                  {{ scac || '--' }}
                 </Chip>
               </template>
             </template>
@@ -370,7 +370,7 @@ watch(searchValue, value => {
                       :key="scac"
                     >
                       <Chip>
-                        {{ scac }}
+                        {{ scac || '--' }}
                       </Chip>
                     </template>
                   </div>
