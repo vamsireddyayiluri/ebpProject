@@ -31,6 +31,7 @@ const {
   loadingDate,
   commodity,
   line,
+  flexibleBooking,
   size,
   location,
   reason = null,
@@ -153,12 +154,12 @@ onUnmounted(() => {
                     </a>
                   </template>
                   <template v-else>
-                    <Typography
+                    <FlexTypography
                       type="text-body-s-regular"
                       class="text-truncate"
                     >
                       {{ value || '--' }}
-                    </Typography>
+                    </FlexTypography>
                   </template>
                 </VCol>
               </VRow>
@@ -264,7 +265,12 @@ onUnmounted(() => {
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
-                  {{ size }}
+                  <template v-if="flexibleBooking">
+                    {{size.join(', ')}}
+                  </template>
+                  <template v-else>
+                    {{ size }}
+                  </template>
                 </Typography>
                 <Typography type="text-body-s-regular">
                   Export facility
