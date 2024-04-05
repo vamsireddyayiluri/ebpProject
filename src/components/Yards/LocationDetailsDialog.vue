@@ -3,12 +3,13 @@ import { getColor } from '~/helpers/colors'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { emailRegex } from '@qualle-admin/qutil/dist/patterns'
 import { defaultOverWeight, maximumOverWeight } from '~/constants/settings'
-import { cloneDeep, isEqual } from 'lodash'
+import {cloneDeep, isEqual, isString} from 'lodash'
 import { useAuthStore } from '~/stores/auth.store'
 import { storeToRefs } from 'pinia'
 import moment from 'moment-timezone'
 import { cellMask } from '~/helpers/mask'
 import { vMaska, Mask } from 'maska'
+import { validateScheduler } from '~/helpers/validations-functions'
 
 const props = defineProps({
   editedLocation: Object,
@@ -25,11 +26,11 @@ const details = ref(
     ? props.editedLocation?.details?.customizedDetails
       ? props.editedLocation?.details
       : {
-        ...vendorDetails.value,
-        averageLoadTime: null,
-        overweight: null,
-        averageWeight: null,
-      }
+          ...vendorDetails.value,
+          averageLoadTime: null,
+          overweight: null,
+          averageWeight: null,
+        }
     : vendorDetails.value,
 )
 const initDetails = cloneDeep(details.value)
@@ -81,11 +82,15 @@ const loadTimes = ['0.5 hours', '1 hour', '1.5 hours']
 
 const openTimePickerFrom = data => {
   activeTimePicker.value = checkboxes.value.find(d => d.day === data.day)
-  notAfterToTime.value.hour= [[0, moment(activeTimePicker.value.to, 'hh:mm A').format('ha').slice(0, -1)]]
+  notAfterToTime.value.hour = [
+    [0, moment(activeTimePicker.value.to, 'hh:mm A').format('ha').slice(0, -1)],
+  ]
 }
 const openTimePickerTo = data => {
   activeTimePicker.value = checkboxes.value.find(d => d.day === data.day)
-  notBeforeFromTime.value.hour = [[moment(activeTimePicker.value.from, 'hh:mm A').format('ha').slice(0, -1), '11p']]
+  notBeforeFromTime.value.hour = [
+    [moment(activeTimePicker.value.from, 'hh:mm A').format('ha').slice(0, -1), '11p'],
+  ]
 }
 const onChangeFrom = (e, day) => {
   const currentTimePicker = checkboxes.value.find(d => d.day === day)
@@ -115,10 +120,7 @@ const onChangeTo = (e, day) => {
 }
 const rules = {
   cell(value) {
-    return (
-      /^\+1 \d{3} \d{3}-\d{2}-\d{2}$/.test(value) ||
-      'Invalid phone number format'
-    )
+    return /^\+1 \d{3} \d{3}-\d{2}-\d{2}$/.test(value) || 'Invalid phone number format'
   },
   email(value) {
     return emailRegex.test(value) || 'Invalid e-mail'
@@ -131,17 +133,25 @@ const rules = {
       ? `Weight must be b/w${defaultOverWeight} to ${maximumOverWeight}`
       : true
   },
+  schedule() {
+    const validationData = validateScheduler(checkboxes.value)
+
+    return validationData.isValid || `Incorrect operation hours on ${validationData.day}`
+  },
 }
 const isDirty = computed(() => !isEqual(details.value, initDetails))
 const isDisabled = computed(
-  () => !!form.value?.errors.length || form.value?.isValidating || !isDirty.value,
+  () => !!form.value?.errors.length || form.value?.isValidating || !isDirty.value || isString(rules.schedule()),
 )
 
 const setDetails = async () => {
   const validationData = await form.value.validate()
   if (validationData.valid) {
     if (props.editedLocation) {
-      saveYardDetails({ ...props.editedLocation, details: { ...details.value, hoursOfOperation: checkboxes.value } })
+      saveYardDetails({
+        ...props.editedLocation,
+        details: { ...details.value, hoursOfOperation: checkboxes.value },
+      })
     } else {
       details.value.hoursOfOperation = checkboxes.value
       await saveVendorDetails(details.value)
@@ -242,9 +252,7 @@ onUnmounted(() => {
         :rules="[rules.email]"
       />
     </div>
-    <Typography type="text-body-xs-semibold mt-6 mb-2">
-      Operation hours
-    </Typography>
+    <Typography type="text-body-xs-semibold mt-6 mb-2"> Operation hours</Typography>
     <div class="flex gap-6 flex-col sm:flex-row">
       <template
         v-for="(item, n) in checkboxes"
@@ -299,10 +307,26 @@ onUnmounted(() => {
         </div>
       </VRow>
     </template>
-
-    <Typography type="text-body-xs-semibold mt-6 mb-4">
-      Pickup instructions
-    </Typography>
+    <VRow
+      no-gutters
+      align="center"
+      class="mt-1"
+    >
+      <VCol
+        cols="12"
+        sm="2"
+        class="mb-5 sm:!mb-0"
+      >
+      </VCol>
+      <Typography
+        v-if="rules.schedule() !== true"
+        type="text-body-xs-regular"
+        :color="getColor('functionalError')"
+      >
+        {{ rules.schedule() }}
+      </Typography>
+    </VRow>
+    <Typography type="text-body-xs-semibold mt-6 mb-4"> Pickup instructions</Typography>
     <Textarea
       v-model="details.pickupInstructions"
       label="Instructions for the pickup *"

@@ -319,7 +319,8 @@ onMounted(async () => {
         :multiple="booking.flexibleBooking"
         item-title="label"
         item-value="size"
-        :menu-props="{ maxHeight: 350 }"
+        :menu-props="{ maxHeight: 350, width: '200' }"
+        :rules="[rules.required]"
         class="h-fit"
         :error-messages="validateFlexibleSizes(booking.size, booking.flexibleBooking)"
       >
@@ -331,13 +332,14 @@ onMounted(async () => {
               @change="updateSize"
             />
             <Typography
-              type="w-3/5 text-body-xs-regular ml-9 mt-1.5 -pr-4"
+              type="text-body-xs-regular ml-8 mt-1 -pr-4"
               :color="getColor('textSecondary')"
+              class="leading-4"
             >
               Allows more than 1 equipment type to be chosen (maximum of 2)
             </Typography>
           </div>
-          <Divider class="w-[calc(100%+16px)] mt-3 -ml-2" />
+          <Divider class="mt-3 mb-1.5" />
         </template>
       </Autocomplete>
       <div class="grid grid-cols-subgrid gap-6 col-span-2 md:col-span-3 relative">
