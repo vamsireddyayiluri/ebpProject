@@ -194,14 +194,19 @@ const saveBooking = () => {
   createBooking(booking.value, newBookings.value)
   emit('close')
 }
-const updateRef = e => {
+const updateRef = async e => {
   if (form.value.errors.length) {
     form.value.validate()
+    if (!e) {
+      await nextTick()
+      form.value.validate()
+    }
   }
 }
 onMounted(async () => {
   await workDetailsStore.getYards()
 })
+
 /*watch(clickedOutside, () => {
   if (isDirty.value) {
     confirmDraftsDialog.value.show(true)
