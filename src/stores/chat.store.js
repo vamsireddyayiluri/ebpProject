@@ -20,6 +20,7 @@ import { db, storage } from '~/firebase'
 import { uid } from 'uid'
 import { getDownloadURL, ref as firebaseRef, list, uploadBytes } from 'firebase/storage'
 import { sortBy, uniqBy } from 'lodash'
+import statuses from '~/constants/statuses'
 
 export const useChatStore = defineStore('chat', () => {
   const alertStore = useAlertStore()
@@ -346,13 +347,17 @@ export const useChatStore = defineStore('chat', () => {
       where('orgId', '==', authStore.userData?.orgId),
     )
     const querySnapshot = await getDocs(qFiltered)
-    const allTruckers = querySnapshot.docs.map(doc => {
-      const { truckerOrgId: orgId, truckerCompany: company } = doc.data()
+    const allTruckers = []
+    querySnapshot.docs.forEach(doc => {
+      const approvedTrucker = doc.data().timeLine?.some(({ status }) => status === 'approved')
 
-      return { orgId, company }
+      if (approvedTrucker) {
+        const { truckerOrgId: id, truckerCompany: name } = doc.data()
+
+        allTruckers.push({ id, name })
+      }
     })
-    const committedTruckers = uniqBy(allTruckers, 'orgId')
-
+    const committedTruckers = uniqBy(allTruckers, 'id')
     return committedTruckers
   }
 

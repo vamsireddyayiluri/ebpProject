@@ -311,7 +311,7 @@ watch(
                       :key="scac"
                     >
                       <Chip class="m-1">
-                        {{ scac }}
+                        {{ scac || '--' }}
                       </Chip>
                     </template>
                   </td>
