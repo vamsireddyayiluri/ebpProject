@@ -58,9 +58,9 @@ const loadingsDateCopy = props?.duplicate?.map(booking => {
   return {
     id: uid(28),
     loadingDate: i.loadingDate,
-    preferredDate: i.preferredDate,
+    preferredDate: i?.preferredDate || null,
     containers: i.containers,
-    scacList: i.scacList,
+    scacList: i?.scacList || { list: [] },
   }
 })
 const copyBooking = {
@@ -192,6 +192,7 @@ const saveDraft = async () => {
   emit('close')
 }
 const saveBooking = () => {
+  booking.value.scacList = booking?.value.scacList || { list: [] }
   createBooking(booking.value, newBookings.value)
   emit('close')
 }

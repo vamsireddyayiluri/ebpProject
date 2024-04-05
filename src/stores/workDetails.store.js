@@ -5,6 +5,7 @@ import { useAuthStore } from '~/stores/auth.store'
 import { useAlertStore } from '~/stores/alert.store'
 import { useBookingRulesStore } from '~/stores/bookingRules.store'
 import { cloneDeep } from 'lodash'
+import { uid } from 'uid'
 
 export const useWorkDetailsStore = defineStore('workDetails', () => {
   const alertStore = useAlertStore()
@@ -28,6 +29,8 @@ export const useWorkDetailsStore = defineStore('workDetails', () => {
   }
   const getYards = () => {
     yards.value = authStore.orgData?.locations?.map(i => {
+      i.commodity = i?.commodity || null
+      i.id = i?.id || uid(16)
       return {
         ...i,
         text: `Commodity: ${i.commodity} ${
