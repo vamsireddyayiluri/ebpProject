@@ -56,6 +56,7 @@ declare module '@vue/runtime-core' {
     RouterView: typeof import('vue-router')['RouterView']
     SaveCancelChanges: typeof import('./components/SaveCancelChanges/SaveCancelChanges.vue')['default']
     SettingsView: typeof import('./views/SettingsView/SettingsView.vue')['default']
+    StatisticsPlaceholder: typeof import('./views/StatisticsView/components/StatisticsPlaceholder.vue')['default']
     StatisticsSSLTab: typeof import('./views/StatisticsView/StatisticsSSLTab/StatisticsSSLTab.vue')['default']
     StatisticsTruckersTab: typeof import('./views/StatisticsView/StatisticsTruckersTab/StatisticsTruckersTab.vue')['default']
     StatisticsView: typeof import('./views/StatisticsView/StatisticsView.vue')['default']

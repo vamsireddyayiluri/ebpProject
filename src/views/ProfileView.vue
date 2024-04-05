@@ -34,13 +34,13 @@ const updateUserAvatar = async (_, file) => {
 }
 const validateName = computed(() => {
   return (
-    accountInfo.value.name !== userData.value.name ||
-    accountInfo.value.company !== userData.value.company ||
-    unMaskedCell.value.unmasked !== userData.value.cell
+    accountInfo.value.name !== userData.value?.name ||
+    accountInfo.value.company !== userData.value?.company ||
+    unMaskedCell.value.unmasked !== userData.value?.cell
   )
 })
 const validateEmail = computed(() => {
-  return accountInfo.value.email !== userData.value.email
+  return accountInfo.value.email !== userData.value?.email
 })
 const onSave = async () => {
   const userId = currentUser.value.uid
