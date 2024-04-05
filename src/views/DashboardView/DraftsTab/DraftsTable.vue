@@ -135,14 +135,19 @@ onMounted(() => {
                   <td class="text-center">{{ data.committed }}/{{ data.containers }}</td>
                   <td>{{ formateTime(data.loadingDate) }}</td>
                   <td>
-                    <template
-                      v-for="scac in data.scacList?.list"
-                      :key="scac"
-                    >
-                      <Chip>
-                        {{ scac || '--' }}
-                      </Chip>
-                    </template>
+                    <div v-if="data.scacList?.list.length > 0">
+                      <template
+                        v-for="scac in data.scacList?.list"
+                        :key="scac"
+                      >
+                        <Chip class="m-1">
+                          {{ scac }}
+                        </Chip>
+                      </template>
+                    </div>
+                    <div v-else>
+                      <span> -- </span>
+                    </div>
                   </td>
                 </tr>
               </tbody>

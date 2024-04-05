@@ -188,7 +188,7 @@ const removeLoadingDate = id => {
 const saveDraft = async () => {
   createDraft(booking.value, newBookings.value)
 
-  confirmDraftsDialog.value.show(false)
+  // confirmDraftsDialog.value.show(false)
   emit('close')
 }
 const saveBooking = () => {
