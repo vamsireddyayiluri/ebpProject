@@ -40,13 +40,6 @@ const containerActionHandler = async ({ action, e }) => {
 const onSelectRow = e => {
   emit('selectTableRow', e)
 }
-const formateMinTime = dates => {
-  const minData = getSmallerDate(dates)
-  return getFormattedDate(minData)
-}
-const formateTime = date => {
-  return getFormattedDate(date)
-}
 const removeBooking = booking => {
   deleteBooking(booking)
   removeBookingDialog.value.show(false)
@@ -144,20 +137,7 @@ onMounted(() => {
           <LineAvatar :line="item.line" />
         </template>
         <template #size="{ item }">
-          <Typography>
-            <template v-if="item.flexibleBooking">
-              <template
-                v-for="i in item.size"
-                :key="i"
-              >
-                {{ i }}
-                <br />
-              </template>
-            </template>
-            <template v-else>
-              {{ item.size }}
-            </template>
-          </Typography>
+          <SizeColumn :data="item" />
         </template>
         <template #status="{ item }">
           <Classification
@@ -166,55 +146,7 @@ onMounted(() => {
           />
         </template>
         <template #bookingExpiry="{ item }">
-          <Typography type="text-body-m-regular">
-            {{ formateMinTime(item.details) || '--' }}
-            <Typography
-              type="text-body-xs-semibold"
-              v-if="item.details?.length > 1"
-            >
-              + {{ item.details?.slice(1)?.length }} more</Typography
-            >
-            <Popover
-              activator="parent"
-              location="top center"
-            >
-              <div class="flex justify-center gap-2 py-1">
-                <v-table>
-                  <thead>
-                    <tr>
-                      <th class="text-left">Committed/Total</th>
-                      <th class="text-left">Loading Date</th>
-                      <th class="text-left">SCAC</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="data in item.details"
-                      :key="data.date"
-                    >
-                      <td class="text-center">{{ data.committed }}/{{ data.containers }}</td>
-                      <td>{{ formateTime(data.date) || '--' }}</td>
-                      <td>
-                        <div v-if="data.scacList?.list.length > 0">
-                          <template
-                            v-for="scac in data.scacList?.list"
-                            :key="scac"
-                          >
-                            <Chip class="m-1">
-                              {{ scac }}
-                            </Chip>
-                          </template>
-                        </div>
-                        <div v-else>
-                          <span> -- </span>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </v-table>
-              </div>
-            </Popover>
-          </Typography>
+          <BookingLoadingDateColumn :data="item" />
         </template>
         <template #location="{ item }">
           <LocationChip :location="item?.location" />
