@@ -34,7 +34,6 @@ const {
   flexibleBooking,
   size,
   location,
-  reason = null,
 } = bookingStore.allBookings.find(i => i.id === props.commitment.bookingId)
 const { truckerDetails } = props.commitment.details
 let details = ref([
@@ -222,7 +221,7 @@ onUnmounted(() => {
                   :value="status"
                   class="w-min h-fit ml-auto"
                 />
-                <template v-if="reason">
+                <template v-if="commitment.reason">
                   <Typography type="text-body-s-regular">
                     Reason
                   </Typography>
@@ -230,7 +229,7 @@ onUnmounted(() => {
                     type="text-body-s-regular text-end"
                     :color="getColor('textSecondary')"
                   >
-                    {{ reason }}
+                    {{ commitment.reason }}
                   </Typography>
                 </template>
                 <Typography type="text-body-s-regular">

@@ -118,6 +118,13 @@ const onChangeTo = (e, day) => {
     }
   })
 }
+const resetTime = (e, item) => {
+  if (!e) {
+    const unselectedDay = checkboxes.value.find(i => i.day === item.day)
+    unselectedDay.from = "09:30 AM"
+    unselectedDay.to = "05:30 PM"
+  }
+}
 const rules = {
   cell(value) {
     return /^\+1 \d{3} \d{3}-\d{2}-\d{2}$/.test(value) || 'Invalid phone number format'
@@ -159,6 +166,9 @@ const setDetails = async () => {
     emit('close')
   }
 }
+onMounted(async () => {
+  await form.value.validate()
+})
 onUnmounted(() => {
   if (authStore.orgData?.vendorDetails) getVendorDetails()
 })
@@ -262,6 +272,7 @@ onUnmounted(() => {
           <Checkbox
             v-model="checkboxes[n].status"
             :label="item.day.slice(0, 3)"
+            @update:modelValue="(e) => resetTime(e, item)"
           />
         </div>
       </template>
