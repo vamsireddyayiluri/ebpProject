@@ -329,7 +329,7 @@ watch(searchValue, value => {
         </div>
       </template>
       <template #actions="{ item, selected }">
-        <template v-if="item.status === statuses.completed">
+        <template v-if="item.status === statuses.completed || item.status === statuses.canceled">
           <IconButton
             icon="mdi-delete"
             size="24"

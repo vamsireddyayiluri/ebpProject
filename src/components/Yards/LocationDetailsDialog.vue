@@ -127,7 +127,7 @@ const resetTime = (e, item) => {
 }
 const rules = {
   cell(value) {
-    return /^\+1 \d{3} \d{3}-\d{2}-\d{2}$/.test(value) || 'Invalid phone number format'
+    return /^(\+\d{1,2}\s?)?(\(\d{3}\)|\d{3})[\s.-]?\d{3}[\s.-]?\d{4}$/.test(value) || 'Invalid phone number format'
   },
   email(value) {
     return emailRegex.test(value) || 'Invalid e-mail'

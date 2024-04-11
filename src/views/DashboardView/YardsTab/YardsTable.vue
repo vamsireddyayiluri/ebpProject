@@ -12,7 +12,7 @@ const props = defineProps({
   searchValue: String,
   loading: Boolean,
 })
-const emit = defineEmits(['selectTableRow', 'editBooking'])
+const emit = defineEmits(['selectTableRow', 'editBooking', 'duplicateBooking'])
 const { userData } = useAuthStore()
 const { deleteBooking, updateBookingStatus } = useBookingsStore()
 const { smAndDown, width } = useDisplay()
@@ -22,9 +22,9 @@ const removeBookingDialog = ref(false)
 
 const { yardsHeaders, bookingsHeaders } = useHeaders()
 const { bookingsActions } = useActions()
-const { getFormattedDate } = useDate()
 
 const containerActionHandler = async ({ action, e }) => {
+  props.computedEntities.find(yard => yard.id === e[0].location.geohash).expand = true
   if (action === 'edit-booking') emit('editBooking', e[0].id)
   if (action === 'remove-booking') {
     removeBookingDialog.value.show(true)
@@ -35,6 +35,9 @@ const containerActionHandler = async ({ action, e }) => {
   }
   if (action === 'reactive-booking') {
     await updateBookingStatus(e[0], statuses.active)
+  }
+  if (action === 'duplicate-booking') {
+    emit('duplicateBooking', e[0].ids)
   }
 }
 const onSelectRow = e => {
