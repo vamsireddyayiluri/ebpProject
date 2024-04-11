@@ -106,6 +106,9 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       obj.status = statuses.incomplete
       obj.reason = reason
     }
+    console.log("-> obj", obj, onBoardedContainers);
+    obj.onBoarded = data?.onBoarded? data.onBoarded + onBoardedContainers: onBoardedContainers
+    console.log("-> ", obj.onBoarded)
     try {
       await updateDoc(doc(db, 'commitments', data.id), {
         ...obj,
@@ -121,6 +124,22 @@ export const useCommitmentsStore = defineStore('commitments', () => {
 
       const commitment = await getCommitment(data.id)
       await updateBookingStore(commitment)
+
+      // find booking
+      const booking = bookingsStore.bookings.find(i => {
+        return (
+          i.id === commitment.bookingId ||
+          (Array.isArray(i.ids) && i.ids.includes(commitment.bookingId))
+        )
+      })
+      const truckerScac = commitment?.details.truckerDetails.truckerScac
+      const carrierIndex = booking?.carriers?.findIndex(carrier => carrier?.scac === truckerScac)
+      if (carrierIndex !== -1) {
+        booking.carriers[carrierIndex].fulfilled += onBoardedContainers
+      }
+      await updateDoc(doc(db, 'bookings', commitment.bookingId), {
+        carriers: booking.carriers,
+      })
       alertStore.info({ content: 'Booking commitment completed' })
     } catch ({ message }) {
       alertStore.warning({ content: message })

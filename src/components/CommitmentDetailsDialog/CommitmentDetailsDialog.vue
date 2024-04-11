@@ -202,17 +202,15 @@ onUnmounted(() => {
                 >
                   {{ committed }}
                 </Typography>
-                <!--
-                  <Typography type="text-body-s-regular">
-                  OnBoarded Containers
-                  </Typography>
-                  <Typography
+                <Typography v-if="commitment?.onBoarded" type="text-body-s-regular">
+                  OnBoarded
+                </Typography>
+                <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
-                  >
+                >
                   {{ committed }}
-                  </Typography>
-                -->
+                </Typography>
                 <Typography type="text-body-s-regular">
                   Status
                 </Typography>

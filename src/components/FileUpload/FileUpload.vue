@@ -131,10 +131,10 @@ const renameFile = () => {
       <Chip
         prepend-icon="mdi-file"
         closable
-        class="pa-1"
+        class="!px-2.5"
         @click:close="removeFile(i)"
       >
-        <span class="text-truncate px-2">
+        <span class="text-truncate px-1">
           {{ i.filename || i.name }}
         </span>
         <Tooltip>

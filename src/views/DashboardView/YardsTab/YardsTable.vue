@@ -1,11 +1,10 @@
 <script setup>
-import { useActions, useDate, useHeaders } from '~/composables'
+import { useActions, useHeaders } from '~/composables'
 import { useDisplay } from 'vuetify'
-import { getYardBookingLoad, getBookingLoad } from '~/helpers/countings'
+import { getBookingLoad, getYardBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { useAuthStore } from '~/stores/auth.store'
 import { statuses } from '~/constants/statuses'
-import { getSmallerDate } from '~/composables/useDate'
 
 const props = defineProps({
   computedEntities: Array,
@@ -52,8 +51,8 @@ onMounted(() => {
   setTimeout(() => {
     const table = document.getElementById(tableId)
     tableHeight.value = smAndDown.value
-      ? 396
-      : window.innerHeight - table.getBoundingClientRect().top - 108
+      ? '396px'
+      : window.innerHeight - table.getBoundingClientRect().top - 108 + 'px'
   })
 })
 </script>
@@ -110,7 +109,6 @@ onMounted(() => {
         :options="{
           rowHeight: 64,
           showActions,
-          tableHeight: 575,
           tableMinWidth: 640,
         }"
         class="pl-16"
@@ -129,7 +127,7 @@ onMounted(() => {
           </FlexTypography>
         </template>
         <template #containers="{ item }">
-          <Typography> {{ item.committed }}/{{ item.containers }} </Typography>
+          <Typography> {{ item.committed }}/{{ item.containers }}</Typography>
         </template>
         <template #yardLabel="{ item }">
           <FlexTypography type="text-body-m-regular">
@@ -197,4 +195,18 @@ onMounted(() => {
   </Dialog>
 </template>
 
-<style lang="scss"></style>
+<style lang="scss">
+#yardsTable.virtual-table-wrapper {
+  .scroller {
+    height: 100%;
+    max-height: v-bind(tableHeight);
+
+    .virtual-table-wrapper {
+      .scroller {
+        height: auto;
+        max-height: fit-content;
+      }
+    }
+  }
+}
+</style>
