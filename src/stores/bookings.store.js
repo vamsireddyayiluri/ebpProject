@@ -415,7 +415,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       const data = pickBy(booking, (value, key) => key !== 'details') || {}
       const batch = writeBatch(db)
 
-      ids.forEach(id => {
+      for (const id of ids) {
         const docRef = doc(db, collectionName, id)
         const loadData = details?.find(val => val.id === id)
         if (loadData) {
@@ -426,8 +426,17 @@ export const useBookingsStore = defineStore('bookings', () => {
         if (Object.keys(data).length) {
           batch.update(docRef, { ...data })
         }
-      }),
-        await batch.commit()
+
+        // change loadingData in commitments
+        const commitments = await getCommitmentsByBookingId(id, ids)
+        commitments.map(async i => {
+          await updateDoc(doc(db, 'commitments', i.id), {
+            loadingDate: details?.find(val => val.id === i.bookingId).loadingDate,
+            updatedAt: getLocalTime().format(),
+          })
+        })
+      }
+      await batch.commit()
       if (!completedStatus) {
         alertStore.info({
           content: `${capitalize(collectionName).charAt(0) + collectionName.slice(1)} updated`,

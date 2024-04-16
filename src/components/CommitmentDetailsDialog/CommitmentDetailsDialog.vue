@@ -48,11 +48,9 @@ let details = ref([
   },
 ])
 const getTimeLine = timeLine => {
-  const test = timeLine.map(val => {
+  return timeLine.map(val => {
     return { title: val.message, date: moment(val.time_stamp).format('MM/DD/YYYY hh:mm:ss a') }
   })
-
-  return test
 }
 onMounted(async () => {
   orgDetails.value = await getTruckerDetails(props.commitment.truckerOrgId)
@@ -76,9 +74,7 @@ onUnmounted(() => {
 
 <template>
   <div class="flex justify-between items-center mb-8 pt-2">
-    <Typography type="text-h1">
-      Commitment
-    </Typography>
+    <Typography type="text-h1"> Commitment</Typography>
     <div class="ml-auto">
       <Button
         prepend-icon="mdi-message-text"
@@ -202,18 +198,16 @@ onUnmounted(() => {
                 >
                   {{ committed }}
                 </Typography>
-                <Typography v-if="commitment?.onBoarded" type="text-body-s-regular">
-                  OnBoarded
-                </Typography>
-                <Typography
-                  type="text-body-s-regular text-end"
-                  :color="getColor('textSecondary')"
-                >
-                  {{ committed }}
-                </Typography>
-                <Typography type="text-body-s-regular">
-                  Status
-                </Typography>
+                <template v-if="commitment?.onBoarded">
+                  <Typography type="text-body-s-regular"> OnBoarded</Typography>
+                  <Typography
+                    type="text-body-s-regular text-end"
+                    :color="getColor('textSecondary')"
+                  >
+                    {{ commitment?.onBoarded }}
+                  </Typography>
+                </template>
+                <Typography type="text-body-s-regular"> Status</Typography>
                 <Classification
                   type="status"
                   :value="status"

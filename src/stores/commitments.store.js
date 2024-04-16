@@ -106,9 +106,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       obj.status = statuses.incomplete
       obj.reason = reason
     }
-    console.log("-> obj", obj, onBoardedContainers);
     obj.onBoarded = data?.onBoarded? data.onBoarded + onBoardedContainers: onBoardedContainers
-    console.log("-> ", obj.onBoarded)
     try {
       await updateDoc(doc(db, 'commitments', data.id), {
         ...obj,
