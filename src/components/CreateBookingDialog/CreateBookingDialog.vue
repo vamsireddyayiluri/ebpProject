@@ -97,14 +97,14 @@ const newBookings = ref(
   props.duplicate
     ? loadingsDateCopy
     : [
-        {
-          id: uid(28),
-          loadingDate: null,
-          preferredDate: null,
-          containers: null,
-          scacList: bookingRulesStore.rules.truckers,
-        },
-      ],
+      {
+        id: uid(28),
+        loadingDate: null,
+        preferredDate: null,
+        containers: null,
+        scacList: bookingRulesStore.rules.truckers,
+      },
+    ],
 )
 const confirmDraftsDialog = ref(null)
 const { clickedOutside } = toRefs(props)
@@ -188,7 +188,6 @@ const removeLoadingDate = id => {
 const saveDraft = async () => {
   createDraft(booking.value, newBookings.value)
 
-  // confirmDraftsDialog.value.show(false)
   emit('close')
 }
 const saveBooking = () => {
@@ -196,14 +195,19 @@ const saveBooking = () => {
   createBooking(booking.value, newBookings.value)
   emit('close')
 }
-const updateRef = e => {
+const updateRef = async e => {
   if (form.value.errors.length) {
     form.value.validate()
+    if (!e) {
+      await nextTick()
+      form.value.validate()
+    }
   }
 }
 onMounted(async () => {
   await workDetailsStore.getYards()
 })
+
 /*watch(clickedOutside, () => {
   if (isDirty.value) {
     confirmDraftsDialog.value.show(true)
@@ -355,6 +359,7 @@ onMounted(async () => {
               rules.validateDate({ ...d, ref: booking.ref }),
               rules.uniqueDate,
             ]"
+            class="mb-2"
             @onUpdate="value => updateExpiryDate(value, index)"
           />
           <Textfield
@@ -365,11 +370,11 @@ onMounted(async () => {
             required
             class="h-fit"
           />
-          <div class="relative">
+          <div class="relative mt-4 md:!mt-0">
             <AutocompleteScac
               :scac-list="d.scacList"
               :menu-btn="false"
-              class="w-3/4"
+              class="w-4/5 lg:w-10/12 xl:w-11/12"
             />
             <IconButton
               v-if="index"
@@ -409,40 +414,42 @@ onMounted(async () => {
       </Button>
     </div>
   </VForm>
-<!--  <Dialog
-    ref="confirmDraftsDialog"
-    class="max-w-[450px] md:max-w-[560px]"
+<!--
+  <Dialog
+  ref="confirmDraftsDialog"
+  class="max-w-[450px] md:max-w-[560px]"
   >
-    <template #text>
-      <VRow
-        no-gutters
-        justify="space-between"
-        align="center"
-        class="flex-nowrap mb-8"
-      >
-        <Typography> Do you want to keep the bookings in Drafts?</Typography>
-        <IconButton
-          icon="mdi-close"
-          class="-mt-1"
-          @click="confirmDraftsDialog.show(false)"
-        />
-      </VRow>
-      <div class="grid sm:grid-cols-2 grid-cols-1 gap-6">
-        <Button
-          class="w-full"
-          @click="saveDraft"
-        >
-          save
-        </Button>
-        <Button
-          variant="outlined"
-          class="w-full"
-          @click="emit('close')"
-        >
-          cancel
-        </Button>
-      </div>
-    </template>
-  </Dialog>-->
+  <template #text>
+  <VRow
+  no-gutters
+  justify="space-between"
+  align="center"
+  class="flex-nowrap mb-8"
+  >
+  <Typography> Do you want to keep the bookings in Drafts?</Typography>
+  <IconButton
+  icon="mdi-close"
+  class="-mt-1"
+  @click="confirmDraftsDialog.show(false)"
+  />
+  </VRow>
+  <div class="grid sm:grid-cols-2 grid-cols-1 gap-6">
+  <Button
+  class="w-full"
+  @click="saveDraft"
+  >
+  save
+  </Button>
+  <Button
+  variant="outlined"
+  class="w-full"
+  @click="emit('close')"
+  >
+  cancel
+  </Button>
+  </div>
+  </template>
+  </Dialog>
+-->
 </template>
 

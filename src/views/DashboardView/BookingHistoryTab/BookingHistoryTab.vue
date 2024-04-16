@@ -418,7 +418,7 @@ watch(searchValue, value => {
         >
           <template #trucker="{ item }">
             <Typography>
-              {{ item.scac }}
+              {{ item.truckerCompany }}
             </Typography>
           </template>
           <template #committed="{ item }">

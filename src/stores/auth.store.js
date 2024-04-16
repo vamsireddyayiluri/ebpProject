@@ -1,4 +1,4 @@
-import { defineStore, storeToRefs } from 'pinia'
+import { defineStore } from 'pinia'
 import { auth, db } from '~/firebase'
 import moment from 'moment-timezone'
 import {
@@ -39,6 +39,7 @@ import { useBookingsStore } from '~/stores/bookings.store'
 import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { uid } from 'uid'
+import { useProfileStore } from '~/stores/profile.store'
 
 export const useAuthStore = defineStore('auth', () => {
   const router = useRouter()
@@ -85,6 +86,7 @@ export const useAuthStore = defineStore('auth', () => {
     currentUser.value = null
     userData.value = null
     orgData.value = null
+    useProfileStore().reset()
     await bookingsStore.reset()
     await router.push({ name: 'login' })
   }
@@ -307,8 +309,9 @@ export const useAuthStore = defineStore('auth', () => {
           await getOrgWorkers()
           isLoading.value = false
         }
-        getPreferredTruckers()
-        getVendorDetails()
+        await getPreferredTruckers()
+        await getVendorDetails()
+        useProfileStore().getProfileData()
       })
     } catch ({ message }) {
       alertStore.warning({ content: message })
