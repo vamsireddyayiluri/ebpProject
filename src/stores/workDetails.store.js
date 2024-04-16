@@ -30,7 +30,10 @@ export const useWorkDetailsStore = defineStore('workDetails', () => {
   const getYards = () => {
     yards.value = authStore.orgData?.locations?.map(i => {
       i.commodity = i?.commodity || null
-      i.id = i?.id || uid(16)
+      if (!i?.id) {
+        i.id = uid(16)
+        i.details.customizedDetails = true
+      }
       return {
         ...i,
         text: `Commodity: ${i.commodity} ${

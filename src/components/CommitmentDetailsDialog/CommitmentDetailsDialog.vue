@@ -27,6 +27,7 @@ const {
   ref: bookingRef,
   containers,
   committed,
+  estimatedRate,
   status,
   loadingDate,
   commodity,
@@ -59,8 +60,8 @@ onMounted(async () => {
       ...details.value,
       ...[
         { name: 'Email', value: props.commitment?.truckerEmail },
-        { name: 'Name', value: props.commitment?.name },
-        { name: 'Contact number', value: truckerDetails?.truckerPhoneNumber },
+        { name: 'Name', value: orgDetails.value?.vendorDetails?.primaryContactName },
+        { name: 'Contact number', value: orgDetails.value?.vendorDetails?.primaryContact },
         { name: 'Secondary name', value: orgDetails.value?.vendorDetails?.secondaryContactName },
         { name: 'Secondary number', value: orgDetails.value?.vendorDetails?.secondaryContact },
       ],
@@ -171,52 +172,55 @@ onUnmounted(() => {
             </ExpansionPanelTitle>
             <ExpansionPanelText class="pa-0">
               <div class="grid grid-cols-2 items-center [&>div]:py-2.5">
-                <Typography type="text-body-s-regular">
-                  Ref
-                </Typography>
+                <Typography type="text-body-s-regular"> Ref </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ bookingRef }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Containers
-                </Typography>
+                <Typography type="text-body-s-regular"> Containers </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ containers }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Committed
-                </Typography>
+                <Typography type="text-body-s-regular"> Committed </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ committed }}
                 </Typography>
-                <template v-if="commitment?.onBoarded">
-                  <Typography type="text-body-s-regular"> OnBoarded</Typography>
-                  <Typography
-                    type="text-body-s-regular text-end"
-                    :color="getColor('textSecondary')"
-                  >
-                    {{ commitment?.onBoarded }}
-                  </Typography>
-                </template>
-                <Typography type="text-body-s-regular"> Status</Typography>
+                <Typography type="text-body-s-regular"> Target Rate </Typography>
+                <Typography
+                  type="text-body-s-regular text-end"
+                  :color="getColor('textSecondary')"
+                >
+                  {{ estimatedRate }}
+                </Typography>
+                <Typography
+                  v-if="commitment?.onBoardedContainers"
+                  type="text-body-s-regular"
+                >
+                  OnBoarded Containers
+                </Typography>
+                <Typography
+                  v-if="commitment?.onBoardedContainers"
+                  type="text-body-s-regular text-end"
+                  :color="getColor('textSecondary')"
+                >
+                  {{ commitment?.onBoardedContainers || '' }}
+                </Typography>
+                <Typography type="text-body-s-regular"> Status </Typography>
                 <Classification
                   type="status"
                   :value="status"
                   class="w-min h-fit ml-auto"
                 />
                 <template v-if="commitment.reason">
-                  <Typography type="text-body-s-regular">
-                    Reason
-                  </Typography>
+                  <Typography type="text-body-s-regular"> Reason </Typography>
                   <Typography
                     type="text-body-s-regular text-end"
                     :color="getColor('textSecondary')"
@@ -224,48 +228,38 @@ onUnmounted(() => {
                     {{ commitment.reason }}
                   </Typography>
                 </template>
-                <Typography type="text-body-s-regular">
-                  Loading date
-                </Typography>
+                <Typography type="text-body-s-regular"> Loading date </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ getFormattedDate(loadingDate) }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Commodity
-                </Typography>
+                <Typography type="text-body-s-regular"> Commodity </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ commodity }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Line
-                </Typography>
+                <Typography type="text-body-s-regular"> Line </Typography>
                 <LineAvatar
                   :line="line"
                   class="ml-auto"
                 />
-                <Typography type="text-body-s-regular">
-                  Size
-                </Typography>
+                <Typography type="text-body-s-regular"> Size </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   <template v-if="flexibleBooking">
-                    {{size.join(', ')}}
+                    {{ size.join(', ') }}
                   </template>
                   <template v-else>
                     {{ size }}
                   </template>
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Export facility
-                </Typography>
+                <Typography type="text-body-s-regular"> Export facility </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
@@ -306,9 +300,7 @@ onUnmounted(() => {
           complete
         </Button>
         <template v-if="isPending && status !== statuses.paused">
-          <Button @click="emit('approveCommitment', commitment)">
-            approve
-          </Button>
+          <Button @click="emit('approveCommitment', commitment)"> approve </Button>
           <Button
             variant="outlined"
             data="secondary1"
