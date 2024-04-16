@@ -1,6 +1,8 @@
 {
   "projects": {
-    "default": "ebpv3-69501"
+    "default": "ebp-development-7ba26",
+    "development": "ebp-development-7ba26",
+    "production": "ebpv3-69501"
   },
   "targets": {}
 }
