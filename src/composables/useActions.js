@@ -145,6 +145,11 @@ export const commitmentsActions = (status, bstatus) => {
         label: 'Complete commitment',
         action: 'complete-commitment',
       },
+      {
+        icon: 'mdi-calendar',
+        label: 'Update Loading Date',
+        action: 'update-loadingdate',
+      },
       ...viewDetailsAction,
     )
   }

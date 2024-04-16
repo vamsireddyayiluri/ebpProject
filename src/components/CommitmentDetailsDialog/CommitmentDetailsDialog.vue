@@ -213,17 +213,16 @@ onUnmounted(() => {
                 >
                   {{ estimatedRate }}
                 </Typography>
-                <!--
-                  <Typography type="text-body-s-regular">
+                <Typography v-if="commitment?.onBoardedContainers" type="text-body-s-regular">
                   OnBoarded Containers
-                  </Typography>
-                  <Typography
+                </Typography>
+                <Typography
+                  v-if="commitment?.onBoardedContainers"
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
-                  >
-                  {{ committed }}
-                  </Typography>
-                -->
+                >
+                  {{ commitment?.onBoardedContainers || '' }}
+                </Typography>
                 <Typography type="text-body-s-regular">
                   Status
                 </Typography>

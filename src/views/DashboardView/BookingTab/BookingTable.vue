@@ -464,6 +464,23 @@ watch(
       />
     </template>
   </Dialog>
+   <Dialog
+    ref="loadingDateDialog"
+    max-width="480"
+  >
+    <template #text>
+      <UpdateLoadingDateDialog
+        :sub-title="`${loadingDateDialog.data.truckerCompany}-Update Loading date`"
+        btn-name="Update"
+        :loading="isloading"
+        :loadingDate=loadingDateDialog.data.loadingDate
+        @close="loadingDateDialog.show(false)"
+        @onClickUpdate="
+          (loadingDate) => onLoadingDateUpdated(loadingDateDialog.data, loadingDate)
+        "
+      />
+    </template>
+  </Dialog>
   <Dialog
     ref="declineCommitmentDialog"
     max-width="480"
