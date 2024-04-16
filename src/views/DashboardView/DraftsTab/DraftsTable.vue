@@ -19,16 +19,6 @@ const deleteDraftDialog = ref(false)
 
 const { draftsHeaders } = useHeaders()
 const { draftsActions } = useActions()
-const { getFormattedDate, getSmallerDate } = useDate()
-const formateTime = date => {
-  return getFormattedDate(date)
-}
-const formateMinTime = dates => {
-  // const maxDate = new Date(Math.max(...dates))
-  const minData = getSmallerDate(dates)
-
-  return getFormattedDate(minData)
-}
 
 const containerActionHandler = ({ action, e }) => {
   if (action === 'edit-draft') emit('editDraft', e[0].id)
@@ -106,55 +96,7 @@ onMounted(() => {
       </Typography>
     </template>
     <template #bookingExpiry="{ item }">
-      <Typography type="text-body-m-regular d-flex align-center">
-        {{ formateMinTime(item.details) || '--' }}
-        <Typography
-          type="text-body-xs-semibold pl-2"
-          v-if="item.details?.length > 1"
-        >
-          +{{ item.details?.slice(1)?.length }} more</Typography
-        >
-        <Popover
-          activator="parent"
-          location="top center"
-        >
-          <div class="flex justify-center gap-2 py-1">
-            <VTable>
-              <thead>
-                <tr>
-                  <th class="text-left">Committed/Total</th>
-                  <th class="text-left">Loading Date</th>
-                  <th class="text-left">SCAC</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="data in item.details"
-                  :key="data.loadingDate"
-                >
-                  <td class="text-center">{{ data.committed }}/{{ data.containers }}</td>
-                  <td>{{ formateTime(data.loadingDate) }}</td>
-                  <td>
-                    <div v-if="data.scacList?.list.length > 0">
-                      <template
-                        v-for="scac in data.scacList?.list"
-                        :key="scac"
-                      >
-                        <Chip class="m-1">
-                          {{ scac }}
-                        </Chip>
-                      </template>
-                    </div>
-                    <div v-else>
-                      <span> -- </span>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </VTable>
-          </div>
-        </Popover>
-      </Typography>
+      <BookingLoadingDateColumn :data="item" />
     </template>
     <template #location="{ item }">
       <LocationChip :location="item?.location" />

@@ -1,15 +1,15 @@
 import { defineStore } from 'pinia'
-import { doc, updateDoc, getDoc, increment } from 'firebase/firestore'
+import { doc, getDoc, increment, updateDoc } from 'firebase/firestore'
 import { db } from '~/firebase'
 import { statuses } from '~/constants/statuses'
 import { useAlertStore } from '~/stores/alert.store'
 import { useBookingsStore } from '~/stores/bookings.store'
-const { updateBookingStore } = useBookingsStore()
-
 import { onboardingCodes } from '~/constants/reasonCodes'
 import { getRequestLoadFee } from './helpers'
 import { getLocalTime } from '@qualle-admin/qutil/dist/date'
 import moment from 'moment-timezone'
+
+const { updateBookingStore } = useBookingsStore()
 
 export const useCommitmentsStore = defineStore('commitments', () => {
   const alertStore = useAlertStore()
@@ -42,15 +42,14 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         status: statuses.approved,
       })
       if (booking?.carriers) {
-        const carrierIndex = booking?.carriers?.findIndex(
-          carrier => carrier?.scac === commitment?.scac,
-        )
+        const truckerScac = commitment?.details.truckerDetails.truckerScac
+        const carrierIndex = booking?.carriers?.findIndex(carrier => carrier?.scac === truckerScac)
         if (carrierIndex !== -1) {
           booking.carriers[carrierIndex].total =
             booking.carriers[carrierIndex].total + commitment.committed
         } else {
           booking.carriers.push({
-            scac: commitment.scac,
+            scac: truckerScac,
             fulfilled: 0,
             total: commitment.committed,
           })
@@ -107,6 +106,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       obj.status = statuses.incomplete
       obj.reason = reason
     }
+    obj.onBoarded = data?.onBoarded? data.onBoarded + onBoardedContainers: onBoardedContainers
     try {
       await updateDoc(doc(db, 'commitments', data.id), {
         ...obj,
@@ -122,6 +122,22 @@ export const useCommitmentsStore = defineStore('commitments', () => {
 
       const commitment = await getCommitment(data.id)
       await updateBookingStore(commitment)
+
+      // find booking
+      const booking = bookingsStore.bookings.find(i => {
+        return (
+          i.id === commitment.bookingId ||
+          (Array.isArray(i.ids) && i.ids.includes(commitment.bookingId))
+        )
+      })
+      const truckerScac = commitment?.details.truckerDetails.truckerScac
+      const carrierIndex = booking?.carriers?.findIndex(carrier => carrier?.scac === truckerScac)
+      if (carrierIndex !== -1) {
+        booking.carriers[carrierIndex].fulfilled += onBoardedContainers
+      }
+      await updateDoc(doc(db, 'bookings', commitment.bookingId), {
+        carriers: booking.carriers,
+      })
       alertStore.info({ content: 'Booking commitment completed' })
     } catch ({ message }) {
       alertStore.warning({ content: message })

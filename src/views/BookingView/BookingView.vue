@@ -219,6 +219,7 @@ const onSave = async () => {
   await router.push({ name: 'dashboard' })
   isSaveLoading.value = false
 }
+
 // checking active bookings loadingDate
 const validateExpiryDates = index => {
   validExpiryDate.value = validateExpiryDate(activeBookings?.value, {
@@ -501,7 +502,7 @@ onMounted(async () => {
                   rules.validateDate({ ...d, ref: booking.ref }),
                   rules.uniqueDate,
                 ]"
-                :disabled="!activated && (pending || expired || completed)"
+                :disabled="!activated && (expired || completed)"
                 required
                 @onUpdate="value => updateExpiryDate(value, index)"
               />
