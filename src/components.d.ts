@@ -68,6 +68,7 @@ declare module '@vue/runtime-core' {
     TeamMembersTab: typeof import('./views/SettingsView/TeamMembersTab/TeamMembersTab.vue')['default']
     TruckerManagementTab: typeof import('./views/SettingsView/TruckerManagementTab/TruckerManagementTab.vue')['default']
     TruckerRequirements: typeof import('./components/TruckerRequirements/TruckerRequirements.vue')['default']
+    UpdateLoadingDateDialog: typeof import('./components/UpdateLoadingDateDialog/UpdateLoadingDateDialog.vue')['default']
     Verify: typeof import('./views/Verify.vue')['default']
     VerifyAuth: typeof import('./views/VerifyAuth.vue')['default']
     WorkDetailsTab: typeof import('./views/SettingsView/WorkDetailsTab/WorkDetailsTab.vue')['default']
