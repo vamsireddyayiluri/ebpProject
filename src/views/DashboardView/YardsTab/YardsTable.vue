@@ -65,7 +65,6 @@ onMounted(() => {
     :loading="loading"
     :options="{
       rowHeight: 64,
-      tableHeight: tableHeight,
       tableMinWidth: 960,
       expansionRow: true,
     }"
