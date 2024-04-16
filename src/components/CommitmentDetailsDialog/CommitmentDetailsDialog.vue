@@ -27,6 +27,7 @@ const {
   ref: bookingRef,
   containers,
   committed,
+  estimatedRate,
   status,
   loadingDate,
   commodity,
@@ -61,8 +62,8 @@ onMounted(async () => {
       ...details.value,
       ...[
         { name: 'Email', value: props.commitment?.truckerEmail },
-        { name: 'Name', value: props.commitment?.name },
-        { name: 'Contact number', value: truckerDetails?.truckerPhoneNumber },
+        { name: 'Name', value: orgDetails.value?.vendorDetails?.primaryContactName },
+        { name: 'Contact number', value: orgDetails.value?.vendorDetails?.primaryContact },
         { name: 'Secondary name', value: orgDetails.value?.vendorDetails?.secondaryContactName },
         { name: 'Secondary number', value: orgDetails.value?.vendorDetails?.secondaryContact },
       ],
@@ -201,6 +202,15 @@ onUnmounted(() => {
                   :color="getColor('textSecondary')"
                 >
                   {{ committed }}
+                </Typography>
+                <Typography type="text-body-s-regular">
+                  Target Rate
+                </Typography>
+                <Typography
+                  type="text-body-s-regular text-end"
+                  :color="getColor('textSecondary')"
+                >
+                  {{ estimatedRate }}
                 </Typography>
                 <!--
                   <Typography type="text-body-s-regular">
