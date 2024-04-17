@@ -29,8 +29,10 @@ const getEvents = bookings => {
         name: `event-${Math.floor(Math.random() * 9) + 1}`,
         ref: i.ref,
         progress: getBookingLoad(i.committed, i.containers),
-        carriers: i.carriers,
-      },
+        carriers: i.carriers.map(item => {
+          return {scac: item.scac, fulfilled: item?.approved, total: i.containers}
+        }),
+      }
     }
   })
 }
