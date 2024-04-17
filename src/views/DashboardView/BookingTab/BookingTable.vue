@@ -401,7 +401,7 @@ watch(
   >
     <template #text>
       <UpdateLoadingDateDialog
-        :sub-title="`${loadingDateDialog.data.truckerCompany}-Update Loading date`"
+        :sub-title="`${loadingDateDialog.data.truckerCompany}-Edit Loading date`"
         btn-name="Update"
         :loading="isloading"
         :loadingDate=loadingDateDialog.data.loadingDate

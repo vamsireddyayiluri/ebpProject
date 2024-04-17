@@ -53,7 +53,7 @@ export const validateExpiryDate = (entities, entity) => {
         'Booking expiry date with booking number already exists. Update booking expiry date to new date.',
     })*/
 
-    return 'Booking expiry date with booking number already exists. Update booking expiry date to new date.'
+    return 'Booking expiry date with booking number already exists.'
   } else {
     return false
   }
