@@ -74,7 +74,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       alertStore.warning({ content: message })
     }
   }
-  const completeCommitment = async (data, reason, onBoardedContainers) => {
+  const completeCommitment = async (data, reason, onBoardedContainers=0) => {
     let obj = {}
     if (onboardingCodes.onboarded === reason) {
       obj.status = statuses.onboarded
