@@ -41,22 +41,11 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       await updateDoc(doc(db, 'commitments', commitment.id), {
         status: statuses.approved,
       })
-      if (booking?.carriers) {
-        const truckerScac = commitment?.details.truckerDetails.truckerScac
-        const carrierIndex = booking?.carriers?.findIndex(carrier => carrier?.scac === truckerScac)
-        if (carrierIndex !== -1) {
-          booking.carriers[carrierIndex].approved =
-            booking.carriers[carrierIndex].approved + commitment.committed
-        } else {
-          booking.carriers.push({
-            scac: truckerScac,
-            approved: commitment.committed,
-          })
-        }
-      }
+
+      const carriers = await updateBookingCarriers(commitment)
       await updateDoc(doc(db, 'bookings', commitment.bookingId), {
         committed: increment(commitment.committed),
-        carriers: booking?.carriers || [],
+        carriers: carriers || [],
       })
 
       const index = bookingsStore.bookings.findIndex(i => i.ids.includes(commitment.bookingId))
@@ -73,6 +62,22 @@ export const useCommitmentsStore = defineStore('commitments', () => {
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
+  }
+  const updateBookingCarriers = async commitment => {
+    const booking = await bookingsStore.getBooking({id: commitment.bookingId})
+    const truckerScac = commitment?.details.truckerDetails.truckerScac
+    const carrierIndex = booking?.carriers?.findIndex(carrier => carrier?.scac === truckerScac)
+    if (carrierIndex !== -1) {
+      booking.carriers[carrierIndex].approved =
+        booking.carriers[carrierIndex].approved + commitment.committed
+    } else {
+      booking.carriers.push({
+        scac: truckerScac,
+        approved: commitment.committed,
+      })
+    }
+
+    return booking.carriers
   }
   const completeCommitment = async (data, reason, onBoardedContainers) => {
     let obj = {}
@@ -171,12 +176,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       })
 
       // find booking
-      const booking = bookingsStore.bookings.find(i => {
-        return (
-          i.id === commitment.bookingId ||
-          (Array.isArray(i.ids) && i.ids.includes(commitment.bookingId))
-        )
-      })
+      const booking = bookingsStore.allBookings.find(i => i.id === commitment.bookingId)
       if (booking?.carriers) {
         const truckerScac = commitment?.details.truckerDetails.truckerScac
         const carrierIndex = booking?.carriers?.findIndex(carrier => carrier?.scac === truckerScac)
