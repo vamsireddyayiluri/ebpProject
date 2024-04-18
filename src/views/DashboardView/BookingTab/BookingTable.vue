@@ -395,20 +395,18 @@ watch(
       />
     </template>
   </Dialog>
-   <Dialog
+  <Dialog
     ref="loadingDateDialog"
     max-width="480"
   >
     <template #text>
       <UpdateLoadingDateDialog
-        :sub-title="`${loadingDateDialog.data.truckerCompany}-Edit Loading date`"
+        :sub-title="`Edit loading date for ${loadingDateDialog.data.truckerCompany}`"
         btn-name="Update"
         :loading="isloading"
-        :loadingDate=loadingDateDialog.data.loadingDate
+        :loadingDate="loadingDateDialog.data.loadingDate"
         @close="loadingDateDialog.show(false)"
-        @onClickUpdate="
-          (loadingDate) => onLoadingDateUpdated(loadingDateDialog.data, loadingDate)
-        "
+        @onClickUpdate="loadingDate => onLoadingDateUpdated(loadingDateDialog.data, loadingDate)"
       />
     </template>
   </Dialog>

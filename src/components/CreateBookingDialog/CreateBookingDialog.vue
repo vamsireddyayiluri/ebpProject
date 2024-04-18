@@ -92,20 +92,19 @@ const emptyBooking = {
   size: '40 HC',
   insurance: '100,000',
 }
-console.log(emptyBooking.weight,typeof(emptyBooking.weight))
 const booking = ref(props?.duplicate ? copyBooking : emptyBooking)
 const newBookings = ref(
   props.duplicate
     ? loadingsDateCopy
     : [
-      {
-        id: uid(28),
-        loadingDate: null,
-        preferredDate: null,
-        containers: null,
-        scacList: bookingRulesStore.rules.truckers,
-      },
-    ],
+        {
+          id: uid(28),
+          loadingDate: null,
+          preferredDate: null,
+          containers: null,
+          scacList: bookingRulesStore.rules.truckers,
+        },
+      ],
 )
 const confirmDraftsDialog = ref(null)
 const { clickedOutside } = toRefs(props)
@@ -277,7 +276,9 @@ onMounted(async () => {
         item-value="address"
         return-object
         class="h-fit"
-        @update:modelValue="value => (booking.weight = parseInt(value.details?.averageWeight) || null)"
+        @update:modelValue="
+          value => (booking.weight = parseInt(value.details?.averageWeight) || null)
+        "
       />
       <Textfield
         v-model.trim="booking.commodity"
@@ -417,7 +418,7 @@ onMounted(async () => {
       </Button>
     </div>
   </VForm>
-<!--
+  <!--
   <Dialog
   ref="confirmDraftsDialog"
   class="max-w-[450px] md:max-w-[560px]"
@@ -453,6 +454,4 @@ onMounted(async () => {
   </div>
   </template>
   </Dialog>
--->
-</template>
-
+--></template>
