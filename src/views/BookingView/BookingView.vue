@@ -440,7 +440,7 @@ onMounted(async () => {
             return-object
             :disabled="pending || expired || completed"
           />
-          <div>
+          <div class="col-span-2 sm:col-span-1 md:col-span-2 lg:col-span-1">
             <TextFieldWithSelector
               v-model.number="booking.estimatedRate"
               type="number"
