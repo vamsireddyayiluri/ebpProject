@@ -7,34 +7,28 @@ import { useChatStore } from '~/stores/chat.store'
 import moment from 'moment-timezone'
 import { useTruckerManagementStore } from '~/stores/truckerManagement.store'
 import saferLink from '~/fixtures/safer-link'
+import { useCommitmentsStore } from '~/stores/commitments.store'
 
 const props = defineProps({
   commitment: Object,
 })
 const emit = defineEmits(['close', 'approveCommitment', 'completeCommitment', 'declineCommitment'])
 const bookingStore = useBookingsStore()
+const { getCommitment } = useCommitmentsStore()
 const { getTruckerDetails } = useTruckerManagementStore()
 const { getFormattedDate } = useDate()
 const { goToChat } = useChatStore()
 const router = useRouter()
+const currentCommitment = ref(null)
+const orgDetails = ref(null)
+const booking = ref(null)
 const checkCommitmentStatus = () => {
   return props.commitment?.timeLine?.some(({ status }) => status === statuses.approved)
 }
 const isPending = props.commitment?.status === statuses.pending
-const orgDetails = ref(null)
 const openedPanel = ref([0])
 const {
-  ref: bookingRef,
-  containers,
-  committed,
-  estimatedRate,
   status,
-  loadingDate,
-  commodity,
-  line,
-  flexibleBooking,
-  size,
-  location,
 } = bookingStore.allBookings.find(i => i.id === props.commitment.bookingId)
 const { truckerDetails } = props.commitment.details
 let details = ref([
@@ -54,6 +48,7 @@ const getTimeLine = timeLine => {
   })
 }
 onMounted(async () => {
+  currentCommitment.value = await getCommitment(props.commitment.id)
   orgDetails.value = await getTruckerDetails(props.commitment.truckerOrgId)
   if (checkCommitmentStatus()) {
     details.value = [
@@ -81,7 +76,7 @@ onUnmounted(() => {
         prepend-icon="mdi-message-text"
         density="compact"
         class="mr-4"
-        @click="goToChat(props.commitment.truckerOrgId)"
+        @click="goToChat(currentCommitment.truckerOrgId)"
       >
         Chat with trucker
       </Button>
@@ -172,99 +167,106 @@ onUnmounted(() => {
             </ExpansionPanelTitle>
             <ExpansionPanelText class="pa-0">
               <div class="grid grid-cols-2 items-center [&>div]:py-2.5">
-                <Typography type="text-body-s-regular"> Ref </Typography>
+                <Typography type="text-body-s-regular"> Ref</Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
-                  {{ bookingRef }}
+                  {{ currentCommitment.ref }}
                 </Typography>
                 <Typography type="text-body-s-regular"> Containers </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
-                  {{ containers }}
+                  {{ currentCommitment.containers }}
                 </Typography>
                 <Typography type="text-body-s-regular"> Committed </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
-                  {{ committed }}
+                  {{ currentCommitment.committed }}
                 </Typography>
                 <Typography type="text-body-s-regular"> Target Rate </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
-                  {{ estimatedRate }}
+                  {{ currentCommitment.estimatedRate }}
                 </Typography>
                 <Typography
-                  v-if="commitment?.onBoardedContainers"
+                  v-if="currentCommitment?.onBoardedContainers"
                   type="text-body-s-regular"
                 >
                   OnBoarded Containers
                 </Typography>
                 <Typography
-                  v-if="commitment?.onBoardedContainers"
+                  v-if="currentCommitment?.onBoardedContainers"
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
-                  {{ commitment?.onBoardedContainers || '' }}
+                  {{ currentCommitment?.onBoardedContainers || '' }}
                 </Typography>
-                <Typography type="text-body-s-regular"> Status </Typography>
+                <Typography type="text-body-s-regular"> Status</Typography>
                 <Classification
                   type="status"
                   :value="status"
                   class="w-min h-fit ml-auto"
                 />
-                <template v-if="commitment.reason">
-                  <Typography type="text-body-s-regular"> Reason </Typography>
+                <template
+                  v-if="
+                    currentCommitment.reason &&
+                    (status === statuses.canceled ||
+                      status === statuses.declined ||
+                      status === statuses.bookingCanceled)
+                  "
+                >
+                  <Typography type="text-body-s-regular"> Reason</Typography>
                   <Typography
                     type="text-body-s-regular text-end"
                     :color="getColor('textSecondary')"
                   >
-                    {{ commitment.reason }}
+                    {{ currentCommitment.reason }}
                   </Typography>
                 </template>
-                <Typography type="text-body-s-regular"> Loading date </Typography>
+                <Typography type="text-body-s-regular"> Loading date</Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
-                  {{ getFormattedDate(loadingDate) }}
+                  {{ getFormattedDate(currentCommitment.loadingDate) }}
                 </Typography>
-                <Typography type="text-body-s-regular"> Commodity </Typography>
+                <Typography type="text-body-s-regular"> Commodity</Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
-                  {{ commodity }}
+                  {{ currentCommitment.commodity }}
                 </Typography>
-                <Typography type="text-body-s-regular"> Line </Typography>
+                <Typography type="text-body-s-regular"> Line</Typography>
                 <LineAvatar
-                  :line="line"
+                  :line="currentCommitment.line"
                   class="ml-auto"
                 />
-                <Typography type="text-body-s-regular"> Size </Typography>
+                <Typography type="text-body-s-regular"> Size</Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
-                  <template v-if="flexibleBooking">
-                    {{ size.join(', ') }}
+                  <template v-if="currentCommitment.flexibleBooking">
+                    {{ currentCommitment.size.join(', ') }}
                   </template>
                   <template v-else>
-                    {{ size }}
+                    {{ currentCommitment.size }}
                   </template>
                 </Typography>
-                <Typography type="text-body-s-regular"> Export facility </Typography>
+                <Typography type="text-body-s-regular"> Export facility</Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
-                  {{ location.address }}
+                  {{ currentCommitment.location.address }}
                 </Typography>
               </div>
             </ExpansionPanelText>
@@ -277,6 +279,7 @@ onUnmounted(() => {
       class="hidden md:block"
     />
     <VCol
+      v-if="currentCommitment"
       cols="12"
       md="5"
       class="relative pt-8 pl-1 md:!pl-8"
@@ -288,24 +291,24 @@ onUnmounted(() => {
         Timeline
       </Typography>
       <Timeline
-        :items="getTimeLine(commitment.timeLine)"
+        :items="getTimeLine(currentCommitment.timeLine)"
         variant="vertical"
         class="scrollbar overflow-auto md:mb-10"
       />
       <div class="styledCommitActionsBtns static md:fixed bottom-8 flex pt-8 gap-4">
         <Button
-          v-if="commitment.status === statuses.approved && status !== statuses.paused"
-          @click="emit('completeCommitment', commitment)"
+          v-if="currentCommitment.status === statuses.approved && status !== statuses.paused"
+          @click="emit('completeCommitment', currentCommitment)"
         >
           complete
         </Button>
         <template v-if="isPending && status !== statuses.paused">
-          <Button @click="emit('approveCommitment', commitment)"> approve </Button>
+          <Button @click="emit('approveCommitment', currentCommitment)"> approve</Button>
           <Button
             variant="outlined"
             data="secondary1"
             :style="{ background: 'rgba(var(--v-theme-uiPrimary), 1)' }"
-            @click="emit('declineCommitment', commitment.id)"
+            @click="emit('declineCommitment', currentCommitment.id)"
           >
             decline
           </Button>

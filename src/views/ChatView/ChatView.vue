@@ -64,19 +64,28 @@ onMounted(async () => {
     // if activeChat exist in store save id in URL
     if (!chatId && activeChat.value) {
       await router.replace({ query: { id: activeChat.value.chatId } })
+
+      return
     }
 
     // if chat id exists in URL open chat
     if (chats.value.length && chatId) {
       clearInterval(interval)
       await openChat(chatId)
+
+      return
+    }
+    if (chats.value.length && !chatId) {
+      await openChat(chats.value[0].chatId)
+
+      return
     }
   }, 200)
   await markUserAsOnlineOffline('online')
 
 })
 onBeforeUnmount(async () => {
-  activeChat.value = null
+  // activeChat.value = null
   await markUserAsOnlineOffline('offline')
 })
 

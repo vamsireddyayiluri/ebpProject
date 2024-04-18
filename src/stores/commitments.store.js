@@ -45,13 +45,12 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         const truckerScac = commitment?.details.truckerDetails.truckerScac
         const carrierIndex = booking?.carriers?.findIndex(carrier => carrier?.scac === truckerScac)
         if (carrierIndex !== -1) {
-          booking.carriers[carrierIndex].total =
-            booking.carriers[carrierIndex].total + commitment.committed
+          booking.carriers[carrierIndex].approved =
+            booking.carriers[carrierIndex].approved + commitment.committed
         } else {
           booking.carriers.push({
             scac: truckerScac,
-            fulfilled: 0,
-            total: commitment.committed,
+            approved: commitment.committed,
           })
         }
       }
@@ -67,6 +66,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
           j.status = statuses.approved
         }
       })
+
       await updateBookingStore(commitment, 'approved')
 
       alertStore.info({ content: 'Booking commitment approved' })
@@ -129,14 +129,6 @@ export const useCommitmentsStore = defineStore('commitments', () => {
           (Array.isArray(i.ids) && i.ids.includes(commitment.bookingId))
         )
       })
-      const truckerScac = commitment?.details.truckerDetails.truckerScac
-      const carrierIndex = booking?.carriers?.findIndex(carrier => carrier?.scac === truckerScac)
-      if (carrierIndex !== -1) {
-        booking.carriers[carrierIndex].fulfilled += onBoardedContainers
-      }
-      await updateDoc(doc(db, 'bookings', commitment.bookingId), {
-        carriers: booking.carriers,
-      })
       alertStore.info({ content: 'Booking commitment completed' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
@@ -175,6 +167,25 @@ export const useCommitmentsStore = defineStore('commitments', () => {
           j.status = statuses.canceled
           j.reason = reason
         }
+      })
+
+      // find booking
+      const booking = bookingsStore.bookings.find(i => {
+        return (
+          i.id === commitment.bookingId ||
+          (Array.isArray(i.ids) && i.ids.includes(commitment.bookingId))
+        )
+      })
+      if (booking?.carriers) {
+        const truckerScac = commitment?.details.truckerDetails.truckerScac
+        const carrierIndex = booking?.carriers?.findIndex(carrier => carrier?.scac === truckerScac)
+        if (carrierIndex !== -1) {
+          booking.carriers[carrierIndex].approved =
+            booking.carriers[carrierIndex].approved - commitment.committed
+        }
+      }
+      await updateDoc(doc(db, 'bookings', commitment.bookingId), {
+        carriers: booking?.carriers,
       })
       await updateBookingStore(commitment, 'canceled')
       alertStore.info({ content: 'Booking commitment canceled' })

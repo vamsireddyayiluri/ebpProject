@@ -8,29 +8,23 @@ const props = defineProps({
   loading: Boolean,
   loadingDate: String,
 })
+const emit = defineEmits(['close', 'onClickBtn', 'onClickUpdate'])
 const initialLoadingDate = ref(new Date())
 const currentDate = ref(new Date())
-
-const emit = defineEmits(['close', 'onClickBtn'])
-
-const { loading } = toRefs(props)
-
 const loadingDate = ref(null)
+const { loading } = toRefs(props)
 
 const updateLoadingDate = value => {
   loadingDate.value = moment(value).endOf('day').format()
 }
 const validateLoadingDate = () => {
   if (loadingDate.value && initialLoadingDate.value) {
-    if (
+    return (
       moment(loadingDate.value).endOf('day').format() ===
       moment(initialLoadingDate.value).endOf('day').format()
-    ) {
-      return true
-    } else {
-      return false
-    }
+    )
   }
+
   return true
 }
 const onUpdate = () => {
@@ -56,7 +50,7 @@ onMounted(async () => {
 
   <Datepicker
     :picked="loadingDate || props.loadingDate"
-    class="mt-6 mb-16 pb-4"
+    class="mt-6 mb-10 pb-4 updateLoadingDate"
     label="Loading date *"
     typeable
     :lower-limit="currentDate"
@@ -64,15 +58,18 @@ onMounted(async () => {
   />
   <Button
     class="w-full mt-4"
-    :disabled="validateLoadingDate() ? true : false"
+    :disabled="validateLoadingDate()"
     :loading="loading"
     @click="onUpdate"
   >
     {{ btnName }}
   </Button>
 </template>
-<style lang="scss" scoped>
-.testing {
-  position: fixed;
+
+<style lang="scss">
+.updateLoadingDate {
+  .v3dp__popout {
+    position: fixed !important;
+  }
 }
 </style>
