@@ -276,7 +276,7 @@ watch(searchValue, value => {
         />
       </template>
       <template #truckers="{ item }">
-        <div class="flex items-center gap-2">
+        <div v-if="item?.scacList?.length>0" class="flex items-center gap-2">
           <template
             v-for="scacList in item.scacList"
             :key="scacList"
@@ -325,6 +325,9 @@ watch(searchValue, value => {
               </Typography>
             </template>
           </template>
+        </div>
+        <div v-else>
+          <span>--</span>
         </div>
       </template>
       <template #actions="{ item, selected }">
@@ -381,7 +384,7 @@ watch(searchValue, value => {
           </template>
           <template #actions="{ item, selected }">
             <MenuActions
-              :actions="() => commitmentsActions(item.status, bookingStatus(item.bookingId))"
+              :actions="() => commitmentsActions(item.status, bookingStatus(item.bookingId),fromHistory=true)"
               :selected="selected"
               :container="item"
               @containerActionHandler="containerActionHandler"

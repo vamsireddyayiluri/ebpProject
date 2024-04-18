@@ -220,6 +220,12 @@ const onSave = async () => {
   isSaveLoading.value = false
 }
 
+const getTimeLine = timeLine => {
+  return timeLine.map(val => {
+    return { title: val.message, date: moment(val.time_stamp).format('MM/DD/YYYY hh:mm:ss a') }
+  })
+}
+
 // checking active bookings loadingDate
 const validateExpiryDates = index => {
   validExpiryDate.value = validateExpiryDate(activeBookings?.value, {
@@ -228,7 +234,6 @@ const validateExpiryDates = index => {
   })
 }
 const removeLoadingDate = id => {
-  console.log('remove booking dia', id)
   // const index = bookings.value.findIndex(i => i.id === id)
   // if (index > -1) {
   //   newBookings.value.splice(index, 1)
@@ -584,7 +589,7 @@ onMounted(async () => {
             <Typography type="text-h4"> Booking timeline </Typography>
             <div class="timeline scrollbar">
               <Timeline
-                :items="booking.timeLine"
+                :items="getTimeLine(booking.timeLine)"
                 :variant="flyoutBottom ? 'horizontal' : 'vertical'"
               />
             </div>

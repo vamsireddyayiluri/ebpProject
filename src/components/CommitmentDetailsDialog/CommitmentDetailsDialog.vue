@@ -138,8 +138,8 @@ onUnmounted(() => {
                     <a
                       :href="saferLink + truckerDetails?.mcNumber"
                       target="_blank"
-                      rel="noopener noreferrer"
-                      class="text-decoration-underline"
+                      style="color: blue"
+                      class="text-decoration-none"
                     >
                       {{ truckerDetails?.mcNumber }}
                     </a>
@@ -308,7 +308,7 @@ onUnmounted(() => {
             variant="outlined"
             data="secondary1"
             :style="{ background: 'rgba(var(--v-theme-uiPrimary), 1)' }"
-            @click="emit('declineCommitment', currentCommitment.id)"
+            @click="emit('declineCommitment', currentCommitment)"
           >
             decline
           </Button>
