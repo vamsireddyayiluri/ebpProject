@@ -404,6 +404,8 @@ export const useBookingsStore = defineStore('bookings', () => {
       await batch.commit()
       drafts.value.unshift(booking)
       alertStore.info({ content: `Booking Ref# ${booking.ref} moved to the draft` })
+
+      return 'deleted'
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
