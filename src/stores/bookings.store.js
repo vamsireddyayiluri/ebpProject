@@ -467,10 +467,9 @@ export const useBookingsStore = defineStore('bookings', () => {
               booking.committed = booking.committed - commitment.committed
               const index = booking.details.findIndex(i => i.id === updatedBooking.id)
               booking.details[index].committed -= commitment.committed || 0
-              booking.status = toRaw(updatedBooking.status)
+              booking.status = updatedBooking.status===statuses.pending?statuses.active:updatedBooking.status
             }
-            const index = booking.details.findIndex(i => i.id === updatedBooking.id)
-            booking.details[index].committed = updatedBooking.committed || 0
+            
           }
         })
 
