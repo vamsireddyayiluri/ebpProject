@@ -221,7 +221,7 @@ const onSave = async () => {
 }
 
 const getTimeLine = timeLine => {
-  return timeLine.map(val => {
+  return timeLine?.map(val => {
     return { title: val.message, date: moment(val.time_stamp).format('MM/DD/YYYY hh:mm:ss a') }
   })
 }
@@ -445,7 +445,7 @@ onMounted(async () => {
             return-object
             :disabled="pending || expired || completed"
           />
-          <div>
+          <div class="col-span-2 sm:col-span-1 md:col-span-2 lg:col-span-1">
             <TextFieldWithSelector
               v-model.number="booking.estimatedRate"
               type="number"
@@ -589,7 +589,7 @@ onMounted(async () => {
             <Typography type="text-h4"> Booking timeline </Typography>
             <div class="timeline scrollbar">
               <Timeline
-                :items="getTimeLine(booking.timeLine)"
+                :items="getTimeLine(booking?.timeLine)"
                 :variant="flyoutBottom ? 'horizontal' : 'vertical'"
               />
             </div>
