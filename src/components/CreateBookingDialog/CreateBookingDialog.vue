@@ -84,7 +84,7 @@ const emptyBooking = {
   commodity: '',
   location: bookingRulesStore.rules.yard,
   weight: bookingRulesStore.rules.yard?.details?.overweight
-    ? bookingRulesStore.rules.yard?.details?.averageWeight
+    ? parseInt(bookingRulesStore.rules.yard?.details?.averageWeight)
     : null,
   estimatedRateType: 'All in rate',
   estimatedRate: null,
@@ -92,6 +92,7 @@ const emptyBooking = {
   size: '40 HC',
   insurance: '100,000',
 }
+console.log(emptyBooking.weight,typeof(emptyBooking.weight))
 const booking = ref(props?.duplicate ? copyBooking : emptyBooking)
 const newBookings = ref(
   props.duplicate
@@ -276,7 +277,7 @@ onMounted(async () => {
         item-value="address"
         return-object
         class="h-fit"
-        @update:modelValue="value => (booking.weight = value.details?.averageWeight || null)"
+        @update:modelValue="value => (booking.weight = parseInt(value.details?.averageWeight) || null)"
       />
       <Textfield
         v-model.trim="booking.commodity"
