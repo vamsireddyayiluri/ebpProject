@@ -12,11 +12,13 @@ import {
 import { db } from '~/firebase'
 import { useAlertStore } from '~/stores/alert.store'
 import { useAuthStore } from '~/stores/auth.store'
+import { uid } from 'uid'
 
 export const useNotificationStore = defineStore('notification', () => {
   const alertStore = useAlertStore()
   const authStore = useAuthStore()
   const notifications = ref([])
+  let initialLoad = true
   const defaultSettings = {
     newsAndUpdates: {
       value: 'both notifications',
@@ -30,8 +32,14 @@ export const useNotificationStore = defineStore('notification', () => {
   const settings = ref(defaultSettings)
   const loading = ref(false)
   const createNotificationCollection = async orgId => {
+    const docId = `@${authStore.userData.name.replace(/\s+/g, '_')}_${authStore.userData.orgId}`
+
     try {
-      await setDoc(doc(db, 'notifications', orgId), { settings: defaultSettings, list: [], orgId })
+      await setDoc(doc(db, 'notifications', docId), {
+        settings: defaultSettings,
+        notifications: [],
+        orgId,
+      })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
@@ -40,7 +48,8 @@ export const useNotificationStore = defineStore('notification', () => {
   const getNotificationSettings = async () => {
     loading.value = true
     try {
-      const settingsDoc = await getDoc(doc(db, 'notifications', authStore.userData.orgId))
+      const docId = `@${authStore.userData.name.replace(/\s+/g, '_')}_${authStore.userData.orgId}`
+      const settingsDoc = await getDoc(doc(db, 'notifications', docId))
       if (!settingsDoc.exists()) {
         await createNotificationCollection(authStore.userData.orgId)
         settings.value = defaultSettings
@@ -57,7 +66,8 @@ export const useNotificationStore = defineStore('notification', () => {
 
   const updateSettings = async data => {
     try {
-      await updateDoc(doc(db, 'notifications', authStore.userData.orgId), {
+      const docId = `@${authStore.userData.name.replace(/\s+/g, '_')}_${authStore.userData.orgId}`
+      await updateDoc(doc(db, 'notifications', docId), {
         settings: data,
       })
       settings.value = data
@@ -97,28 +107,41 @@ export const useNotificationStore = defineStore('notification', () => {
       unsubscribeNotification()
     }
     try {
-      const notificationsRef = collection(db, 'notifications')
-      const dataQuery = query(notificationsRef, where('orgId', '==', authStore.userData.orgId))
-      unsubscribeNotification = await onSnapshot(dataQuery, snapshot => {
-        const list = snapshot.docs[0]?.data()?.list
-        snapshot.docChanges().forEach(change => {
-          if (change.type === 'modified' && list.length !== notifications.value.length) {
-            // get last element .at(-1)
-            showAlert(change.doc.data().list.at(-1))
-          }
-        })
-        notifications.value = list.reverse() || []
+      const docId = `@${authStore.userData.name.replace(/\s+/g, '_')}_${authStore.userData.orgId}`
+
+      unsubscribeNotification = await onSnapshot(doc(db, 'notifications', docId), snapshot => {
+        let notificationsData = null
+        notificationsData = requiredData(snapshot.data()?.notifications)
+        const list = notificationsData.at(-1)
+        if (
+          !initialLoad &&
+          list.isUnread === true &&
+          notificationsData.length !== notifications.value.length
+        ) {
+          showAlert(list)
+        }
+        initialLoad = false
+        notifications.value = notificationsData || []
       })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
   }
-
-  const showAlert = notification => {
-    alertStore[notification.type]({
-      title: notification.title,
-      content: notification.content,
+  const requiredData = notificationsData => {
+    let notifications = notificationsData?.map(notification => {
+      return {
+        content: notification.created || notification.content,
+        isUnread: notification?.isUnread,
+        title: notification.message || notification.title,
+        type: 'info',
+        id: uid(16),
+      }
     })
+
+    return notifications
+  }
+  const showAlert = ({ type, ...rest }) => {
+    alertStore[type]({ ...rest })
   }
 
   const readAllNotifications = async () => {
@@ -129,8 +152,9 @@ export const useNotificationStore = defineStore('notification', () => {
       }
     })
     try {
-      await updateDoc(doc(db, 'notifications', authStore.userData.orgId), {
-        list: data,
+      const docId = `@${authStore.userData.name.replace(/\s+/g, '_')}_${authStore.userData.orgId}`
+      await updateDoc(doc(db, 'notifications', docId), {
+        notifications: data,
       })
     } catch ({ message }) {
       alertStore.warning({ content: message })
@@ -145,8 +169,9 @@ export const useNotificationStore = defineStore('notification', () => {
       return i
     })
     try {
-      await updateDoc(doc(db, 'notifications', authStore.userData.orgId), {
-        list: data,
+      const docId = `@${authStore.userData.name.replace(/\s+/g, '_')}_${authStore.userData.orgId}`
+      await updateDoc(doc(db, 'notifications', docId), {
+        notifications: data,
       })
     } catch ({ message }) {
       alertStore.warning({ content: message })

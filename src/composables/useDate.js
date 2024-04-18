@@ -25,8 +25,19 @@ export const todayYesterdayDate = date => {
   } else return moment(date).format('MM/DD/YYYY')
 }
 
+export const getSmallerDate = dates => {
+  if (!Array.isArray(dates) || dates?.length === 0) {
+    return null
+  }
+  const momentDates = dates?.map(date => moment(date.loadingDate))
+
+  const smallestDate = moment.min(momentDates)
+
+  return smallestDate.format()
+}
 export default () => ({
   getFormattedDateTime,
   getFormattedDate,
   todayYesterdayDate,
+  getSmallerDate,
 })

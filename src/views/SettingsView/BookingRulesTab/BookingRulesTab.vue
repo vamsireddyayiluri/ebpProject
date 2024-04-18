@@ -4,7 +4,7 @@ import { useAuthStore } from '~/stores/auth.store'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { useBookingRulesStore } from '~/stores/bookingRules.store'
 import { cloneDeep, isEqual } from 'lodash'
-import { checkPositiveInteger } from '~/helpers/validations-functions'
+import { validateDays } from '~/helpers/validations-functions'
 
 const { userData } = useAuthStore()
 const workDetailsStore = useWorkDetailsStore()
@@ -13,8 +13,12 @@ const { orgData } = storeToRefs(useAuthStore())
 const { rules } = storeToRefs(bookingRulesStore)
 const { yards } = storeToRefs(workDetailsStore)
 const form = ref(null)
+const truckersRef = ref(null)
 const errorRules = {
-  days: value => checkPositiveInteger(value),
+  days: value => validateDays(value),
+  required: value => {
+    return !!value ? true : 'Required field'
+  },
 }
 
 const validateRules = computed(() => {
@@ -22,18 +26,21 @@ const validateRules = computed(() => {
 
   return isEqual(rules.value, orgData.value.bookingRules)
 })
+const turnSwitch = e => {
+  if (e) {
+    form.value.validate()
+  } else {
+    form.value.resetValidation()
+    rules.value.preferredCarrierWindow = null
+  }
+}
 const onSave = async () => {
   await bookingRulesStore.updateRules(rules.value, userData.orgId)
 }
 const cancelChanges = () => {
+  truckersRef.value.updateModelValue(orgData.value.bookingRules.truckers.list)
   rules.value = cloneDeep(orgData.value.bookingRules)
 }
-onMounted(() => {
-  cancelChanges()
-})
-tryOnUnmounted(() => {
-  cancelChanges()
-})
 </script>
 
 <template>
@@ -57,6 +64,7 @@ tryOnUnmounted(() => {
             label: yard.label,
             lat: yard.lat,
             lng: yard.lng,
+            details: yard.details,
           }))
         "
         label="Set yard by default"
@@ -73,10 +81,11 @@ tryOnUnmounted(() => {
         class="bookingRules"
         :rules="[errorRules.days(rules.timeForTruckersFromMarketplace)]"
       />
-      <div class="order-4 sm:!order-3 !-mb-4 flex flex-col">
+      <div class="order-4 sm:!order-3 mb-2 flex flex-col">
         <AutocompleteScac
+          ref="truckersRef"
           :scac-list="rules.truckers"
-          :menu-btn="false"
+          @onChange="list => (rules.truckers.list = list)"
         />
       </div>
       <Textfield
@@ -87,6 +96,26 @@ tryOnUnmounted(() => {
         suffix="days"
         class="bookingRules order-3 sm:!order-4"
         :rules="[errorRules.days(rules.timeForNotificationBeforeCutoff)]"
+      />
+      <Switch
+        v-model="rules.isPreferredCarrierWindow"
+        class="order-5 sm:!order-6 !h-12 -mt-1"
+        @update:modelValue="turnSwitch"
+      >
+        <Typography class="flex items-center gap-2"> Preferred carrier window </Typography>
+      </Switch>
+      <Textfield
+        v-model.number="rules.preferredCarrierWindow"
+        type="number"
+        label="Set number of days before loading date to push to marketplace"
+        required
+        suffix="days"
+        class="order-6 sm:!order-5 bookingRules"
+        :disabled="!rules.isPreferredCarrierWindow"
+        :rules="[
+          errorRules.days(rules.preferredCarrierWindow),
+          rules.isPreferredCarrierWindow ? errorRules.required : null,
+        ]"
       />
     </div>
     <SaveCancelChanges

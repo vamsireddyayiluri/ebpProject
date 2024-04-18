@@ -1,5 +1,6 @@
-import { defineStore, getActivePinia } from 'pinia'
+import { defineStore } from 'pinia'
 import { auth, db } from '~/firebase'
+import moment from 'moment-timezone'
 import {
   addDoc,
   collection,
@@ -13,7 +14,14 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore'
-import { getStorage, ref as firebaseRef, uploadBytes } from 'firebase/storage'
+import {
+  getStorage,
+  ref as firebaseRef,
+  uploadBytes,
+  listAll,
+  getMetadata,
+  getDownloadURL,
+} from 'firebase/storage'
 import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
@@ -28,6 +36,10 @@ import firebase from 'firebase/compat/app'
 import { useInvitationStore } from '~/stores/invitation.store'
 import { useNotificationStore } from '~/stores/notification.store'
 import { useBookingsStore } from '~/stores/bookings.store'
+import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
+import { useWorkDetailsStore } from '~/stores/workDetails.store'
+import { uid } from 'uid'
+import { useProfileStore } from '~/stores/profile.store'
 
 export const useAuthStore = defineStore('auth', () => {
   const router = useRouter()
@@ -35,6 +47,8 @@ export const useAuthStore = defineStore('auth', () => {
   const invitationStore = useInvitationStore()
   const notificationStore = useNotificationStore()
   const bookingsStore = useBookingsStore()
+  const { getPreferredTruckers } = usePreferredTruckersStore()
+  const { getVendorDetails } = useWorkDetailsStore()
   const currentUser = ref(null)
   const storage = getStorage()
   const userData = ref(null)
@@ -52,17 +66,17 @@ export const useAuthStore = defineStore('auth', () => {
     } catch (error) {
       isLoading.value = false
       switch (error.code) {
-      case 'auth/user-not-found':
-        alertStore.warning({ content: 'User not found' })
-        break
-      case 'auth/wrong-password':
-        alertStore.warning({ content: 'Wrong password' })
-        break
-      case 'auth/invalid-login-credentials':
-        alertStore.warning({ content: 'Invalid credentials' })
-        break
-      default:
-        alertStore.warning({ content: 'Something went wrong' })
+        case 'auth/user-not-found':
+          alertStore.warning({ content: 'User not found' })
+          break
+        case 'auth/wrong-password':
+          alertStore.warning({ content: 'Wrong password' })
+          break
+        case 'auth/invalid-login-credentials':
+          alertStore.warning({ content: 'Invalid credentials' })
+          break
+        default:
+          alertStore.warning({ content: 'Something went wrong' })
       }
     }
   }
@@ -72,6 +86,7 @@ export const useAuthStore = defineStore('auth', () => {
     currentUser.value = null
     userData.value = null
     orgData.value = null
+    useProfileStore().reset()
     await bookingsStore.reset()
     await router.push({ name: 'login' })
   }
@@ -79,7 +94,9 @@ export const useAuthStore = defineStore('auth', () => {
   const register = async ({
     form,
     yards,
+    vendorDetails,
     invitations,
+    preferredTruckers,
     requiresForTruckers,
     questionList,
     onboardingDocuments,
@@ -89,21 +106,23 @@ export const useAuthStore = defineStore('auth', () => {
       await signInWithEmailAndPassword(auth, form.email, form.password)
       const orgId = await getOrgId(form.email)
       await addDoc(collection(db, 'pending_verifications'), {
-        fullName: form.fullName,
+        name: form.fullName,
         email: form.email,
         orgId,
         cell: form.cell,
         password: form.password,
         company: form.companyName,
         yards,
+        vendorDetails,
         type: userTypes.admin,
         invitations,
+        preferredTruckers,
         requiresForTruckers,
         questionList,
       })
       for (const file of onboardingDocuments) {
         try {
-          const fileRef = firebaseRef(storage, `uploads/${orgId}/${file.name}`)
+          const fileRef = firebaseRef(storage, `uploads/exporter/${orgId}/${file.name}`)
           await uploadBytes(fileRef, file)
         } catch ({ message }) {
           alertStore.warning({ content: "File wasn't uploaded " + message })
@@ -114,20 +133,20 @@ export const useAuthStore = defineStore('auth', () => {
       await sendVerificationEmail()
     } catch (error) {
       switch (error.code) {
-      case 'auth/email-already-in-use':
-        alertStore.warning({ content: 'Email already in use' })
-        break
-      case 'auth/invalid-email':
-        alertStore.warning({ content: 'Invalid email' })
-        break
-      case 'auth/operation-not-allowed':
-        alertStore.warning({ content: 'Operation not allowed' })
-        break
-      case 'auth/weak-password':
-        alertStore.warning({ content: 'Weak password' })
-        break
-      default:
-        alertStore.warning({ content: 'Something went wrong' })
+        case 'auth/email-already-in-use':
+          alertStore.warning({ content: 'Email already in use' })
+          break
+        case 'auth/invalid-email':
+          alertStore.warning({ content: 'Invalid email' })
+          break
+        case 'auth/operation-not-allowed':
+          alertStore.warning({ content: 'Operation not allowed' })
+          break
+        case 'auth/weak-password':
+          alertStore.warning({ content: 'Weak password' })
+          break
+        default:
+          alertStore.warning({ content: 'Something went wrong' })
       }
       isLoading.value = false
     }
@@ -170,7 +189,7 @@ export const useAuthStore = defineStore('auth', () => {
     const data = verification[0]
     if (!user) {
       try {
-        user = await firebase.auth().signInWithEmailAndPassword(data.email, data.password)
+        user = await signInWithEmailAndPassword(auth, data.email, data.password)
       } catch (error) {
         alertStore.warning({ content: error.message })
       }
@@ -180,12 +199,12 @@ export const useAuthStore = defineStore('auth', () => {
       auth.currentUser.emailVerified = true
       const { uid: userId } = user
       let newUser = {
-        fullName: data.fullName,
+        name: data.name,
         email: data.email,
         cell: data.cell,
         createdAt: getLocalTime().format(),
         updatedAt: getLocalTime().format(),
-        userId: userId,
+        user_id: userId,
         orgId: data.orgId,
         password: data.password,
         type: userTypes.admin,
@@ -202,10 +221,24 @@ export const useAuthStore = defineStore('auth', () => {
           orgId: data.orgId,
           email: data.email,
           company: data.company,
+          location: {
+            address: null,
+            timezone: moment.tz.guess(),
+          },
           createdAt: getLocalTime().format(),
           updatedAt: getLocalTime().format(),
-          workDetails: data.yards,
-          bookingRules: {},
+          locations: data.yards,
+          vendorDetails: data.vendorDetails,
+          bookingRules: {
+            timeForNotificationBeforeCutoff: '',
+            timeForTruckersFromMarketplace: '',
+            truckers: { list: [] },
+            isPreferredCarrierWindow: false,
+            preferredCarrierWindow: '',
+          },
+          org_type: 'exporter',
+          owner_uid: userId,
+          preferredTruckers: data.preferredTruckers,
         }
         await setDoc(docRef, orgData)
       }
@@ -213,7 +246,24 @@ export const useAuthStore = defineStore('auth', () => {
       if (data.invitations) {
         await invitationStore.sendInvitationLink(data.invitations)
       }
+      const folderPath = `uploads/exporter/${data.orgId}`
+      const folderRef = firebaseRef(storage, folderPath)
+      const filesList = await listAll(folderRef)
+      const onboardingDocuments = await Promise.all(
+        filesList.items.map(async fileRef => {
+          const url = await getDownloadURL(fileRef)
+          const type = (await getMetadata(fileRef)).contentType
+
+          return {
+            filename: fileRef.name,
+            id: uid(),
+            path: url,
+            type: type,
+          }
+        }),
+      )
       await setDoc(doc(db, 'trucker_requirements', data.orgId), {
+        onBoardingDocuments: onboardingDocuments || [],
         requiresForTruckers: data.requiresForTruckers,
         questionList: data.questionList,
       })
@@ -259,6 +309,9 @@ export const useAuthStore = defineStore('auth', () => {
           await getOrgWorkers()
           isLoading.value = false
         }
+        await getPreferredTruckers()
+        await getVendorDetails()
+        useProfileStore().getProfileData()
       })
     } catch ({ message }) {
       alertStore.warning({ content: message })
@@ -279,11 +332,11 @@ export const useAuthStore = defineStore('auth', () => {
   const saveUserDataReports = async payload => {
     const { emptyContainerReport, exportFacilityReport } = payload
     try {
-      await updateDoc(doc(db, 'users', userData.value.userId), {
+      await updateDoc(doc(db, 'users', userData.value.user_id), {
         emptyContainerDataReport: emptyContainerReport?.value,
         exporterFacilityDataReport: exportFacilityReport?.value,
       })
-      await getUserData(userData.value.userId)
+      await getUserData(userData.value.user_id)
       alertStore.info({ content: 'Data report updated!' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
@@ -293,6 +346,14 @@ export const useAuthStore = defineStore('auth', () => {
     const q = query(collection(db, 'users'), where('orgId', '==', userData.value.orgId))
     const querySnapshot = await getDocs(q)
     workers.value = querySnapshot.docs.map(doc => doc.data())
+  }
+  const updateUserDoc = async payload => {
+    try {
+      await updateDoc(doc(db, 'users', userData.value.user_id), payload)
+      await getUserData(userData.value.user_id)
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
   }
 
   return {
@@ -312,5 +373,6 @@ export const useAuthStore = defineStore('auth', () => {
     saveUserDataReports,
     getOrgData,
     workers,
+    updateUserDoc,
   }
 })

@@ -81,6 +81,7 @@ const removeMember = async id => {
           item-value="id"
           :select-disabled="!isAdmin"
           return-object="true"
+          select-width="130px"
           @onSelect="handleMemberType"
         />
       </div>
@@ -113,7 +114,7 @@ const removeMember = async id => {
     max-width="480"
   >
     <template #text>
-      <RemoveCancelDialog
+      <ConfirmationDialog
         btn-name="Remove"
         @close="removeMemberDialog.show(false)"
         @onClickBtn="removeMember(removeMemberDialog.data.docId || removeMemberDialog.data.id)"
@@ -122,7 +123,7 @@ const removeMember = async id => {
           Are you sure you want to remove <b>Member {{ removeMemberDialog?.data.value }}</b>
           from the team?
         </Typography>
-      </RemoveCancelDialog>
+      </ConfirmationDialog>
     </template>
   </Dialog>
 </template>

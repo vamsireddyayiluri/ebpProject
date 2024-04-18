@@ -1,6 +1,6 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
-import truckers from '~/fixtures/truckers.json'
+import { getTruckers } from '~/stores/helpers'
 
 const props = defineProps({
   scacList: {
@@ -11,45 +11,49 @@ const props = defineProps({
   },
   menuBtn: {
     type: Boolean,
-    default: () => true,
+    default: () => false,
   },
 })
 
 const emit = defineEmits(['onChange'])
 
 const attrs = useAttrs()
+const truckers = ref([])
 const scacList = toRef(props.scacList, 'list')
 const sendDialog = ref(null)
 const autocompleteValue = ref(null)
-const marginBottom = ref('')
 
 const removeScac = e => {
   scacList.value = useArrayFilter(scacList, i => i !== e).value
+  emit('onChange', scacList.value)
 }
 const sendToMarketplace = () => {
   sendDialog.value.show(false)
   autocompleteValue.value = 'Truckers from marketplace'
 }
 const updateModelValue = updatedScacList => {
-  if (autocompleteValue.value) autocompleteValue.value = null
-
+  scacList.value = updatedScacList
   emit('onChange', updatedScacList)
 }
+defineExpose({
+  updateModelValue,
+})
+onMounted(async () => {
+  truckers.value = await getTruckers()
+})
 </script>
 
 <template>
-  <div
-    :class="marginBottom"
-    v-bind="{ ...attrs }"
-  >
+  <div v-bind="{ ...attrs }">
     <Autocomplete
       v-model="scacList"
-      :items="truckers.map(i => i.id)"
-      placeholder="Choose truckers by SCAС *"
+      :items="truckers.map(i => i.scac)"
+      placeholder="Choose truckers by SCAС "
       multiple
       with-btn
+      :menu-props="{ maxHeight: 300 }"
+      :rules="attrs.rules"
       :disabled="attrs.disabled"
-      :value="autocompleteValue"
       @update:modelValue="updateModelValue"
     >
       <template

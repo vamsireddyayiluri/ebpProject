@@ -3,7 +3,7 @@ import truckersData from '~/fixtures/truckers.json'
 import { useDisplay } from 'vuetify'
 import { useActions, useDate, useHeaders } from '~/composables'
 import { getColor } from '~/helpers/colors'
-import { useBookingHistoryStore } from '~/stores/bookingHistory.store'
+import { useBookingsStore } from '~/stores/bookings.store'
 import { storeToRefs } from 'pinia'
 import { statuses } from '~/constants/statuses'
 import { getAllLines } from '@qualle-admin/qutil/dist/ssl'
@@ -11,19 +11,19 @@ import { filterMatchingObjects } from '~/helpers/filters'
 import moment from 'moment-timezone'
 import { json2csv } from 'json-2-csv'
 
-const bookingsStore = useBookingHistoryStore()
+const bookingsStore = useBookingsStore()
 const { loading } = storeToRefs(bookingsStore)
 const { getCommitmentsByBookingId, closeBookingExpansion } = bookingsStore
 const { smAndDown } = useDisplay()
 const { bookingsHistoryHeaders, commitmentsHeaders } = useHeaders()
 const { bookingHistoryActions, commitmentsActions } = useActions()
-const { getFormattedDateTime, getFormattedDate } = useDate()
+const { getFormattedDate, getSmallerDate } = useDate()
 const router = useRouter()
 const statistics = ref(truckersData)
 const tableHeight = ref(0)
 const searchValue = ref(null)
-const mutableSearchedEntities = ref(bookingsStore.bookings)
-const mutableFilteredEntities = ref(bookingsStore.bookings)
+const mutableSearchedEntities = ref(bookingsStore.pastBookings)
+const mutableFilteredEntities = ref(bookingsStore.pastBookings)
 const removeBookingDialog = ref(null)
 const commitmentDetailsDialog = ref(null)
 const filters = ref({
@@ -61,7 +61,7 @@ const onClearSearch = () => {
   loading.value = true
 
   setTimeout(() => {
-    computedSearchedEntities.value = bookingsStore.bookings
+    computedSearchedEntities.value = bookingsStore.pastBookings
 
     loading.value = false
   }, 1000)
@@ -72,7 +72,7 @@ const debouncedSearch = useDebounceFn(searchValue => {
     onClearSearch()
   } else {
     computedSearchedEntities.value = useArrayFilter(
-      bookingsStore.bookings,
+      bookingsStore.pastBookings,
       ({ ref, line: { label }, location: { label: address } }) =>
         useArraySome(
           useArrayMap(Object.values({ ref, label, address }), value => String(value).toLowerCase())
@@ -83,7 +83,7 @@ const debouncedSearch = useDebounceFn(searchValue => {
   }
 }, 300)
 const applyFilter = () => {
-  let filteredData = bookingsStore.bookings
+  let filteredData = bookingsStore.pastBookings
 
   if (filters.value.line) {
     filteredData = useArrayFilter(
@@ -94,7 +94,8 @@ const applyFilter = () => {
   if (filters.value.loadingDate) {
     filteredData = useArrayFilter(
       filteredData,
-      booking => booking.bookingExpiry === moment(filters.value.loadingDate).endOf('day').format(),
+      booking =>
+        getSmallerDate(booking.details) === moment(filters.value.loadingDate).endOf('day').format(),
     ).value
   }
   computedFilteredEntities.value = filteredData
@@ -119,23 +120,25 @@ const containerActionHandler = ({ action, e }) => {
   }
 }
 const removeBooking = async id => {
-  await bookingsStore.deleteHistoryBooking(id)
+  await bookingsStore.deleteBooking(id, false, true)
   removeBookingDialog.value.show(false)
 }
 const onSelectRow = e => {
   router.push({ path: `booking/${e.id}`, query: { from: 'history' } })
 }
 const rowExpanded = async (event, data) => {
-  const { id } = toRaw(data.value)
+  const { id, ids } = toRaw(data.value)
   if (event) {
-    await getCommitmentsByBookingId(id)
+    const commitments = await getCommitmentsByBookingId(id, ids, true)
+    data.value.expand = true
+    data.value.entities = commitments
   } else {
     await closeBookingExpansion(id)
   }
 }
 const downloadData = async () => {
   const options = {}
-  const csv = await json2csv(bookingsStore.bookings, options)
+  const csv = await json2csv(bookingsStore.pastBookings, options)
   const csvContent = 'data:text/csv;charset=utf-8,' + csv
   const encodedUri = encodeURI(csvContent)
   const link = document.createElement('a')
@@ -147,8 +150,8 @@ const downloadData = async () => {
 }
 onMounted(async () => {
   await bookingsStore.getBookingHistory()
-  computedSearchedEntities.value = bookingsStore.bookings
-  computedFilteredEntities.value = bookingsStore.bookings
+  computedSearchedEntities.value = bookingsStore.pastBookings
+  computedFilteredEntities.value = bookingsStore.pastBookings
 })
 const tableId = 'bookingsHistoryTable'
 onMounted(() => {
@@ -156,7 +159,7 @@ onMounted(() => {
     const table = document.getElementById(tableId)
     tableHeight.value = smAndDown.value
       ? 396
-      : window.innerHeight - table.getBoundingClientRect().top - 108
+      : window.innerHeight - table.getBoundingClientRect().top - 108 + 'px'
   })
 })
 watch(searchValue, value => {
@@ -206,12 +209,12 @@ watch(searchValue, value => {
         variant="outlined"
         class="ml-auto"
         :color="getColor('uiLine')"
+        @click="downloadData"
       >
         <Icon
           icon="mdi-download"
           size="24"
           :color="getColor('iconButton-1')"
-          @click="downloadData"
         />
         <Tooltip> Download datatable </Tooltip>
       </IconButton>
@@ -225,7 +228,6 @@ watch(searchValue, value => {
       :options="{
         rowHeight: 64,
         showActions: true,
-        tableHeight: tableHeight,
         tableMinWidth: 960,
         expansionRow: true,
       }"
@@ -265,12 +267,7 @@ watch(searchValue, value => {
         </Typography>
       </template>
       <template #bookingExpiry="{ item }">
-        <Typography>
-          {{ getFormattedDate(item.bookingExpiry) }}
-          <Tooltip>
-            {{ getFormattedDateTime(item.bookingExpiry) }}
-          </Tooltip>
-        </Typography>
+        <BookingLoadingDateColumn :data="item" />
       </template>
       <template #status="{ item }">
         <Classification
@@ -279,7 +276,7 @@ watch(searchValue, value => {
         />
       </template>
       <template #truckers="{ item }">
-        <div class="flex items-center gap-2">
+        <div v-if="item?.scacList?.length>0" class="flex items-center gap-2">
           <template
             v-for="scacList in item.scacList"
             :key="scacList"
@@ -290,7 +287,7 @@ watch(searchValue, value => {
                 :key="scac"
               >
                 <Chip>
-                  {{ scac }}
+                  {{ scac || '--' }}
                 </Chip>
               </template>
             </template>
@@ -300,7 +297,7 @@ watch(searchValue, value => {
                 :key="scac"
               >
                 <Chip>
-                  {{ scac }}
+                  {{ scac || '--' }}
                 </Chip>
               </template>
             </template>
@@ -320,7 +317,7 @@ watch(searchValue, value => {
                       :key="scac"
                     >
                       <Chip>
-                        {{ scac }}
+                        {{ scac || '--' }}
                       </Chip>
                     </template>
                   </div>
@@ -329,9 +326,12 @@ watch(searchValue, value => {
             </template>
           </template>
         </div>
+        <div v-else>
+          <span>--</span>
+        </div>
       </template>
       <template #actions="{ item, selected }">
-        <template v-if="item.status === statuses.completed">
+        <template v-if="item.status === statuses.completed || item.status === statuses.canceled">
           <IconButton
             icon="mdi-delete"
             size="24"
@@ -363,12 +363,17 @@ watch(searchValue, value => {
         >
           <template #trucker="{ item }">
             <Typography>
-              {{ item.scac }}
+              {{ item.truckerCompany }}
             </Typography>
           </template>
           <template #committed="{ item }">
             <Typography>
               {{ item.committed }}
+            </Typography>
+          </template>
+          <template #loadingDate="{ item }">
+            <Typography type="text-body-m-regular">
+              {{ getFormattedDate(item.loadingDate) }}
             </Typography>
           </template>
           <template #status="{ item }">
@@ -379,7 +384,7 @@ watch(searchValue, value => {
           </template>
           <template #actions="{ item, selected }">
             <MenuActions
-              :actions="() => commitmentsActions(item.status, bookingStatus(item.bookingId))"
+              :actions="() => commitmentsActions(item.status, bookingStatus(item.bookingId),fromHistory=true)"
               :selected="selected"
               :container="item"
               @containerActionHandler="containerActionHandler"
@@ -394,17 +399,17 @@ watch(searchValue, value => {
     max-width="480"
   >
     <template #text>
-      <RemoveCancelDialog
+      <ConfirmationDialog
         btn-name="Remove"
         @close="removeBookingDialog.show(false)"
-        @onClickBtn="removeBooking(removeBookingDialog.data.id)"
+        @onClickBtn="removeBooking(removeBookingDialog.data.ids)"
       >
         <Typography>
           Are you sure you want to remove ref#
           <b>{{ removeBookingDialog.data.ref }}</b>
           from your bookings?
         </Typography>
-      </RemoveCancelDialog>
+      </ConfirmationDialog>
     </template>
   </Dialog>
   <Dialog
@@ -419,3 +424,19 @@ watch(searchValue, value => {
     </template>
   </Dialog>
 </template>
+
+<style lang="scss">
+#bookingsHistoryTable.virtual-table-wrapper {
+  .scroller {
+    height: 100%;
+    max-height: v-bind(tableHeight);
+
+    .virtual-table-wrapper {
+      .scroller {
+        height: auto;
+        max-height: fit-content;
+      }
+    }
+  }
+}
+</style>

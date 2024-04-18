@@ -4,10 +4,13 @@ import { storeToRefs } from 'pinia'
 import { useNotificationStore } from '~/stores/notification.store'
 import { useDisplay } from 'vuetify'
 import { useChatStore } from '~/stores/chat.store'
+import { useProfileStore } from "~/stores/profile.store"
 
 const authStore = useAuthStore()
 const notificationStore = useNotificationStore()
 const chatStore = useChatStore()
+const profileStore = useProfileStore()
+const { accountInfo } = storeToRefs(profileStore)
 const { isNewMessage } = storeToRefs(chatStore)
 const attrs = useAttrs()
 const { width } = useDisplay()
@@ -62,6 +65,11 @@ const readNotification = async id => {
     await notificationStore.readNotification(id)
   }
 }
+const onNotificationClick = async notification => {
+  if (notification.button.route) {
+    router.push(notification.button.route)
+  }
+}
 onMounted(async () => {
   await notificationStore.getNotifications()
   await chatStore.getChats()
@@ -71,7 +79,7 @@ onMounted(async () => {
 <template>
   <div v-bind="{ ...attrs }">
     <Header
-      :avatar="authStore.currentUser.photoURL"
+      :user="{ avatar: accountInfo.imageUrl, userName: accountInfo.name }"
       class="default z-10 top-0"
       :items="width < 760 ? mobileMenuItems : items"
       :notifications="notifications"
@@ -81,6 +89,7 @@ onMounted(async () => {
       @readAll="readAllNotifications"
       @readNotification="readNotification"
       @logout="authStore.logout()"
+      @onNotificationClick="onNotificationClick"
     />
     <slot />
   </div>

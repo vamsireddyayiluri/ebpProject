@@ -74,9 +74,9 @@ export const useInvitationStore = defineStore('invitation', () => {
       const q1 = query(collection(db, 'users'), where('orgId', '==', orgId))
       const querySnapshot = await getDocs(q1)
       querySnapshot.docs.map(val => {
-        if (authStore.userData.userId !== val.data().userId) {
+        if (authStore.userData.user_id !== val.data().user_id) {
           invitations.push({
-            id: val.data().userId,
+            id: val.data().user_id,
             value: val.data().email,
             type: val.data().type,
             isLoggedIn: true,
@@ -118,7 +118,7 @@ export const useInvitationStore = defineStore('invitation', () => {
         createdAt: getLocalServerTime(moment(), 'America/Los_Angeles').format(),
         expiredAt: getLocalServerTime(moment(), 'America/Los_Angeles').add(2, 'days').format(),
         company: authStore.userData.company,
-        invitedBy: authStore.userData.userId,
+        invitedBy: authStore.userData.user_id,
         workerId: m.workerId,
       }
       await setDoc(doc(db, 'invitations', m.id), newInvitation, { merge: true })
@@ -148,7 +148,7 @@ export const useInvitationStore = defineStore('invitation', () => {
         email: form.email,
         createdAt: form.createdAt,
         updatedAt: getLocalTime().format(),
-        userId: data.user.uid,
+        user_id: data.user.uid,
         orgId: form.orgId,
         password: form.password,
         type: form.type,

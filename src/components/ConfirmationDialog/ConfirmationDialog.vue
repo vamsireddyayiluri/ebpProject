@@ -4,6 +4,10 @@ const props = defineProps({
     type: String,
     default: 'Remove',
   },
+  btnType: {
+    type: String,
+    default: 'secondary1',
+  },
 })
 const emit = defineEmits(['close', 'containerActionHandler', 'onClickBtn'])
 
@@ -23,7 +27,7 @@ const containerActionHandler = ({ action, e }) => {
       />
     </div>
     <Button
-      data="secondary1"
+      :data="btnType"
       class="w-full mb-1"
       @click="emit('onClickBtn')"
     >

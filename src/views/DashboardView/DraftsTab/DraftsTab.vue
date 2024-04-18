@@ -10,6 +10,7 @@ import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth.store'
 import moment from 'moment-timezone'
 import { some } from 'lodash'
+import { checkVendorDetailsCompletion } from '~/helpers/validations-functions'
 
 const props = defineProps({
   mapToggled: Boolean,
@@ -77,7 +78,7 @@ const renderMarkerIcon = marker => {
     icon: 'garage',
     color: 'textTertiary',
     bgColor: 'uiInteractive',
-    bgColorHover: 'mapMarkerInteraction-1',
+    bgColorHover: 'uiInteractiveHover',
     count: marker.entities.length,
   }
 }
@@ -103,7 +104,11 @@ const selectTableRow = e => {
   mapRef.value.setZoom(15)
   mapRef.value.panTo({ lat: e.location.lat, lng: e.location.lng })
 }
-
+const handleCreateBookingDialog = () => {
+  if (checkVendorDetailsCompletion()) {
+    createBookingDialog.value.show(true)
+  }
+}
 const onClearSearch = () => {
   loading.value = true
   setTimeout(() => {
@@ -139,7 +144,8 @@ const applyFilter = () => {
   if (filters.value.loadingDate) {
     filteredData = useArrayFilter(
       filteredData,
-      booking => booking.bookingExpiry === moment(filters.value.loadingDate).endOf('day').format(),
+      booking =>
+        getSmallerDate(booking.details) === moment(filters.value.loadingDate).endOf('day').format(),
     ).value
   }
   const isFiltered = some(filters.value, value => !!value)
@@ -196,7 +202,7 @@ watch(searchValue, value => {
           </div>
           <Button
             class="ml-auto px-12"
-            @click="createBookingDialog.show(true)"
+            @click="handleCreateBookingDialog"
           >
             Create booking
           </Button>
@@ -282,7 +288,7 @@ watch(searchValue, value => {
   </Panes>
   <Dialog
     ref="createBookingDialog"
-    class="max-w-full sm:max-w-[90vw] md:max-w-[75vw]"
+    class="max-w-full max-w-[90vw]"
     @update:modelValue="onClickOutsideDialog"
   >
     <template #text>

@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia'
+import { defineStore, storeToRefs } from 'pinia'
 import { doc, updateDoc } from 'firebase/firestore'
 import { useAlertStore } from '~/stores/alert.store'
 import { useAuthStore } from '~/stores/auth.store'
@@ -21,29 +21,42 @@ import {
 import { auth, db, storage } from '~/firebase'
 
 export const useProfileStore = defineStore('profile', () => {
-  const { currentUser, userData, orgData } = useAuthStore()
+  const authStore = useAuthStore()
   const alertStore = useAlertStore()
+  const { currentUser, userData } = storeToRefs((authStore))
   const { getFormattedDateTime } = useDate()
   const accountInfo = ref({
-    fullName: userData.fullName,
-    company: userData.company,
-    cell: userData.cell,
-    email: userData.email,
-    password: userData.password,
-    passwordLastChanges:
-      'Last change ' + getFormattedDateTime(currentUser.reloadUserInfo.passwordUpdatedAt),
-    imageUrl: currentUser.photoURL,
+    name: null,
+    company: null,
+    cell: null,
+    email: null,
+    password: null,
+    passwordLastChanges: null,
+    imageUrl: null,
   })
+
+  const getProfileData = () => {
+    accountInfo.value = {
+      name: userData.value.name,
+      company: userData.value.company,
+      cell: userData.value.cell,
+      email: userData.value.email,
+      password: userData.value.password,
+      passwordLastChanges:
+        'Last change ' + getFormattedDateTime(currentUser.value.reloadUserInfo.passwordUpdatedAt),
+      imageUrl: currentUser.value.photoURL,
+    }
+  }
 
   // Uploading user profile image into firebase storage
   const updateUserAvatar = async file => {
     try {
       // remove old
-      const folderRef = firebaseRef(storage, `avatar/${userData.userId}`)
+      const folderRef = firebaseRef(storage, `avatar/${userData.value.user_id}`)
       const filesList = await list(folderRef)
       await Promise.all(filesList.items.map(file => deleteObject(file)))
 
-      const fileRef = firebaseRef(storage, `avatar/${userData.userId}/${file.name}`)
+      const fileRef = firebaseRef(storage, `avatar/${userData.value.user_id}/${file.name}`)
       const url = await uploadBytes(fileRef, file).then(async snapshot => {
         return await getDownloadURL(snapshot.ref)
       })
@@ -56,10 +69,10 @@ export const useProfileStore = defineStore('profile', () => {
 
   // update user data in users collection
   const updateUserData = async payload => {
-    const { userId, fullName, company, cell } = payload
+    const { userId, name, company, cell } = payload
     try {
-      await updateDoc(doc(db, 'users', userId), { fullName, company, cell })
-      await updateDoc(doc(db, 'organizations', userData.orgId), { company })
+      await updateDoc(doc(db, 'users', userId), { name, company, cell })
+      await updateDoc(doc(db, 'organizations', userData.value.orgId), { company })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
@@ -75,7 +88,7 @@ export const useProfileStore = defineStore('profile', () => {
       try {
         await verifyBeforeUpdateEmail(user, newEmail)
         await updateDoc(doc(db, 'users', user.uid), { email: newEmail })
-        await updateDoc(doc(db, 'organizations', userData.orgId), { email: newEmail })
+        await updateDoc(doc(db, 'organizations', userData.value.orgId), { email: newEmail })
         await reload(user)
       } catch ({ message: content }) {
         alertStore.warning({ content })
@@ -94,11 +107,25 @@ export const useProfileStore = defineStore('profile', () => {
     }
   }
 
+  const reset = () => {
+    accountInfo.value = {
+      name: null,
+      company: null,
+      cell: null,
+      email: null,
+      password: null,
+      passwordLastChanges: null,
+      imageUrl: null,
+    }
+  }
+
   return {
     accountInfo,
+    getProfileData,
     updateUserAvatar,
     updateUserData,
     updateUserEmailAddress,
     updateUserPassword,
+    reset,
   }
 })

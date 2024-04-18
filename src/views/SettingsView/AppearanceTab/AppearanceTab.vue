@@ -71,6 +71,7 @@ watchEffect(() => {
     height: 124px;
     padding: 24px 16px;
     border-radius: 3px 3px 0 0;
+    cursor: pointer;
     .line {
       height: 10px;
       margin-bottom: 16px;

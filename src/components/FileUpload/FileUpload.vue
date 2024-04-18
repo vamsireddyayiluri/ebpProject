@@ -10,11 +10,11 @@ const { onboardingDocuments: files } = storeToRefs(truckerManagement)
 const count = ref(0)
 const renameFileDialog = ref(null)
 const fileName = ref(null)
+const fileInput = ref(null)
 
 const handleDragOver = event => {}
 const handleDrop = event => {
   file.value = event.dataTransfer.files[0]
-  console.log('file:', file.value)
   fileLoading.value = true
   showProgress()
   fileName.value = getFilenameAndExtension(file.value.name)[0]
@@ -22,10 +22,12 @@ const handleDrop = event => {
 const onChangeFile = event => {
   if (event.target.files[0]) {
     file.value = event.target.files[0]
-    console.log('file:', file.value)
     fileLoading.value = true
     showProgress()
     fileName.value = getFilenameAndExtension(file.value.name)[0]
+    if (fileInput.value) {
+      fileInput.value.value = ''
+    }
   }
 }
 
@@ -44,7 +46,10 @@ const showProgress = () => {
   }, 1500)
 }
 const removeFile = file => {
-  truckerManagement.removeDoc(file.name)
+  truckerManagement.removeDoc(file.filename || file.name)
+  if (fileInput.value) {
+    fileInput.value.value = ''
+  }
 }
 const getFilenameAndExtension = fullName => {
   const fileName = fullName.substring(0, fullName.lastIndexOf('.'))
@@ -52,6 +57,9 @@ const getFilenameAndExtension = fullName => {
 
   return [fileName, ext]
 }
+const validate = computed(() => {
+  return fileName.value.length < 1
+})
 const renameFile = () => {
   const newFile = new File([file.value], fileName.value, { type: file.value.type })
   truckerManagement.addDoc(newFile)
@@ -62,12 +70,13 @@ const renameFile = () => {
 <template>
   <input
     id="fileUpload"
+    ref="fileInput"
     type="file"
     accept="application/pdf, .docx, .doc .csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, text/plain"
     name="userDoc"
     class="input"
     @change="onChangeFile"
-  >
+  />
   <label
     for="fileUpload"
     @dragover.prevent="handleDragOver"
@@ -117,19 +126,19 @@ const renameFile = () => {
   <div class="flex flex-wrap gap-2">
     <template
       v-for="i in files"
-      :key="i.name"
+      :key="i.filename"
     >
       <Chip
         prepend-icon="mdi-file"
         closable
-        class="pa-1"
+        class="!px-2.5"
         @click:close="removeFile(i)"
       >
-        <span class="text-truncate px-2">
-          {{ i.name }}
+        <span class="text-truncate px-1">
+          {{ i.filename || i.name }}
         </span>
         <Tooltip>
-          {{ i.name }}
+          {{ i.filename || i.name }}
         </Tooltip>
       </Chip>
     </template>
@@ -139,13 +148,11 @@ const renameFile = () => {
     max-width="480"
   >
     <template #text>
-      <Typography type="text-h3">
-        Rename file
-      </Typography>
+      <Typography type="text-h3"> Rename file </Typography>
       <form @submit.prevent="renameFile">
         <div class="flex gap-6 mt-10">
           <Textfield
-            v-model="fileName"
+            v-model.trim="fileName"
             label="File name"
             required
           />
@@ -159,6 +166,7 @@ const renameFile = () => {
         <Button
           class="w-full mt-10"
           type="submit"
+          :disabled="validate"
         >
           rename
         </Button>

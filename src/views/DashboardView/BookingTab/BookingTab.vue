@@ -10,6 +10,8 @@ import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth.store'
 import moment from 'moment-timezone'
 import { some } from 'lodash'
+import { checkVendorDetailsCompletion } from '~/helpers/validations-functions'
+import { getSmallerDate } from '~/composables/useDate'
 
 const props = defineProps({
   mapToggled: Boolean,
@@ -48,6 +50,7 @@ const filters = ref({
 const selectLine = ref(getAllLines())
 const createBookingDialog = ref(null)
 const clickedOutside = ref(null)
+const bookingConfirmationDialog = ref(null)
 
 const computedSearchedEntities = computed({
   get() {
@@ -79,7 +82,7 @@ const renderMarkerIcon = marker => {
     icon: 'garage',
     color: 'textTertiary',
     bgColor: 'uiInteractive',
-    bgColorHover: 'mapMarkerInteraction-1',
+    bgColorHover: 'uiInteractiveHover',
     count: marker.entities.length,
   }
 }
@@ -105,7 +108,20 @@ const selectTableRow = e => {
   mapRef.value?.setZoom(15)
   mapRef.value?.panTo({ lat: e.location.lat, lng: e.location.lng })
 }
-
+const handleCreateBookingDialog = () => {
+  if (checkVendorDetailsCompletion()) {
+    createBookingDialog.value.show(true)
+  }
+}
+const duplicateBooking = async ids => {
+  const bookings = await bookingsStore.getBookingsByIds({bookingIds: ids })
+  createBookingDialog.value.show(true)
+  createBookingDialog.value.data = bookings
+}
+const closeCreateBookingDialog = () => {
+  createBookingDialog.value.show(false)
+  createBookingDialog.value.data = null
+}
 const viewStatistics = e => {
   bookingStatisticsDialog.value.show(true)
   bookingStatisticsDialog.value.data = e
@@ -146,7 +162,9 @@ const applyFilter = () => {
   if (filters.value.loadingDate) {
     filteredData = useArrayFilter(
       filteredData,
-      booking => booking.bookingExpiry === moment(filters.value.loadingDate).endOf('day').format(),
+      booking =>
+        getSmallerDate(booking.details) ===
+        moment(filters.value.loadingDate).endOf('day').format(),
     ).value
   }
   const isFiltered = some(filters.value, value => !!value)
@@ -161,7 +179,7 @@ const clearDateFilter = () => {
 }
 const onClickOutsideDialog = () => {
   clickedOutside.value = true
-  createBookingDialog.value.show(true)
+  closeCreateBookingDialog()
   setInterval(() => {
     clickedOutside.value = false
   }, 1000)
@@ -203,7 +221,7 @@ watch(searchValue, value => {
           </div>
           <Button
             class="ml-auto px-12"
-            @click="createBookingDialog.show(true)"
+            @click="handleCreateBookingDialog"
           >
             Create booking
           </Button>
@@ -243,6 +261,7 @@ watch(searchValue, value => {
           :loading="loading"
           @selectTableRow="selectTableRow"
           @editBooking="id => router.push({ path: `booking/${id}` })"
+          @duplicateBooking="duplicateBooking"
         />
       </div>
     </template>
@@ -302,14 +321,23 @@ watch(searchValue, value => {
   </Dialog>
   <Dialog
     ref="createBookingDialog"
-    class="max-w-full sm:max-w-[90vw] md:max-w-[75vw]"
+    class="max-w-full max-w-[90vw]"
     @update:modelValue="onClickOutsideDialog"
   >
     <template #text>
       <CreateBookingDialog
+        :duplicate="createBookingDialog.data"
         :clicked-outside="clickedOutside"
-        @close="createBookingDialog.show(false)"
+        @close="closeCreateBookingDialog"
       />
+    </template>
+  </Dialog>
+  <Dialog
+    ref="bookingConfirmationDialog"
+    class="max-w-full sm:max-w-[90vw] md:max-w-[75vw]"
+  >
+    <template #text>
+      <BookingConfirmationDialog :commitments="[]" />
     </template>
   </Dialog>
 </template>

@@ -1,18 +1,19 @@
 <script setup>
-import { useActions, useDate, useHeaders } from '~/composables'
+import { useActions, useHeaders } from '~/composables'
 import { useDisplay } from 'vuetify'
-import { getYardBookingLoad, getBookingLoad } from '~/helpers/countings'
+import { getBookingLoad, getYardBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { useAuthStore } from '~/stores/auth.store'
+import { statuses } from '~/constants/statuses'
 
 const props = defineProps({
   computedEntities: Array,
   searchValue: String,
   loading: Boolean,
 })
-const emit = defineEmits(['selectTableRow', 'editBooking'])
+const emit = defineEmits(['selectTableRow', 'editBooking', 'duplicateBooking'])
 const { userData } = useAuthStore()
-const { deleteBooking } = useBookingsStore()
+const { deleteBooking, updateBookingStatus } = useBookingsStore()
 const { smAndDown, width } = useDisplay()
 const showActions = ref(true)
 const tableHeight = ref(1)
@@ -20,20 +21,29 @@ const removeBookingDialog = ref(false)
 
 const { yardsHeaders, bookingsHeaders } = useHeaders()
 const { bookingsActions } = useActions()
-const { getFormattedDateTime, getFormattedDate } = useDate()
 
-const containerActionHandler = ({ action, e }) => {
+const containerActionHandler = async ({ action, e }) => {
+  props.computedEntities.find(yard => yard.id === e[0].location.geohash).expand = true
   if (action === 'edit-booking') emit('editBooking', e[0].id)
   if (action === 'remove-booking') {
     removeBookingDialog.value.show(true)
     removeBookingDialog.value.data = e[0]
   }
+  if (action === 'pause-booking') {
+    await updateBookingStatus(e[0], statuses.paused)
+  }
+  if (action === 'reactive-booking') {
+    await updateBookingStatus(e[0], statuses.active)
+  }
+  if (action === 'duplicate-booking') {
+    emit('duplicateBooking', e[0].ids)
+  }
 }
 const onSelectRow = e => {
   emit('selectTableRow', e)
 }
-const removeBooking = id => {
-  deleteBooking(id)
+const removeBooking = booking => {
+  deleteBooking(booking)
   removeBookingDialog.value.show(false)
 }
 const tableId = 'yardsTable'
@@ -41,8 +51,8 @@ onMounted(() => {
   setTimeout(() => {
     const table = document.getElementById(tableId)
     tableHeight.value = smAndDown.value
-      ? 396
-      : window.innerHeight - table.getBoundingClientRect().top - 108
+      ? '396px'
+      : window.innerHeight - table.getBoundingClientRect().top - 108 + 'px'
   })
 })
 </script>
@@ -55,7 +65,6 @@ onMounted(() => {
     :loading="loading"
     :options="{
       rowHeight: 64,
-      tableHeight: tableHeight,
       tableMinWidth: 960,
       expansionRow: true,
     }"
@@ -99,7 +108,6 @@ onMounted(() => {
         :options="{
           rowHeight: 64,
           showActions,
-          tableHeight: 575,
           tableMinWidth: 640,
         }"
         class="pl-16"
@@ -118,7 +126,7 @@ onMounted(() => {
           </FlexTypography>
         </template>
         <template #containers="{ item }">
-          <Typography> {{ item.committed }}/{{ item.containers }} </Typography>
+          <Typography> {{ item.committed }}/{{ item.containers }}</Typography>
         </template>
         <template #yardLabel="{ item }">
           <FlexTypography type="text-body-m-regular">
@@ -129,20 +137,7 @@ onMounted(() => {
           <LineAvatar :line="item.line" />
         </template>
         <template #size="{ item }">
-          <Typography>
-            <template v-if="item.flexibleBooking">
-              <template
-                v-for="i in item.size"
-                :key="i"
-              >
-                {{ i }}
-                <br>
-              </template>
-            </template>
-            <template v-else>
-              {{ item.size }}
-            </template>
-          </Typography>
+          <SizeColumn :data="item" />
         </template>
         <template #status="{ item }">
           <Classification
@@ -151,19 +146,14 @@ onMounted(() => {
           />
         </template>
         <template #bookingExpiry="{ item }">
-          <Typography type="text-body-m-regular">
-            {{ getFormattedDate(item.bookingExpiry) }}
-            <Tooltip>
-              {{ getFormattedDateTime(item.bookingExpiry) }}
-            </Tooltip>
-          </Typography>
+          <BookingLoadingDateColumn :data="item" />
         </template>
         <template #location="{ item }">
           <LocationChip :location="item?.location" />
         </template>
         <template #worker="{ item }">
           <Typography>
-            {{ item.createdBy.fullName }}
+            {{ item.createdBy?.name || '--' }}
           </Typography>
         </template>
         <template #progress="{ item }">
@@ -189,19 +179,33 @@ onMounted(() => {
     max-width="480"
   >
     <template #text>
-      <RemoveCancelDialog
+      <ConfirmationDialog
         btn-name="Remove"
         @close="removeBookingDialog.show(false)"
-        @onClickBtn="removeBooking(removeBookingDialog.data.id)"
+        @onClickBtn="removeBooking(removeBookingDialog.data)"
       >
         <Typography>
           Are you sure you want to remove ref#
           <b>{{ removeBookingDialog.data.ref }}</b>
           from your bookings?
         </Typography>
-      </RemoveCancelDialog>
+      </ConfirmationDialog>
     </template>
   </Dialog>
 </template>
 
-<style lang="scss"></style>
+<style lang="scss">
+#yardsTable.virtual-table-wrapper {
+  .scroller {
+    height: 100%;
+    max-height: v-bind(tableHeight);
+
+    .virtual-table-wrapper {
+      .scroller {
+        height: auto;
+        max-height: fit-content;
+      }
+    }
+  }
+}
+</style>

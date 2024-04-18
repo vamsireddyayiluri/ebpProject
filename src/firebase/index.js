@@ -11,9 +11,19 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_APP_APP_ID,
 }
 
+const firebaseConfigAuth = {
+  apiKey: import.meta.env.VITE_APP_EBP_GOOGLE_API_KEY,
+  authDomain: import.meta.env.VITE_APP_EBP_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_APP_EBP_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_APP_STORAGE_URL,
+  appId: import.meta.env.VITE_APP_EBP_APP_ID,
+}
+
+const appAuth = initializeApp(firebaseConfigAuth, 'auth')
 const app = initializeApp(firebaseConfig)
 
-const auth = getAuth(app)
+const auth = getAuth(appAuth)
+getAuth(app)
 const db = getFirestore(app)
 const storage = getStorage(app)
 

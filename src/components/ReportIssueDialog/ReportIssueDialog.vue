@@ -8,23 +8,36 @@ const props = defineProps({
   btnName: String,
   selectLabel: String,
   reasonList: Array,
+  committed: Number,
+  loading: Boolean,
 })
 
 const emit = defineEmits(['close', 'onClickBtn'])
 
 const reportReason = ref(null)
 const yourReason = ref()
-const extended = computed(
-  () =>
-    reportReason.value === onboardingCodes.neverOnboarded ||
-    reportReason.value === onboardingCodes.other,
-)
+const onBoardedContainers = ref()
+const { committed, loading } = toRefs(props)
+const extended = computed(() => reportReason.value === onboardingCodes.inComplete || reportReason.value === onboardingCodes.other)
+const containers = computed(() => reportReason.value === onboardingCodes.onboardMovedLoad)
 
 const onReport = () => {
-  emit('onClickBtn', extended.value ? yourReason.value : reportReason.value)
+  emit(
+    'onClickBtn',
+    extended.value ? yourReason.value : reportReason.value,
+    onBoardedContainers.value,
+  )
+}
+const checkValue = value => {
+  if (value > committed.value) {
+    return `Value should not be greater than ${committed.value}`
+  } else if (value <= 0 || !Number.isInteger(value)) {
+    return 'Value should be positive integer'
+  }
 }
 watch(reportReason, () => {
   yourReason.value = ''
+  onBoardedContainers.value=0
 })
 </script>
 
@@ -68,9 +81,21 @@ watch(reportReason, () => {
         class="mt-4"
       />
     </template>
+    <template v-if="containers">
+      <Textfield
+        v-model.number="onBoardedContainers"
+        type="number"
+        label="Number of loads moved *"
+        :error-messages="checkValue(onBoardedContainers)"
+        rows="3"
+        maxlength="150"
+        class="mt-4"
+      />
+    </template>
     <Button
       class="w-full mt-6"
-      :disabled="!reportReason || (extended && !yourReason)"
+      :disabled="!reportReason || (extended && !yourReason) || (containers && !onBoardedContainers)"
+      :loading="loading"
       @click="onReport"
     >
       {{ btnName }}

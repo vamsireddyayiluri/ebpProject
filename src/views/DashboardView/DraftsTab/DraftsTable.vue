@@ -19,7 +19,6 @@ const deleteDraftDialog = ref(false)
 
 const { draftsHeaders } = useHeaders()
 const { draftsActions } = useActions()
-const { getFormattedDateTime, getFormattedDate } = useDate()
 
 const containerActionHandler = ({ action, e }) => {
   if (action === 'edit-draft') emit('editDraft', e[0].id)
@@ -93,16 +92,11 @@ onMounted(() => {
     </template>
     <template #worker="{ item }">
       <Typography>
-        {{ item.createdBy.fullName }}
+        {{ item.createdBy.name }}
       </Typography>
     </template>
     <template #bookingExpiry="{ item }">
-      <Typography type="text-body-m-regular">
-        {{ getFormattedDate(item.bookingExpiry) }}
-        <Tooltip>
-          {{ getFormattedDateTime(item.bookingExpiry) }}
-        </Tooltip>
-      </Typography>
+      <BookingLoadingDateColumn :data="item" />
     </template>
     <template #location="{ item }">
       <LocationChip :location="item?.location" />
@@ -122,16 +116,17 @@ onMounted(() => {
     max-width="480"
   >
     <template #text>
-      <RemoveCancelDialog
+      <ConfirmationDialog
         btn-name="Delete"
         @close="deleteDraftDialog.show(false)"
-        @onClickBtn="deleteDraft(deleteDraftDialog.data.id)"
+        @onClickBtn="deleteDraft(deleteDraftDialog.data.ids)"
       >
         <Typography>
           Are you sure you want to delete draft#
-          <b>{{ deleteDraftDialog.data.ref }}</b>?
+          <b>{{ deleteDraftDialog.data.ref }}</b
+          >?
         </Typography>
-      </RemoveCancelDialog>
+      </ConfirmationDialog>
     </template>
   </Dialog>
 </template>

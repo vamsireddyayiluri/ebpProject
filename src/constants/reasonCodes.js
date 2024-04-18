@@ -1,7 +1,7 @@
 export const onboardingCodes = {
-  onboarded: 'Onboarded',
-  onboardMovedLoad: 'Onboard and moved load',
-  neverOnboarded: 'Never onboarded',
+  onboarded: 'All loads were successfully moved',
+  onboardMovedLoad: 'Trucker moved a different number of loads',
+  inComplete: 'Trucker did not move the shipments',
   other: 'Other',
 }
 export const declineCodes = {

@@ -4,71 +4,82 @@ import { useBookingsStore } from '~/stores/bookings.store'
 import { useDate } from '~/composables'
 import { statuses } from '~/constants/statuses'
 import { useChatStore } from '~/stores/chat.store'
-import { useBookingHistoryStore } from '~/stores/bookingHistory.store'
+import moment from 'moment-timezone'
+import { useTruckerManagementStore } from '~/stores/truckerManagement.store'
+import saferLink from '~/fixtures/safer-link'
+import { useCommitmentsStore } from '~/stores/commitments.store'
 
 const props = defineProps({
   commitment: Object,
 })
 const emit = defineEmits(['close', 'approveCommitment', 'completeCommitment', 'declineCommitment'])
 const bookingStore = useBookingsStore()
-const bookingHistoryStore = useBookingHistoryStore()
+const { getCommitment } = useCommitmentsStore()
+const { getTruckerDetails } = useTruckerManagementStore()
 const { getFormattedDate } = useDate()
 const { goToChat } = useChatStore()
+const router = useRouter()
+const currentCommitment = ref(null)
+const orgDetails = ref(null)
+const booking = ref(null)
 const checkCommitmentStatus = () => {
-  return props.commitment?.timeline?.some(({ title }) => title.includes('approved'))
+  return props.commitment?.timeLine?.some(({ status }) => status === statuses.approved)
 }
 const isPending = props.commitment?.status === statuses.pending
-let details = ref([
-  { name: 'Company name', value: 'FedEx Freight' },
-  { name: 'SCAC', value: 'ABCD' },
-  { name: 'Safer link', value: '2' },
-  { name: 'Number of truckers', value: '20' },
-  { name: 'Insurance amount', value: '250.000-500.000' },
-  { name: 'Authorized for Overweight', value: 'No' },
-])
 const openedPanel = ref([0])
-const {
-  ref: bookingRef,
-  containers,
-  committed,
-  status,
-  bookingExpiry,
-  commodity,
-  line,
-  size,
-  location,
-} = bookingStore.bookings.find(i => i.id === props.commitment.bookingId) ||
-bookingHistoryStore.bookings.find(i => i.id === props.commitment.bookingId)
+const status = ref(null)
 
+const { truckerDetails } = props.commitment.details
+let details = ref([
+  { name: 'Company name', value: props.commitment?.truckerCompany },
+  { name: 'SCAC', value: truckerDetails?.truckerScac },
+  { name: 'Safer link', value: null },
+  { name: 'Number of trucks', value: truckerDetails?.numberOfTrucks },
+  { name: 'Insurance amount', value: truckerDetails?.insuranceCoverage },
+  {
+    name: 'Authorized for Overweight',
+    value: truckerDetails?.weightAuthorization === 'Overweight' ? 'Yes' : 'No',
+  },
+])
+const getTimeLine = timeLine => {
+  return timeLine.map(val => {
+    return { title: val.message, date: moment(val.time_stamp).format('MM/DD/YYYY hh:mm:ss a') }
+  })
+}
 onMounted(async () => {
+  currentCommitment.value = await getCommitment(props.commitment.id)
+  orgDetails.value = await getTruckerDetails(props.commitment.truckerOrgId)
+  status.value = bookingStore?.allBookings.find(i => i.id === props.commitment.bookingId).status
   if (checkCommitmentStatus()) {
     details.value = [
       ...details.value,
       ...[
-        { name: 'Email', value: 'fedex.freight@mail.com' },
-        { name: 'Name', value: 'Vitaliy' },
-        { name: 'Contact number', value: '0123456789' },
-        { name: 'Secondary name', value: '0123456789' },
-        { name: 'Secondary number', value: '--' },
+        { name: 'Email', value: props.commitment?.truckerEmail },
+        { name: 'Name', value: orgDetails.value?.vendorDetails?.primaryContactName },
+        { name: 'Contact number', value: orgDetails.value?.vendorDetails?.primaryContact },
+        { name: 'Secondary name', value: orgDetails.value?.vendorDetails?.secondaryContactName },
+        { name: 'Secondary number', value: orgDetails.value?.vendorDetails?.secondaryContact },
       ],
     ]
   }
+})
+onUnmounted(() => {
+  router.push({ query: null })
 })
 </script>
 
 <template>
   <div class="flex justify-between items-center mb-8 pt-2">
-    <Typography type="text-h1">
-      Commitment
-    </Typography>
+    <Typography type="text-h1"> Commitment</Typography>
     <div class="ml-auto">
-      <IconButton
-        icon="mdi-message-text"
-        class="mr-2"
-        @click="goToChat('6srEzErbjIW4bL9gQUNbI51BGlE3')"
+      <Button
+        prepend-icon="mdi-message-text"
+        density="compact"
+        class="mr-4"
+        @click="goToChat(currentCommitment.truckerOrgId)"
       >
-        <Tooltip> Go to chat </Tooltip>
-      </IconButton>
+        Chat with trucker
+      </Button>
       <IconButton
         icon="mdi-close"
         size="24"
@@ -123,12 +134,24 @@ onMounted(async () => {
                   >
                     {{ name }}
                   </Typography>
-                  <Typography
-                    type="text-body-s-regular"
-                    class="text-truncate"
-                  >
-                    {{ value }}
-                  </Typography>
+                  <template v-if="name === 'Safer link'">
+                    <a
+                      :href="saferLink + truckerDetails?.mcNumber"
+                      target="_blank"
+                      style="color: blue"
+                      class="text-decoration-none"
+                    >
+                      {{ truckerDetails?.mcNumber }}
+                    </a>
+                  </template>
+                  <template v-else>
+                    <FlexTypography
+                      type="text-body-s-regular"
+                      class="text-truncate"
+                    >
+                      {{ value || '--' }}
+                    </FlexTypography>
+                  </template>
                 </VCol>
               </VRow>
             </ExpansionPanelText>
@@ -144,94 +167,106 @@ onMounted(async () => {
             </ExpansionPanelTitle>
             <ExpansionPanelText class="pa-0">
               <div class="grid grid-cols-2 items-center [&>div]:py-2.5">
-                <Typography type="text-body-s-regular">
-                  Ref
-                </Typography>
+                <Typography type="text-body-s-regular"> Ref</Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
-                  {{ bookingRef }}
+                  {{ currentCommitment.ref }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Containers
-                </Typography>
+                <Typography type="text-body-s-regular"> Containers </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
-                  {{ containers }}
+                  {{ currentCommitment.containers }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Committed
-                </Typography>
+                <Typography type="text-body-s-regular"> Committed </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
-                  {{ committed }}
+                  {{ currentCommitment.committed }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Status
+                <Typography type="text-body-s-regular"> Target Rate </Typography>
+                <Typography
+                  type="text-body-s-regular text-end"
+                  :color="getColor('textSecondary')"
+                >
+                  {{ currentCommitment.estimatedRate }}
                 </Typography>
+                <Typography
+                  v-if="currentCommitment?.onBoardedContainers"
+                  type="text-body-s-regular"
+                >
+                  OnBoarded Containers
+                </Typography>
+                <Typography
+                  v-if="currentCommitment?.onBoardedContainers"
+                  type="text-body-s-regular text-end"
+                  :color="getColor('textSecondary')"
+                >
+                  {{ currentCommitment?.onBoardedContainers || '' }}
+                </Typography>
+                <Typography type="text-body-s-regular"> Status</Typography>
                 <Classification
                   type="status"
                   :value="status"
                   class="w-min h-fit ml-auto"
                 />
-                <!--
-                  <template v-if="reason">
-                  <Typography type="text-body-s-regular"> Reason </Typography>
+                <template
+                  v-if="
+                    currentCommitment.reason &&
+                    (status === statuses.canceled ||
+                      status === statuses.declined ||
+                      status === statuses.bookingCanceled)
+                  "
+                >
+                  <Typography type="text-body-s-regular"> Reason</Typography>
                   <Typography
-                  type="text-body-s-regular text-end"
-                  :color="getColor('textSecondary')"
+                    type="text-body-s-regular text-end"
+                    :color="getColor('textSecondary')"
                   >
-                  {{ reason }}
+                    {{ currentCommitment.reason }}
                   </Typography>
-                  </template>
-                -->
-                <Typography type="text-body-s-regular">
-                  Loading date
-                </Typography>
+                </template>
+                <Typography type="text-body-s-regular"> Loading date</Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
-                  {{ getFormattedDate(bookingExpiry) }}
+                  {{ getFormattedDate(currentCommitment.loadingDate) }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Commodity
-                </Typography>
+                <Typography type="text-body-s-regular"> Commodity</Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
-                  {{ commodity }}
+                  {{ currentCommitment.commodity }}
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Line
-                </Typography>
+                <Typography type="text-body-s-regular"> Line</Typography>
                 <LineAvatar
-                  :line="line"
+                  :line="currentCommitment.line"
                   class="ml-auto"
                 />
-                <Typography type="text-body-s-regular">
-                  Size
-                </Typography>
+                <Typography type="text-body-s-regular"> Size</Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
-                  {{ size }}
+                  <template v-if="currentCommitment.flexibleBooking">
+                    {{ currentCommitment.size.join(', ') }}
+                  </template>
+                  <template v-else>
+                    {{ currentCommitment.size }}
+                  </template>
                 </Typography>
-                <Typography type="text-body-s-regular">
-                  Export facility
-                </Typography>
+                <Typography type="text-body-s-regular"> Export facility</Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
-                  {{ location.address }}
+                  {{ currentCommitment.location.address }}
                 </Typography>
               </div>
             </ExpansionPanelText>
@@ -244,6 +279,7 @@ onMounted(async () => {
       class="hidden md:block"
     />
     <VCol
+      v-if="currentCommitment"
       cols="12"
       md="5"
       class="relative pt-8 pl-1 md:!pl-8"
@@ -255,26 +291,24 @@ onMounted(async () => {
         Timeline
       </Typography>
       <Timeline
-        :items="commitment.timeline"
+        :items="getTimeLine(currentCommitment.timeLine)"
         variant="vertical"
         class="scrollbar overflow-auto md:mb-10"
       />
       <div class="styledCommitActionsBtns static md:fixed bottom-8 flex pt-8 gap-4">
         <Button
-          v-if="commitment.status === statuses.approved && status !== statuses.paused"
-          @click="emit('completeCommitment', commitment.id)"
+          v-if="currentCommitment.status === statuses.approved && status !== statuses.paused"
+          @click="emit('completeCommitment', currentCommitment)"
         >
           complete
         </Button>
         <template v-if="isPending && status !== statuses.paused">
-          <Button @click="emit('approveCommitment', commitment)">
-            approve
-          </Button>
+          <Button @click="emit('approveCommitment', currentCommitment)"> approve</Button>
           <Button
             variant="outlined"
             data="secondary1"
             :style="{ background: 'rgba(var(--v-theme-uiPrimary), 1)' }"
-            @click="emit('declineCommitment', commitment.id)"
+            @click="emit('declineCommitment', currentCommitment)"
           >
             decline
           </Button>
@@ -313,7 +347,9 @@ onMounted(async () => {
     }
   }
 }
+
 .styledCommitActionsBtns {
   background: linear-gradient(transparent, rgba(var(--v-theme-uiPrimary), 1));
+  z-index: 10;
 }
 </style>

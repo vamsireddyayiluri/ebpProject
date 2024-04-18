@@ -36,8 +36,6 @@ export const bookingsHeaders = userType => {
     {
       text: 'Loading date',
       value: 'bookingExpiry',
-      sortable: true,
-      sorter: (a, b) => moment(a).diff(moment(b)),
     },
     {
       text: 'Progress',
@@ -91,8 +89,6 @@ export const draftsHeaders = userType => {
     {
       text: 'Loading date',
       value: 'bookingExpiry',
-      sortable: true,
-      sorter: (a, b) => moment(a).diff(moment(b)),
     },
   ]
   if (userType === userTypes.admin) {
@@ -133,11 +129,13 @@ export const truckersDocumentsHeaders = [
   {
     text: 'Company',
     value: 'company',
+    align: 'center',
     width: 2,
   },
   {
     text: 'Documents',
     value: 'documents',
+    align: 'center',
   },
 ]
 export const statisticsTruckersHeaders = [
@@ -186,8 +184,6 @@ export const bookingsHistoryHeaders = [
   {
     text: 'Loading date',
     value: 'bookingExpiry',
-    sortable: true,
-    sorter: (a, b) => moment(a).diff(moment(b)),
   },
   {
     text: 'Status',
@@ -206,6 +202,11 @@ export const commitmentsHeaders = [
   {
     text: 'Committed',
     value: 'committed',
+  },
+  {
+    text: 'Loading Date',
+    value: 'loadingDate',
+    sortable: true,
     sorter: (a, b) => moment(a).diff(moment(b)),
   },
   {

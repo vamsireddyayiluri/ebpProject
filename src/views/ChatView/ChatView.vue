@@ -4,6 +4,7 @@ import { useChatStore } from '~/stores/chat.store'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth.store'
 import { useAlertStore } from '~/stores/alert.store'
+import { getTruckers } from '~/stores/helpers'
 
 const messageActions = [
   {
@@ -14,17 +15,39 @@ const messageActions = [
 
 const { userData } = useAuthStore()
 const alertStore = useAlertStore()
-const { openChat, sendNewMessage, markAsRead, markUserAsOnlineOffline, downloadFileFromChat } =
-  useChatStore()
-const { chats, activeChat, loading } = storeToRefs(useChatStore())
-const currentUserId = ref(userData.userId)
+const {
+  openChat,
+  sendNewMessage,
+  markAsRead,
+  markUserAsOnlineOffline,
+  downloadFileFromChat,
+  getCommittedTruckerOrgs,
+  goToChat,
+} = useChatStore()
+const { chats, activeChat, loading, activeChatMessages, companies, users } = storeToRefs(
+  useChatStore(),
+)
+const currentUserId = ref(userData.user_id)
+const currentParticipantId = ref(userData.orgId)
+const chatActions = [
+  {
+    name: 'viewMembers',
+    title: 'View members',
+  },
+]
 const router = useRouter()
-
-const messageActionHandler = ({ action, message }) => {
-  console.log('action ', action, message)
+const allParticipants = ref([])
+const messageActionHandler = ({ action, ...rest }) => {
+  console.log('action ', action, rest)
 }
 
-const computedChat = computed(() => chats.value.find(c => c.chatId === activeChat.value?.chatId))
+const chatActionHandler = ({ action, ...rest }) => {
+  console.log('action ', action, rest)
+}
+
+const computedCompanies = computed(() => companies.value.map(val => toRaw(val)))
+const computedUsers = computed(() => users.value.map(val => toRaw(val)))
+
 const sendMessage = async message => {
   await sendNewMessage(message)
 }
@@ -34,40 +57,67 @@ const onChatArea = async chat => {
   }
 }
 onMounted(async () => {
+  allParticipants.value = await getCommittedTruckerOrgs()
   const interval = setInterval(async () => {
     const chatId = router.currentRoute.value.query.id
 
     // if activeChat exist in store save id in URL
     if (!chatId && activeChat.value) {
-      await router.push({ query: { id: activeChat.value.chatId } })
+      await router.replace({ query: { id: activeChat.value.chatId } })
+
+      return
     }
 
     // if chat id exists in URL open chat
     if (chats.value.length && chatId) {
       clearInterval(interval)
       await openChat(chatId)
+
+      return
+    }
+    if (chats.value.length && !chatId) {
+      await openChat(chats.value[0].chatId)
+
+      return
     }
   }, 200)
   await markUserAsOnlineOffline('online')
+
 })
 onBeforeUnmount(async () => {
+  // activeChat.value = null
   await markUserAsOnlineOffline('offline')
 })
+
+const createChat = async participantId => {
+  await goToChat(participantId)
+}
 </script>
 
 <template>
   <Main>
+    <ProgressLinear
+      v-if="!chats.length && !allParticipants.length"
+      indeterminate
+    />
     <ChatWindow
+      v-else
+      :current-participant-id="currentParticipantId"
       :current-user-id="currentUserId"
-      :messages="computedChat?.messages"
+      :messages="activeChatMessages || []"
       :menu-action="messageActions"
+      :chat-actions="chatActions"
       :chats="chats"
       :active-chat-id="activeChat?.chatId"
+      :participants="computedCompanies"
+      :users="computedUsers"
+      :all-participants="allParticipants"
       :loading="loading"
       @messageActionHandler="messageActionHandler"
+      @chatActionHandler="chatActionHandler"
       @openChat="openChat"
       @sendMessage="sendMessage"
-      @onChatArea="onChatArea"
+      @createChat="createChat"
       @downloadFile="downloadFileFromChat"
     />
   </Main>

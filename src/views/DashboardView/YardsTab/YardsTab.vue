@@ -10,6 +10,7 @@ import { groupedBookingLocations } from '~/stores/helpers'
 import { useAuthStore } from '~/stores/auth.store'
 import moment from 'moment-timezone'
 import { some } from 'lodash'
+import { checkVendorDetailsCompletion } from '~/helpers/validations-functions'
 
 const props = defineProps({
   mapToggled: Boolean,
@@ -17,7 +18,7 @@ const props = defineProps({
 const emit = defineEmits(['closeMap', 'selectRow'])
 const bookingsStore = useBookingsStore()
 const { userData } = useAuthStore()
-const { bookings } = storeToRefs(bookingsStore)
+const { loading } = storeToRefs(bookingsStore)
 const { smAndDown } = useDisplay()
 const router = useRouter()
 const paneOpened = ref(false)
@@ -35,10 +36,9 @@ const panes = ref(getPanes())
 const vuetifyTheme = useTheme()
 const theme = computed(() => vuetifyTheme.global.name.value)
 const panesRef = ref(null)
-const mutableSearchedEntities = ref(bookings.value)
-const mutableFilteredEntities = ref(bookings.value)
+const mutableSearchedEntities = ref(bookingsStore.bookings)
+const mutableFilteredEntities = ref(bookingsStore.bookings)
 const searchValue = ref(null)
-const loading = ref(false)
 const newId = ref(uid(8))
 const bookingStatisticsDialog = ref(null)
 const filters = ref({
@@ -81,7 +81,7 @@ const renderMarkerIcon = marker => {
     icon: 'garage',
     color: 'textTertiary',
     bgColor: 'uiInteractive',
-    bgColorHover: 'mapMarkerInteraction-1',
+    bgColorHover: 'uiInteractiveHover',
     count: marker.entities.length,
   }
 }
@@ -107,7 +107,20 @@ const selectTableRow = e => {
   mapRef.value.setZoom(15)
   mapRef.value.panTo({ lat: e.location.lat, lng: e.location.lng })
 }
-
+const handleCreateBookingDialog = () => {
+  if (checkVendorDetailsCompletion()) {
+    createBookingDialog.value.show(true)
+  }
+}
+const duplicateBooking = async ids => {
+  const bookings = await bookingsStore.getBookingsByIds({bookingIds: ids })
+  createBookingDialog.value.show(true)
+  createBookingDialog.value.data = bookings
+}
+const closeCreateBookingDialog = () => {
+  createBookingDialog.value.show(false)
+  createBookingDialog.value.data = null
+}
 const viewStatistics = e => {
   bookingStatisticsDialog.value.show(true)
   bookingStatisticsDialog.value.data = e
@@ -116,7 +129,7 @@ const viewStatistics = e => {
 const onClearSearch = () => {
   loading.value = true
   setTimeout(() => {
-    computedSearchedEntities.value = bookings.value
+    computedSearchedEntities.value = bookingsStore.bookings
     loading.value = false
   }, 1000)
 }
@@ -126,7 +139,7 @@ const debouncedSearch = useDebounceFn(searchValue => {
     onClearSearch()
   } else {
     computedSearchedEntities.value = useArrayFilter(
-      bookings.value,
+      bookingsStore.bookings,
       ({ location: { address, label } }) =>
         useArraySome(
           useArrayMap(Object.values({ address, label }), value => String(value).toLowerCase())
@@ -138,7 +151,7 @@ const debouncedSearch = useDebounceFn(searchValue => {
 }, 300)
 
 const applyFilter = () => {
-  let filteredData = bookings.value
+  let filteredData = bookingsStore.bookings
 
   if (filters.value.line) {
     filteredData = useArrayFilter(
@@ -149,7 +162,7 @@ const applyFilter = () => {
   if (filters.value.loadingDate) {
     filteredData = useArrayFilter(
       filteredData,
-      booking => booking.bookingExpiry === moment(filters.value.loadingDate).endOf('day').format(),
+      booking => booking.loadingDate === moment(filters.value.loadingDate).endOf('day').format(),
     ).value
   }
   const isFiltered = some(filters.value, value => !!value)
@@ -164,12 +177,16 @@ const clearDateFilter = () => {
 }
 const onClickOutsideDialog = () => {
   clickedOutside.value = true
-  createBookingDialog.value.show(true)
+  closeCreateBookingDialog()
   setInterval(() => {
     clickedOutside.value = false
   }, 1000)
 }
-
+onMounted(async () => {
+  await bookingsStore.getBookings({})
+  computedSearchedEntities.value = bookingsStore.bookings
+  computedFilteredEntities.value = bookingsStore.bookings
+})
 watch(mapToggled, () => {
   toggleMap()
   panes.value = getPanes()
@@ -201,7 +218,7 @@ watch(searchValue, value => {
           </div>
           <Button
             class="ml-auto px-12"
-            @click="createBookingDialog.show(true)"
+            @click="handleCreateBookingDialog"
           >
             Create booking
           </Button>
@@ -241,6 +258,7 @@ watch(searchValue, value => {
           :loading="loading"
           @selectTableRow="selectTableRow"
           @editBooking="id => router.push({ path: `booking/${id}` })"
+          @duplicateBooking="duplicateBooking"
         />
       </div>
     </template>
@@ -289,11 +307,12 @@ watch(searchValue, value => {
   </Panes>
   <Dialog
     ref="createBookingDialog"
-    class="max-w-full sm:max-w-[90vw] md:max-w-[75vw]"
+    class="max-w-full max-w-[90vw]"
     @update:modelValue="onClickOutsideDialog"
   >
     <template #text>
       <CreateBookingDialog
+        :duplicate="createBookingDialog.data"
         :clicked-outside="clickedOutside"
         @close="createBookingDialog.show(false)"
       />

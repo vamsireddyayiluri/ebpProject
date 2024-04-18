@@ -1,40 +1,52 @@
 import { statuses } from '~/constants/statuses'
 
+const deleteAction = {
+  icon: 'mdi-delete',
+  label: 'Remove booking',
+  action: 'remove-booking',
+  color: 'functionalError',
+}
+const editAction = {
+  icon: 'mdi-pencil',
+  label: 'Edit booking',
+  action: 'edit-booking',
+}
+const pauseAction = {
+  icon: 'mdi-pause',
+  label: 'Pause booking',
+  action: 'pause-booking',
+}
+const duplicateAction = {
+  icon: 'mdi-content-copy',
+  label: 'Duplicate booking',
+  action: 'duplicate-booking',
+}
+const cancelAction = {
+  icon: 'mdi-cancel',
+  label: 'Cancel booking',
+  action: 'cancel-booking',
+  color: 'functionalError',
+}
+
 export const bookingsActions = item => {
-  const actions = [
-    {
-      icon: 'mdi-pencil',
-      label: 'Edit booking',
-      action: 'edit-booking',
-    },
-    {
-      icon: 'mdi-delete',
-      label: 'Remove booking',
-      action: 'remove-booking',
-      color: 'functionalError',
-    },
-  ]
-  if (item.status !== statuses.paused) {
-    const pauseAction = {
-      icon: 'mdi-pause',
-      label: 'Pause booking',
-      action: 'pause-booking',
-    }
-    const secondToLastIndex = actions.length - 1
-    actions.splice(secondToLastIndex, 0, pauseAction)
+  const actions = []
+  if (item.status === statuses.active) {
+    actions.unshift(editAction, pauseAction, duplicateAction, deleteAction)
   }
   if (item.status === statuses.paused) {
-    return [
+    actions.push(
       {
         icon: 'mdi-reload',
         label: 'Re-activate booking',
         action: 'reactive-booking',
       },
-      ...actions,
-    ]
+      editAction,
+      duplicateAction,
+      cancelAction,
+    )
   }
-  if (item.committed === item.containers) {
-    return []
+  if (item.status === statuses.pending) {
+    actions.push(editAction, duplicateAction, cancelAction)
   }
 
   return actions
@@ -85,7 +97,7 @@ export const bookingHistoryActions = item => {
     ]
   }
 }
-export const commitmentsActions = (status, bstatus) => {
+export const commitmentsActions = (status, bstatus,fromHistory=false) => {
   const viewDetailsAction = [
     {
       icon: 'mdi-information',
@@ -93,35 +105,71 @@ export const commitmentsActions = (status, bstatus) => {
       action: 'view-trucker-details',
     },
   ]
+  if(fromHistory){
+    return viewDetailsAction
+  }
+  const actions = []
 
   if (status === statuses.pending && bstatus !== statuses.paused) {
-    return [
+    actions.push(
       {
         icon: 'mdi-check',
-        label: 'Approve',
+        label: 'Approve commitment',
         action: 'approve-commitment',
       },
       ...viewDetailsAction,
       {
         icon: 'mdi-cancel',
-        label: 'Decline',
+        label: 'Decline commitment',
         action: 'decline-commitment',
         color: 'functionalError',
       },
-    ]
+    )
+  }
+  if (status === statuses.pending && bstatus === statuses.paused) {
+    actions.push(
+      {
+        icon: 'mdi-check',
+        label: 'Approve commitment',
+        action: 'approve-commitment',
+      },
+      ...viewDetailsAction,
+      {
+        icon: 'mdi-cancel',
+        label: 'Decline commitment',
+        action: 'decline-commitment',
+        color: 'functionalError',
+      },
+    )
   }
   if (status === statuses.approved && bstatus !== statuses.paused) {
-    return [
+    actions.push(
       {
         icon: 'mdi-check-underline',
         label: 'Complete commitment',
         action: 'complete-commitment',
       },
+      {
+        icon: 'mdi-calendar',
+        label: 'Edit loading date',
+        action: 'update-loadingdate',
+      },
       ...viewDetailsAction,
-    ]
+    )
+  }
+  if (
+    status === statuses.approved &&
+    (bstatus === statuses.active || bstatus === statuses.pending)
+  ) {
+    actions.push({
+      icon: 'mdi-cancel',
+      label: 'Cancel commitment',
+      action: 'cancel-commitment',
+      color: 'functionalError',
+    })
   }
 
-  return viewDetailsAction
+  return actions.length > 0 ? actions : viewDetailsAction
 }
 export default () => ({
   bookingsActions,

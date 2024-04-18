@@ -10,6 +10,7 @@ export const statuses = {
   paused: 'paused',
   active: 'active',
   incomplete: 'incomplete',
+  bookingCanceled: 'booking_canceled',
 }
 export default () => ({
   statuses,

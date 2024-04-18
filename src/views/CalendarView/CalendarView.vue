@@ -6,11 +6,12 @@ import { getBookingLoad, totalFulfilledBookings } from '~/helpers/countings'
 import { useDate } from '~/composables'
 import { storeToRefs } from 'pinia'
 import { useBookingsStore } from '~/stores/bookings.store'
+import { checkVendorDetailsCompletion } from '~/helpers/validations-functions'
 
 const router = useRouter()
 const { getFormattedDate } = useDate()
 const bookingsStore = useBookingsStore()
-const { loading, bookings } = storeToRefs(bookingsStore)
+const { loading, notGroupedBookings } = storeToRefs(bookingsStore)
 const options = ref({
   initialEvents: [],
 })
@@ -22,18 +23,20 @@ const getEvents = bookings => {
     return {
       id: i.id,
       title: `Ref# ${i.ref}`,
-      start: i.createdAt,
-      end: i.bookingExpiry,
+      start: moment(i.loadingDate).startOf('day').format(),
+      end: i.loadingDate,
       metadata: {
         name: `event-${Math.floor(Math.random() * 9) + 1}`,
         ref: i.ref,
         progress: getBookingLoad(i.committed, i.containers),
-        carriers: i.carriers,
-      },
+        carriers: i.carriers.map(item => {
+          return {scac: item.scac, fulfilled: item?.approved, total: i.containers}
+        }),
+      }
     }
   })
 }
-const events = computed(() => getEvents(bookingsStore.bookings))
+const events = computed(() => getEvents(bookingsStore.notGroupedBookings))
 
 const onEventClick = e => console.log(e.event)
 const onEvents = e => console.log(e)
@@ -48,7 +51,7 @@ const onRemove = e => {
 }
 
 const removeBooking = async id => {
-  await bookingsStore.deleteBooking(id)
+  await bookingsStore.deleteBookingById(id)
   removeBookingDialog.value.show(false)
 
   // remove in calendar
@@ -57,14 +60,16 @@ const removeBooking = async id => {
 const today = moment()
 
 const nextExpiring = computed(() => {
-  const datesArray = bookings.value
+  const datesArray = notGroupedBookings.value
     .filter(b => b)
-    .sort((a, b) => moment(a.bookingExpiry).diff(moment(b.bookingExpiry)))
+    .sort((a, b) => moment(a.loadingDate).diff(moment(b.loadingDate)))
 
-  return getFormattedDate(datesArray[0]?.bookingExpiry)
+  return getFormattedDate(datesArray[0]?.loadingDate)
 })
 const openCreateBookingDialog = () => {
-  createBookingDialog.value.show(true)
+  if (checkVendorDetailsCompletion()) {
+    createBookingDialog.value.show(true)
+  }
 }
 onMounted(async () => {
   await bookingsStore.getBookings({})
@@ -94,7 +99,7 @@ onMounted(async () => {
             class="mx-4"
           />
           <Typography class="flex justify-center flex-wrap gap-2">
-            <b>{{ bookings.length }}</b>
+            <b>{{ notGroupedBookings.length }}</b>
             <div
               class="text-center"
               :style="{ color: getColor('textSecondary') }"
@@ -107,7 +112,7 @@ onMounted(async () => {
             class="mx-4"
           />
           <Typography class="flex justify-center flex-wrap gap-2">
-            <b>{{ totalFulfilledBookings(bookings) }}</b>
+            <b>{{ totalFulfilledBookings(notGroupedBookings) }}</b>
             <div
               class="text-center"
               :style="{ color: getColor('textSecondary') }"
@@ -143,7 +148,7 @@ onMounted(async () => {
   </Main>
   <Dialog
     ref="createBookingDialog"
-    class="max-w-full sm:max-w-[90vw] md:max-w-[75vw]"
+    class="max-w-full max-w-[90vw]"
   >
     <template #text>
       <CreateBookingDialog @close="createBookingDialog.show(false)" />
@@ -154,7 +159,7 @@ onMounted(async () => {
     max-width="480"
   >
     <template #text>
-      <RemoveCancelDialog
+      <ConfirmationDialog
         btn-name="Remove"
         @close="removeBookingDialog.show(false)"
         @onClickBtn="removeBooking(removeBookingDialog.data.id)"
@@ -164,7 +169,7 @@ onMounted(async () => {
           <b>ref# {{ removeBookingDialog.data.extendedProps.metadata.ref }}</b>
           from network?
         </Typography>
-      </RemoveCancelDialog>
+      </ConfirmationDialog>
     </template>
   </Dialog>
 </template>

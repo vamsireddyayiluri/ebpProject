@@ -4,6 +4,7 @@ import yardsData from '~/fixtures/yards.json'
 import streetPlaceholder from '~/assets/images/street.png'
 import streetPlaceholderDark from '~/assets/images/street-dark.png'
 import { getYardBookingLoad } from '~/helpers/countings'
+import imgPlaceholder from '~/assets/images/St by  yards.png'
 
 const statistics = ref(yardsData)
 const storage = useStorage('theme', '')
@@ -48,7 +49,7 @@ watch(searchValue, value => {
 </script>
 
 <template>
-  <div class="flex justify-between gap-5 items-center flex-wrap md:!flex-nowrap mb-8">
+  <div class="flex justify-between gap-5 items-center flex-wrap md:!flex-nowrap mb-5">
     <Typography type="text-h1">
       Statistic by yards
     </Typography>
@@ -80,49 +81,55 @@ watch(searchValue, value => {
       />
     </div>
   </div>
-  <div class="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 gap-5">
-    <template
-      v-for="item in statistics"
-      :key="item.id"
-    >
-      <div
-        class="p-4 rounded cursor-pointer"
-        :style="{ background: getColor('uiSecondary-01') }"
-        @click="openStatisticsDialog(item)"
+  <StatisticsPlaceholder
+    v-if="statistics"
+    :data="{ img: imgPlaceholder }"
+  />
+  <template v-else>
+    <div class="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 gap-5">
+      <template
+        v-for="item in statistics"
+        :key="item.id"
       >
-        <img
-          :src="storage === 'light' ? streetPlaceholder : streetPlaceholderDark"
-          alt="street map"
-          class="w-fill h-[110px] rounded mb-4"
+        <div
+          class="p-4 rounded cursor-pointer"
+          :style="{ background: getColor('uiSecondary-01') }"
+          @click="openStatisticsDialog(item)"
         >
-        <Typography type="text-h4 truncate">
-          <Highlighter
-            v-if="searchValue"
-            :query="searchValue"
+          <img
+            :src="storage === 'light' ? streetPlaceholder : streetPlaceholderDark"
+            alt="street map"
+            class="w-fill h-[110px] rounded mb-4"
           >
-            {{ item.location.label || item.location.address }}
-          </Highlighter>
-          <template v-else>
-            {{ item.location.label || item.location.address }}
-          </template>
-          <Tooltip>{{ item.location.address }}</Tooltip>
-        </Typography>
-        <div class="mt-2">
-          <div class="flex justify-between mb-5">
-            <Typography :color="getColor('textSecondary')">
-              # of bookings
-            </Typography>
-            <Typography type="text-body-m-semibold">
-              {{ item.entities.length }}
-            </Typography>
+          <Typography type="text-h4 truncate">
+            <Highlighter
+              v-if="searchValue"
+              :query="searchValue"
+            >
+              {{ item.location.label || item.location.address }}
+            </Highlighter>
+            <template v-else>
+              {{ item.location.label || item.location.address }}
+            </template>
+            <Tooltip>{{ item.location.address }}</Tooltip>
+          </Typography>
+          <div class="mt-2">
+            <div class="flex justify-between mb-5">
+              <Typography :color="getColor('textSecondary')">
+                # of bookings
+              </Typography>
+              <Typography type="text-body-m-semibold">
+                {{ item.entities.length }}
+              </Typography>
+            </div>
           </div>
+          <ProgressLinear :value="getYardBookingLoad(item.entities).rate">
+            {{ getYardBookingLoad(item.entities).rate }}%
+          </ProgressLinear>
         </div>
-        <ProgressLinear :value="getYardBookingLoad(item.entities).rate">
-          {{ getYardBookingLoad(item.entities).rate }}%
-        </ProgressLinear>
-      </div>
-    </template>
-  </div>
+      </template>
+    </div>
+  </template>
   <Dialog
     ref="bookingStatisticsDialog"
     class="max-w-[720px] md:max-w-[980px]"
