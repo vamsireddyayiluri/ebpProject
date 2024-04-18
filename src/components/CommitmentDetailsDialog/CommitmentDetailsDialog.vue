@@ -27,9 +27,8 @@ const checkCommitmentStatus = () => {
 }
 const isPending = props.commitment?.status === statuses.pending
 const openedPanel = ref([0])
-const {
-  status,
-} = bookingStore.allBookings.find(i => i.id === props.commitment.bookingId)
+const status = ref(null)
+
 const { truckerDetails } = props.commitment.details
 let details = ref([
   { name: 'Company name', value: props.commitment?.truckerCompany },
@@ -50,6 +49,7 @@ const getTimeLine = timeLine => {
 onMounted(async () => {
   currentCommitment.value = await getCommitment(props.commitment.id)
   orgDetails.value = await getTruckerDetails(props.commitment.truckerOrgId)
+  status.value = bookingStore?.allBookings.find(i => i.id === props.commitment.bookingId).status
   if (checkCommitmentStatus()) {
     details.value = [
       ...details.value,

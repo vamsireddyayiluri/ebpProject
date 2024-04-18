@@ -38,12 +38,12 @@ const isSecondaryContact = ref(details.value?.secondaryContactName || false)
 const createDefaultTimeArray = () => {
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
   const defaultTimeFrom = {
-    hh: '09',
+    h: '9',
     mm: '30',
     A: 'AM',
   }
   const defaultTimeTo = {
-    hh: '05',
+    h: '5',
     mm: '30',
     A: 'PM',
   }
@@ -83,19 +83,19 @@ const loadTimes = ['0.5 hours', '1 hour', '1.5 hours']
 const openTimePickerFrom = data => {
   activeTimePicker.value = checkboxes.value.find(d => d.day === data.day)
   notAfterToTime.value.hour = [
-    [0, moment(activeTimePicker.value.to, 'hh:mm A').format('ha').slice(0, -1)],
+    [0, moment(activeTimePicker.value.to, 'h:mm A').format('ha').slice(0, -1)],
   ]
 }
 const openTimePickerTo = data => {
   activeTimePicker.value = checkboxes.value.find(d => d.day === data.day)
   notBeforeFromTime.value.hour = [
-    [moment(activeTimePicker.value.from, 'hh:mm A').format('ha').slice(0, -1), '11p'],
+    [moment(activeTimePicker.value.from, 'h:mm A').format('ha').slice(0, -1), '11p'],
   ]
 }
 const onChangeFrom = (e, day) => {
   const currentTimePicker = checkboxes.value.find(d => d.day === day)
-  if (moment(currentTimePicker.to, 'hh:mm A').format('hha') === e.data.hh + e.data.a) {
-    notAfterToTime.value.minute = [[0, moment(currentTimePicker.to, 'hh:mm A').format('mm')]]
+  if (moment(currentTimePicker.to, 'h:mm A').format('ha') === e.data.h + e.data.a) {
+    notAfterToTime.value.minute = [[0, moment(currentTimePicker.to, 'h:mm A').format('mm')]]
   } else {
     notAfterToTime.value.minute = [[0, 60]]
   }
@@ -107,8 +107,8 @@ const onChangeFrom = (e, day) => {
 }
 const onChangeTo = (e, day) => {
   const currentTimePicker = checkboxes.value.find(d => d.day === day)
-  if (moment(currentTimePicker.from, 'hh:mm A').format('hha') === e.data.hh + e.data.a) {
-    notBeforeFromTime.value.minute = [[moment(currentTimePicker.from, 'hh:mm A').format('mm'), 60]]
+  if (moment(currentTimePicker.from, 'h:mm A').format('ha') === e.data.h + e.data.a) {
+    notBeforeFromTime.value.minute = [[moment(currentTimePicker.from, 'h:mm A').format('mm'), 60]]
   } else {
     notBeforeFromTime.value.minute = [[0, 60]]
   }
@@ -121,8 +121,8 @@ const onChangeTo = (e, day) => {
 const resetTime = (e, item) => {
   if (!e) {
     const unselectedDay = checkboxes.value.find(i => i.day === item.day)
-    unselectedDay.from = "09:30 AM"
-    unselectedDay.to = "05:30 PM"
+    unselectedDay.from = "9:30 AM"
+    unselectedDay.to = "5:30 PM"
   }
 }
 const rules = {
@@ -297,6 +297,7 @@ onUnmounted(() => {
             :time-value="d.from"
             label="Time from*"
             class="w-44"
+            format="h:mm A"
             :minute-interval="15"
             :hour-range="notAfterToTime?.hour"
             :minute-range="notAfterToTime?.minute"
@@ -308,6 +309,7 @@ onUnmounted(() => {
             :time-value="d.to"
             label="Time to*"
             class="w-44"
+            format="h:mm A"
             :minute-interval="15"
             :hour-range="notBeforeFromTime?.hour"
             :minute-range="notBeforeFromTime?.minute"

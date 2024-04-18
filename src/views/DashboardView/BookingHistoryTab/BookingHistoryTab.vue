@@ -159,7 +159,7 @@ onMounted(() => {
     const table = document.getElementById(tableId)
     tableHeight.value = smAndDown.value
       ? 396
-      : window.innerHeight - table.getBoundingClientRect().top - 108
+      : window.innerHeight - table.getBoundingClientRect().top - 108 + 'px'
   })
 })
 watch(searchValue, value => {
@@ -228,7 +228,6 @@ watch(searchValue, value => {
       :options="{
         rowHeight: 64,
         showActions: true,
-        tableHeight: tableHeight,
         tableMinWidth: 960,
         expansionRow: true,
       }"
@@ -425,3 +424,19 @@ watch(searchValue, value => {
     </template>
   </Dialog>
 </template>
+
+<style lang="scss">
+#bookingsHistoryTable.virtual-table-wrapper {
+  .scroller {
+    height: 100%;
+    max-height: v-bind(tableHeight);
+
+    .virtual-table-wrapper {
+      .scroller {
+        height: auto;
+        max-height: fit-content;
+      }
+    }
+  }
+}
+</style>
