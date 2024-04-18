@@ -40,6 +40,7 @@ export const bookingsActions = item => {
         label: 'Re-activate booking',
         action: 'reactive-booking',
       },
+      editAction,
       duplicateAction,
       cancelAction,
     )
@@ -96,7 +97,7 @@ export const bookingHistoryActions = item => {
     ]
   }
 }
-export const commitmentsActions = (status, bstatus) => {
+export const commitmentsActions = (status, bstatus,fromHistory=false) => {
   const viewDetailsAction = [
     {
       icon: 'mdi-information',
@@ -104,6 +105,9 @@ export const commitmentsActions = (status, bstatus) => {
       action: 'view-trucker-details',
     },
   ]
+  if(fromHistory){
+    return viewDetailsAction
+  }
   const actions = []
 
   if (status === statuses.pending && bstatus !== statuses.paused) {
