@@ -12,15 +12,17 @@ const emit = defineEmits(['close', 'onClickBtn', 'onClickUpdate'])
 const initialLoadingDate = ref(new Date())
 const currentDate = ref(new Date())
 const loadingDate = ref(null)
-const {loading} = toRefs(props)
+const { loading } = toRefs(props)
 
 const updateLoadingDate = value => {
   loadingDate.value = moment(value).endOf('day').format()
 }
 const validateLoadingDate = () => {
   if (loadingDate.value && initialLoadingDate.value) {
-    return moment(loadingDate.value).endOf('day').format() ===
+    return (
+      moment(loadingDate.value).endOf('day').format() ===
       moment(initialLoadingDate.value).endOf('day').format()
+    )
   }
 
   return true
@@ -65,9 +67,9 @@ onMounted(async () => {
 </template>
 
 <style lang="scss">
-  .updateLoadingDate {
-    .v3dp__popout {
-      position: fixed !important;
-    }
+.updateLoadingDate {
+  .v3dp__popout {
+    position: fixed !important;
   }
+}
 </style>

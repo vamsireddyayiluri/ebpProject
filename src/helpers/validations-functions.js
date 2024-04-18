@@ -18,8 +18,7 @@ export const checkCommittedValue = (value, booking) => {
     return checkPositiveInteger(value, booking)
   }
 }
-export const checkPositiveInteger = cValue => {
-  const value=parseInt(cValue)
+export const checkPositiveInteger = value => {
   if (value <= 0 || !Number.isInteger(value) || value === 0) {
     return 'Value should be positive integer'
   } else {
@@ -53,7 +52,7 @@ export const validateExpiryDate = (entities, entity) => {
         'Booking expiry date with booking number already exists. Update booking expiry date to new date.',
     })*/
 
-    return 'Booking expiry date with booking number already exists. Update booking expiry date to new date.'
+    return 'Booking expiry date with booking number already exists.'
   } else {
     return false
   }
@@ -137,7 +136,7 @@ export const checkUniqueDates = entities => {
 }
 
 export const validateScheduler = schedule => {
-  const invalidItem = schedule.find(item => {
+  const invalidItem = schedule?.find(item => {
     if (item.status) {
       const fromTime = moment(item.from, "hh:mm A")
       const toTime = moment(item.to, "hh:mm A")
@@ -150,5 +149,5 @@ export const validateScheduler = schedule => {
     return invalidItem
   }
 
-  return {isValid: true}
+  return { isValid: true }
 }

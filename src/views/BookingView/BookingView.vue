@@ -495,6 +495,7 @@ onMounted(async () => {
                 :picked="d.loadingDate"
                 label="Loading date *"
                 typeable
+                class="mb-4"
                 :lower-limit="currentDate"
                 :error-messages="validateExpiryDate(activeBookings, { ...d, ref: booking.ref })"
                 :rules="[

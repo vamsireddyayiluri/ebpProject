@@ -33,7 +33,7 @@ const downloadFile = async () => {
   try {
     const response = await fetch(props.doc.url)
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-    const filename = props.doc.name
+    const filename = props.doc.filename
     const data = await response.blob()
     const downloadUrl = window.URL.createObjectURL(data)
     const link = document.createElement('a')

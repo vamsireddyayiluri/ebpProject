@@ -460,14 +460,16 @@ export const useBookingsStore = defineStore('bookings', () => {
               booking.committed = commitment.committed + booking.committed
               const index = booking.details.findIndex(i => i.id === updatedBooking.id)
               booking.details[index].committed += commitment.committed || 0
+              if (booking.containers === booking.committed) {
+                booking.status = toRaw(updatedBooking.status)
+              }
             } else if (type === 'canceled') {
               booking.committed = booking.committed - commitment.committed
               const index = booking.details.findIndex(i => i.id === updatedBooking.id)
               booking.details[index].committed -= commitment.committed || 0
+              booking.status =
+                updatedBooking.status === statuses.pending ? statuses.active : updatedBooking.status
             }
-            booking.status = toRaw(updatedBooking.status)
-            const index = booking.details.findIndex(i => i.id === updatedBooking.id)
-            booking.details[index].committed = updatedBooking.committed || 0
           }
         })
 

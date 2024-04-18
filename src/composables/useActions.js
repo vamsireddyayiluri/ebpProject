@@ -147,7 +147,7 @@ export const commitmentsActions = (status, bstatus) => {
       },
       {
         icon: 'mdi-calendar',
-        label: 'Update Loading Date',
+        label: 'Edit loading date',
         action: 'update-loadingdate',
       },
       ...viewDetailsAction,

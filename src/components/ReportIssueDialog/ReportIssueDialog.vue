@@ -25,7 +25,7 @@ const onReport = () => {
   emit(
     'onClickBtn',
     extended.value ? yourReason.value : reportReason.value,
-    onboardingCodes.onboarded? committed.value: onBoardedContainers.value,
+    onBoardedContainers.value,
   )
 }
 const checkValue = value => {
@@ -37,6 +37,7 @@ const checkValue = value => {
 }
 watch(reportReason, () => {
   yourReason.value = ''
+  onBoardedContainers.value=0
 })
 </script>
 
@@ -83,6 +84,7 @@ watch(reportReason, () => {
     <template v-if="containers">
       <Textfield
         v-model.number="onBoardedContainers"
+        type="number"
         label="Number of loads moved *"
         :error-messages="checkValue(onBoardedContainers)"
         rows="3"
