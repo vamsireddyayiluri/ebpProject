@@ -12,6 +12,7 @@ import { statuses } from '~/constants/statuses'
 import { cloneDeep, isEqual, pickBy, isNull, sumBy } from 'lodash'
 import container from '~/assets/images/container.png'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
+import { useBookingRulesStore } from '~/stores/bookingRules.store'
 import containersSizes from '~/fixtures/containersSizes.json'
 import { useAlertStore } from '~/stores/alert.store'
 import {
@@ -23,6 +24,7 @@ import {
   checkUniqueDates,
 } from '~/helpers/validations-functions'
 import { insuranceTypes } from '~/constants/settings'
+import { getLocalTime } from '@qualle-admin/qutil/dist/date'
 
 const authStore = useAuthStore()
 const alertStore = useAlertStore()
@@ -41,6 +43,8 @@ const {
 } = useBookingsStore()
 
 const workDetailsStore = useWorkDetailsStore()
+const bookingRulesStore = useBookingRulesStore()
+
 const { yards } = storeToRefs(workDetailsStore)
 const { bookings, drafts, notGroupedBookings: activeBookings } = storeToRefs(useBookingsStore())
 const route = useRoute()
@@ -75,6 +79,16 @@ const rules = {
 
 const updateExpiryDate = (value, index) => {
   booking.value.details[index].loadingDate = moment(value).endOf('day').format()
+  const { preferredCarrierWindow } = bookingRulesStore.rules
+  if (preferredCarrierWindow) {
+    const requiredDate=moment(booking.value.details[index].loadingDate)
+      .subtract(preferredCarrierWindow, 'days')
+      .endOf('day')
+      .format()
+    
+    const currentTimestamp = getLocalTime().endOf('day').format()
+    booking.value.details[index].preferredDate = requiredDate>=currentTimestamp?requiredDate:currentTimestamp
+  }
 }
 const updatePreferredDate = value => {
   booking.value.preferredDate = moment(value).endOf('day').format()
@@ -213,6 +227,7 @@ const onSave = async () => {
       return
     }
   }
+  updatedObj.preferredDate=booking.value.preferredDate
   await updateBooking(updatedObj, booking.value?.ids, fromDraft ? 'drafts' : 'bookings')
   await new Promise(resolve => setTimeout(resolve, 1000))
 
@@ -378,6 +393,7 @@ onMounted(async () => {
             v-model.trim="booking.ref"
             label="Booking ref*"
             required
+            :rules="[rules.required, rules.validateDate(null)]"
             :disabled="pending || expired || (completed && !activated)"
           />
           <Autocomplete

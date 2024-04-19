@@ -422,6 +422,7 @@ export const useBookingsStore = defineStore('bookings', () => {
           data.loadingDate = moment(loadData.loadingDate).endOf('day').format()
           data.containers = loadData.containers
           data.scacList = loadData.scacList
+          data.preferredDate = loadData?.preferredDate?loadData?.preferredDate:booking.preferredDate
         }
         if (Object.keys(data).length) {
           batch.update(docRef, { ...data })

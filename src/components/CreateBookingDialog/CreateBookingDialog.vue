@@ -19,6 +19,7 @@ import { insuranceTypes } from '~/constants/settings'
 import { deepCopy } from 'json-2-csv/lib/utils'
 import { uid } from 'uid'
 import { cloneDeep, isBoolean, isNull } from 'lodash'
+import { getLocalTime } from '@qualle-admin/qutil/dist/date'
 
 const props = defineProps({
   duplicate: Array,
@@ -125,9 +126,12 @@ const updateExpiryDate = (value, index) => {
   newBookings.value[index].loadingDate = moment(value).endOf('day').format()
   const { preferredCarrierWindow } = bookingRulesStore.rules
   if (preferredCarrierWindow) {
-    newBookings.value[index].preferredDate = moment(newBookings.value[index].loadingDate)
+    const requiredDate=moment(newBookings.value[index].loadingDate)
       .subtract(preferredCarrierWindow, 'days')
+      .endOf('day')
       .format()
+    const currentTimestamp = getLocalTime().endOf('day').format()
+    newBookings.value[index].preferredDate = requiredDate>=currentTimestamp?requiredDate:currentTimestamp
   }
 }
 const updateSize = () => {

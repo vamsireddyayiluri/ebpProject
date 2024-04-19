@@ -28,6 +28,7 @@ const validateRules = computed(() => {
 })
 const turnSwitch = e => {
   if (e) {
+    rules.value.preferredCarrierWindow=orgData.value.bookingRules.preferredCarrierWindow
     form.value.validate()
   } else {
     form.value.resetValidation()
