@@ -102,6 +102,7 @@ export const groupBookings = objects => {
       ]
       groupedObject[key].ids = [obj.id]
       groupedObject[key].committed = obj.committed
+      delete groupedObject[key].loadingDate
 
       // groupedObject[key].id = key
     }
