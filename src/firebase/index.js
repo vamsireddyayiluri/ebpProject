@@ -22,9 +22,6 @@ const firebaseConfigAuth = {
 const appAuth = initializeApp(firebaseConfigAuth, 'auth')
 const app = initializeApp(firebaseConfig)
 
-console.log(firebaseConfigAuth)
-console.log(firebaseConfig)
-
 const auth = getAuth(appAuth)
 getAuth(app)
 const db = getFirestore(app)

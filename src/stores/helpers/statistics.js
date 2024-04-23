@@ -1,96 +1,81 @@
-import { map, filter, countBy, groupBy, flatMap, reduce, fill, get } from 'lodash'
+import { map, filter, countBy, groupBy, flatMap, get, meanBy } from 'lodash'
 import moment from 'moment'
 
 const calculateMonthlyAverage = (bookings, filterType) => {
   const filteredBookings = filter(
     bookings,
-    ({ status, created }) =>
-      filterType === 'all' || (filterType === 'completed' && status === 'completed'),
+    ({ status }) => filterType === 'all' || (filterType === 'completed' && status === 'completed'),
   )
   const countsByMonth = countBy(filteredBookings, ({ created }) => moment(created).month())
-  const months = Object.keys(countsByMonth).sort((a, b) => a - b)
-  const averages = reduce(
-    months,
-    (result, month, index) => {
-      const count = countsByMonth[month]
-      const prevCount = get(countsByMonth, months[index - 1], 0)
-      const change = index > 0 ? (((count - prevCount) / prevCount) * 100).toFixed(2) + '%' : 'N/A'
 
-      return [
-        ...result,
-        {
-          month: moment().month(month).format('MMM'),
-          average: count,
-          change,
-        },
-      ]
-    },
-    [],
-  )
+  return map(countsByMonth, (count, month) => ({
+    month: moment().month(month).format('MMM'),
+    average: count,
+    change: calculateMonthlyChange(countsByMonth, month),
+  }))
+}
 
-  return averages
+const calculateMonthlyChange = (countsByMonth, month) => {
+  const prevMonth = get(countsByMonth, parseInt(month) - 1, 0)
+
+  return prevMonth
+    ? (((countsByMonth[month] - prevMonth) / prevMonth) * 100).toFixed(2) + '%'
+    : 'N/A'
 }
 
 const calculateAverageTimes = commitments => {
-  const approvedTimes = flatMap(commitments, ({ timeLine, created }) => {
-    const approvedTime = filter(timeLine, { status: 'approved' }).map(
-      ({ time_stamp }) => time_stamp,
-    )
+  const approvedTimes = flatMap(commitments, ({ timeLine, created }) =>
+    map(filter(timeLine, { status: 'approved' }), ({ time_stamp }) =>
+      moment(time_stamp).diff(moment(created), 'hours', true),
+    ),
+  )
 
-    return approvedTime.map(timeStamp => moment(timeStamp).diff(moment(created), 'hours', true))
-  })
-
-  return approvedTimes.length > 0
-    ? reduce(approvedTimes, (sum, n) => sum + n, 0) / approvedTimes.length
-    : 0
+  return meanBy(approvedTimes) || 0
 }
 
-const getMonthsArray = () => map(fill(Array(12), 0), (_, i) => moment().month(i).format('MMM'))
+const getMonthsArray = () => map(Array(12), (_, i) => moment().month(i).format('MMM'))
 
 const groupBookingsByMonth = bookings => {
   const countsByMonth = countBy(bookings, ({ created }) => moment(created).month())
 
-  return map(fill(Array(12), 0), (_, i) => get(countsByMonth, i, 0))
+  return map(Array(12).fill(0), (_, i) => get(countsByMonth, i, 0))
 }
 
 const groupBySSL = bookings =>
   map(groupBy(bookings, 'line.label'), (group, line) => ({
     line,
     jointBookings: group.length,
+    averageFulfillmentTime: meanBy(group, ({ created, updated }) =>
+      moment(updated).diff(moment(created), 'hours', true),
+    ).toFixed(2),
   }))
 
 const calculateTruckerStats = (bookings, commitments) => {
-  const truckerInfo = flatMap(bookings, ({ carriers, id: bookingId, created, updated, status }) =>
-    map(carriers, carrier => ({ ...carrier, bookingId, created, updated, status })),
+  const truckerInfo = flatMap(bookings, ({ carriers, created, updated, status }) =>
+    map(carriers, carrier => ({ ...carrier, created, updated, status })),
   )
   const groupedByScac = groupBy(truckerInfo, 'scac')
 
-  const canceledCount = filter(bookings, { status: 'canceled' }).length
-  const cancellationRate = ((canceledCount / bookings.length) * 100).toFixed(2) + '%'
-
-  return map(groupedByScac, ([carriers], scac) => {
-    const relevantCommitments = filter(
-      commitments,
-      ({ scac: commitmentScac }) => commitmentScac === scac,
-    )
-    const averageAcceptanceTime = calculateAverageTimes(relevantCommitments)
-    const { company, created, email, updated } = carriers
-    const averageFulfillmentTime = moment(updated).diff(moment(created), 'hours', true)
-
-    return {
-      id: scac,
-      scac,
-      email,
-      company,
-      committedBookings: carriers.length,
-      committedFulfilled: map(carriers, 'approved'),
-      performance: {
-        averageFulfillmentTime,
-        cancellationRate,
-        averageAcceptanceTime,
-      },
-    }
-  })
+  return map(groupedByScac, (carriers, scac) => ({
+    id: scac,
+    scac,
+    email: get(carriers, '[0].email', ''),
+    company: get(carriers, '[0].company', ''),
+    committedBookings: carriers.length,
+    committedFulfilled: map(carriers, 'approved'),
+    performance: {
+      averageFulfillmentTime: meanBy(carriers, ({ created }) =>
+        moment(carrier.updated).diff(moment(created), 'hours', true),
+      ).toFixed(2),
+      cancellationRate: `${(
+        (filter(bookings, { status: 'canceled' }).length / bookings.length) *
+        100
+      ).toFixed(2)}%`,
+      averageAcceptanceTime: calculateAverageTimes(
+        filter(commitments, ({ scac: commitmentScac }) => commitmentScac === scac),
+      ),
+    },
+  }))
 }
 
 const groupBookingsByYard = (bookings, locations) =>
