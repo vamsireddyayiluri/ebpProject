@@ -70,7 +70,9 @@ onUnmounted(() => {
 
 <template>
   <div class="flex justify-between items-center mb-8 pt-2">
-    <Typography type="text-h1"> Commitment</Typography>
+    <Typography type="text-h1">
+      Commitment
+    </Typography>
     <div class="ml-auto">
       <Button
         prepend-icon="mdi-message-text"
@@ -167,28 +169,36 @@ onUnmounted(() => {
             </ExpansionPanelTitle>
             <ExpansionPanelText class="pa-0">
               <div class="grid grid-cols-2 items-center [&>div]:py-2.5">
-                <Typography type="text-body-s-regular"> Ref</Typography>
+                <Typography type="text-body-s-regular">
+                  Ref
+                </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ currentCommitment.ref }}
                 </Typography>
-                <Typography type="text-body-s-regular"> Containers </Typography>
+                <Typography type="text-body-s-regular">
+                  Containers
+                </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ currentCommitment.containers }}
                 </Typography>
-                <Typography type="text-body-s-regular"> Committed </Typography>
+                <Typography type="text-body-s-regular">
+                  Committed
+                </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ currentCommitment.committed }}
                 </Typography>
-                <Typography type="text-body-s-regular"> Target Rate </Typography>
+                <Typography type="text-body-s-regular">
+                  Target Rate
+                </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
@@ -208,7 +218,9 @@ onUnmounted(() => {
                 >
                   {{ currentCommitment?.onBoardedContainers || '' }}
                 </Typography>
-                <Typography type="text-body-s-regular"> Status</Typography>
+                <Typography type="text-body-s-regular">
+                  Status
+                </Typography>
                 <Classification
                   type="status"
                   :value="status"
@@ -217,12 +229,14 @@ onUnmounted(() => {
                 <template
                   v-if="
                     currentCommitment.reason &&
-                    (status === statuses.canceled ||
-                      status === statuses.declined ||
-                      status === statuses.bookingCanceled)
+                      (status === statuses.canceled ||
+                        status === statuses.declined ||
+                        status === statuses.bookingCanceled)
                   "
                 >
-                  <Typography type="text-body-s-regular"> Reason</Typography>
+                  <Typography type="text-body-s-regular">
+                    Reason
+                  </Typography>
                   <Typography
                     type="text-body-s-regular text-end"
                     :color="getColor('textSecondary')"
@@ -230,26 +244,34 @@ onUnmounted(() => {
                     {{ currentCommitment.reason }}
                   </Typography>
                 </template>
-                <Typography type="text-body-s-regular"> Loading date</Typography>
+                <Typography type="text-body-s-regular">
+                  Loading date
+                </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ getFormattedDate(currentCommitment.loadingDate) }}
                 </Typography>
-                <Typography type="text-body-s-regular"> Commodity</Typography>
+                <Typography type="text-body-s-regular">
+                  Commodity
+                </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
                 >
                   {{ currentCommitment.commodity }}
                 </Typography>
-                <Typography type="text-body-s-regular"> Line</Typography>
+                <Typography type="text-body-s-regular">
+                  Line
+                </Typography>
                 <LineAvatar
                   :line="currentCommitment.line"
                   class="ml-auto"
                 />
-                <Typography type="text-body-s-regular"> Size</Typography>
+                <Typography type="text-body-s-regular">
+                  Size
+                </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
@@ -261,7 +283,9 @@ onUnmounted(() => {
                     {{ currentCommitment.size }}
                   </template>
                 </Typography>
-                <Typography type="text-body-s-regular"> Export facility</Typography>
+                <Typography type="text-body-s-regular">
+                  Export facility
+                </Typography>
                 <Typography
                   type="text-body-s-regular text-end"
                   :color="getColor('textSecondary')"
@@ -303,7 +327,9 @@ onUnmounted(() => {
           complete
         </Button>
         <template v-if="isPending && status !== statuses.paused">
-          <Button @click="emit('approveCommitment', currentCommitment)"> approve</Button>
+          <Button @click="emit('approveCommitment', currentCommitment)">
+            approve
+          </Button>
           <Button
             variant="outlined"
             data="secondary1"

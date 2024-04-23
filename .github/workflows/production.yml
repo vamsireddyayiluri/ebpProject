@@ -1,8 +1,8 @@
 name: Build and Deploy
 on:
-  push:
+  pull_request:
     branches:
-      - development
+      - main
 
 jobs:
   build-hosting:
@@ -29,9 +29,33 @@ jobs:
         with:
           name: dist-hosting
           path: dist
+  e2e-test:
+    name: e2e Test
+    needs: [build-hosting]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: |
+          npm config set //npm.pkg.github.com/:_authToken ${{ secrets.NPM_TOKEN }}
+      - name: Checkout Repo
+        uses: actions/checkout@master
+      - name: Install Dependencies
+        working-directory: ./functions
+        run: yarn
+      - name: Test
+        uses: cypress-io/github-action@v2
+        with:
+          browser: chrome
+          headless: true
+          start: yarn test:e2e
+          wait-on: 'http://localhost:3000'
+          wait-on-timeout: 60
   deploy-hosting:
     name: Deploy Hosting
-    needs: [build-hosting]
+    needs: [e2e-test]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
@@ -44,6 +68,6 @@ jobs:
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
         with:
-          args: deploy --project development --only hosting
+          args: deploy --project production --only hosting
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

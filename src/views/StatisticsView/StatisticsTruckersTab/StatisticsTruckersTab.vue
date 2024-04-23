@@ -39,11 +39,11 @@ onMounted(() => {
       :entities="statistics"
       :headers="statisticsTruckersHeaders"
       :options="{
-      rowHeight: 64,
-      showActions: false,
-      tableHeight: tableHeight,
-      tableMinWidth: 960,
-    }"
+        rowHeight: 64,
+        showActions: false,
+        tableHeight: tableHeight,
+        tableMinWidth: 960,
+      }"
       class="mb-5"
     >
       <template #trucker="{ item }">
@@ -67,7 +67,7 @@ onMounted(() => {
       <template #takenFulfilled>
         <Typography> 15 / 12</Typography>
       </template>
-      <template #ranging>
+      <template #performance>
         <div class="flex gap-1.5">
           <Icon
             icon="mdi-timer"
@@ -79,14 +79,14 @@ onMounted(() => {
           <Tooltip> Average fulfillment time</Tooltip>
         </div>
         <div class="flex gap-1.5 mx-2">
-          <Icon icon="mdi-close-circle"/>
+          <Icon icon="mdi-close-circle" />
           <Typography class="flex-shrink-0">
             25%
           </Typography>
           <Tooltip> Cancellation rate</Tooltip>
         </div>
         <div class="flex gap-1.5">
-          <Icon icon="mdi-timeline-check"/>
+          <Icon icon="mdi-timeline-check" />
           <Typography class="flex-shrink-0">
             20 min
           </Typography>

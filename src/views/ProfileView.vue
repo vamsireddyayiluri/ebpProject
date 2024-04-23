@@ -47,7 +47,11 @@ const onSave = async () => {
 
   try {
     if (validateName.value) {
-      await profileStore.updateUserData({ userId, ...accountInfo.value, cell: unMaskedCell.value.unmasked })
+      await profileStore.updateUserData({
+        userId,
+        ...accountInfo.value,
+        cell: unMaskedCell.value.unmasked,
+      })
     }
     if (validateEmail.value) {
       await profileStore.updateUserEmailAddress({

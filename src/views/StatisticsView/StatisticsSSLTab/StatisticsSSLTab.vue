@@ -1,5 +1,5 @@
 <script setup>
-import {getColor} from '~/helpers/colors'
+import { getColor } from '~/helpers/colors'
 import truckersData from '~/fixtures/statistics.json'
 import imgPlaceholder from '~/assets/images/St by ssl.png'
 
@@ -33,7 +33,9 @@ const statistics = ref(truckersData)
           />
           <div class="flex justify-between gap-8">
             <div class="text-center">
-              <Typography type="text-h1"> 46</Typography>
+              <Typography type="text-h1">
+                46
+              </Typography>
               <Typography
                 type="text-body-s-regular"
                 :color="getColor('textSecondary')"
@@ -42,7 +44,9 @@ const statistics = ref(truckersData)
               </Typography>
             </div>
             <div class="text-center">
-              <Typography type="text-h1"> 3 <small class="text-sm">days</small></Typography>
+              <Typography type="text-h1">
+                3 <small class="text-sm">days</small>
+              </Typography>
               <Typography
                 type="text-body-s-regular"
                 :color="getColor('textSecondary')"
@@ -54,6 +58,6 @@ const statistics = ref(truckersData)
         </div>
       </template>
     </div>
-    <FulfillmentRateChart/>
+    <FulfillmentRateChart />
   </template>
 </template>

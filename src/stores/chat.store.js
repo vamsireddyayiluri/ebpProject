@@ -358,6 +358,7 @@ export const useChatStore = defineStore('chat', () => {
       }
     })
     const committedTruckers = uniqBy(allTruckers, 'id')
+
     return committedTruckers
   }
 

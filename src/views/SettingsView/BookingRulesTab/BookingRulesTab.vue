@@ -102,7 +102,9 @@ const cancelChanges = () => {
         class="order-5 sm:!order-6 !h-12 -mt-1"
         @update:modelValue="turnSwitch"
       >
-        <Typography class="flex items-center gap-2"> Preferred carrier window </Typography>
+        <Typography class="flex items-center gap-2">
+          Preferred carrier window
+        </Typography>
       </Switch>
       <Textfield
         v-model.number="rules.preferredCarrierWindow"

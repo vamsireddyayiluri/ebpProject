@@ -62,6 +62,7 @@ describe('Creating new Bookings', () => {
 
       cy.get('@submitbutton').should('be.enabled').click()
       cy.wait(2000)
+
       // cy.get('.v-alert').contains(`Booking ${data.ref} has been created`)
       cy.get('@expiry').then(sometext => {
         cy.searchDataWithTwoLables('bookings', 'ref', data.ref, 'bookingExpiry', sometext).then(

@@ -195,6 +195,7 @@ const onSave = async () => {
     booking.value,
     (value, key) => !isEqual(value, originalBooking.value[key]),
   )
+
   // booking.value.loadingDate = moment(booking.value.loadingDate).endOf('day').format()
   // booking.value.preferredDate = moment(booking.value.preferredDate).endOf('day').format()
   if (activated) {
@@ -397,7 +398,8 @@ onMounted(async () => {
             :disabled="pending || expired || completed"
           />
 
-          <!-- <Datepicker
+          <!--
+            <Datepicker
             :key="booking.preferredDate"
             :picked="booking.preferredDate ? moment(booking.preferredDate).toDate() : null"
             label="Preferred carrier window"
@@ -406,7 +408,8 @@ onMounted(async () => {
             :upper-limit="booking.loadingDate && new Date(booking.loadingDate)"
             :lower-limit="currentDate"
             @onUpdate="updatePreferredDate"
-          /> -->
+            /> 
+          -->
           <Autocomplete
             v-model="booking.location"
             :items="
@@ -529,14 +532,16 @@ onMounted(async () => {
                   :disabled="pending || expired || completed"
                   class="w-3/4"
                 />
-                <!-- <IconButton
+                <!--
+                  <IconButton
                   v-if="index"
                   icon="mdi-close"
                   class="absolute top-0 right-0"
                   @click="removeLoadingDate(d.id)"
-                >
+                  >
                   <Tooltip> Remove loading date</Tooltip>
-                </IconButton> -->
+                  </IconButton> 
+                -->
               </div>
             </template>
           </div>
@@ -555,7 +560,9 @@ onMounted(async () => {
         :class="[flyoutBottom || smAndDown ? 'bottom' : 'right', drawer ? 'active' : '']"
       >
         <div class="flex justify-between items-center">
-          <Typography type="text-h1"> Statistics </Typography>
+          <Typography type="text-h1">
+            Statistics
+          </Typography>
           <IconButton
             v-if="!smAndDown"
             :icon="!flyoutBottom ? 'mdi-dock-bottom' : 'mdi-dock-right'"
@@ -565,7 +572,9 @@ onMounted(async () => {
         </div>
         <div class="statisticsContent">
           <div class="statisticsProgress">
-            <Typography type="text-h4"> Fulfillment progress </Typography>
+            <Typography type="text-h4">
+              Fulfillment progress
+            </Typography>
             <ProgressCircular
               :size="260"
               :value="
@@ -586,7 +595,9 @@ onMounted(async () => {
             </ProgressCircular>
           </div>
           <div class="statisticsTimeline">
-            <Typography type="text-h4"> Booking timeline </Typography>
+            <Typography type="text-h4">
+              Booking timeline
+            </Typography>
             <div class="timeline scrollbar">
               <Timeline
                 :items="getTimeLine(booking?.timeLine)"
@@ -606,7 +617,7 @@ onMounted(async () => {
         :src="container"
         class="container-img"
         alt="qualle container"
-      />
+      >
       <Typography
         type="text-h1"
         class="!text-7xl mb-4 text-center"

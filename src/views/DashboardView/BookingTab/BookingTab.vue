@@ -114,7 +114,7 @@ const handleCreateBookingDialog = () => {
   }
 }
 const duplicateBooking = async ids => {
-  const bookings = await bookingsStore.getBookingsByIds({bookingIds: ids })
+  const bookings = await bookingsStore.getBookingsByIds({ bookingIds: ids })
   createBookingDialog.value.show(true)
   createBookingDialog.value.data = bookings
 }
@@ -163,8 +163,7 @@ const applyFilter = () => {
     filteredData = useArrayFilter(
       filteredData,
       booking =>
-        getSmallerDate(booking.details) ===
-        moment(filters.value.loadingDate).endOf('day').format(),
+        getSmallerDate(booking.details) === moment(filters.value.loadingDate).endOf('day').format(),
     ).value
   }
   const isFiltered = some(filters.value, value => !!value)

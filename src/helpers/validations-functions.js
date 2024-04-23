@@ -138,10 +138,10 @@ export const checkUniqueDates = entities => {
 export const validateScheduler = schedule => {
   const invalidItem = schedule?.find(item => {
     if (item.status) {
-      const fromTime = moment(item.from, "hh:mm A")
-      const toTime = moment(item.to, "hh:mm A")
+      const fromTime = moment(item.from, 'hh:mm A')
+      const toTime = moment(item.to, 'hh:mm A')
       if (!fromTime.isBefore(toTime)) {
-        return {isValid: false, day: item.day}
+        return { isValid: false, day: item.day }
       }
     }
   })

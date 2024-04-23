@@ -64,7 +64,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
     }
   }
   const updateBookingCarriers = async commitment => {
-    const booking = await bookingsStore.getBooking({id: commitment.bookingId})
+    const booking = await bookingsStore.getBooking({ id: commitment.bookingId })
     const truckerScac = commitment?.details.truckerDetails.truckerScac
     const carrierIndex = booking?.carriers?.findIndex(carrier => carrier?.scac === truckerScac)
     if (carrierIndex !== -1) {
@@ -111,7 +111,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       obj.status = statuses.incomplete
       obj.reason = reason
     }
-    obj.onBoarded = data?.onBoarded? data.onBoarded + onBoardedContainers: onBoardedContainers
+    obj.onBoarded = data?.onBoarded ? data.onBoarded + onBoardedContainers : onBoardedContainers
     try {
       await updateDoc(doc(db, 'commitments', data.id), {
         ...obj,

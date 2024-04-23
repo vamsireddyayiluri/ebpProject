@@ -318,6 +318,7 @@ export const useBookingsStore = defineStore('bookings', () => {
           booking.forEach(id => {
             batch.delete(doc(db, 'bookings', id))
           })
+
           // await deleteDoc(doc(db, 'bookings', id))
           alert && alertStore.info({ content: 'Bookings removed!' })
         }
@@ -482,6 +483,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.warning({ content: message })
     }
   }
+
   // delete single booking based on the booking id
   const deleteBookingById = async id => {
     try {

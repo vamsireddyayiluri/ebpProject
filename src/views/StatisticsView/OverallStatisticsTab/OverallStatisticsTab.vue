@@ -13,7 +13,10 @@ const statistics = ref(statisticsData)
     Overall statistics
   </Typography>
 
-  <StatisticsPlaceholder v-if="statistics" :data="{img: overallSTPlaceholder}"/>
+  <StatisticsPlaceholder
+    v-if="statistics"
+    :data="{ img: overallSTPlaceholder }"
+  />
   <template v-else>
     <div class="[&>div]:w-full flex flex-wrap md:!flex-nowrap gap-5 mb-10">
       <AverageCard
@@ -38,6 +41,6 @@ const statistics = ref(statisticsData)
         :value="statistics.successfullyBookingsMonthVolatility"
       />
     </div>
-    <ActivityStatisticsChart/>
+    <ActivityStatisticsChart />
   </template>
 </template>

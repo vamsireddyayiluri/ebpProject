@@ -34,6 +34,7 @@ export const useWorkDetailsStore = defineStore('workDetails', () => {
         i.id = uid(16)
         i.details.customizedDetails = true
       }
+
       return {
         ...i,
         text: `Commodity: ${i.commodity} ${

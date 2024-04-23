@@ -18,7 +18,11 @@ const reportReason = ref(null)
 const yourReason = ref()
 const onBoardedContainers = ref()
 const { committed, loading } = toRefs(props)
-const extended = computed(() => reportReason.value === onboardingCodes.inComplete || reportReason.value === onboardingCodes.other)
+const extended = computed(
+  () =>
+    reportReason.value === onboardingCodes.inComplete ||
+    reportReason.value === onboardingCodes.other,
+)
 const containers = computed(() => reportReason.value === onboardingCodes.onboardMovedLoad)
 
 const onReport = () => {
@@ -37,7 +41,7 @@ const checkValue = value => {
 }
 watch(reportReason, () => {
   yourReason.value = ''
-  onBoardedContainers.value=0
+  onBoardedContainers.value = 0
 })
 </script>
 

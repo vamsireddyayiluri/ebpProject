@@ -67,7 +67,7 @@ const updateDocumentStatus = async (reason = null) => {
 
 const getTruncatedFileName = fileName => {
   const name = `${fileName?.substring(0, 15)}...`
-  
+
   return fileName?.length > 15 ? name : fileName
 }
 onMounted(async () => {

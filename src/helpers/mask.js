@@ -1,1 +1,1 @@
-export const cellMask = '+1 ### ###-####'
+export const cellMask = '+1 ### ###-####'
