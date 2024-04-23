@@ -90,7 +90,7 @@ onMounted(async () => {
     >
       <Chip
         closable
-        :disabled="attrs.disabled"
+        :disabled="attrs.disabled || !validateScacs"
         @click:close="removeScac(i)"
       >
         {{ i }}
