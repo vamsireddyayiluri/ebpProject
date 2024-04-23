@@ -79,19 +79,6 @@ const rules = {
 
 const updateExpiryDate = (value, index) => {
   booking.value.details[index].loadingDate = moment(value).endOf('day').format()
-  const { preferredCarrierWindow } = bookingRulesStore.rules
-  if (preferredCarrierWindow) {
-    const requiredDate=moment(booking.value.details[index].loadingDate)
-      .subtract(preferredCarrierWindow, 'days')
-      .endOf('day')
-      .format()
-    
-    const currentTimestamp = getLocalTime().endOf('day').format()
-    booking.value.details[index].preferredDate = requiredDate>=currentTimestamp?requiredDate:currentTimestamp
-  }
-}
-const updatePreferredDate = value => {
-  booking.value.preferredDate = moment(value).endOf('day').format()
 }
 const updateSize = () => {
   booking.value.size = null
@@ -227,7 +214,6 @@ const onSave = async () => {
       return
     }
   }
-  updatedObj.preferredDate=booking.value.preferredDate
   await updateBooking(updatedObj, booking.value?.ids, fromDraft ? 'drafts' : 'bookings')
   await new Promise(resolve => setTimeout(resolve, 1000))
 
@@ -542,7 +528,7 @@ onMounted(async () => {
                   :scac-list="d.scacList"
                   :menu-btn="false"
                   required
-                  :disabled="pending || expired || completed"
+                  :validate-scacs="booking.preferredDays > 0"
                   class="w-3/4"
                 />
                 <!-- <IconButton
