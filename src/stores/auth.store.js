@@ -280,6 +280,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       router.push({ name: 'dashboard' })
     } catch ({ message }) {
+      await deleteDoc(doc(db, 'pending_verifications', data.id))
       alertStore.warning({ content: message })
     }
   }
