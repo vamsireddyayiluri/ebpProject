@@ -64,8 +64,8 @@ const calculateTruckerStats = (bookings, commitments) => {
     committedBookings: carriers.length,
     committedFulfilled: map(carriers, 'approved'),
     performance: {
-      averageFulfillmentTime: meanBy(carriers, ({ created }) =>
-        moment(carrier.updated).diff(moment(created), 'hours', true),
+      averageFulfillmentTime: meanBy(carriers, ({ created, updated }) =>
+        moment(updated).diff(moment(created), 'hours', true),
       ).toFixed(2),
       cancellationRate: `${(
         (filter(bookings, { status: 'canceled' }).length / bookings.length) *
