@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { collection, query, where, getDocs, doc } from 'firebase/firestore'
+import { collection, query, where, getDocs } from 'firebase/firestore'
 import { db } from '~/firebase'
 import { useAuthStore } from './auth.store'
 import {
@@ -15,21 +15,18 @@ export const useStatisticsStore = defineStore('statistics', () => {
   const isLoading = ref(false)
 
   const authStore = useAuthStore()
-  const orgId = computed(() => authStore.getOrgData().orgId)
 
-  const getBookingsQuery = computed(() =>
-    query(collection(db, 'bookings'), where('orgId', '==', orgId.value)),
-  )
-
-  async function fetchBookings() {
+  const getBookingsQuery = async () => {
     isLoading.value = true
 
     try {
-      const snapshot = await getDocs(getBookingsQuery.value)
-      const bookings = snapshot.docs.map(doc => doc.data())
+      const orgData = await authStore.orgData
+      const queryValue = query(collection(db, 'bookings'), where('orgId', '==', orgData.orgId))
+      const querySnapshot = await getDocs(queryValue)
+
       isLoading.value = false
 
-      return bookings
+      return querySnapshot.docs.map(doc => doc.data())
     } catch (error) {
       console.error('Failed to fetch bookings:', error)
       isLoading.value = false
@@ -38,26 +35,26 @@ export const useStatisticsStore = defineStore('statistics', () => {
   }
 
   const statisticsOverall = async () => {
-    const bookings = await fetchBookings()
+    const bookings = await getBookingsQuery()
     const totalBookings = bookings.length
     const totalSuccessful = bookings.filter(({ status }) => status === 'completed').length
 
     return {
-      totalBookings: totalBookings,
-      totalBookingsAvg: calculateMonthlyAverage(bookings, 'all'),
-      totalSuccessful: totalSuccessful,
-      totalSuccessfulAvg: calculateMonthlyAverage(bookings, 'completed'),
-      removedFromNetwork: 0,
-      removedFromNetworkAvg: 0,
+      totalNumberOfBookings: totalBookings,
+      bookingsMonthVolatility: calculateMonthlyAverage(bookings, 'all'),
+      successfullyBookings: totalSuccessful,
+      successfullyBookingsMonthVolatility: calculateMonthlyAverage(bookings, 'completed'),
+      removedBookings: 0,
+      removedBookingsMonthVolatility: calculateMonthlyAverage(bookings, 'canceled'),
       activityStatistic: {
         categories: getMonthsArray(),
-        series: [{ data: groupBookingsByMonth(bookings) }],
+        series: groupBookingsByMonth(bookings),
       },
     }
   }
 
   const statisticsBySSL = async () => {
-    const bookings = await fetchBookings()
+    const bookings = await getBookingsQuery()
     const groupedBySSL = groupBySSL(bookings)
 
     return {
@@ -74,15 +71,15 @@ export const useStatisticsStore = defineStore('statistics', () => {
   }
 
   const statisticsByTrucker = async () => {
-    const bookings = await fetchBookings()
+    const bookings = await getBookingsQuery()
     const truckerStats = calculateTruckerStats(bookings)
 
     return truckerStats
   }
 
   const statisticsByYard = async () => {
-    const locations = authStore.getOrgData().locations
-    const bookings = await fetchBookings()
+    const locations = await authStore.orgData.locations
+    const bookings = await getBookingsQuery()
     const groupedByYard = groupBookingsByYard(bookings, locations)
 
     return groupedByYard

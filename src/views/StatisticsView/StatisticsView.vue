@@ -2,8 +2,6 @@
 import { Main } from '@layouts'
 import { useStatisticsStore } from '../../stores/statistics.store'
 
-const statisticsStore = useStatisticsStore()
-
 const tab = ref(0)
 const tabs = [
   {
@@ -19,14 +17,6 @@ const tabs = [
     label: 'By yards',
   },
 ]
-
-onMounted(async () => {
-  const overallStatistics = await statisticsStore.statisticsOverall()
-
-  console.log(overallStatistics)
-
-  debugger
-})
 </script>
 
 <template>

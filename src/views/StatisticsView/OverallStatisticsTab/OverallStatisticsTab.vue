@@ -1,8 +1,14 @@
 <script setup>
 import statisticsData from '~/fixtures/statistics.json'
 import overallSTPlaceholder from '~/assets/images/overallSt2.png'
+import { useStatisticsStore } from '~/stores/statistics.store'
 
-const statistics = ref(statisticsData)
+const statistics = ref(null)
+const statisticsStore = useStatisticsStore()
+
+onMounted(async () => {
+  statistics.value = await statisticsStore.statisticsOverall()
+})
 </script>
 
 <template>
@@ -14,7 +20,7 @@ const statistics = ref(statisticsData)
   </Typography>
 
   <StatisticsPlaceholder
-    v-if="statistics"
+    v-if="!statistics"
     :data="{ img: overallSTPlaceholder }"
   />
   <template v-else>
@@ -24,7 +30,7 @@ const statistics = ref(statisticsData)
         message="this month"
         :sum="statistics.totalNumberOfBookings"
         :increase="+statistics.bookingsMonthVolatility >= 0"
-        :value="statistics.bookingsMonthVolatility"
+        :value="statistics.bookingsMonthVolatility[0].change"
       />
       <AverageCard
         title="Removed from the network"
@@ -38,9 +44,12 @@ const statistics = ref(statisticsData)
         message="this month"
         :sum="statistics.successfullyBookings"
         :increase="+statistics.successfullyBookingsMonthVolatility >= 0"
-        :value="statistics.successfullyBookingsMonthVolatility"
+        :value="statistics.successfullyBookingsMonthVolatility[0].change"
       />
     </div>
-    <ActivityStatisticsChart />
+    <ActivityStatisticsChart
+      :categories="statistics?.activityStatistic?.categories"
+      :series="statistics?.activityStatistic?.series"
+    />
   </template>
 </template>
