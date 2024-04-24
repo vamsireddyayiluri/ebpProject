@@ -1,4 +1,4 @@
-import { map, filter, countBy, groupBy, flatMap, get, meanBy } from 'lodash'
+import { countBy, filter, flatMap, get, groupBy, map, meanBy, sum } from 'lodash'
 import moment from 'moment'
 
 const calculateMonthlyAverage = (bookings, filterType) => {
@@ -51,21 +51,19 @@ const groupBySSL = bookings =>
   }))
 
 const calculateTruckerStats = (bookings, commitments) => {
-  const truckerInfo = flatMap(
-    bookings,
-    ({ carriers, createdAt, updatedAt, status }) =>
-      map(carriers, carrier => ({ ...carrier, createdAt, updatedAt, status })),
-  )
+  const truckerInfo = flatMap(bookings, ({ carriers, createdAt, updatedAt, status, ref }) => {
+    return map(carriers, carrier => ({ ...carrier, createdAt, updatedAt, status, ref }))
+  })
   const groupedByScac = groupBy(truckerInfo, 'scac')
 
-  return map(groupedByScac, (carriers, scac) => (
-    {
+  return map(groupedByScac, (carriers, scac) => {
+    return {
       id: scac,
       scac,
       email: get(carriers, '[0].email', ''),
       company: get(carriers, '[0].company', ''),
-      committedBookings: map(carriers, 'approved'),
-      committedFulfilled: map(carriers, 'onboarded'),
+      committedBookings: sum(map(carriers, 'approved')),
+      committedFulfilled: sum(map(carriers, 'onboarded')),
       performance: {
         averageFulfillmentTime: meanBy(carriers, ({ created, updated }) =>
           moment(updated).diff(moment(created), 'hours', true),
@@ -79,7 +77,7 @@ const calculateTruckerStats = (bookings, commitments) => {
         ),
       },
     }
-  ))
+  })
 }
 
 const groupBookingsByYard = (bookings, locations) =>

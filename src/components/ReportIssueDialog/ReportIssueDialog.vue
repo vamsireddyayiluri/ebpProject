@@ -18,18 +18,14 @@ const reportReason = ref(null)
 const yourReason = ref()
 const onBoardedContainers = ref()
 const { committed, loading } = toRefs(props)
-const extended = computed(
-  () =>
-    reportReason.value === onboardingCodes.inComplete ||
-    reportReason.value === onboardingCodes.other,
-)
+const extended = computed(() => reportReason.value === onboardingCodes.inComplete || reportReason.value === onboardingCodes.other)
 const containers = computed(() => reportReason.value === onboardingCodes.onboardMovedLoad)
 
 const onReport = () => {
   emit(
     'onClickBtn',
     extended.value ? yourReason.value : reportReason.value,
-    onBoardedContainers.value,
+    onboardingCodes.onboarded? committed.value: onBoardedContainers.value,
   )
 }
 const checkValue = value => {

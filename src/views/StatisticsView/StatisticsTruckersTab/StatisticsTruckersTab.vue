@@ -19,14 +19,14 @@ onMounted(async () => {
   console.log('-> statistics.value', statistics.value)
 })
 const tableId = 'statisticsBookingsTable'
-/*onMounted(() => {
+onMounted(() => {
   setTimeout(() => {
     const table = document.getElementById(tableId)
     tableHeight.value = smAndDown.value
       ? 396
       : window.innerHeight - table.getBoundingClientRect().top - 95
   })
-})*/
+})
 </script>
 
 <template>
@@ -50,7 +50,7 @@ const tableId = 'statisticsBookingsTable'
       :options="{
         rowHeight: 64,
         showActions: false,
-        tableHeight: 1000,
+        tableHeight: tableHeight,
         tableMinWidth: 960,
       }"
       class="mb-5"
@@ -70,11 +70,11 @@ const tableId = 'statisticsBookingsTable'
           {{ item.company }}
         </Typography>
       </template>
-      <template #takenBookings>
-        <Typography> 12%</Typography>
+      <template #takenBookings="{ item }">
+        <Typography> {{`${Math.round(item.committedFulfilled / item.committedBookings * 10000) /100}%`}}</Typography>
       </template>
-      <template #takenFulfilled>
-        <Typography> 15 / 12</Typography>
+      <template #takenOnboarded="{ item }">
+        <Typography> {{`${item.committedBookings}/${item.committedFulfilled}`}} </Typography>
       </template>
       <template #performance>
         <div class="flex gap-1.5">

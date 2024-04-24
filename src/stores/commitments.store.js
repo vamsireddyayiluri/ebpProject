@@ -74,6 +74,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       booking.carriers.push({
         scac: truckerScac,
         approved: commitment.committed,
+        onboarded: 0,
         email: commitment.truckerEmail,
         company: commitment.truckerCompany,
       })
@@ -81,13 +82,27 @@ export const useCommitmentsStore = defineStore('commitments', () => {
 
     return booking.carriers
   }
+
+  const updateBookingCarriers2 = async (commitment, onBoardedContainers) => {
+    const booking = await bookingsStore.getBooking({ id: commitment.bookingId })
+    const truckerScac = commitment?.details.truckerDetails.truckerScac
+    const carrierIndex = booking?.carriers?.findIndex(carrier => carrier?.scac === truckerScac)
+    if (carrierIndex !== -1) {
+      booking.carriers[carrierIndex].onboarded =
+        booking.carriers[carrierIndex].onboarded + onBoardedContainers
+    }
+    await updateDoc(doc(db, 'bookings', commitment.bookingId), {
+      carriers: booking.carriers,
+    })
+  }
+
   const completeCommitment = async (data, reason, onBoardedContainers) => {
     let obj = {}
     if (onboardingCodes.onboarded === reason) {
       obj.status = statuses.onboarded
+      await updateBookingCarriers2(data, onBoardedContainers)
     } else if (onboardingCodes.onboardMovedLoad === reason) {
       // Calculating marketplace fee if trucker moved different loads
-
       const { marketplaceFeePercentage, processingFee } = await getRequestLoadFee()
       const truckerRevenue = data.estimatedRate * onBoardedContainers
       const marketPlaceFee = parseFloat(
@@ -109,6 +124,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         status: statuses.onboarded,
         onBoardedContainers: onBoardedContainers,
       }
+      await updateBookingCarriers2(data, onBoardedContainers)
     } else {
       obj.status = statuses.incomplete
       obj.reason = reason
@@ -177,7 +193,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         }
       })
 
-      // find booking
+      /*// find booking
       const booking = bookingsStore.allBookings.find(i => i.id === commitment.bookingId)
       if (booking?.carriers) {
         const truckerScac = commitment?.details.truckerDetails.truckerScac
@@ -189,7 +205,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       }
       await updateDoc(doc(db, 'bookings', commitment.bookingId), {
         carriers: booking?.carriers,
-      })
+      })*/
       await updateBookingStore(commitment, 'canceled')
       alertStore.info({ content: 'Booking commitment canceled' })
     } catch ({ message }) {
