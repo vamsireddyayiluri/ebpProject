@@ -51,31 +51,35 @@ const groupBySSL = bookings =>
   }))
 
 const calculateTruckerStats = (bookings, commitments) => {
-  const truckerInfo = flatMap(bookings, ({ carriers, created, updated, status }) =>
-    map(carriers, carrier => ({ ...carrier, created, updated, status })),
+  const truckerInfo = flatMap(
+    bookings,
+    ({ carriers, createdAt, updatedAt, status }) =>
+      map(carriers, carrier => ({ ...carrier, createdAt, updatedAt, status })),
   )
   const groupedByScac = groupBy(truckerInfo, 'scac')
 
-  return map(groupedByScac, (carriers, scac) => ({
-    id: scac,
-    scac,
-    email: get(carriers, '[0].email', ''),
-    company: get(carriers, '[0].company', ''),
-    committedBookings: carriers.length,
-    committedFulfilled: map(carriers, 'approved'),
-    performance: {
-      averageFulfillmentTime: meanBy(carriers, ({ created, updated }) =>
-        moment(updated).diff(moment(created), 'hours', true),
-      ).toFixed(2),
-      cancellationRate: `${(
-        (filter(bookings, { status: 'canceled' }).length / bookings.length) *
-        100
-      ).toFixed(2)}%`,
-      averageAcceptanceTime: calculateAverageTimes(
-        filter(commitments, ({ scac: commitmentScac }) => commitmentScac === scac),
-      ),
-    },
-  }))
+  return map(groupedByScac, (carriers, scac) => (
+    {
+      id: scac,
+      scac,
+      email: get(carriers, '[0].email', ''),
+      company: get(carriers, '[0].company', ''),
+      committedBookings: map(carriers, 'approved'),
+      committedFulfilled: map(carriers, 'onboarded'),
+      performance: {
+        averageFulfillmentTime: meanBy(carriers, ({ created, updated }) =>
+          moment(updated).diff(moment(created), 'hours', true),
+        ).toFixed(2),
+        cancellationRate: `${(
+          (filter(bookings, { status: 'canceled' }).length / bookings.length) *
+          100
+        ).toFixed(2)}%`,
+        averageAcceptanceTime: calculateAverageTimes(
+          filter(commitments, ({ scac: commitmentScac }) => commitmentScac === scac),
+        ),
+      },
+    }
+  ))
 }
 
 const groupBookingsByYard = (bookings, locations) =>

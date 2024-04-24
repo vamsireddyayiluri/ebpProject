@@ -4,21 +4,29 @@ import { useDisplay } from 'vuetify'
 import { useHeaders } from '~/composables'
 import { getColor } from '~/helpers/colors'
 import imgPlaceholder from '~/assets/images/St by trucker.png'
+import { useStatisticsStore } from '~/stores/statistics.store'
+import { storeToRefs } from 'pinia'
 
+const statisticsStore = useStatisticsStore()
+const { isLoading } = storeToRefs(statisticsStore)
 const { smAndDown } = useDisplay()
 const { statisticsTruckersHeaders } = useHeaders()
-const statistics = ref(truckersData)
+const statistics = ref([])
 const tableHeight = ref(0)
 
+onMounted(async () => {
+  statistics.value = await statisticsStore.statisticsByTrucker()
+  console.log('-> statistics.value', statistics.value)
+})
 const tableId = 'statisticsBookingsTable'
-onMounted(() => {
+/*onMounted(() => {
   setTimeout(() => {
     const table = document.getElementById(tableId)
     tableHeight.value = smAndDown.value
       ? 396
       : window.innerHeight - table.getBoundingClientRect().top - 95
   })
-})
+})*/
 </script>
 
 <template>
@@ -29,7 +37,7 @@ onMounted(() => {
     Statistic by truckers
   </Typography>
   <StatisticsPlaceholder
-    v-if="statistics"
+    v-if="!isLoading && !statistics.length"
     :data="{ img: imgPlaceholder }"
   />
   <template v-else>
@@ -38,10 +46,11 @@ onMounted(() => {
       :key="tableId"
       :entities="statistics"
       :headers="statisticsTruckersHeaders"
+      :loading="isLoading"
       :options="{
         rowHeight: 64,
         showActions: false,
-        tableHeight: tableHeight,
+        tableHeight: 1000,
         tableMinWidth: 960,
       }"
       class="mb-5"
@@ -73,23 +82,17 @@ onMounted(() => {
             icon="mdi-timer"
             variant="plain"
           />
-          <Typography class="flex-shrink-0">
-            3 days
-          </Typography>
+          <Typography class="flex-shrink-0"> 3 days</Typography>
           <Tooltip> Average fulfillment time</Tooltip>
         </div>
         <div class="flex gap-1.5 mx-2">
           <Icon icon="mdi-close-circle" />
-          <Typography class="flex-shrink-0">
-            25%
-          </Typography>
+          <Typography class="flex-shrink-0"> 25%</Typography>
           <Tooltip> Cancellation rate</Tooltip>
         </div>
         <div class="flex gap-1.5">
           <Icon icon="mdi-timeline-check" />
-          <Typography class="flex-shrink-0">
-            20 min
-          </Typography>
+          <Typography class="flex-shrink-0"> 20 min</Typography>
           <Tooltip> Average acceptance time</Tooltip>
         </div>
       </template>

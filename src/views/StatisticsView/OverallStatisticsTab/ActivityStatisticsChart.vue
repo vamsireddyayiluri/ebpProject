@@ -15,14 +15,12 @@ const props = defineProps({
   },
 })
 
-const { categories, series } = toRefs(props)
-
 const items = ['By years', 'By months']
 const selected = ref(items[0])
 const active = ref(moment().year())
 
 const onUpdate = value => {
-  value === 'By months' ? (active.value = 'September') : '2023'
+  value === 'By months' ? (active.value = 'September') : '2024'
 }
 </script>
 
@@ -117,6 +115,7 @@ const onUpdate = value => {
               },
             },
             axisBorder: { show: true, color: getColor('uiLine') },
+            tickAmount: 1,
           },
           tooltip: {
             enabled: true,

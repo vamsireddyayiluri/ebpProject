@@ -2,21 +2,29 @@
 import { Main } from '@layouts'
 import { useStatisticsStore } from '../../stores/statistics.store'
 
-const tab = ref(0)
+const router = useRouter()
 const tabs = [
   {
     label: 'Overall statistic',
+    route: 'overallStatistic',
   },
   {
     label: 'By truckers',
+    route: 'byTruckers',
   },
   {
     label: 'By SSL',
+    route: 'bySSL',
   },
   {
     label: 'By yards',
+    route: 'byYards',
   },
 ]
+const tab = ref(tabs.findIndex(i => i.route === router.currentRoute.value.query.tab))
+const handleTabChange = async value => {
+  await router.push({ query: { tab: tabs[value].route } })
+}
 </script>
 
 <template>
@@ -31,6 +39,7 @@ const tabs = [
           v-model="tab"
           :items="tabs"
           v-bind="props"
+          @update:modelValue="handleTabChange"
         />
       </template>
     </SubHeader>

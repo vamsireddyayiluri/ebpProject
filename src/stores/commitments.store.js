@@ -74,6 +74,8 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       booking.carriers.push({
         scac: truckerScac,
         approved: commitment.committed,
+        email: commitment.truckerEmail,
+        company: commitment.truckerCompany,
       })
     }
 

@@ -1,45 +1,40 @@
-import { defineStore } from 'pinia'
-import { collection, query, where, getDocs } from 'firebase/firestore'
-import { db } from '~/firebase'
-import { useAuthStore } from './auth.store'
+import {defineStore} from 'pinia'
+import {collection, getDocs, query, where} from 'firebase/firestore'
+import {db} from '~/firebase'
+import {useAuthStore} from './auth.store'
 import {
   calculateMonthlyAverage,
+  calculateTruckerStats,
   getMonthsArray,
   groupBookingsByMonth,
-  groupBySSL,
-  calculateTruckerStats,
   groupBookingsByYard,
+  groupBySSL,
 } from './helpers/statistics'
 
 export const useStatisticsStore = defineStore('statistics', () => {
-  const isLoading = ref(false)
-
   const authStore = useAuthStore()
 
-  const getBookingsQuery = async () => {
-    isLoading.value = true
+  const isLoading = ref(false)
 
+  const getBookingsQuery = async () => {
     try {
       const orgData = await authStore.orgData
       const queryValue = query(collection(db, 'bookings'), where('orgId', '==', orgData.orgId))
       const querySnapshot = await getDocs(queryValue)
 
-      isLoading.value = false
-
       return querySnapshot.docs.map(doc => doc.data())
     } catch (error) {
       console.error('Failed to fetch bookings:', error)
-      isLoading.value = false
       throw error
     }
   }
 
   const statisticsOverall = async () => {
+    isLoading.value = true
     const bookings = await getBookingsQuery()
     const totalBookings = bookings.length
-    const totalSuccessful = bookings.filter(({ status }) => status === 'completed').length
-
-    return {
+    const totalSuccessful = bookings.filter(({status}) => status === 'completed').length
+    const data = {
       totalNumberOfBookings: totalBookings,
       bookingsMonthVolatility: calculateMonthlyAverage(bookings, 'all'),
       successfullyBookings: totalSuccessful,
@@ -51,28 +46,36 @@ export const useStatisticsStore = defineStore('statistics', () => {
         series: groupBookingsByMonth(bookings),
       },
     }
+    isLoading.value = false
+
+    return data
   }
 
   const statisticsBySSL = async () => {
+    isLoading.value = true
     const bookings = await getBookingsQuery()
     const groupedBySSL = groupBySSL(bookings)
-
-    return {
+    const data = {
       bySSL: groupedBySSL,
       fulfillmentRate: {
-        categories: groupedBySSL.map(({ line }) => line),
+        categories: groupedBySSL.map(({line}) => line),
         series: [
           {
-            data: groupedBySSL.map(({ jointBookings }) => jointBookings),
+            data: groupedBySSL.map(({jointBookings}) => jointBookings),
           },
         ],
       },
     }
+    isLoading.value = false
+
+    return data
   }
 
   const statisticsByTrucker = async () => {
+    isLoading.value = true
     const bookings = await getBookingsQuery()
     const truckerStats = calculateTruckerStats(bookings)
+    isLoading.value = false
 
     return truckerStats
   }
