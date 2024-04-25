@@ -184,7 +184,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         }
       })
 
-      // find booking
+      /*// find booking
       const booking = bookingsStore.allBookings.find(i => i.id === commitment.bookingId)
       if (booking?.carriers) {
         const truckerScac = commitment?.details.truckerDetails.truckerScac
@@ -196,7 +196,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       }
       await updateDoc(doc(db, 'bookings', commitment.bookingId), {
         carriers: booking?.carriers,
-      })
+      })*/
       await updateBookingStore(commitment, 'canceled')
       alertStore.info({ content: 'Booking commitment canceled' })
     } catch ({ message }) {
