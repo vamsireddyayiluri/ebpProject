@@ -1,4 +1,4 @@
-import { countBy, filter, flatMap, get, groupBy, map, meanBy, sum } from 'lodash'
+import { countBy, filter, flatMap, get, groupBy, map, meanBy, sumBy } from 'lodash'
 import moment from 'moment'
 
 const calculateMonthlyAverage = (bookings, filterType) => {
@@ -6,7 +6,7 @@ const calculateMonthlyAverage = (bookings, filterType) => {
     bookings,
     ({ status }) => filterType === 'all' || (filterType === 'completed' && status === 'completed'),
   )
-  const countsByMonth = countBy(filteredBookings, ({ created }) => moment(created).month())
+  const countsByMonth = countBy(filteredBookings, ({ createdAt }) => moment(createdAt).month())
 
   return map(countsByMonth, (count, month) => ({
     month: moment().month(month).format('MMM'),
@@ -23,60 +23,89 @@ const calculateMonthlyChange = (countsByMonth, month) => {
     : 'N/A'
 }
 
-const calculateAverageTimes = commitments => {
-  const approvedTimes = flatMap(commitments, ({ timeLine, created }) =>
+const calculateAverageAcceptanceTimes = commitments => {
+  const approvedTimes = flatMap(commitments, ({ timeLine, created, createdAt }) =>
     map(filter(timeLine, { status: 'approved' }), ({ time_stamp }) =>
-      moment(time_stamp).diff(moment(created), 'hours', true),
+      moment(time_stamp).diff(moment(created || createdAt), 'hours', true),
     ),
   )
 
-  return meanBy(approvedTimes) || 0
+  const mean = meanBy(approvedTimes)
+
+  return isNaN(mean) ? 0 : mean.toFixed(2)
+}
+
+const calculateAverageFulfillmentTimes = bookings => {
+  if (!bookings.every(booking => booking?.timeLine)) return 0
+
+  const fulfilledTimes = flatMap(bookings, ({ timeLine, created, createdAt }) =>
+    map(filter(timeLine, { message: 'Booking is 100% fulfilled' }), ({ time_stamp }) =>
+      moment(time_stamp).diff(moment(created || createdAt), 'hours', true),
+    ),
+  )
+
+  const mean = meanBy(fulfilledTimes)
+
+  return isNaN(mean) ? 0 : mean.toFixed(2)
 }
 
 const getMonthsArray = () => map(Array(12), (_, i) => moment().month(i).format('MMM'))
 
 const groupBookingsByMonth = bookings => {
-  const countsByMonth = countBy(bookings, ({ created }) => moment(created).month())
+  const countsByMonth = countBy(bookings, ({ created, createdAt }) =>
+    moment(created || createdAt).month(),
+  )
 
   return map(Array(12).fill(0), (_, i) => get(countsByMonth, i, 0))
 }
 
-const groupBySSL = bookings => {
-  return map(groupBy(bookings, 'line.label'), (group, line) => ({
+const groupBySSL = bookings =>
+  map(groupBy(bookings, 'line.label'), (group, line) => ({
     line: group[0].line,
     jointBookings: group.length,
-    averageFulfillmentTime: meanBy(group, ({ createdAt, updated }) =>
-      moment(updated).diff(moment(createdAt), 'hours', true),
-    ).toFixed(2),
+    averageFulfillmentTime: calculateAverageFulfillmentTimes(group),
     completed: filter(group, { status: 'completed' }).length,
   }))
-}
 
 const calculateTruckerStats = (bookings, commitments) => {
-  const truckerInfo = flatMap(bookings, ({ carriers, createdAt, updatedAt, status, ref }) => {
-    return map(carriers, carrier => ({ ...carrier, createdAt, updatedAt, status, ref }))
-  })
+  const truckerInfo = flatMap(
+    bookings,
+    ({ carriers, committed, createdAt, updatedAt, status, ref, timeLine = [] }) =>
+      carriers?.map(carrier => ({
+        ...carrier,
+        committed,
+        createdAt,
+        updatedAt,
+        status,
+        ref,
+        timeLine,
+      })),
+  )
+
   const groupedByScac = groupBy(truckerInfo, 'scac')
 
-  return map(groupedByScac, (carriers, scac) => {
+  return map(groupedByScac, (bookingsByScac, scac) => {
+    const commitmentsByScac = filter(
+      commitments,
+      ({ scac: commitmentScac }) => commitmentScac === scac,
+    )
+    const onboardedCommitments = filter(commitmentsByScac, { status: 'onboarded' })
+
     return {
       id: scac,
       scac,
-      email: get(carriers, '[0].email', ''),
-      company: get(carriers, '[0].company', ''),
-      committedBookings: sum(map(carriers, 'approved')),
-      committedFulfilled: sum(map(carriers, 'onboarded')),
+      committedBookings: bookingsByScac.length,
+      committedFulfilled: [
+        sumBy(bookingsByScac, 'committed'),
+        sumBy(onboardedCommitments, 'committed'),
+      ],
       performance: {
-        averageFulfillmentTime: meanBy(carriers, ({ created, updated }) =>
-          moment(updated).diff(moment(created), 'hours', true),
-        ).toFixed(2),
+        averageFulfillmentTime: calculateAverageFulfillmentTimes(bookingsByScac),
         cancellationRate: `${(
-          (filter(bookings, { status: 'canceled' }).length / bookings.length) *
+          (filter(bookingsByScac, { status: 'canceled' }).length / bookingsByScac.length) *
           100
         ).toFixed(2)}%`,
-        averageAcceptanceTime: calculateAverageTimes(
-          filter(commitments, ({ scac: commitmentScac }) => commitmentScac === scac),
-        ),
+        averageAcceptanceTime: calculateAverageAcceptanceTimes(commitmentsByScac),
       },
     }
   })

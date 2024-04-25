@@ -1,7 +1,7 @@
-import {defineStore} from 'pinia'
-import {collection, getDocs, query, where} from 'firebase/firestore'
-import {db} from '~/firebase'
-import {useAuthStore} from './auth.store'
+import { defineStore } from 'pinia'
+import { collection, getDocs, query, where } from 'firebase/firestore'
+import { db } from '~/firebase'
+import { useAuthStore } from './auth.store'
 import {
   calculateMonthlyAverage,
   calculateTruckerStats,
@@ -29,11 +29,23 @@ export const useStatisticsStore = defineStore('statistics', () => {
     }
   }
 
+  const getCommitmentsQuery = async () => {
+    try {
+      const queryValue = query(collection(db, 'commitments'))
+      const querySnapshot = await getDocs(queryValue)
+
+      return querySnapshot.docs.map(doc => doc.data())
+    } catch (error) {
+      console.error('Failed to fetch commitments:', error)
+      throw error
+    }
+  }
+
   const statisticsOverall = async () => {
     isLoading.value = true
     const bookings = await getBookingsQuery()
     const totalBookings = bookings.length
-    const totalSuccessful = bookings.filter(({status}) => status === 'completed').length
+    const totalSuccessful = bookings.filter(({ status }) => status === 'completed').length
     const data = {
       totalNumberOfBookings: totalBookings,
       bookingsMonthVolatility: calculateMonthlyAverage(bookings, 'all'),
@@ -58,10 +70,10 @@ export const useStatisticsStore = defineStore('statistics', () => {
     const data = {
       bySSL: groupedBySSL,
       fulfillmentRate: {
-        categories: groupedBySSL.map(({line}) => line.label),
+        categories: groupedBySSL.map(({ line }) => line.label),
         series: [
           {
-            data: groupedBySSL.map(({jointBookings}) => jointBookings),
+            data: groupedBySSL.map(({ jointBookings }) => jointBookings),
           },
         ],
       },
@@ -74,7 +86,8 @@ export const useStatisticsStore = defineStore('statistics', () => {
   const statisticsByTrucker = async () => {
     isLoading.value = true
     const bookings = await getBookingsQuery()
-    const truckerStats = calculateTruckerStats(bookings)
+    const commitments = await getCommitmentsQuery()
+    const truckerStats = calculateTruckerStats(bookings, commitments)
     isLoading.value = false
 
     return truckerStats
