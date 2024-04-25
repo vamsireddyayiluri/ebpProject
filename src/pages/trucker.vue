@@ -57,7 +57,8 @@ const commitBooking = async booking => {
     await setDoc(doc(db, 'commitments', id), commit)
   } catch ({ message }) {
     alertStore.warning({ content: message })
-  }view
+  }
+  view
 }
 const openCancelDialog = async commit => {
   cancelCommitDialog.value.show(true)

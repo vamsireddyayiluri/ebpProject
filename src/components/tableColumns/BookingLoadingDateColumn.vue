@@ -33,9 +33,15 @@ const formatMinTime = dates => {
         <VTable>
           <thead>
             <tr>
-              <th class="text-left">Committed/Total</th>
-              <th class="text-left">Loading Date</th>
-              <th class="text-left">SCAC</th>
+              <th class="text-left">
+                Committed/Total
+              </th>
+              <th class="text-left">
+                Loading Date
+              </th>
+              <th class="text-left">
+                SCAC
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -43,7 +49,9 @@ const formatMinTime = dates => {
               v-for="data in data.details"
               :key="data.loadingDate"
             >
-              <td class="text-center">{{ data.committed }}/{{ data.containers }}</td>
+              <td class="text-center">
+                {{ data.committed }}/{{ data.containers }}
+              </td>
               <td>{{ getFormattedDate(data.loadingDate) || '--' }}</td>
               <td>
                 <div v-if="data.scacList?.list.length > 0">

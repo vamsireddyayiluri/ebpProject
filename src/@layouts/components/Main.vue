@@ -4,7 +4,7 @@ import { storeToRefs } from 'pinia'
 import { useNotificationStore } from '~/stores/notification.store'
 import { useDisplay } from 'vuetify'
 import { useChatStore } from '~/stores/chat.store'
-import { useProfileStore } from "~/stores/profile.store"
+import { useProfileStore } from '~/stores/profile.store'
 
 const authStore = useAuthStore()
 const notificationStore = useNotificationStore()

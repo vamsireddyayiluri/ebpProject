@@ -1,12 +1,15 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
-import yardsData from '~/fixtures/yards.json'
 import streetPlaceholder from '~/assets/images/street.png'
 import streetPlaceholderDark from '~/assets/images/street-dark.png'
 import { getYardBookingLoad } from '~/helpers/countings'
 import imgPlaceholder from '~/assets/images/St by  yards.png'
+import { useStatisticsStore } from '~/stores/statistics.store'
+import { storeToRefs } from 'pinia'
 
-const statistics = ref(yardsData)
+const statisticsStore = useStatisticsStore()
+const { isLoading } = storeToRefs(statisticsStore)
+const statistics = ref([])
 const storage = useStorage('theme', '')
 const bookingStatisticsDialog = ref(null)
 const searchValue = ref(null)
@@ -15,14 +18,14 @@ const openStatisticsDialog = yard => {
   bookingStatisticsDialog.value.show(true)
   bookingStatisticsDialog.value.data = yard
 }
-const sortYards = e => {
+/*const sortYards = e => {
   statistics.value.sort((a, b) => {
     return e.value !== 'toLessBookings'
       ? a.entities.length - b.entities.length
       : b.entities.length - a.entities.length
   })
-}
-const onClearSearch = () => {
+}*/
+/*const onClearSearch = () => {
   setTimeout(() => {
     statistics.value = yardsData
   }, 1000)
@@ -41,19 +44,20 @@ const debouncedSearch = useDebounceFn(searchValue => {
         ).value,
     ).value
   }
-}, 300)
+}, 300)*/
 
-watch(searchValue, value => {
-  debouncedSearch(value)
+onMounted(async () => {
+  statistics.value = await statisticsStore.statisticsByYard()
 })
+/*watch(searchValue, value => {
+  debouncedSearch(value)
+})*/
 </script>
 
 <template>
   <div class="flex justify-between gap-5 items-center flex-wrap md:!flex-nowrap mb-5">
-    <Typography type="text-h1">
-      Statistic by yards
-    </Typography>
-    <div class="w-fill sm:w-auto flex gap-5 ml-auto">
+    <Typography type="text-h1"> Statistic by yards</Typography>
+    <!--    <div class="w-fill sm:w-auto flex gap-5 ml-auto">
       <Sort
         size="48"
         icon-size="24"
@@ -79,14 +83,18 @@ watch(searchValue, value => {
         class="w-[270px]"
         @click:clear="onClearSearch"
       />
-    </div>
+    </div>-->
   </div>
   <StatisticsPlaceholder
-    v-if="statistics"
+    v-if="!isLoading && !statistics.length"
     :data="{ img: imgPlaceholder }"
   />
   <template v-else>
     <div class="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 gap-5">
+      <ProgressLinear
+        v-if="isLoading"
+        indeterminate
+      />
       <template
         v-for="item in statistics"
         :key="item.id"
@@ -100,7 +108,7 @@ watch(searchValue, value => {
             :src="storage === 'light' ? streetPlaceholder : streetPlaceholderDark"
             alt="street map"
             class="w-fill h-[110px] rounded mb-4"
-          >
+          />
           <Typography type="text-h4 truncate">
             <Highlighter
               v-if="searchValue"
@@ -115,9 +123,7 @@ watch(searchValue, value => {
           </Typography>
           <div class="mt-2">
             <div class="flex justify-between mb-5">
-              <Typography :color="getColor('textSecondary')">
-                # of bookings
-              </Typography>
+              <Typography :color="getColor('textSecondary')"> # of bookings</Typography>
               <Typography type="text-body-m-semibold">
                 {{ item.entities.length }}
               </Typography>

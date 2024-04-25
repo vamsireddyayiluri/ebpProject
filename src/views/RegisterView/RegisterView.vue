@@ -82,7 +82,7 @@ const onSubmit = async () => {
   if (stepper.isLast.value) {
     loading.value = true
     await authStore.register({
-      form: {...form, cell: unMaskedCell.value.unmasked},
+      form: { ...form, cell: unMaskedCell.value.unmasked },
       cell: unMaskedCell.value.unmasked,
       yards: yards.value,
       vendorDetails: vendorDetails.value,

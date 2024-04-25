@@ -23,9 +23,8 @@ const {
   getCommittedTruckerOrgs,
   goToChat,
 } = useChatStore()
-const { chats, activeChat, loading, activeChatMessages, companies, users } = storeToRefs(
-  useChatStore(),
-)
+const { chats, activeChat, loading, activeChatMessages, companies, users } =
+  storeToRefs(useChatStore())
 const currentUserId = ref(userData.user_id)
 const currentParticipantId = ref(userData.orgId)
 const chatActions = [
@@ -81,7 +80,6 @@ onMounted(async () => {
     }
   }, 200)
   await markUserAsOnlineOffline('online')
-
 })
 onBeforeUnmount(async () => {
   // activeChat.value = null
@@ -96,7 +94,7 @@ const createChat = async participantId => {
 <template>
   <Main>
     <ProgressLinear
-      v-if="!chats.length && !allParticipants.length"
+      v-if="loading && !chats.length && !allParticipants.length"
       indeterminate
     />
     <ChatWindow

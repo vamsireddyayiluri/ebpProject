@@ -1,13 +1,10 @@
-import { defineStore, storeToRefs } from 'pinia'
+import { defineStore } from 'pinia'
 import {
-  collection,
   doc,
   getDoc,
   onSnapshot,
-  query,
   setDoc,
   updateDoc,
-  where,
 } from 'firebase/firestore'
 import { db } from '~/firebase'
 import { useAlertStore } from '~/stores/alert.store'

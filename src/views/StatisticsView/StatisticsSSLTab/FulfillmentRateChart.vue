@@ -1,8 +1,7 @@
 <script setup>
-const data = {
-  categories: ['APL', 'CMA', 'COS', 'EGH', 'HLC', 'HMM', 'MAE', 'MAT'],
-  series: [{ data: [60, 80, 80, 20, 60, 20, 60, 80] }],
-}
+const props = defineProps({
+  data: Object,
+})
 </script>
 
 <template>
@@ -48,7 +47,7 @@ const data = {
         legend: { show: false },
         dataLabels: {
           enabled: true,
-          formatter: n => `${n}%`,
+          formatter: n => `${n} %`,
         },
         grid: {
           show: true,

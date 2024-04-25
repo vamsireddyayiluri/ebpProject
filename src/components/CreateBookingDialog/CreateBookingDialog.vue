@@ -98,14 +98,14 @@ const newBookings = ref(
   props.duplicate
     ? loadingsDateCopy
     : [
-        {
-          id: uid(28),
-          loadingDate: null,
-          preferredDays: null,
-          containers: null,
-          scacList: bookingRulesStore.rules.truckers,
-        },
-      ],
+      {
+        id: uid(28),
+        loadingDate: null,
+        preferredDate: null,
+        containers: null,
+        scacList: bookingRulesStore.rules.truckers,
+      },
+    ],
 )
 const confirmDraftsDialog = ref(null)
 const { clickedOutside } = toRefs(props)
@@ -416,39 +416,40 @@ onMounted(async () => {
     </div>
   </VForm>
   <!--
-  <Dialog
-  ref="confirmDraftsDialog"
-  class="max-w-[450px] md:max-w-[560px]"
-  >
-  <template #text>
-  <VRow
-  no-gutters
-  justify="space-between"
-  align="center"
-  class="flex-nowrap mb-8"
-  >
-  <Typography> Do you want to keep the bookings in Drafts?</Typography>
-  <IconButton
-  icon="mdi-close"
-  class="-mt-1"
-  @click="confirmDraftsDialog.show(false)"
-  />
-  </VRow>
-  <div class="grid sm:grid-cols-2 grid-cols-1 gap-6">
-  <Button
-  class="w-full"
-  @click="saveDraft"
-  >
-  save
-  </Button>
-  <Button
-  variant="outlined"
-  class="w-full"
-  @click="emit('close')"
-  >
-  cancel
-  </Button>
-  </div>
-  </template>
-  </Dialog>
---></template>
+    <Dialog
+    ref="confirmDraftsDialog"
+    class="max-w-[450px] md:max-w-[560px]"
+    >
+    <template #text>
+    <VRow
+    no-gutters
+    justify="space-between"
+    align="center"
+    class="flex-nowrap mb-8"
+    >
+    <Typography> Do you want to keep the bookings in Drafts?</Typography>
+    <IconButton
+    icon="mdi-close"
+    class="-mt-1"
+    @click="confirmDraftsDialog.show(false)"
+    />
+    </VRow>
+    <div class="grid sm:grid-cols-2 grid-cols-1 gap-6">
+    <Button
+    class="w-full"
+    @click="saveDraft"
+    >
+    save
+    </Button>
+    <Button
+    variant="outlined"
+    class="w-full"
+    @click="emit('close')"
+    >
+    cancel
+    </Button>
+    </div>
+    </template>
+    </Dialog>
+  -->
+</template>

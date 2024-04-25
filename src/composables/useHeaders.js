@@ -155,8 +155,8 @@ export const statisticsTruckersHeaders = [
     value: 'takenBookings',
   },
   {
-    text: 'Taken/fulfilled',
-    value: 'takenFulfilled',
+    text: 'Taken/onboarded',
+    value: 'takenOnboarded',
   },
   {
     text: 'Performance',

@@ -1,21 +1,33 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
+import moment from 'moment'
+
+const props = defineProps({
+  categories: {
+    type: Array,
+    required: true,
+    default: () => [],
+  },
+  series: {
+    type: Array,
+    required: true,
+    default: () => [],
+  },
+})
 
 const items = ['By years', 'By months']
 const selected = ref(items[0])
-const active = ref(2023)
+const active = ref(moment().year())
 
 const onUpdate = value => {
-  value === 'By months' ? (active.value = 'September') : '2023'
+  value === 'By months' ? (active.value = 'September') : '2024'
 }
 </script>
 
 <template>
   <div class="w-full">
     <div class="flex flex-wrap justify-between items-center gap-5 mt-10 mb-3">
-      <Typography type="text-h2">
-        Activity statistics
-      </Typography>
+      <Typography type="text-h2"> Activity statistics </Typography>
       <div class="flex items-center ml-auto">
         <IconButton
           icon="mdi-chevron-left"
@@ -47,7 +59,7 @@ const onUpdate = value => {
         series: [
           {
             name: 'bookings',
-            data: [0, 0, 45, 32, 34, 52, 41, 68, 98, 100, 95, 87],
+            data: series,
           },
         ],
       }"
@@ -92,20 +104,7 @@ const onUpdate = value => {
             },
             axisBorder: { show: false, color: getColor('uiLine') },
             axisTicks: { show: false },
-            categories: [
-              'Jan',
-              'Feb',
-              'Mar',
-              'Apr',
-              'May',
-              'Jun',
-              'Jul',
-              'Aug',
-              'Sep',
-              'Oct',
-              'Nov',
-              'Dec',
-            ],
+            categories,
           },
           yaxis: {
             show: true,
@@ -116,6 +115,7 @@ const onUpdate = value => {
               },
             },
             axisBorder: { show: true, color: getColor('uiLine') },
+            tickAmount: 1,
           },
           tooltip: {
             enabled: true,
