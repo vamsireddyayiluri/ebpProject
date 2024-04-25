@@ -528,7 +528,11 @@ onMounted(async () => {
                   :scac-list="d.scacList"
                   :menu-btn="false"
                   required
-                  :validate-scacs="booking.preferredDays > 0"
+                  :validate-scacs="
+                    fromDraft || fromHistory
+                      ? bookingRulesStore.rules?.preferredCarrierWindow > 0
+                      : booking.preferredDays > 0
+                  "
                   class="w-3/4"
                 />
                 <!-- <IconButton
