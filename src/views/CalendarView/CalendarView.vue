@@ -7,6 +7,7 @@ import { useDate } from '~/composables'
 import { storeToRefs } from 'pinia'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { checkVendorDetailsCompletion } from '~/helpers/validations-functions'
+import { groupBookings } from '~/stores/helpers'
 
 const router = useRouter()
 const { getFormattedDate } = useDate()
@@ -29,10 +30,10 @@ const getEvents = bookings => {
         name: `event-${Math.floor(Math.random() * 9) + 1}`,
         ref: i.ref,
         progress: getBookingLoad(i.committed, i.containers),
-        carriers: i.carriers.map(item => {
+        carriers: i?.carriers?.map(item => {
           return {scac: item.scac, fulfilled: item?.approved, total: i.containers}
         }),
-      }
+      },
     }
   })
 }
@@ -51,11 +52,12 @@ const onRemove = e => {
 }
 
 const removeBooking = async id => {
-  await bookingsStore.deleteBookingById(id)
+  const booking = await bookingsStore.getBooking({ id: id, draft: false })
+  await bookingsStore.removeFromNetwork(groupBookings([booking])[0])
   removeBookingDialog.value.show(false)
 
   // remove in calendar
-  removeBookingDialog.value.data.remove()
+  // removeBookingDialog.value.data.remove()
 }
 const today = moment()
 

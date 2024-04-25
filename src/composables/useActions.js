@@ -96,6 +96,7 @@ export const bookingHistoryActions = item => {
       ...defaultAction,
     ]
   }
+  return []
 }
 export const commitmentsActions = (status, bstatus,fromHistory=false) => {
   const viewDetailsAction = [
