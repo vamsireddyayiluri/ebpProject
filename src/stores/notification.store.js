@@ -115,7 +115,7 @@ export const useNotificationStore = defineStore('notification', () => {
         const list = notificationsData.at(-1)
         if (
           !initialLoad &&
-          list.isUnread === true &&
+          list?.isUnread === true &&
           notificationsData.length !== notifications.value.length
         ) {
           showAlert(list)

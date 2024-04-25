@@ -19,6 +19,7 @@ import { insuranceTypes } from '~/constants/settings'
 import { deepCopy } from 'json-2-csv/lib/utils'
 import { uid } from 'uid'
 import { cloneDeep, isBoolean, isNull } from 'lodash'
+import { useCommitmentsStore } from '~/stores/commitments.store'
 
 const props = defineProps({
   duplicate: Array,
@@ -31,11 +32,13 @@ const workDetailsStore = useWorkDetailsStore()
 const bookingRulesStore = useBookingRulesStore()
 const bookingsStore = useBookingsStore()
 const alertStore = useAlertStore()
+const commitmentStore = useCommitmentsStore()
 
 const { yards } = storeToRefs(workDetailsStore)
 const { notGroupedBookings: bookings } = storeToRefs(bookingsStore)
 const form = ref(null)
 const insuranceItems = ref(insuranceTypes)
+const bookingConfirmationDialog = ref(null)
 
 const {
   ref: bookingRef,
@@ -108,6 +111,7 @@ const newBookings = ref(
 )
 const confirmDraftsDialog = ref(null)
 const { clickedOutside } = toRefs(props)
+const confirmClickedOutside = ref(null)
 
 const currentDate = ref(new Date())
 
@@ -190,10 +194,16 @@ const saveDraft = async () => {
 
   emit('close')
 }
-const saveBooking = () => {
-  booking.value.scacList = booking?.value.scacList || { list: [] }
-  createBooking(booking.value, newBookings.value)
-  emit('close')
+
+const saveBooking = async () => {
+  const commitmentsList = await commitmentStore.getExpiredCommitments()
+  if (commitmentsList?.length) {
+    bookingConfirmationDialog.value.show(true)
+    bookingConfirmationDialog.value.data = commitmentsList
+  } else {
+    createBooking(booking.value, newBookings.value)
+    emit('close')
+  }
 }
 const updateRef = async e => {
   if (form.value.errors.length) {
@@ -203,6 +213,17 @@ const updateRef = async e => {
       form.value.validate()
     }
   }
+}
+const closeConfirmBookingDialog = () => {
+  bookingConfirmationDialog.value.show(false)
+  bookingConfirmationDialog.value.data = null
+}
+const onClickOutsideDialog = () => {
+  confirmClickedOutside.value = true
+  closeConfirmBookingDialog()
+  setInterval(() => {
+    confirmClickedOutside.value = false
+  }, 1000)
 }
 onMounted(async () => {
   await workDetailsStore.getYards()
@@ -419,6 +440,19 @@ onMounted(async () => {
       </Button>
     </div>
   </VForm>
+  <Dialog
+    ref="bookingConfirmationDialog"
+    class="max-w-full sm:max-w-[90vw] md:max-w-[75vw]"
+    @update:modelValue="onClickOutsideDialog"
+  >
+    <template #text>
+      <BookingConfirmationDialog
+        :commitments="bookingConfirmationDialog.data"
+        :clicked-outside="confirmClickedOutside"
+        @close="closeConfirmBookingDialog"
+      />
+    </template>
+  </Dialog>
   <!--
   <Dialog
   ref="confirmDraftsDialog"

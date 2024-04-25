@@ -48,7 +48,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     const data = await Promise.all(dataPromises)
     bookings.value = data.sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
     allBookings.value = data.sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
-    await validateBookingsExpiry(data)
+    // await validateBookingsExpiry(data)
   }
   const getBookings = async ({ draft = false }) => {
     loading.value = true
@@ -63,10 +63,10 @@ export const useBookingsStore = defineStore('bookings', () => {
       drafts.value = group
     } else {
       await getallBookings()
-      const today = getLocalServerTime(moment(), 'America/Los_Angeles')
+      // const today = getLocalServerTime(moment(), 'America/Los_Angeles')
       const filteredBookings = bookings.value.filter(
         booking =>
-          !moment(booking.loadingDate).isBefore(moment(today)) &&
+          // !moment(booking.loadingDate).isBefore(moment(today)) &&
           booking.status !== statuses.completed &&
           booking.status !== statuses.expired &&
           booking.status !== statuses.canceled,
@@ -79,11 +79,11 @@ export const useBookingsStore = defineStore('bookings', () => {
   }
   const getBookingHistory = async () => {
     loading.value = true
-    const today = getLocalServerTime(moment(), 'America/Los_Angeles')
+    // const today = getLocalServerTime(moment(), 'America/Los_Angeles')
     await getallBookings()
     const filteredBookings = bookings.value.filter(
       booking =>
-        moment(booking.loadingDate).isBefore(moment(today)) ||
+        // moment(booking.loadingDate).isBefore(moment(today)) ||
         booking.status === statuses.completed ||
         booking.status === statuses.expired ||
         booking.status === statuses.canceled,

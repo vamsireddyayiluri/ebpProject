@@ -1,5 +1,14 @@
 import { defineStore } from 'pinia'
-import { doc, getDoc, increment, updateDoc } from 'firebase/firestore'
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  increment,
+  query,
+  updateDoc,
+  where,
+} from 'firebase/firestore'
 import { db } from '~/firebase'
 import { statuses } from '~/constants/statuses'
 import { useAlertStore } from '~/stores/alert.store'
@@ -7,9 +16,11 @@ import { useBookingsStore } from '~/stores/bookings.store'
 import { onboardingCodes } from '~/constants/reasonCodes'
 import { getRequestLoadFee } from './helpers'
 import { getLocalTime } from '@qualle-admin/qutil/dist/date'
+import { useAuthStore } from './auth.store'
 import moment from 'moment-timezone'
 
 const { updateBookingStore } = useBookingsStore()
+const authStore = useAuthStore()
 
 export const useCommitmentsStore = defineStore('commitments', () => {
   const alertStore = useAlertStore()
@@ -64,7 +75,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
     }
   }
   const updateBookingCarriers = async commitment => {
-    const booking = await bookingsStore.getBooking({id: commitment.bookingId})
+    const booking = await bookingsStore.getBooking({ id: commitment.bookingId })
     const truckerScac = commitment?.details.truckerDetails.truckerScac
     const carrierIndex = booking?.carriers?.findIndex(carrier => carrier?.scac === truckerScac)
     if (carrierIndex !== -1) {
@@ -111,7 +122,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       obj.status = statuses.incomplete
       obj.reason = reason
     }
-    obj.onBoarded = data?.onBoarded? data.onBoarded + onBoardedContainers: onBoardedContainers
+    obj.onBoarded = data?.onBoarded ? data.onBoarded + onBoardedContainers : onBoardedContainers
     try {
       await updateDoc(doc(db, 'commitments', data.id), {
         ...obj,
@@ -222,6 +233,25 @@ export const useCommitmentsStore = defineStore('commitments', () => {
     }
   }
 
+  const getExpiredCommitments = async () => {
+    try {
+      const { orgId } = authStore.userData
+      const today = getLocalTime().format()
+      const query34 = query(
+        collection(db, 'commitments'),
+        where('orgId', '==', orgId),
+        where('loadingDate', '<', today),
+        where('status', 'in', ['pending', 'approved']),
+      )
+
+      const snapshotData = await getDocs(query34)
+      const commitments = snapshotData.docs.map(doc => doc.data())
+      return commitments || []
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
+
   return {
     getCommitment,
     approveCommitment,
@@ -229,5 +259,6 @@ export const useCommitmentsStore = defineStore('commitments', () => {
     declineCommitment,
     cancelCommitment,
     edit_commitment_loadingDate,
+    getExpiredCommitments,
   }
 })
