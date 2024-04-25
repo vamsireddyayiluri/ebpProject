@@ -89,6 +89,7 @@ export const useAuthStore = defineStore('auth', () => {
     orgData.value = null
     useProfileStore().reset()
     await bookingsStore.reset()
+    notificationStore.reset()
     await router.push({ name: 'login' })
   }
 
