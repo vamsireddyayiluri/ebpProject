@@ -178,6 +178,10 @@ export const useNotificationStore = defineStore('notification', () => {
     }
   }
 
+  const reset = () => {
+    notifications.value = []
+  }
+
   return {
     notifications,
     addNewNotification,
@@ -190,5 +194,6 @@ export const useNotificationStore = defineStore('notification', () => {
     getNotifications,
     readAllNotifications,
     readNotification,
+    reset,
   }
 })
