@@ -55,7 +55,6 @@ export const useStatisticsStore = defineStore('statistics', () => {
     isLoading.value = true
     const bookings = await getBookingsQuery()
     const groupedBySSL = groupBySSL(bookings)
-    console.log("-> groupedBySSL", groupedBySSL);
     const data = {
       bySSL: groupedBySSL,
       fulfillmentRate: {

@@ -47,7 +47,7 @@ const props = defineProps({
         legend: { show: false },
         dataLabels: {
           enabled: true,
-          formatter: n => `${n} containers`,
+          formatter: n => `${n} %`,
         },
         grid: {
           show: true,

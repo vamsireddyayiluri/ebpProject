@@ -49,7 +49,6 @@ const groupBySSL = bookings => {
       moment(updated).diff(moment(createdAt), 'hours', true),
     ).toFixed(2),
     completed: filter(group, { status: 'completed' }).length,
-    fulfillmentTime: group,
   }))
 }
 

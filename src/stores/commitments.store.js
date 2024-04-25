@@ -90,7 +90,6 @@ export const useCommitmentsStore = defineStore('commitments', () => {
     if (carrierIndex !== -1) {
       booking.carriers[carrierIndex].onboarded =
         booking.carriers[carrierIndex].onboarded + onBoardedContainers
-      booking.carriers[carrierIndex].onbordedTime = getLocalTime().format()
     }
     await updateDoc(doc(db, 'bookings', commitment.bookingId), {
       carriers: booking.carriers,
