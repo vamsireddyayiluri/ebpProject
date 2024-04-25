@@ -21,6 +21,8 @@ import { capitalize, cloneDeep, pickBy } from 'lodash'
 import moment from 'moment-timezone'
 import { statuses } from '~/constants/statuses'
 import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
+import { useBookingRulesStore } from '~/stores/bookingRules.store'
+
 import { groupBookings } from '~/stores/helpers'
 
 export const useBookingsStore = defineStore('bookings', () => {
@@ -172,6 +174,8 @@ export const useBookingsStore = defineStore('bookings', () => {
     }
   }
   const createBookingObj = booking => {
+    const { rules } = useBookingRulesStore()
+
     const { user_id: userId, name, orgId, type } = authStore.userData
     const bookingId = uid(28)
     delete booking.index
@@ -187,6 +191,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       updatedAt: getLocalTime().format(),
       carriers: [],
       preferredTruckers: preferredTruckers,
+      preferredDays: rules?.preferredCarrierWindow,
       status: statuses.active,
       createdBy: {
         userId,

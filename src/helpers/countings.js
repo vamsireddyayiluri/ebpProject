@@ -1,5 +1,5 @@
 export const getBookingLoad = (booked, amount) => {
-  if (!amount) return 0
+  if (!amount || booked>amount) return 0
 
   return Number(((booked * 100) / amount).toFixed(2))
 }

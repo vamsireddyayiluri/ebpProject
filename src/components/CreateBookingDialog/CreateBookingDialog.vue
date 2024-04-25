@@ -19,6 +19,7 @@ import { insuranceTypes } from '~/constants/settings'
 import { deepCopy } from 'json-2-csv/lib/utils'
 import { uid } from 'uid'
 import { cloneDeep, isBoolean, isNull } from 'lodash'
+import { getLocalTime } from '@qualle-admin/qutil/dist/date'
 
 const props = defineProps({
   duplicate: Array,
@@ -58,7 +59,7 @@ const loadingsDateCopy = props?.duplicate?.map(booking => {
   return {
     id: uid(28),
     loadingDate: i.loadingDate,
-    preferredDate: i?.preferredDate || null,
+    preferredDays: i?.preferredDays || null,
     containers: i.containers,
     scacList: i?.scacList || { list: [] },
   }
@@ -100,7 +101,7 @@ const newBookings = ref(
         {
           id: uid(28),
           loadingDate: null,
-          preferredDate: null,
+          preferredDays: null,
           containers: null,
           scacList: bookingRulesStore.rules.truckers,
         },
@@ -123,12 +124,6 @@ const rules = {
 }
 const updateExpiryDate = (value, index) => {
   newBookings.value[index].loadingDate = moment(value).endOf('day').format()
-  const { preferredCarrierWindow } = bookingRulesStore.rules
-  if (preferredCarrierWindow) {
-    newBookings.value[index].preferredDate = moment(newBookings.value[index].loadingDate)
-      .subtract(preferredCarrierWindow, 'days')
-      .format()
-  }
 }
 const updateSize = () => {
   booking.value.size = null
@@ -149,7 +144,7 @@ const isDisabled = computed(() => {
 })
 const isLoadingDatesFieldsEmpty = computed(() => {
   return cloneDeep(newBookings.value).some(object => {
-    delete object?.preferredDate
+    delete object?.preferredDays
 
     return Object.values(object).some(
       value => value === null || (Array.isArray(value) && value.some(item => item === null)),
@@ -174,7 +169,7 @@ const addLoadingDate = () => {
   newBookings.value.push({
     id: uid(16),
     loadingDate: null,
-    preferredDate: null,
+    preferredDays: null,
     containers: null,
     scacList: cloneDeep(bookingRulesStore.rules.truckers),
   })
@@ -379,6 +374,7 @@ onMounted(async () => {
             <AutocompleteScac
               :scac-list="d.scacList"
               :menu-btn="false"
+              :validate-scacs="bookingRulesStore.rules?.preferredCarrierWindow > 0"
               class="w-4/5 lg:w-10/12 xl:w-11/12"
             />
             <IconButton
