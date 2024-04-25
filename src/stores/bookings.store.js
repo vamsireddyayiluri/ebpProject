@@ -178,6 +178,8 @@ export const useBookingsStore = defineStore('bookings', () => {
 
     const { user_id: userId, name, orgId, type } = authStore.userData
     const bookingId = uid(28)
+    delete booking.index
+    delete booking.expand
 
     return {
       ...booking,
@@ -300,7 +302,7 @@ export const useBookingsStore = defineStore('bookings', () => {
   }
 
   // deleting multiple bookings using ids array
-  const deleteBooking = async (booking, draft = false, fromHistory = false) => {
+  const deleteBooking = async (booking, draft = false, fromHistory = false, alert = true) => {
     try {
       const batch = writeBatch(db)
 
@@ -322,7 +324,7 @@ export const useBookingsStore = defineStore('bookings', () => {
             batch.delete(doc(db, 'bookings', id))
           })
           // await deleteDoc(doc(db, 'bookings', id))
-          alertStore.info({ content: 'Bookings removed!' })
+          alert && alertStore.info({ content: 'Bookings removed!' })
         }
       } else {
         const ids = booking.ids
@@ -336,7 +338,7 @@ export const useBookingsStore = defineStore('bookings', () => {
         if (index > -1) {
           bookings.value.splice(index, 1)
           notGroupedBookings.value.splice(index, 1)
-          alertStore.info({ content: 'Bookings removed!' })
+          alert && alertStore.info({ content: 'Bookings removed!' })
         } else alertStore.warning({ content: 'Booking not found' })
       }
       await batch.commit()
@@ -397,7 +399,7 @@ export const useBookingsStore = defineStore('bookings', () => {
   }
   const removeFromNetwork = async booking => {
     try {
-      await deleteBooking(booking)
+      await deleteBooking(booking, false, false, false)
       const batch = writeBatch(db)
       booking.ids.forEach(id => {
         const data = createEditedBookingObj(booking, id)
@@ -407,6 +409,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       await batch.commit()
       drafts.value.unshift(booking)
       alertStore.info({ content: `Booking Ref# ${booking.ref} moved to the draft` })
+
       return 'deleted'
     } catch ({ message }) {
       alertStore.warning({ content: message })
