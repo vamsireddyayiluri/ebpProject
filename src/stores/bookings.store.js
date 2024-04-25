@@ -174,7 +174,6 @@ export const useBookingsStore = defineStore('bookings', () => {
     }
   }
   const createBookingObj = booking => {
-    const { rules } = useBookingRulesStore()
 
     const { user_id: userId, name, orgId, type } = authStore.userData
     const bookingId = uid(28)
@@ -189,7 +188,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       updatedAt: getLocalTime().format(),
       carriers: [],
       preferredTruckers: preferredTruckers,
-      preferredDays: rules?.preferredCarrierWindow,
+      preferredDays: authStore?.orgData?.bookingRules?.preferredCarrierWindow,
       status: statuses.active,
       createdBy: {
         userId,
@@ -203,6 +202,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     try {
       const batch = writeBatch(db)
       details.forEach(b => {
+        b.scacList = authStore.orgData?.bookingRules?.preferredCarrierWindow > 0 ? b.scacList : { list: [] }
         const newBooking = createBookingObj({ ...selectedBooking, ...b })
         const docRef = doc(collection(db, 'bookings'), newBooking.id)
         batch.set(docRef, newBooking)
@@ -222,6 +222,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     try {
       const batch = writeBatch(db)
       details.forEach(b => {
+        b.scacList = authStore.orgData?.bookingRules?.preferredCarrierWindow > 0 ? b.scacList : { list: [] }
         const newDraft = createBookingObj({ ...selectedDraft, ...b })
         const docRef = doc(collection(db, 'drafts'), newDraft.id)
         batch.set(docRef, newDraft)

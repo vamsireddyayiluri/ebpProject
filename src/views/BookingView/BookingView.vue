@@ -528,6 +528,7 @@ onMounted(async () => {
                   :scac-list="d.scacList"
                   :menu-btn="false"
                   required
+                  :disabled="expired || completed"
                   :validate-scacs="
                     fromDraft || fromHistory
                       ? bookingRulesStore.rules?.preferredCarrierWindow > 0
