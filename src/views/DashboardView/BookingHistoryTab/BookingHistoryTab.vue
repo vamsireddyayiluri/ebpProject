@@ -92,11 +92,11 @@ const applyFilter = () => {
     ).value
   }
   if (filters.value.loadingDate) {
+    const targetDate = moment(filters.value.loadingDate).endOf('day').format();
     filteredData = useArrayFilter(
       filteredData,
-      booking =>
-        getSmallerDate(booking.details) === moment(filters.value.loadingDate).endOf('day').format(),
-    ).value
+      booking => booking.details.some(detail => detail.loadingDate === targetDate)
+    ).value;
   }
   computedFilteredEntities.value = filteredData
 }

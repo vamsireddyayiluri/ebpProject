@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
+import { doc, updateDoc } from 'firebase/firestore'
 import { db } from '~/firebase'
 import { useAlertStore } from '~/stores/alert.store'
 import { useAuthStore } from '~/stores/auth.store'

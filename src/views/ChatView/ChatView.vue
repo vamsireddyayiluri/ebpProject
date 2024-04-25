@@ -4,7 +4,6 @@ import { useChatStore } from '~/stores/chat.store'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth.store'
 import { useAlertStore } from '~/stores/alert.store'
-import { getTruckers } from '~/stores/helpers'
 
 const messageActions = [
   {
@@ -97,7 +96,7 @@ const createChat = async participantId => {
 <template>
   <Main>
     <ProgressLinear
-      v-if="!chats.length && !allParticipants.length"
+      v-if="loading && !allParticipants.length"
       indeterminate
     />
     <ChatWindow
