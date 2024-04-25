@@ -16,7 +16,6 @@ const tableHeight = ref(0)
 
 onMounted(async () => {
   statistics.value = await statisticsStore.statisticsByTrucker()
-  console.log('-> statistics.value', statistics.value)
 })
 const tableId = 'statisticsBookingsTable'
 onMounted(() => {

@@ -41,14 +41,17 @@ const groupBookingsByMonth = bookings => {
   return map(Array(12).fill(0), (_, i) => get(countsByMonth, i, 0))
 }
 
-const groupBySSL = bookings =>
-  map(groupBy(bookings, 'line.label'), (group, line) => ({
-    line,
+const groupBySSL = bookings => {
+  return map(groupBy(bookings, 'line.label'), (group, line) => ({
+    line: group[0].line,
     jointBookings: group.length,
-    averageFulfillmentTime: meanBy(group, ({ created, updated }) =>
-      moment(updated).diff(moment(created), 'hours', true),
+    averageFulfillmentTime: meanBy(group, ({ createdAt, updated }) =>
+      moment(updated).diff(moment(createdAt), 'hours', true),
     ).toFixed(2),
+    completed: filter(group, { status: 'completed' }).length,
+    fulfillmentTime: group,
   }))
+}
 
 const calculateTruckerStats = (bookings, commitments) => {
   const truckerInfo = flatMap(bookings, ({ carriers, createdAt, updatedAt, status, ref }) => {
@@ -81,10 +84,10 @@ const calculateTruckerStats = (bookings, commitments) => {
 }
 
 const groupBookingsByYard = (bookings, locations) =>
-  map(locations, ({ id, address }) => ({
+  map(locations, ({ id, value }) => ({
     id,
-    location: { id, address },
-    entities: filter(bookings, ({ location }) => location.address === address),
+    location: { id, address: value },
+    entities: filter(bookings, ({ location }) => location.address === value),
   }))
 
 export {

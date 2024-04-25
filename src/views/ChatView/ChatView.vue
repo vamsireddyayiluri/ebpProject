@@ -95,7 +95,7 @@ const createChat = async participantId => {
 <template>
   <Main>
     <ProgressLinear
-      v-if="!chats.length && !allParticipants.length"
+      v-if="loading && !chats.length && !allParticipants.length"
       indeterminate
     />
     <ChatWindow

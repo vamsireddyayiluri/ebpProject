@@ -1,13 +1,10 @@
-import { defineStore, storeToRefs } from 'pinia'
+import { defineStore } from 'pinia'
 import {
-  collection,
   doc,
   getDoc,
   onSnapshot,
-  query,
   setDoc,
   updateDoc,
-  where,
 } from 'firebase/firestore'
 import { db } from '~/firebase'
 import { useAlertStore } from '~/stores/alert.store'
@@ -178,6 +175,10 @@ export const useNotificationStore = defineStore('notification', () => {
     }
   }
 
+  const reset = () => {
+    notifications.value = []
+  }
+
   return {
     notifications,
     addNewNotification,
@@ -190,5 +191,6 @@ export const useNotificationStore = defineStore('notification', () => {
     getNotifications,
     readAllNotifications,
     readNotification,
+    reset,
   }
 })

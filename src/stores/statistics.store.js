@@ -55,10 +55,11 @@ export const useStatisticsStore = defineStore('statistics', () => {
     isLoading.value = true
     const bookings = await getBookingsQuery()
     const groupedBySSL = groupBySSL(bookings)
+    console.log("-> groupedBySSL", groupedBySSL);
     const data = {
       bySSL: groupedBySSL,
       fulfillmentRate: {
-        categories: groupedBySSL.map(({line}) => line),
+        categories: groupedBySSL.map(({line}) => line.label),
         series: [
           {
             data: groupedBySSL.map(({jointBookings}) => jointBookings),
@@ -81,9 +82,11 @@ export const useStatisticsStore = defineStore('statistics', () => {
   }
 
   const statisticsByYard = async () => {
+    isLoading.value = true
     const locations = await authStore.orgData.locations
     const bookings = await getBookingsQuery()
     const groupedByYard = groupBookingsByYard(bookings, locations)
+    isLoading.value = false
 
     return groupedByYard
   }
