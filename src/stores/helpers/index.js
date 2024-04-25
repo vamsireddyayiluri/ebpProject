@@ -21,9 +21,7 @@ export const getOrgId = async (email = '') => {
   const inviteDoc = invitationsCollection.docs[0]
 
   const orgQuery = query(collection(db, 'organizations'), where('email', '==', email))
-
   const organizationsCollection = await getDocs(orgQuery)
-
   const organizationDoc = organizationsCollection.docs[0]
 
   if (organizationDoc) {
@@ -102,6 +100,7 @@ export const groupBookings = objects => {
       ]
       groupedObject[key].ids = [obj.id]
       groupedObject[key].committed = obj.committed
+      delete groupedObject[key].loadingDate
 
       // groupedObject[key].id = key
     }

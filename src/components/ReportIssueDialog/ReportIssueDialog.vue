@@ -33,6 +33,8 @@ const checkValue = value => {
     return `Value should not be greater than ${committed.value}`
   } else if (value <= 0 || !Number.isInteger(value)) {
     return 'Value should be positive integer'
+  }else{
+    return true
   }
 }
 watch(reportReason, () => {
@@ -94,7 +96,7 @@ watch(reportReason, () => {
     </template>
     <Button
       class="w-full mt-6"
-      :disabled="!reportReason || (extended && !yourReason) || (containers && !onBoardedContainers)"
+      :disabled="!reportReason || (extended && !yourReason) || (containers && !onBoardedContainers) || (reportReason===onboardingCodes.onboardMovedLoad && checkValue(onBoardedContainers)!==true)"
       :loading="loading"
       @click="onReport"
     >

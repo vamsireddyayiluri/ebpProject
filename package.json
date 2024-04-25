@@ -25,6 +25,7 @@
     "moment-timezone": "^0.5.40",
     "pinia": "^2.0.29",
     "postcss": "^8.4.23",
+    "posthog-js": "^1.128.2",
     "sass": "^1.57.1",
     "tailwindcss": "^3.3.3",
     "uid": "^2.0.1",

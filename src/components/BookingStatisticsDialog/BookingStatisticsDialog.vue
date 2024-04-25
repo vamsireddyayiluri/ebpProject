@@ -1,6 +1,7 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
 import { getBookingLoad } from '~/helpers/countings'
+import moment from 'moment-timezone'
 
 const props = defineProps({
   booking: Object,
@@ -8,6 +9,11 @@ const props = defineProps({
 const emit = defineEmits(['close', 'goToBookingPage'])
 const router = useRouter()
 const selectedBooking = ref(false)
+const getTimeLine = timeLine => {
+  return timeLine?.map(val => {
+    return { title: val.message, date: moment(val.time_stamp).format('MM/DD/YYYY hh:mm:ss a') }
+  })
+}
 </script>
 
 <template>
@@ -83,26 +89,7 @@ const selectedBooking = ref(false)
           Timeline
         </Typography>
         <Timeline
-          :items="[
-            {
-              title: 'RCAS commited 25 containers',
-              date: '02/20/2022 5:23:17 am',
-              type: 'icon',
-            },
-            {
-              title: 'Booking is 100% fullfilled',
-              date: '02/20/2022 5:23:17 am',
-            },
-            {
-              title: 'Expiring date approaching',
-              date: '02/20/2022 5:23:17 am',
-            },
-            {
-              title: 'OLAP cancelled 10 containers',
-              date: '02/20/2022 5:23:17 am',
-              type: 'icon',
-            },
-          ]"
+          :items="getTimeLine(selectedBooking?.timeLine)"
           variant="vertical"
           class="mb-10"
         />
