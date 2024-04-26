@@ -151,12 +151,12 @@ export const statisticsTruckersHeaders = [
     width: 3,
   },
   {
-    text: 'Taken bookings',
-    value: 'takenBookings',
+    text: 'Committed',
+    value: 'committed',
   },
   {
-    text: 'Taken/onboarded',
-    value: 'takenOnboarded',
+    text: 'Committed/fulfilled',
+    value: 'committedFulfilled',
   },
   {
     text: 'Performance',

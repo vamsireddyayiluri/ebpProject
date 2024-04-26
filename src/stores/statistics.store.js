@@ -33,6 +33,18 @@ export const useStatisticsStore = defineStore('statistics', () => {
     }
   }
 
+  const getCommitmentsQuery = async () => {
+    try {
+      const queryValue = query(collection(db, 'commitments'))
+      const querySnapshot = await getDocs(queryValue)
+
+      return querySnapshot.docs.map(doc => doc.data())
+    } catch (error) {
+      console.error('Failed to fetch commitments:', error)
+      throw error
+    }
+  }
+
   const statisticsOverall = async () => {
     isLoading.value = true
     const bookings = await getBookingsQuery()
@@ -83,7 +95,8 @@ export const useStatisticsStore = defineStore('statistics', () => {
   const statisticsByTrucker = async () => {
     isLoading.value = true
     const bookings = await getBookingsQuery()
-    const truckerStats = calculateTruckerStats(bookings)
+    const commitments = await getCommitmentsQuery()
+    const truckerStats = calculateTruckerStats(bookings, commitments)
     isLoading.value = false
 
     return truckerStats
