@@ -196,13 +196,15 @@ const saveDraft = async () => {
 }
 
 const saveBooking = async () => {
-  const commitmentsList = await commitmentStore.getExpiredCommitments()
+  const commitmentsList = await commitmentStore.getExpiredCommitments(
+    booking.value.location.geohash,
+  )
   if (commitmentsList?.length) {
     bookingConfirmationDialog.value.show(true)
     bookingConfirmationDialog.value.data = commitmentsList
-  } else {
-    createBooking(booking.value, newBookings.value)
-    emit('close')
+  } else { 
+  createBooking(booking.value, newBookings.value)
+  emit('close')
   }
 }
 const updateRef = async e => {
@@ -214,9 +216,11 @@ const updateRef = async e => {
     }
   }
 }
-const closeConfirmBookingDialog = () => {
-  bookingConfirmationDialog.value.show(false)
-  bookingConfirmationDialog.value.data = null
+const closeConfirmBookingDialog = (isPending = false) => {
+  if (!isPending) {
+    bookingConfirmationDialog.value.show(false)
+    bookingConfirmationDialog.value.data = null
+  }
 }
 const onClickOutsideDialog = () => {
   confirmClickedOutside.value = true
@@ -225,6 +229,7 @@ const onClickOutsideDialog = () => {
     confirmClickedOutside.value = false
   }, 1000)
 }
+
 onMounted(async () => {
   await workDetailsStore.getYards()
 })
@@ -450,6 +455,7 @@ onMounted(async () => {
         :commitments="bookingConfirmationDialog.data"
         :clicked-outside="confirmClickedOutside"
         @close="closeConfirmBookingDialog"
+        @checkPending="e => closeConfirmBookingDialog(e)"
       />
     </template>
   </Dialog>

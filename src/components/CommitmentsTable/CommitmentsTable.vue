@@ -1,24 +1,37 @@
 <script setup>
-import { useActions, useHeaders } from '~/composables'
+import { useActions, useHeaders, useDate } from '~/composables'
 import { useCommitmentsStore } from '~/stores/commitments.store'
-import { declineCodes, onboardingCodes } from '~/constants/reasonCodes'
+import { canceledCodes, declineCodes, onboardingCodes } from '~/constants/reasonCodes'
 
 const props = defineProps({
   commitments: Array,
 })
-const { approveCommitment, declineCommitment, completeCommitment } = useCommitmentsStore()
+const { approveCommitment, declineCommitment, completeCommitment, edit_commitment_loadingDate } =
+  useCommitmentsStore()
 const { commitmentsHeaders } = useHeaders()
 const { commitmentsActions } = useActions()
-
+const commitmentStore = useCommitmentsStore()
+const pendingCommitments = ref(props.commitments)
 const showActions = ref(true)
 const commitmentDetailsDialog = ref(null)
 const completeCommitmentDialog = ref(null)
+const cancelCommitmentDialog = ref(false)
+const { getFormattedDate, getSmallerDate } = useDate()
+
 const declineCommitmentDialog = ref(null)
+const loadingDateDialog = ref(false)
+const isloading = ref(false)
+const loadCompleteCommitment = ref(false)
+
 const completeReasonList = [
   onboardingCodes.onboarded,
   onboardingCodes.onboardMovedLoad,
-  onboardingCodes.neverOnboarded,
-  onboardingCodes.other,
+  onboardingCodes.inComplete,
+]
+const cancelReasonList = [
+  canceledCodes.capacityNotAvailable,
+  canceledCodes.equipmentNotAvailable,
+  canceledCodes.other,
 ]
 const declineReasonList = [
   declineCodes.bookingCanceled,
@@ -26,6 +39,7 @@ const declineReasonList = [
   declineCodes.tenderedElsewhere,
   declineCodes.other,
 ]
+const emit = defineEmits(['close'])
 
 const containerActionHandler = async ({ action, e }) => {
   if (action === 'view-trucker-details') {
@@ -36,39 +50,83 @@ const containerActionHandler = async ({ action, e }) => {
     await approveCommitment(e[0])
   }
   if (action === 'complete-commitment') {
-    openCompleteCommitmentDialog(e[0].id)
+    openCompleteCommitmentDialog(e[0])
+  }
+  if (action === 'update-loadingdate') {
+    openLoadingDateDialog(e[0])
   }
   if (action === 'decline-commitment') {
     openDeclineCommitmentDialog(e[0].id)
+  }
+  if (action === 'cancel-commitment') {
+    openCancelCommitmentDialog(e[0])
   }
 }
 const onApproveCommitment = async commitment => {
   commitmentDetailsDialog.value.show(false)
   await approveCommitment(commitment)
 }
-const openCompleteCommitmentDialog = id => {
+const openCompleteCommitmentDialog = commitment => {
   completeCommitmentDialog.value.show(true)
-  completeCommitmentDialog.value.data = id
+  completeCommitmentDialog.value.data = commitment
 }
 const openDeclineCommitmentDialog = id => {
   declineCommitmentDialog.value.show(true)
   declineCommitmentDialog.value.data = id
 }
-const onCompleteCommitment = async (id, reason) => {
-  await completeCommitment(id, reason)
+const openCancelCommitmentDialog = commiment => {
+  cancelCommitmentDialog.value.show(true)
+  cancelCommitmentDialog.value.data = commiment
+}
+const onCompleteCommitment = async (data, reason, onBoardedContainers) => {
+  loadCompleteCommitment.value = true
+  await completeCommitment(data, reason, onBoardedContainers)
+  const index = pendingCommitments.value.findIndex(i => {
+    return data.id === i.id
+  })
+  pendingCommitments.value.splice(index, 1)
   completeCommitmentDialog.value.show(false)
   commitmentDetailsDialog.value.show(false)
+  loadCompleteCommitment.value = false
+  emit('close', pendingCommitments.value.length > 0)
+}
+const openLoadingDateDialog = commitment => {
+  loadingDateDialog.value.show(true)
+  loadingDateDialog.value.data = commitment
+}
+const onCancelCommitment = async (commiment, reason) => {
+  cancelCommitmentDialog.value.show(false)
+  commitmentDetailsDialog.value.show(false)
+  await cancelCommitment(commiment, reason)
+  const index = pendingCommitments.value.findIndex(i => {
+    return commiment.id === i.id
+  })
+  pendingCommitments.value.splice(index, 1)
+  emit('close', pendingCommitments.value.length > 0)
 }
 const onDeclineCommitment = async reason => {
   declineCommitmentDialog.value.show(false)
   commitmentDetailsDialog.value.show(false)
   await declineCommitment(declineCommitmentDialog.value.data, reason)
 }
+const onLoadingDateUpdated = async (data, loadingDate) => {
+  isloading.value = true
+  await edit_commitment_loadingDate(data.id, loadingDate)
+  const index = pendingCommitments.value.findIndex(i => {
+    return data.id === i.id
+  })
+  pendingCommitments.value.splice(index, 1)
+
+  loadingDateDialog.value.show(false)
+  emit('close', pendingCommitments.value.length > 0)
+
+  isloading.value = false
+}
 </script>
 
 <template>
   <VirtualTable
-    :entities="commitments"
+    :entities="pendingCommitments"
     :headers="commitmentsHeaders"
     :options="{
       rowHeight: 64,
@@ -85,6 +143,11 @@ const onDeclineCommitment = async reason => {
     <template #committed="{ item }">
       <Typography>
         {{ item.committed }}
+      </Typography>
+    </template>
+    <template #loadingDate="{ item }">
+      <Typography type="text-body-m-regular">
+        {{ getFormattedDate(item.loadingDate) }}
       </Typography>
     </template>
     <template #status="{ item }">
@@ -123,12 +186,47 @@ const onDeclineCommitment = async reason => {
     <template #text>
       <ReportIssueDialog
         title="Complete commitment"
-        sub-title="Did you onboard and work with halo lab delivery successfully?"
+        :sub-title="`Confirm number of loads moved by ${completeCommitmentDialog.data.truckerCompany}`"
         select-label="Select"
         :reason-list="completeReasonList"
         btn-name="confirm"
+        :committed="completeCommitmentDialog.data.committed"
+        :loading="loadCompleteCommitment"
         @close="completeCommitmentDialog.show(false)"
-        @onClickBtn="e => onCompleteCommitment(completeCommitmentDialog.data, e)"
+        @onClickBtn="
+          (e, containers) => onCompleteCommitment(completeCommitmentDialog.data, e, containers)
+        "
+      />
+    </template>
+  </Dialog>
+  <Dialog
+    ref="loadingDateDialog"
+    max-width="480"
+  >
+    <template #text>
+      <UpdateLoadingDateDialog
+        :sub-title="`Edit loading date for ${loadingDateDialog.data.truckerCompany}`"
+        btn-name="Update"
+        :loading="isloading"
+        :loadingDate="loadingDateDialog.data.loadingDate"
+        @close="loadingDateDialog.show(false)"
+        @onClickUpdate="loadingDate => onLoadingDateUpdated(loadingDateDialog.data, loadingDate)"
+      />
+    </template>
+  </Dialog>
+  <Dialog
+    ref="cancelCommitmentDialog"
+    max-width="480"
+  >
+    <template #text>
+      <ReportIssueDialog
+        title="Cancel commitment"
+        sub-title="Choose the reason why you want to cancel commitment"
+        select-label="Select"
+        :reason-list="cancelReasonList"
+        btn-name="cancel"
+        @close="cancelCommitmentDialog.show(false)"
+        @onClickBtn="e => onCancelCommitment(cancelCommitmentDialog.data, e)"
       />
     </template>
   </Dialog>

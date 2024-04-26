@@ -7,6 +7,7 @@ import moment from 'moment-timezone'
 import { useDisplay } from 'vuetify'
 import { getBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
+import { useCommitmentsStore } from '~/stores/commitments.store'
 import { storeToRefs } from 'pinia'
 import { statuses } from '~/constants/statuses'
 import { cloneDeep, isEqual, pickBy, isNull, sumBy } from 'lodash'
@@ -39,6 +40,7 @@ const {
   duplicateBooking,
   getBookingHistory,
 } = useBookingsStore()
+const commitmentStore = useCommitmentsStore()
 
 const workDetailsStore = useWorkDetailsStore()
 const { yards } = storeToRefs(workDetailsStore)
@@ -59,6 +61,9 @@ const validExpiryDate = ref(false)
 const insuranceItems = ref(insuranceTypes)
 const isSaveLoading = ref(false)
 const originalBooking = ref(null)
+const bookingConfirmationDialog = ref(null)
+const confirmClickedOutside = ref(null)
+
 const rules = {
   checkcommitted: value => checkCommittedValue(value, booking.value),
   averageWeight: value => validateAverageWeight(value, booking.value.location),
@@ -98,12 +103,21 @@ const expired = computed(() => booking.value?.status === statuses.expired)
 const pending = computed(() => booking.value?.status === statuses.pending)
 
 const handleBookingChanges = async () => {
+  const commitmentsList = await commitmentStore.getExpiredCommitments(
+    booking.value.location.geohash,
+  )
   if (fromDraft) {
     // booking.value.loadingDate = moment(booking.value.loadingDate).endOf('day').format()
     // booking.value.preferredDate = moment(booking.value.preferredDate).endOf('day').format()
-    const res = await publishDraft(booking.value)
-    if (res === 'published') {
-      router.push('/dashboard')
+
+    if (commitmentsList?.length) {
+      bookingConfirmationDialog.value.show(true)
+      bookingConfirmationDialog.value.data = commitmentsList
+    } else {
+      const res = await publishDraft(booking.value)
+      if (res === 'published') {
+        router.push('/dashboard')
+      }
     }
   } else {
     const res = await removeFromNetwork(booking.value)
@@ -127,6 +141,19 @@ const handleAction = async e => {
       booking.value.ref = null
     }
   }
+}
+const closeConfirmBookingDialog = (isPending = false) => {
+  if (!isPending) {
+    bookingConfirmationDialog.value.show(false)
+    bookingConfirmationDialog.value.data = null
+  }
+}
+const onClickOutsideDialog = () => {
+  confirmClickedOutside.value = true
+  closeConfirmBookingDialog()
+  setInterval(() => {
+    confirmClickedOutside.value = false
+  }, 1000)
 }
 const animate = async () => {
   activated.value = true
@@ -199,11 +226,22 @@ const onSave = async () => {
   // booking.value.preferredDate = moment(booking.value.preferredDate).endOf('day').format()
   if (activated) {
     if (expired.value) {
-      await reactivateBooking(booking.value)
-      await router.push({ name: 'dashboard' })
-      activated.value = false
+      const commitmentsList = await commitmentStore.getExpiredCommitments(
+        booking.value.location.geohash,
+      )
+      if (commitmentsList?.length) {
+        bookingConfirmationDialog.value.show(true)
+        bookingConfirmationDialog.value.data = commitmentsList
+        isSaveLoading.value = false
 
-      return
+        return
+      } else {
+        await reactivateBooking(booking.value)
+        await router.push({ name: 'dashboard' })
+        activated.value = false
+
+        return
+      }
     }
     if (completed.value) {
       // await duplicateBooking(booking.value)
@@ -221,7 +259,7 @@ const onSave = async () => {
 }
 
 const getTimeLine = timeLine => {
-  return timeLine.map(val => {
+  return timeLine?.map(val => {
     return { title: val.message, date: moment(val.time_stamp).format('MM/DD/YYYY hh:mm:ss a') }
   })
 }
@@ -254,10 +292,11 @@ onMounted(async () => {
 
   // bookings.value = targetBookings
   originalBooking.value = cloneDeep(targetBookings.find(val => val.ids.includes(route.params.id)))
-  booking.value = JSON.parse(JSON.stringify(originalBooking?.value))
+  booking.value = JSON?.parse(JSON?.stringify(originalBooking?.value))
   if (fromHistory && queryParams.activated) {
     animate()
   }
+  await workDetailsStore.getYards()
 
   yards.value = workDetailsStore.yards
   loading.value = false
@@ -631,6 +670,20 @@ onMounted(async () => {
           from your bookings?
         </Typography>
       </ConfirmationDialog>
+    </template>
+  </Dialog>
+  <Dialog
+    ref="bookingConfirmationDialog"
+    class="max-w-full sm:max-w-[90vw] md:max-w-[75vw]"
+    @update:modelValue="onClickOutsideDialog"
+  >
+    <template #text>
+      <BookingConfirmationDialog
+        :commitments="bookingConfirmationDialog.data"
+        :clicked-outside="confirmClickedOutside"
+        @close="closeConfirmBookingDialog"
+        @checkPending="e => closeConfirmBookingDialog(e)"
+      />
     </template>
   </Dialog>
 </template>

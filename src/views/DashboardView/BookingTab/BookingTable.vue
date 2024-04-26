@@ -8,6 +8,7 @@ import { useCommitmentsStore } from '~/stores/commitments.store'
 import { canceledCodes, declineCodes, onboardingCodes } from '~/constants/reasonCodes'
 import { statuses } from '~/constants/statuses'
 import { handleQueryUrlForCommitments } from '~/helpers/links'
+import { getLocalTime } from '@qualle-admin/qutil/dist/date'
 
 const props = defineProps({
   computedEntities: Array,
@@ -28,12 +29,14 @@ const {
   completeCommitment,
   edit_commitment_loadingDate,
 } = useCommitmentsStore()
+const commitmentStore = useCommitmentsStore()
 
 const authStore = useAuthStore()
 const { smAndDown } = useDisplay()
 const router = useRouter()
 const showActions = ref(true)
 const tableHeight = ref(0)
+const bookingConfirmationDialog = ref(null)
 const removeBookingDialog = ref(false)
 const cancelBookingDialog = ref(false)
 const approveCommitmentDialog = ref(false)
@@ -43,6 +46,8 @@ const loadingDateDialog = ref(false)
 const cancelCommitmentDialog = ref(false)
 const loadCompleteCommitment = ref(false)
 const isloading = ref(false)
+const confirmClickedOutside = ref(null)
+
 const completeReasonList = [
   onboardingCodes.onboarded,
   onboardingCodes.onboardMovedLoad,
@@ -71,41 +76,55 @@ const bookingStatus = item => {
   return booking?.status
 }
 const containerActionHandler = async ({ action, e }) => {
-  if (action === 'edit-booking') emit('editBooking', e[0].id)
-  if (action === 'remove-booking') {
-    removeBookingDialog.value.show(true)
-    removeBookingDialog.value.data = e[0]
+  let validActions = false
+  if (e[0].loadingDate >= getLocalTime().format()) {
+    const commitmentsList = await commitmentStore.getExpiredCommitments(e[0].location.geohash)
+    if (commitmentsList?.length) {
+      bookingConfirmationDialog.value.show(true)
+      bookingConfirmationDialog.value.data = commitmentsList
+    } else {
+      validActions = true
+    }
+  } else {
+    validActions = true
   }
-  if (action === 'cancel-booking') {
-    openCancelBookingDialog(e[0])
-  }
-  if (action === 'pause-booking') {
-    await updateBookingStatus(e[0], statuses.paused)
-  }
-  if (action === 'reactive-booking') {
-    await updateBookingStatus(e[0], statuses.active)
-  }
-  if (action === 'duplicate-booking') {
-    emit('duplicateBooking', e[0].ids)
-  }
-  if (action === 'view-trucker-details') {
-    commitmentDetailsDialog.value.show(true)
-    commitmentDetailsDialog.value.data = e[0]
-  }
-  if (action === 'approve-commitment') {
-    openApproveCommitmentDialog(e[0])
-  }
-  if (action === 'complete-commitment') {
-    openCompleteCommitmentDialog(e[0])
-  }
-  if (action === 'update-loadingdate') {
-    openLoadingDateDialog(e[0])
-  }
-  if (action === 'decline-commitment') {
-    openDeclineCommitmentDialog(e[0])
-  }
-  if (action === 'cancel-commitment') {
-    openCancelCommitmentDialog(e[0])
+  if (validActions) {
+    if (action === 'edit-booking') emit('editBooking', e[0].id)
+    if (action === 'remove-booking') {
+      removeBookingDialog.value.show(true)
+      removeBookingDialog.value.data = e[0]
+    }
+    if (action === 'cancel-booking') {
+      openCancelBookingDialog(e[0])
+    }
+    if (action === 'pause-booking') {
+      await updateBookingStatus(e[0], statuses.paused)
+    }
+    if (action === 'reactive-booking') {
+      await updateBookingStatus(e[0], statuses.active)
+    }
+    if (action === 'duplicate-booking') {
+      emit('duplicateBooking', e[0].ids)
+    }
+    if (action === 'view-trucker-details') {
+      commitmentDetailsDialog.value.show(true)
+      commitmentDetailsDialog.value.data = e[0]
+    }
+    if (action === 'approve-commitment') {
+      openApproveCommitmentDialog(e[0])
+    }
+    if (action === 'complete-commitment') {
+      openCompleteCommitmentDialog(e[0])
+    }
+    if (action === 'update-loadingdate') {
+      openLoadingDateDialog(e[0])
+    }
+    if (action === 'decline-commitment') {
+      openDeclineCommitmentDialog(e[0])
+    }
+    if (action === 'cancel-commitment') {
+      openCancelCommitmentDialog(e[0])
+    }
   }
 }
 const onSelectRow = e => {
@@ -187,7 +206,19 @@ const openCommitmentsDialogOnUrlChange = async () => {
     (commitmentDetailsDialog.value.show(true), (commitmentDetailsDialog.value.data = commitment))
 }
 const tableId = 'bookingsTable'
-
+const closeConfirmBookingDialog = (isPending = false) => {
+  if (!isPending) {
+    bookingConfirmationDialog.value.show(false)
+    bookingConfirmationDialog.value.data = null
+  }
+}
+const onClickOutsideDialog = () => {
+  confirmClickedOutside.value = true
+  closeConfirmBookingDialog()
+  setInterval(() => {
+    confirmClickedOutside.value = false
+  }, 1000)
+}
 onMounted(async () => {
   setTimeout(() => {
     const table = document.getElementById(tableId)
@@ -439,6 +470,20 @@ watch(
         btn-name="cancel"
         @close="cancelCommitmentDialog.show(false)"
         @onClickBtn="e => onCancelCommitment(cancelCommitmentDialog.data, e)"
+      />
+    </template>
+  </Dialog>
+  <Dialog
+    ref="bookingConfirmationDialog"
+    class="max-w-full sm:max-w-[90vw] md:max-w-[75vw]"
+    @update:modelValue="onClickOutsideDialog"
+  >
+    <template #text>
+      <BookingConfirmationDialog
+        :commitments="bookingConfirmationDialog.data"
+        :clicked-outside="confirmClickedOutside"
+        @close="closeConfirmBookingDialog"
+        @checkPending="e => closeConfirmBookingDialog(e)"
       />
     </template>
   </Dialog>

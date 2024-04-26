@@ -233,7 +233,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
     }
   }
 
-  const getExpiredCommitments = async () => {
+  const getExpiredCommitments = async geohash => {
     try {
       const { orgId } = authStore.userData
       const today = getLocalTime().format()
@@ -245,7 +245,9 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       )
 
       const snapshotData = await getDocs(query34)
-      const commitments = snapshotData.docs.map(doc => doc.data())
+      let commitments = snapshotData.docs.map(doc => doc.data())
+      commitments = commitments.filter(obj => obj.location.geohash === geohash)
+
       return commitments || []
     } catch ({ message }) {
       alertStore.warning({ content: message })

@@ -5,6 +5,10 @@ import { getColor } from '~/helpers/colors'
 const props = defineProps({
   commitments: Array,
 })
+const emit = defineEmits(['checkPending'])
+const checkPending = e => {
+  emit('checkPending', e)
+}
 </script>
 
 <template>
@@ -13,14 +17,17 @@ const props = defineProps({
       :src="logo"
       alt="qualle logo"
       class="h-9 mx-auto mb-4"
-    >
+    />
     <Typography
       :color="getColor('textPrimary')"
       class="text-center mb-8"
     >
-      Please complete the approved/pending commitments for the previous bookings you created before
-      creating a new one. Thank You.
+      Please perform actions on approved/pending commitments for the previous booking before
+      creating a new booking with the same export yard. Thank You.
     </Typography>
-    <CommitmentsTable :commitments="commitments" />
+    <CommitmentsTable
+      :commitments="commitments"
+      @close="e => checkPending(e)"
+    />
   </div>
 </template>
