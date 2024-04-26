@@ -51,10 +51,6 @@ onMounted(async () => {
         :value="statistics?.successfullyBookingsMonthVolatility[0]?.change || 0"
       />
     </div>
-    <ActivityStatisticsChart
-      v-if="statistics"
-      :categories="statistics?.activityStatistic?.categories"
-      :series="statistics?.activityStatistic?.series"
-    />
+    <ActivityStatisticsChart />
   </template>
 </template>

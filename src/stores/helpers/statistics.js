@@ -34,11 +34,43 @@ const calculateAverageTimes = commitments => {
 }
 
 const getMonthsArray = () => map(Array(12), (_, i) => moment().month(i).format('MMM'))
+const getDaysInMonth = (year, month) => {
+  const daysInMonth = moment(`${year}-${month}`, "YYYY-MM").daysInMonth()
+  let daysArray = []
+  for (let i = 1; i <= daysInMonth; i++) {
+    daysArray.push(i)
+  }
 
-const groupBookingsByMonth = bookings => {
-  const countsByMonth = countBy(bookings, ({ created }) => moment(created).month())
+  return daysArray
+}
+
+const groupBookingsByMonth = (bookings, year) => {
+  const countsByMonth = countBy(bookings, booking => {
+    const bookingDate = moment(booking.createdAt)
+
+    return bookingDate.year() === year ? bookingDate.month() : -1
+  })
 
   return map(Array(12).fill(0), (_, i) => get(countsByMonth, i, 0))
+}
+
+const groupBookingsByDays = (bookings, year, month) => {
+  const date = moment(`${year} ${month}`, "YYYY MMM")
+  const startOfMonth = date.clone().startOf('month')
+  const endOfMonth = date.clone().endOf('month')
+  const filteredBookings = bookings.filter(booking =>
+    moment(booking.createdAt).isBetween(startOfMonth, endOfMonth, undefined, '[]'),
+  )
+  const countsByDay = countBy(filteredBookings, ({ createdAt }) =>
+    moment(createdAt).format('YYYY-MM-DD'),
+  )
+  const daysOfMonth = startOfMonth.daysInMonth()
+
+  return map(Array.from({ length: daysOfMonth }), (item, index) => {
+    const day = startOfMonth.clone().add(index, 'days').format('YYYY-MM-DD')
+
+    return get(countsByDay, day, 0)
+  })
 }
 
 const groupBySSL = bookings => {
@@ -92,7 +124,9 @@ const groupBookingsByYard = (bookings, locations) =>
 export {
   calculateMonthlyAverage,
   getMonthsArray,
+  getDaysInMonth,
   groupBookingsByMonth,
+  groupBookingsByDays,
   groupBySSL,
   calculateTruckerStats,
   groupBookingsByYard,
