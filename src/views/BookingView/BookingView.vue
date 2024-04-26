@@ -13,6 +13,7 @@ import { statuses } from '~/constants/statuses'
 import { cloneDeep, isEqual, pickBy, isNull, sumBy } from 'lodash'
 import container from '~/assets/images/container.png'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
+import { useBookingRulesStore } from '~/stores/bookingRules.store'
 import containersSizes from '~/fixtures/containersSizes.json'
 import { useAlertStore } from '~/stores/alert.store'
 import {
@@ -24,6 +25,7 @@ import {
   checkUniqueDates,
 } from '~/helpers/validations-functions'
 import { insuranceTypes } from '~/constants/settings'
+import { getLocalTime } from '@qualle-admin/qutil/dist/date'
 
 const authStore = useAuthStore()
 const alertStore = useAlertStore()
@@ -43,6 +45,8 @@ const {
 const commitmentStore = useCommitmentsStore()
 
 const workDetailsStore = useWorkDetailsStore()
+const bookingRulesStore = useBookingRulesStore()
+
 const { yards } = storeToRefs(workDetailsStore)
 const { bookings, drafts, notGroupedBookings: activeBookings } = storeToRefs(useBookingsStore())
 const route = useRoute()
@@ -80,9 +84,6 @@ const rules = {
 
 const updateExpiryDate = (value, index) => {
   booking.value.details[index].loadingDate = moment(value).endOf('day').format()
-}
-const updatePreferredDate = value => {
-  booking.value.preferredDate = moment(value).endOf('day').format()
 }
 const updateSize = () => {
   booking.value.size = null
@@ -417,6 +418,7 @@ onMounted(async () => {
             v-model.trim="booking.ref"
             label="Booking ref*"
             required
+            :rules="[rules.required, rules.validateDate(null)]"
             :disabled="pending || expired || (completed && !activated)"
           />
           <Autocomplete
@@ -484,7 +486,7 @@ onMounted(async () => {
             return-object
             :disabled="pending || expired || completed"
           />
-          <div>
+          <div class="col-span-2 sm:col-span-1 md:col-span-2 lg:col-span-1">
             <TextFieldWithSelector
               v-model.number="booking.estimatedRate"
               type="number"
@@ -565,7 +567,12 @@ onMounted(async () => {
                   :scac-list="d.scacList"
                   :menu-btn="false"
                   required
-                  :disabled="pending || expired || completed"
+                  :disabled="expired || completed"
+                  :validate-scacs="
+                    fromDraft || fromHistory
+                      ? bookingRulesStore.rules?.preferredCarrierWindow > 0
+                      : booking.preferredDays > 0
+                  "
                   class="w-3/4"
                 />
                 <!-- <IconButton
@@ -628,7 +635,7 @@ onMounted(async () => {
             <Typography type="text-h4"> Booking timeline </Typography>
             <div class="timeline scrollbar">
               <Timeline
-                :items="getTimeLine(booking.timeLine)"
+                :items="getTimeLine(booking?.timeLine)"
                 :variant="flyoutBottom ? 'horizontal' : 'vertical'"
               />
             </div>

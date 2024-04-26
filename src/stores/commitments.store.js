@@ -78,14 +78,23 @@ export const useCommitmentsStore = defineStore('commitments', () => {
     const booking = await bookingsStore.getBooking({ id: commitment.bookingId })
     const truckerScac = commitment?.details.truckerDetails.truckerScac
     const carrierIndex = booking?.carriers?.findIndex(carrier => carrier?.scac === truckerScac)
-    if (carrierIndex !== -1) {
+    if (booking?.carriers?.length && carrierIndex !== -1) {
       booking.carriers[carrierIndex].approved =
         booking.carriers[carrierIndex].approved + commitment.committed
     } else {
-      booking.carriers.push({
-        scac: truckerScac,
-        approved: commitment.committed,
-      })
+      if (booking?.carriers?.length) {
+        booking.carriers.push({
+          scac: truckerScac,
+          approved: commitment.committed,
+        })
+      } else {
+        booking.carriers = [
+          {
+            scac: truckerScac,
+            approved: commitment.committed,
+          },
+        ]
+      }
     }
 
     return booking.carriers
@@ -186,7 +195,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         }
       })
 
-      // find booking
+      /*// find booking
       const booking = bookingsStore.allBookings.find(i => i.id === commitment.bookingId)
       if (booking?.carriers) {
         const truckerScac = commitment?.details.truckerDetails.truckerScac
@@ -198,7 +207,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       }
       await updateDoc(doc(db, 'bookings', commitment.bookingId), {
         carriers: booking?.carriers,
-      })
+      })*/
       await updateBookingStore(commitment, 'canceled')
       alertStore.info({ content: 'Booking commitment canceled' })
     } catch ({ message }) {

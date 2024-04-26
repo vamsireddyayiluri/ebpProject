@@ -20,7 +20,7 @@ const emit = defineEmits(['selectTableRow', 'editBooking', 'duplicateBooking'])
 
 const bookingsStore = useBookingsStore()
 
-const { deleteBooking, updateBookingStatus, getCommitmentsByBookingId, closeBookingExpansion } =
+const { removeFromNetwork, updateBookingStatus, getCommitmentsByBookingId, closeBookingExpansion } =
   useBookingsStore()
 const {
   approveCommitment,
@@ -162,8 +162,8 @@ const openCancelCommitmentDialog = commiment => {
   cancelCommitmentDialog.value.show(true)
   cancelCommitmentDialog.value.data = commiment
 }
-const removeBooking = booking => {
-  deleteBooking(booking)
+const removeBooking = async booking => {
+  await removeFromNetwork(booking)
   removeBookingDialog.value.show(false)
 }
 const onApproveCommitment = async commitment => {

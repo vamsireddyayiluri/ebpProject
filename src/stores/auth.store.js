@@ -40,6 +40,7 @@ import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { uid } from 'uid'
 import { useProfileStore } from '~/stores/profile.store'
+import posthog from 'posthog-js'
 
 export const useAuthStore = defineStore('auth', () => {
   const router = useRouter()
@@ -88,6 +89,7 @@ export const useAuthStore = defineStore('auth', () => {
     orgData.value = null
     useProfileStore().reset()
     await bookingsStore.reset()
+    notificationStore.reset()
     await router.push({ name: 'login' })
   }
 
@@ -163,6 +165,12 @@ export const useAuthStore = defineStore('auth', () => {
         await getUserData(user.uid)
         if (userData.value) {
           await getOrgData(userData.value.orgId)
+          posthog.init('phc_JX3Xh5Bz6xydEkqDfdgOuAQnh1s6bhQUOYe4MBDRaLp', {
+            api_host: 'https://app.posthog.com',
+            loaded: posthog => {
+              posthog.identify(user.uid, { email: user.email })
+            },
+          })
         } else isLoading.value = false
         if (router.currentRoute.value.name === 'login') {
           router.push({ name: 'dashboard' })
@@ -273,6 +281,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       router.push({ name: 'dashboard' })
     } catch ({ message }) {
+      await deleteDoc(doc(db, 'pending_verifications', data.id))
       alertStore.warning({ content: message })
     }
   }
