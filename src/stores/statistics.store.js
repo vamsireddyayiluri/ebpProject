@@ -50,13 +50,14 @@ export const useStatisticsStore = defineStore('statistics', () => {
     const bookings = await getBookingsQuery()
     const totalBookings = bookings.length
     const totalSuccessful = bookings.filter(({ status }) => status === 'completed').length
+    const totalCanceled = bookings.filter(({ status }) => status === 'canceled').length
     const data = {
       totalNumberOfBookings: totalBookings,
       bookingsMonthVolatility: calculateMonthlyAverage(bookings, 'all'),
       successfullyBookings: totalSuccessful,
       successfullyBookingsMonthVolatility: calculateMonthlyAverage(bookings, 'completed'),
-      removedBookings: 0,
-      removedBookingsMonthVolatility: calculateMonthlyAverage(bookings, 'canceled'),
+      totalCanceled,
+      canceledBookingsMonthVolatility: calculateMonthlyAverage(bookings, 'canceled'),
     }
     isLoading.value = false
 

@@ -1,10 +1,10 @@
-import { countBy, filter, flatMap, get, groupBy, map, meanBy, sum, sumBy } from 'lodash'
+import { countBy, filter, flatMap, get, groupBy, map, meanBy, sumBy } from 'lodash'
 import moment from 'moment'
 
 const calculateMonthlyAverage = (bookings, filterType) => {
   const filteredBookings = filter(
     bookings,
-    ({ status }) => filterType === 'all' || (filterType === 'completed' && status === 'completed'),
+    ({ status }) => filterType === 'all' || status === filterType,
   )
   const countsByMonth = countBy(filteredBookings, ({ createdAt }) => moment(createdAt).month())
 
@@ -16,11 +16,9 @@ const calculateMonthlyAverage = (bookings, filterType) => {
 }
 
 const calculateMonthlyChange = (countsByMonth, month) => {
-  const prevMonth = get(countsByMonth, parseInt(month) - 1, 0)
+  const prevMonth = get(countsByMonth, month - 1, 0)
 
-  return prevMonth
-    ? (((countsByMonth[month] - prevMonth) / prevMonth) * 100).toFixed(2) + '%'
-    : 'N/A'
+  return prevMonth ? (((countsByMonth[month] - prevMonth) / prevMonth) * 100).toFixed(2) : 'N/A'
 }
 
 const calculateAverageAcceptanceTimes = commitments => {
@@ -51,7 +49,7 @@ const calculateAverageFulfillmentTimes = bookings => {
 
 const getMonthsArray = () => map(Array(12), (_, i) => moment().month(i).format('MMM'))
 const getDaysInMonth = (year, month) => {
-  const daysInMonth = moment(`${year}-${month}`, "YYYY-MM").daysInMonth()
+  const daysInMonth = moment(`${year}-${month}`, 'YYYY-MM').daysInMonth()
   let daysArray = []
   for (let i = 1; i <= daysInMonth; i++) {
     daysArray.push(i)
@@ -71,7 +69,7 @@ const groupBookingsByMonth = (bookings, year) => {
 }
 
 const groupBookingsByDays = (bookings, year, month) => {
-  const date = moment(`${year} ${month}`, "YYYY MMM")
+  const date = moment(`${year} ${month}`, 'YYYY MMM')
   const startOfMonth = date.clone().startOf('month')
   const endOfMonth = date.clone().endOf('month')
   const filteredBookings = bookings.filter(booking =>
