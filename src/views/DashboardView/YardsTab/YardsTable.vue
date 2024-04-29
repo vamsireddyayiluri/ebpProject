@@ -6,6 +6,7 @@ import { useBookingsStore } from '~/stores/bookings.store'
 import { useAuthStore } from '~/stores/auth.store'
 import { statuses } from '~/constants/statuses'
 import { useCommitmentsStore } from '~/stores/commitments.store'
+import { getLocalTime } from '@qualle-admin/qutil/dist/date'
 
 const props = defineProps({
   computedEntities: Array,
@@ -28,11 +29,24 @@ const confirmClickedOutside = ref(null)
 
 const containerActionHandler = async ({ action, e }) => {
   props.computedEntities.find(yard => yard.id === e[0].location.geohash).expand = true
-  const commitmentsList = await commitmentStore.getExpiredCommitments(e[0].location.geohash)
-  if (commitmentsList?.length) {
-    bookingConfirmationDialog.value.show(true)
-    bookingConfirmationDialog.value.data = commitmentsList
+
+  let validActions = false
+  const details = e[0]?.details
+  const filteredDetails = details?.filter(obj => {
+    return obj.loadingDate >= getLocalTime().format()
+  })
+  if (filteredDetails?.length > 0) {
+    const commitmentsList = await commitmentStore.getExpiredCommitments(e[0].location.geohash)
+    if (commitmentsList?.length) {
+      bookingConfirmationDialog.value.show(true)
+      bookingConfirmationDialog.value.data = commitmentsList
+    } else {
+      validActions = true
+    }
   } else {
+    validActions = true
+  }
+  if (validActions) {
     if (action === 'edit-booking') emit('editBooking', e[0].id)
     if (action === 'remove-booking') {
       removeBookingDialog.value.show(true)

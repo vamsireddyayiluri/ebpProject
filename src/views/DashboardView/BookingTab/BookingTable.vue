@@ -77,7 +77,17 @@ const bookingStatus = item => {
 }
 const containerActionHandler = async ({ action, e }) => {
   let validActions = false
-  if (e[0].loadingDate >= getLocalTime().format()) {
+  let fromCommitment = false
+  let filteredArray = []
+  if (e[0].bookingId) {
+    fromCommitment = e[0].loadingDate >= getLocalTime().format()
+  } else {
+    const details = e[0].details
+    filteredArray = details.filter(obj => {
+      return obj.loadingDate >= getLocalTime().format()
+    })
+  }
+  if (filteredArray.length > 0 || fromCommitment) {
     const commitmentsList = await commitmentStore.getExpiredCommitments(e[0].location.geohash)
     if (commitmentsList?.length) {
       bookingConfirmationDialog.value.show(true)

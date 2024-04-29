@@ -137,7 +137,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         ...obj,
       })
       const index = bookingsStore.bookings.findIndex(i => i.ids.includes(data.bookingId))
-      bookingsStore.bookings[index].entities.forEach(j => {
+      bookingsStore.bookings[index]?.entities?.forEach(j => {
         // i.expand = true
         if (j.id === data.id) {
           j.status = obj.status
@@ -244,20 +244,27 @@ export const useCommitmentsStore = defineStore('commitments', () => {
 
   const getExpiredCommitments = async geohash => {
     try {
-      const { orgId } = authStore.userData
-      const today = getLocalTime().format()
-      const query34 = query(
-        collection(db, 'commitments'),
-        where('orgId', '==', orgId),
-        where('loadingDate', '<', today),
-        where('status', 'in', ['pending', 'approved']),
+      const pendingBookings = bookingsStore.notGroupedBookings?.filter(
+        val =>
+          (val.status === 'active' || val.status === 'pending') && val.location.geohash === geohash,
       )
 
-      const snapshotData = await getDocs(query34)
-      let commitments = snapshotData.docs.map(doc => doc.data())
-      commitments = commitments.filter(obj => obj.location.geohash === geohash)
+      if (pendingBookings.length) {
+        const bookingIds = pendingBookings.map(obj => obj.id)
+        const today = getLocalTime().format()
+        const commitmentsQuery = query(
+          collection(db, 'commitments'),
+          where('bookingId', 'in', bookingIds),
+          where('loadingDate', '<', today),
+          where('status', 'in', ['pending', 'approved']),
+        )
+        const commitmentDocs = await getDocs(commitmentsQuery)
+        let commitments = commitmentDocs.docs?.map(doc => doc.data())
 
-      return commitments || []
+        return commitments || []
+      } else {
+        return []
+      }
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }

@@ -6,8 +6,13 @@ import { canceledCodes, declineCodes, onboardingCodes } from '~/constants/reason
 const props = defineProps({
   commitments: Array,
 })
-const { approveCommitment, declineCommitment, completeCommitment, edit_commitment_loadingDate } =
-  useCommitmentsStore()
+const {
+  approveCommitment,
+  declineCommitment,
+  completeCommitment,
+  cancelCommitment,
+  edit_commitment_loadingDate,
+} = useCommitmentsStore()
 const { commitmentsHeaders } = useHeaders()
 const { commitmentsActions } = useActions()
 const commitmentStore = useCommitmentsStore()
