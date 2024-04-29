@@ -6,18 +6,24 @@ import { getBookingLoad, totalFulfilledBookings } from '~/helpers/countings'
 import { useDate } from '~/composables'
 import { storeToRefs } from 'pinia'
 import { useBookingsStore } from '~/stores/bookings.store'
+import { useCommitmentsStore } from '~/stores/commitments.store'
+
 import { checkVendorDetailsCompletion } from '~/helpers/validations-functions'
 import { groupBookings } from '~/stores/helpers'
 
 const router = useRouter()
 const { getFormattedDate } = useDate()
 const bookingsStore = useBookingsStore()
+const commitmentStore = useCommitmentsStore()
+
 const { loading, notGroupedBookings } = storeToRefs(bookingsStore)
 const options = ref({
   initialEvents: [],
 })
+const bookingConfirmationDialog = ref(null)
 const removeBookingDialog = ref(null)
 const createBookingDialog = ref(null)
+const confirmClickedOutside = ref(null)
 
 const getEvents = bookings => {
   return bookings.map(i => {
@@ -31,7 +37,7 @@ const getEvents = bookings => {
         ref: i.ref,
         progress: getBookingLoad(i.committed, i.containers),
         carriers: i?.carriers?.map(item => {
-          return {scac: item.scac, fulfilled: item?.approved, total: i.containers}
+          return { scac: item.scac, fulfilled: item?.approved, total: i.containers }
         }),
       },
     }
@@ -41,14 +47,30 @@ const events = computed(() => getEvents(bookingsStore.notGroupedBookings))
 
 const onEventClick = e => console.log(e.event)
 const onEvents = e => console.log(e)
-const onEdit = e => {
-  router.push({ path: `booking/${e.id}` })
+const onEdit = async e => {
+  const booking = bookingsStore.notGroupedBookings.find(obj => obj.id === e.id)
+
+  const commitmentsList = await commitmentStore.getExpiredCommitments(booking.location.geohash)
+  if (commitmentsList?.length) {
+    bookingConfirmationDialog.value.show(true)
+    bookingConfirmationDialog.value.data = commitmentsList
+  } else {
+    router.push({ path: `booking/${e.id}` })
+  }
 }
 const onEventAdd = e => console.log(e)
 const onEventChange = e => console.log('change', e)
-const onRemove = e => {
-  removeBookingDialog.value.show(true)
-  removeBookingDialog.value.data = e
+const onRemove = async e => {
+  const booking = bookingsStore.notGroupedBookings.find(obj => obj.id === e.id)
+
+  const commitmentsList = await commitmentStore.getExpiredCommitments(booking.location.geohash)
+  if (commitmentsList?.length) {
+    bookingConfirmationDialog.value.show(true)
+    bookingConfirmationDialog.value.data = commitmentsList
+  } else {
+    removeBookingDialog.value.show(true)
+    removeBookingDialog.value.data = e
+  }
 }
 
 const removeBooking = async id => {
@@ -58,6 +80,20 @@ const removeBooking = async id => {
 
   // remove in calendar
   // removeBookingDialog.value.data.remove()
+}
+
+const closeConfirmBookingDialog = (isPending = false) => {
+  if (!isPending) {
+    bookingConfirmationDialog.value.show(false)
+    bookingConfirmationDialog.value.data = null
+  }
+}
+const onClickOutsideDialog = () => {
+  confirmClickedOutside.value = true
+  closeConfirmBookingDialog()
+  setInterval(() => {
+    confirmClickedOutside.value = false
+  }, 1000)
 }
 const today = moment()
 
@@ -172,6 +208,20 @@ onMounted(async () => {
           from network?
         </Typography>
       </ConfirmationDialog>
+    </template>
+  </Dialog>
+  <Dialog
+    ref="bookingConfirmationDialog"
+    class="max-w-full sm:max-w-[90vw] md:max-w-[75vw]"
+    @update:modelValue="onClickOutsideDialog"
+  >
+    <template #text>
+      <BookingConfirmationDialog
+        :commitments="bookingConfirmationDialog.data"
+        :clicked-outside="confirmClickedOutside"
+        @close="closeConfirmBookingDialog"
+        @checkPending="e => closeConfirmBookingDialog(e)"
+      />
     </template>
   </Dialog>
 </template>
