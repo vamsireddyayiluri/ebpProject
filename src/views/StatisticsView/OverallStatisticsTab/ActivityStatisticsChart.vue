@@ -114,7 +114,7 @@ watch([currentYear, currentMonth, selected], async () => {
         series: statistics,
       }"
       :options="
-        () => ({
+        ({dark}) => ({
           chart: {
             type: 'area',
             zoom: {
@@ -170,6 +170,7 @@ watch([currentYear, currentMonth, selected], async () => {
           tooltip: {
             enabled: true,
             intersect: false,
+            theme: dark,
           },
         })
       "

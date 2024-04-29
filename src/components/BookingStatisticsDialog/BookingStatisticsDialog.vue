@@ -55,12 +55,19 @@ const getTimeLine = timeLine => {
         >
           Your bookings
         </Typography>
+        <Typography
+          v-if="!booking.entities.length"
+          type="mb-5"
+          :color="getColor('textSecondary')"
+        >
+          no bookings in this locations
+        </Typography>
         <template
           v-for="i in booking.entities"
           :key="i.id"
         >
           <Card
-            class="w-full mb-2 p-4 elevation-0 rounded-lg group"
+            class="w-full mb-2 !p-4 !pt-3 elevation-0 rounded-lg group"
             :color="getColor('uiSecondary-01')"
           >
             <div class="flex justify-between items-center mb-2">

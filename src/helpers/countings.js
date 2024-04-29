@@ -15,7 +15,7 @@ export const getYardBookingLoad = items => {
 
   return {
     ...obj,
-    rate: Number(((obj.booked * 100) / obj.amount).toFixed(2)),
+    rate: Number(((obj.booked * 100) / obj.amount).toFixed(2)) || 0,
   }
 }
 

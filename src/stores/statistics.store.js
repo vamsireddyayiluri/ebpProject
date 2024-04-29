@@ -15,19 +15,22 @@ import {
 
 export const useStatisticsStore = defineStore('statistics', () => {
   const authStore = useAuthStore()
-  const bookings = ref([])
+  const allBookings = ref(null)
   const isLoading = ref(false)
 
   const getBookingsQuery = async () => {
+    isLoading.value = true
     try {
       const orgData = await authStore.orgData
       const queryValue = query(collection(db, 'bookings'), where('orgId', '==', orgData.orgId))
       const querySnapshot = await getDocs(queryValue)
 
-      bookings.value = querySnapshot.docs.map(doc => doc.data())
+      allBookings.value = querySnapshot.docs.map(doc => doc.data())
+      isLoading.value = false
 
       return querySnapshot.docs.map(doc => doc.data())
     } catch (error) {
+      isLoading.value = false
       console.error('Failed to fetch bookings:', error)
       throw error
     }
@@ -47,7 +50,7 @@ export const useStatisticsStore = defineStore('statistics', () => {
 
   const statisticsOverall = async () => {
     isLoading.value = true
-    const bookings = await getBookingsQuery()
+    const bookings = allBookings.value || await getBookingsQuery()
     const totalBookings = bookings.length
     const totalSuccessful = bookings.filter(({ status }) => status === 'completed').length
     const totalCanceled = bookings.filter(({ status }) => status === 'canceled').length
@@ -68,14 +71,14 @@ export const useStatisticsStore = defineStore('statistics', () => {
     return {
       categories: month ? getDaysInMonth(year, month) : getMonthsArray(),
       series: month
-        ? groupBookingsByDays(bookings.value, year, month)
-        : groupBookingsByMonth(bookings.value, year),
+        ? groupBookingsByDays(allBookings.value, year, month)
+        : groupBookingsByMonth(allBookings.value, year),
     }
   }
 
   const statisticsBySSL = async () => {
     isLoading.value = true
-    const bookings = await getBookingsQuery()
+    const bookings = allBookings.value || await getBookingsQuery()
     const groupedBySSL = groupBySSL(bookings)
     const data = {
       bySSL: groupedBySSL,
@@ -83,6 +86,7 @@ export const useStatisticsStore = defineStore('statistics', () => {
         categories: groupedBySSL.map(({ line }) => line.label),
         series: [
           {
+            name: 'Rate',
             data: groupedBySSL.map(({ jointBookings }) => jointBookings),
           },
         ],
@@ -95,7 +99,7 @@ export const useStatisticsStore = defineStore('statistics', () => {
 
   const statisticsByTrucker = async () => {
     isLoading.value = true
-    const bookings = await getBookingsQuery()
+    const bookings = allBookings.value || await getBookingsQuery()
     const commitments = await getCommitmentsQuery()
     const truckerStats = calculateTruckerStats(bookings, commitments)
     isLoading.value = false
@@ -106,7 +110,7 @@ export const useStatisticsStore = defineStore('statistics', () => {
   const statisticsByYard = async () => {
     isLoading.value = true
     const locations = await authStore.orgData.locations
-    const bookings = await getBookingsQuery()
+    const bookings = allBookings.value || await getBookingsQuery()
     const groupedByYard = groupBookingsByYard(bookings, locations)
     isLoading.value = false
 
@@ -115,6 +119,7 @@ export const useStatisticsStore = defineStore('statistics', () => {
 
   return {
     isLoading,
+    getBookingsQuery,
     statisticsOverall,
     activityStatistic,
     statisticsBySSL,

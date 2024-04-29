@@ -10,7 +10,6 @@ const statistics = ref(null)
 
 onMounted(async () => {
   statistics.value = await statisticsStore.statisticsBySSL()
-  console.log('-> statistics.value', statistics.value)
 })
 </script>
 

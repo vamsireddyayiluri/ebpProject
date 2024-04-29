@@ -139,12 +139,13 @@ const calculateTruckerStats = (bookings, commitments) => {
   })
 }
 
-const groupBookingsByYard = (bookings, locations) =>
-  map(locations, ({ id, value }) => ({
+const groupBookingsByYard = (bookings, locations) => {
+  return map(locations, ({ id, value, label, lat, lng }) => ({
     id,
-    location: { id, address: value },
+    location: { id, address: value, label, lat, lng },
     entities: filter(bookings, ({ location }) => location.address === value),
   }))
+}
 
 export {
   calculateMonthlyAverage,
