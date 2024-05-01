@@ -38,7 +38,7 @@ export const bookingsActions = item => {
   const filteredArray = details?.filter(obj => {
     return obj.loadingDate < getLocalTime().format()
   })
-  if (filteredArray.length < 1) {
+  if (filteredArray.length < 1 && item.status === statuses.active) {
     actions.unshift(pauseAction)
   }
   if (item.status === statuses.paused) {
