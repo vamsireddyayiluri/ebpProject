@@ -1,3 +1,4 @@
+import { getLocalTime } from '@qualle-admin/qutil/dist/date';
 import { statuses } from '~/constants/statuses'
 
 const deleteAction = {
@@ -31,7 +32,14 @@ const cancelAction = {
 export const bookingsActions = item => {
   const actions = []
   if (item.status === statuses.active) {
-    actions.unshift(editAction, pauseAction, duplicateAction, deleteAction)
+    actions.unshift(editAction, duplicateAction, deleteAction)
+  }
+  const details = item?.details
+  const filteredArray = details?.filter(obj => {
+    return obj.loadingDate < getLocalTime().format()
+  })
+  if (filteredArray?.length < 1 && item.status === statuses.active) {
+    actions.unshift(pauseAction)
   }
   if (item.status === statuses.paused) {
     actions.push(

@@ -19,7 +19,7 @@ export const checkCommittedValue = (value, booking) => {
   }
 }
 export const checkPositiveInteger = cValue => {
-  let value = typeof(cValue)===String?parseInt(cValue):cValue
+  let value = typeof cValue === String ? parseInt(cValue) : cValue
   if (value <= 0 || !Number.isInteger(value) || value === 0) {
     return 'Value should be positive integer'
   } else {
@@ -40,6 +40,7 @@ export const validateDays = value => {
 
 // Checking expiry date with ref is already exists or not
 export const validateExpiryDate = (entities, entity) => {
+  const today = getLocalTime().format()
   if (
     entities.find(
       val =>
@@ -54,6 +55,8 @@ export const validateExpiryDate = (entities, entity) => {
     })*/
 
     return 'Booking expiry date with booking number already exists.'
+  } else if (entity?.loadingDate < today ) {
+    return 'Update Loading date.'
   } else {
     return false
   }

@@ -50,7 +50,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     const data = await Promise.all(dataPromises)
     bookings.value = data.sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
     allBookings.value = data.sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
-    await validateBookingsExpiry(data)
+    // await validateBookingsExpiry(data)
   }
   const getBookings = async ({ draft = false }) => {
     loading.value = true
@@ -65,10 +65,10 @@ export const useBookingsStore = defineStore('bookings', () => {
       drafts.value = group
     } else {
       await getallBookings()
-      const today = getLocalServerTime(moment(), 'America/Los_Angeles')
+      // const today = getLocalServerTime(moment(), 'America/Los_Angeles')
       const filteredBookings = bookings.value.filter(
         booking =>
-          !moment(booking.loadingDate).isBefore(moment(today)) &&
+          // !moment(booking.loadingDate).isBefore(moment(today)) &&
           booking.status !== statuses.completed &&
           booking.status !== statuses.expired &&
           booking.status !== statuses.canceled,
@@ -81,11 +81,11 @@ export const useBookingsStore = defineStore('bookings', () => {
   }
   const getBookingHistory = async () => {
     loading.value = true
-    const today = getLocalServerTime(moment(), 'America/Los_Angeles')
+    // const today = getLocalServerTime(moment(), 'America/Los_Angeles')
     await getallBookings()
     const filteredBookings = bookings.value.filter(
       booking =>
-        moment(booking.loadingDate).isBefore(moment(today)) ||
+        // moment(booking.loadingDate).isBefore(moment(today)) ||
         booking.status === statuses.completed ||
         booking.status === statuses.expired ||
         booking.status === statuses.canceled,
@@ -266,12 +266,20 @@ export const useBookingsStore = defineStore('bookings', () => {
           b.status = status
         }
       })
+      notGroupedBookings.value.forEach(b => {
+        if (ids.includes(b.id)) {
+          b.status = status
+        }
+      })
       if (status === statuses.canceled) {
         const index = bookings.value.findIndex(i => {
           return i.ids.includes(booking.id)
         })
         bookings.value.splice(index, 1)
-        notGroupedBookings.value.splice(index, 1)
+        ids.forEach(id => {
+          const index1 = notGroupedBookings.value.findIndex(i => i.id === id)
+          notGroupedBookings.value.splice(index1, 1)
+        })
 
         const commitments = await getCommitmentsByBookingId(booking.id, booking.ids)
         commitments.map(async i => {

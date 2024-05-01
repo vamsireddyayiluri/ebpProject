@@ -5,6 +5,8 @@ import { getBookingLoad, getYardBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { useAuthStore } from '~/stores/auth.store'
 import { statuses } from '~/constants/statuses'
+import { useCommitmentsStore } from '~/stores/commitments.store'
+import { getLocalTime } from '@qualle-admin/qutil/dist/date'
 
 const props = defineProps({
   computedEntities: Array,
@@ -14,29 +16,51 @@ const props = defineProps({
 const emit = defineEmits(['selectTableRow', 'editBooking', 'duplicateBooking'])
 const { userData } = useAuthStore()
 const { deleteBooking, updateBookingStatus } = useBookingsStore()
+const commitmentStore = useCommitmentsStore()
 const { smAndDown, width } = useDisplay()
 const showActions = ref(true)
 const tableHeight = ref(1)
 const removeBookingDialog = ref(false)
+const bookingConfirmationDialog = ref(null)
 
 const { yardsHeaders, bookingsHeaders } = useHeaders()
 const { bookingsActions } = useActions()
+const confirmClickedOutside = ref(null)
 
 const containerActionHandler = async ({ action, e }) => {
   props.computedEntities.find(yard => yard.id === e[0].location.geohash).expand = true
-  if (action === 'edit-booking') emit('editBooking', e[0].id)
-  if (action === 'remove-booking') {
-    removeBookingDialog.value.show(true)
-    removeBookingDialog.value.data = e[0]
+
+  let validActions = false
+  const details = e[0]?.details
+  const filteredDetails = details?.filter(obj => {
+    return obj.loadingDate >= getLocalTime().format()
+  })
+  if (filteredDetails?.length > 0) {
+    const commitmentsList = await commitmentStore.getExpiredCommitments(e[0].location.geohash)
+    if (commitmentsList?.length) {
+      bookingConfirmationDialog.value.show(true)
+      bookingConfirmationDialog.value.data = commitmentsList
+    } else {
+      validActions = true
+    }
+  } else {
+    validActions = true
   }
-  if (action === 'pause-booking') {
-    await updateBookingStatus(e[0], statuses.paused)
-  }
-  if (action === 'reactive-booking') {
-    await updateBookingStatus(e[0], statuses.active)
-  }
-  if (action === 'duplicate-booking') {
-    emit('duplicateBooking', e[0].ids)
+  if (validActions) {
+    if (action === 'edit-booking') emit('editBooking', e[0].id)
+    if (action === 'remove-booking') {
+      removeBookingDialog.value.show(true)
+      removeBookingDialog.value.data = e[0]
+    }
+    if (action === 'pause-booking') {
+      await updateBookingStatus(e[0], statuses.paused)
+    }
+    if (action === 'reactive-booking') {
+      await updateBookingStatus(e[0], statuses.active)
+    }
+    if (action === 'duplicate-booking') {
+      emit('duplicateBooking', e[0].ids)
+    }
   }
 }
 const onSelectRow = e => {
@@ -45,6 +69,19 @@ const onSelectRow = e => {
 const removeBooking = booking => {
   deleteBooking(booking)
   removeBookingDialog.value.show(false)
+}
+const closeConfirmBookingDialog = (isPending = false) => {
+  if (!isPending) {
+    bookingConfirmationDialog.value.show(false)
+    bookingConfirmationDialog.value.data = null
+  }
+}
+const onClickOutsideDialog = () => {
+  confirmClickedOutside.value = true
+  closeConfirmBookingDialog()
+  setInterval(() => {
+    confirmClickedOutside.value = false
+  }, 1000)
 }
 const tableId = 'yardsTable'
 onMounted(() => {
@@ -190,6 +227,20 @@ onMounted(() => {
           from your bookings?
         </Typography>
       </ConfirmationDialog>
+    </template>
+  </Dialog>
+  <Dialog
+    ref="bookingConfirmationDialog"
+    class="max-w-full sm:max-w-[90vw] md:max-w-[75vw]"
+    @update:modelValue="onClickOutsideDialog"
+  >
+    <template #text>
+      <BookingConfirmationDialog
+        :commitments="bookingConfirmationDialog.data"
+        :clicked-outside="confirmClickedOutside"
+        @close="closeConfirmBookingDialog"
+        @checkPending="e => closeConfirmBookingDialog(e)"
+      />
     </template>
   </Dialog>
 </template>

@@ -1,5 +1,14 @@
 import { defineStore } from 'pinia'
-import { doc, getDoc, increment, updateDoc } from 'firebase/firestore'
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  increment,
+  query,
+  updateDoc,
+  where,
+} from 'firebase/firestore'
 import { db } from '~/firebase'
 import { statuses } from '~/constants/statuses'
 import { useAlertStore } from '~/stores/alert.store'
@@ -7,9 +16,11 @@ import { useBookingsStore } from '~/stores/bookings.store'
 import { onboardingCodes } from '~/constants/reasonCodes'
 import { getRequestLoadFee } from './helpers'
 import { getLocalTime } from '@qualle-admin/qutil/dist/date'
+import { useAuthStore } from './auth.store'
 import moment from 'moment-timezone'
 
 const { updateBookingStore } = useBookingsStore()
+const authStore = useAuthStore()
 
 export const useCommitmentsStore = defineStore('commitments', () => {
   const alertStore = useAlertStore()
@@ -147,7 +158,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         ...obj,
       })
       const index = bookingsStore.bookings.findIndex(i => i.ids.includes(data.bookingId))
-      bookingsStore.bookings[index].entities.forEach(j => {
+      bookingsStore.bookings[index]?.entities?.forEach(j => {
         // i.expand = true
         if (j.id === data.id) {
           j.status = obj.status
@@ -252,6 +263,34 @@ export const useCommitmentsStore = defineStore('commitments', () => {
     }
   }
 
+  const getExpiredCommitments = async geohash => {
+    try {
+      const pendingBookings = bookingsStore.notGroupedBookings?.filter(
+        val =>
+          (val.status === 'active' || val.status === 'pending') && val.location.geohash === geohash,
+      )
+
+      if (pendingBookings.length) {
+        const bookingIds = pendingBookings.map(obj => obj.id)
+        const today = getLocalTime().format()
+        const commitmentsQuery = query(
+          collection(db, 'commitments'),
+          where('bookingId', 'in', bookingIds),
+          where('loadingDate', '<', today),
+          where('status','==','approved')
+        )
+        const commitmentDocs = await getDocs(commitmentsQuery)
+        let commitments = commitmentDocs.docs?.map(doc => doc.data())
+
+        return commitments || []
+      } else {
+        return []
+      }
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
+
   return {
     getCommitment,
     approveCommitment,
@@ -259,5 +298,6 @@ export const useCommitmentsStore = defineStore('commitments', () => {
     declineCommitment,
     cancelCommitment,
     edit_commitment_loadingDate,
+    getExpiredCommitments,
   }
 })
