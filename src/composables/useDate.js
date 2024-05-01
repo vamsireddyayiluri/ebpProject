@@ -3,7 +3,7 @@ import moment, { utc } from 'moment-timezone'
 export const getFormattedDateTime = date => {
   if (!date) return null
 
-  return moment(date).format('MM/DD/YYYY hh:mm:ss a')
+  return moment(date).format('MM/DD/YYYY hh:mm:ss A')
 }
 
 export const getFormattedDate = date => {

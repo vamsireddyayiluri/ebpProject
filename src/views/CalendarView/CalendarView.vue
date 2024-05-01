@@ -2,15 +2,14 @@
 import { Main } from '@layouts'
 import { getColor } from '~/helpers/colors'
 import moment from 'moment-timezone'
-import { getBookingLoad, totalFulfilledBookings } from '~/helpers/countings'
-import { useDate } from '~/composables'
+import { getBookingLoad, getContainers, getNextLoading } from '~/helpers/countings'
 import { storeToRefs } from 'pinia'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { checkVendorDetailsCompletion } from '~/helpers/validations-functions'
 import { groupBookings } from '~/stores/helpers'
+import { statuses } from '~/constants/statuses'
 
 const router = useRouter()
-const { getFormattedDate } = useDate()
 const bookingsStore = useBookingsStore()
 const { loading, notGroupedBookings } = storeToRefs(bookingsStore)
 const options = ref({
@@ -31,7 +30,7 @@ const getEvents = bookings => {
         ref: i.ref,
         progress: getBookingLoad(i.committed, i.containers),
         carriers: i?.carriers?.map(item => {
-          return {scac: item.scac, fulfilled: item?.approved, total: i.containers}
+          return { scac: item.scac, fulfilled: item?.approved, total: i.containers }
         }),
       },
     }
@@ -59,15 +58,9 @@ const removeBooking = async id => {
   // remove in calendar
   // removeBookingDialog.value.data.remove()
 }
-const today = moment()
 
-const nextExpiring = computed(() => {
-  const datesArray = notGroupedBookings.value
-    .filter(b => b)
-    .sort((a, b) => moment(a.loadingDate).diff(moment(b.loadingDate)))
-
-  return getFormattedDate(datesArray[0]?.loadingDate)
-})
+const nextLoading = computed(() => getNextLoading(notGroupedBookings.value))
+const containers = computed(() => getContainers(notGroupedBookings.value))
 const openCreateBookingDialog = () => {
   if (checkVendorDetailsCompletion()) {
     createBookingDialog.value.show(true)
@@ -75,6 +68,9 @@ const openCreateBookingDialog = () => {
 }
 onMounted(async () => {
   await bookingsStore.getBookings({})
+  useIntervalFn(async () => {
+    await bookingsStore.getBookings({})
+  }, 600000)
 })
 </script>
 
@@ -88,38 +84,46 @@ onMounted(async () => {
       <template #controls>
         <div class="flex items-center py-1 sm:!py-5">
           <Typography class="flex justify-center flex-wrap gap-2">
-            <b>{{ nextExpiring }}</b>
-            <div
-              class="text-center"
-              :style="{ color: getColor('textSecondary') }"
-            >
-              next expiring booking
-            </div>
+            <template v-if="nextLoading.date">
+              <b>{{ nextLoading.date }}</b>
+              <div
+                class="text-center"
+                :style="{ color: getColor('textSecondary') }"
+              >
+                Next loading date
+              </div>
+            </template>
+            <template v-else> No upcoming loading</template>
           </Typography>
           <Divider
             vertical=""
             class="mx-4"
           />
           <Typography class="flex justify-center flex-wrap gap-2">
-            <b>{{ notGroupedBookings.length }}</b>
             <div
               class="text-center"
               :style="{ color: getColor('textSecondary') }"
             >
-              total bookings
+              Total active and pending bookings:
             </div>
+            <b>{{
+                notGroupedBookings.filter(b => b.status === statuses.active || b.status === statuses.pending)
+                .length
+            }}</b>
           </Typography>
           <Divider
             vertical=""
             class="mx-4"
           />
           <Typography class="flex justify-center flex-wrap gap-2">
-            <b>{{ totalFulfilledBookings(notGroupedBookings) }}</b>
+            <b>{{ containers.committed }}</b>
             <div
               class="text-center"
               :style="{ color: getColor('textSecondary') }"
             >
-              % of total bookings fulfilled
+              containers committed out of
+              <b>{{ containers.containers }}</b>
+              containers
             </div>
           </Typography>
         </div>
