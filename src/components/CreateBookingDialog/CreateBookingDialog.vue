@@ -101,14 +101,14 @@ const newBookings = ref(
   props.duplicate
     ? loadingsDateCopy
     : [
-      {
-        id: uid(28),
-        loadingDate: null,
-        preferredDate: null,
-        containers: null,
-        scacList: bookingRulesStore.rules.truckers,
-      },
-    ],
+        {
+          id: uid(28),
+          loadingDate: null,
+          preferredDays: null,
+          containers: null,
+          scacList: bookingRulesStore.rules.truckers,
+        },
+      ],
 )
 const confirmDraftsDialog = ref(null)
 const { clickedOutside } = toRefs(props)
@@ -197,9 +197,9 @@ const saveBooking = async () => {
   if (commitmentsList?.length) {
     bookingConfirmationDialog.value.show(true)
     bookingConfirmationDialog.value.data = commitmentsList
-  } else { 
-  createBooking(booking.value, newBookings.value)
-  emit('close')
+  } else {
+    createBooking(booking.value, newBookings.value)
+    emit('close')
   }
 }
 const updateRef = async e => {
