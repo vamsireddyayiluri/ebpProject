@@ -56,7 +56,7 @@ export const validateExpiryDate = (entities, entity) => {
 
     return 'Booking expiry date with booking number already exists.'
   } else if (entity?.loadingDate < today ) {
-    return 'Update Loading date .'
+    return 'Update Loading date.'
   } else {
     return false
   }

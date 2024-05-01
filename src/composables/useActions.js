@@ -34,8 +34,8 @@ export const bookingsActions = item => {
   if (item.status === statuses.active) {
     actions.unshift(editAction, duplicateAction, deleteAction)
   }
-  const details = item.details
-  const filteredArray = details.filter(obj => {
+  const details = item?.details
+  const filteredArray = details?.filter(obj => {
     return obj.loadingDate < getLocalTime().format()
   })
   if (filteredArray.length < 1) {
