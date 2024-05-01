@@ -256,7 +256,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
           collection(db, 'commitments'),
           where('bookingId', 'in', bookingIds),
           where('loadingDate', '<', today),
-          where('status', 'in', ['pending', 'approved']),
+          where('status','==','approved')
         )
         const commitmentDocs = await getDocs(commitmentsQuery)
         let commitments = commitmentDocs.docs?.map(doc => doc.data())

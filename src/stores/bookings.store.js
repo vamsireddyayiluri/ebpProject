@@ -260,12 +260,20 @@ export const useBookingsStore = defineStore('bookings', () => {
           b.status = status
         }
       })
+      notGroupedBookings.value.forEach(b => {
+        if (ids.includes(b.id)) {
+          b.status = status
+        }
+      })
       if (status === statuses.canceled) {
         const index = bookings.value.findIndex(i => {
           return i.ids.includes(booking.id)
         })
         bookings.value.splice(index, 1)
-        notGroupedBookings.value.splice(index, 1)
+        ids.forEach(id => {
+          const index1 = notGroupedBookings.value.findIndex(i => i.id === id)
+          notGroupedBookings.value.splice(index1, 1)
+        })
 
         const commitments = await getCommitmentsByBookingId(booking.id, booking.ids)
         commitments.map(async i => {
