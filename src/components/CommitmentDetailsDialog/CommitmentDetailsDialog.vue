@@ -4,10 +4,10 @@ import { useBookingsStore } from '~/stores/bookings.store'
 import { useDate } from '~/composables'
 import { statuses } from '~/constants/statuses'
 import { useChatStore } from '~/stores/chat.store'
-import moment from 'moment-timezone'
 import { useTruckerManagementStore } from '~/stores/truckerManagement.store'
 import saferLink from '~/fixtures/safer-link'
 import { useCommitmentsStore } from '~/stores/commitments.store'
+import { getTimeLine } from '~/helpers/filters'
 
 const props = defineProps({
   commitment: Object,
@@ -41,11 +41,7 @@ let details = ref([
     value: truckerDetails?.weightAuthorization === 'Overweight' ? 'Yes' : 'No',
   },
 ])
-const getTimeLine = timeLine => {
-  return timeLine.map(val => {
-    return { title: val.message, date: moment(val.time_stamp).format('MM/DD/YYYY hh:mm:ss a') }
-  })
-}
+
 onMounted(async () => {
   currentCommitment.value = await getCommitment(props.commitment.id)
   orgDetails.value = await getTruckerDetails(props.commitment.truckerOrgId)

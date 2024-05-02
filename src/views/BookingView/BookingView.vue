@@ -26,6 +26,7 @@ import {
 } from '~/helpers/validations-functions'
 import { insuranceTypes } from '~/constants/settings'
 import { getLocalTime } from '@qualle-admin/qutil/dist/date'
+import { getTimeLine } from '~/helpers/filters'
 
 const authStore = useAuthStore()
 const alertStore = useAlertStore()
@@ -260,12 +261,6 @@ const onSave = async () => {
   isSaveLoading.value = false
 }
 
-const getTimeLine = timeLine => {
-  return timeLine?.map(val => {
-    return { title: val.message, date: moment(val.time_stamp).format('MM/DD/YYYY hh:mm:ss a') }
-  })
-}
-
 // checking active bookings loadingDate
 const validateExpiryDates = index => {
   validExpiryDate.value = validateExpiryDate(activeBookings?.value, {
@@ -449,7 +444,7 @@ onMounted(async () => {
             :upper-limit="booking.loadingDate && new Date(booking.loadingDate)"
             :lower-limit="currentDate"
             @onUpdate="updatePreferredDate"
-            /> 
+            />
           -->
           <Autocomplete
             v-model="booking.location"
@@ -586,7 +581,7 @@ onMounted(async () => {
                   @click="removeLoadingDate(d.id)"
                   >
                   <Tooltip> Remove loading date</Tooltip>
-                  </IconButton> 
+                  </IconButton>
                 -->
               </div>
             </template>

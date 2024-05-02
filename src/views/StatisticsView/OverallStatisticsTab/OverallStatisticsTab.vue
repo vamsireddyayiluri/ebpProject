@@ -35,26 +35,22 @@ onMounted(async () => {
         :value="statistics?.bookingsMonthVolatility[0].change"
       />
       <AverageCard
-        title="Removed from the network"
+        title="Total canceled bookings"
         message="this month"
         :loading="isLoading"
-        :sum="statistics?.removedBookings"
-        :increase="+statistics?.removedBookingsMonthVolatility >= 0"
-        :value="statistics?.removedBookingsMonthVolatility"
+        :sum="statistics?.totalCanceled"
+        :increase="+statistics?.canceledBookingsMonthVolatility.at(-1)?.change >= 0"
+        :value="statistics?.canceledBookingsMonthVolatility.at(-1)?.change || 0"
       />
       <AverageCard
         title="Successfully done"
         message="this month"
         :loading="isLoading"
         :sum="statistics?.successfullyBookings"
-        :increase="+statistics?.successfullyBookingsMonthVolatility >= 0"
-        :value="statistics?.successfullyBookingsMonthVolatility[0]?.change || 0"
+        :increase="+statistics?.successfullyBookingsMonthVolatility.at(-1)?.change >= 0"
+        :value="statistics?.successfullyBookingsMonthVolatility.at(-1)?.change || 0"
       />
     </div>
-    <ActivityStatisticsChart
-      v-if="statistics"
-      :categories="statistics?.activityStatistic?.categories"
-      :series="statistics?.activityStatistic?.series"
-    />
+    <ActivityStatisticsChart />
   </template>
 </template>

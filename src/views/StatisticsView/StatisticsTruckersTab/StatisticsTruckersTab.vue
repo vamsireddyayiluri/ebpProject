@@ -69,29 +69,39 @@ onMounted(() => {
           {{ item.company }}
         </Typography>
       </template>
-      <template #takenBookings="{ item }">
-        <Typography> {{`${Math.round(item.committedFulfilled / item.committedBookings * 10000) /100}%`}}</Typography>
+      <template #committed="{ item }">
+        <Typography>
+          {{ item.committedBookings }}
+        </Typography>
       </template>
-      <template #takenOnboarded="{ item }">
-        <Typography> {{`${item.committedBookings}/${item.committedFulfilled}`}} </Typography>
+      <template #committedFulfilled="{ item }">
+        <Typography>
+          {{ item.committedFulfilled[0] }} / {{ item.committedFulfilled[1] }}
+        </Typography>
       </template>
-      <template #performance>
+      <template #performance="{ item }">
         <div class="flex gap-1.5">
           <Icon
             icon="mdi-timer"
             variant="plain"
           />
-          <Typography class="flex-shrink-0"> 3 days</Typography>
+          <Typography class="flex-shrink-0">
+            {{ item.performance.averageFulfillmentTime }}/hrs
+          </Typography>
           <Tooltip> Average fulfillment time</Tooltip>
         </div>
         <div class="flex gap-1.5 mx-2">
           <Icon icon="mdi-close-circle" />
-          <Typography class="flex-shrink-0"> 25%</Typography>
+          <Typography class="flex-shrink-0">
+            {{ item.performance.cancellationRate }}
+          </Typography>
           <Tooltip> Cancellation rate</Tooltip>
         </div>
         <div class="flex gap-1.5">
           <Icon icon="mdi-timeline-check" />
-          <Typography class="flex-shrink-0"> 20 min</Typography>
+          <Typography class="flex-shrink-0">
+            {{ item.performance.averageAcceptanceTime }}/hrs
+          </Typography>
           <Tooltip> Average acceptance time</Tooltip>
         </div>
       </template>

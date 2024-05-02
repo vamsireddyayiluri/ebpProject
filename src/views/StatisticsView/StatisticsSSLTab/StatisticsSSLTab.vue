@@ -10,7 +10,6 @@ const statistics = ref(null)
 
 onMounted(async () => {
   statistics.value = await statisticsStore.statisticsBySSL()
-  console.log('-> statistics.value', statistics.value)
 })
 </script>
 
@@ -45,7 +44,9 @@ onMounted(async () => {
           />
           <div class="flex justify-between gap-8">
             <div class="text-center">
-              <Typography type="text-h1"> {{ item.jointBookings }}</Typography>
+              <Typography type="text-h1">
+                {{ item.jointBookings }}
+              </Typography>
               <Typography
                 type="text-body-s-regular"
                 :color="getColor('textSecondary')"
@@ -54,7 +55,9 @@ onMounted(async () => {
               </Typography>
             </div>
             <div class="text-center">
-              <Typography type="text-h1"> 3 <small class="text-sm">days</small></Typography>
+              <Typography type="text-h1">
+                {{ item.averageFulfillmentTime }} <small class="text-sm">days</small>
+              </Typography>
               <Typography
                 type="text-body-s-regular"
                 :color="getColor('textSecondary')"
@@ -66,6 +69,9 @@ onMounted(async () => {
         </div>
       </template>
     </div>
-    <FulfillmentRateChart v-if="statistics?.fulfillmentRate" :data="statistics?.fulfillmentRate"/>
+    <FulfillmentRateChart
+      v-if="statistics?.fulfillmentRate"
+      :data="statistics?.fulfillmentRate"
+    />
   </template>
 </template>

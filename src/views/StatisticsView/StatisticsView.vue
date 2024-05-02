@@ -2,6 +2,7 @@
 import { Main } from '@layouts'
 import { useStatisticsStore } from '../../stores/statistics.store'
 
+const statisticsStore = useStatisticsStore()
 const router = useRouter()
 const tabs = [
   {
@@ -25,6 +26,9 @@ const tab = ref(tabs.findIndex(i => i.route === router.currentRoute.value.query.
 const handleTabChange = async value => {
   await router.push({ query: { tab: tabs[value].route } })
 }
+onMounted(async () => {
+  await statisticsStore.getBookingsQuery()
+})
 </script>
 
 <template>

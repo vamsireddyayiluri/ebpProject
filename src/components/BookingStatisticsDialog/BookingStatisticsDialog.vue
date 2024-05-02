@@ -1,7 +1,7 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
 import { getBookingLoad } from '~/helpers/countings'
-import moment from 'moment-timezone'
+import { getTimeLine } from '~/helpers/filters'
 
 const props = defineProps({
   booking: Object,
@@ -9,11 +9,6 @@ const props = defineProps({
 const emit = defineEmits(['close', 'goToBookingPage'])
 const router = useRouter()
 const selectedBooking = ref(false)
-const getTimeLine = timeLine => {
-  return timeLine?.map(val => {
-    return { title: val.message, date: moment(val.time_stamp).format('MM/DD/YYYY hh:mm:ss a') }
-  })
-}
 </script>
 
 <template>
@@ -55,12 +50,19 @@ const getTimeLine = timeLine => {
         >
           Your bookings
         </Typography>
+        <Typography
+          v-if="!booking.entities.length"
+          type="mb-5"
+          :color="getColor('textSecondary')"
+        >
+          no bookings in this locations
+        </Typography>
         <template
           v-for="i in booking.entities"
           :key="i.id"
         >
           <Card
-            class="w-full mb-2 p-4 elevation-0 rounded-lg group"
+            class="w-full mb-2 !p-4 !pt-3 elevation-0 rounded-lg group"
             :color="getColor('uiSecondary-01')"
           >
             <div class="flex justify-between items-center mb-2">

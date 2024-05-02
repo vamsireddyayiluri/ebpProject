@@ -1,15 +1,17 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
-import streetPlaceholder from '~/assets/images/street.png'
-import streetPlaceholderDark from '~/assets/images/street-dark.png'
 import { getYardBookingLoad } from '~/helpers/countings'
 import imgPlaceholder from '~/assets/images/St by  yards.png'
 import { useStatisticsStore } from '~/stores/statistics.store'
 import { storeToRefs } from 'pinia'
+import { useTheme } from 'vuetify'
 
+const vuetifyTheme = useTheme()
+const theme = computed(() => vuetifyTheme.global.name.value)
 const statisticsStore = useStatisticsStore()
 const { isLoading } = storeToRefs(statisticsStore)
 const statistics = ref([])
+const statisticsRaw = toRaw([])
 const storage = useStorage('theme', '')
 const bookingStatisticsDialog = ref(null)
 const searchValue = ref(null)
@@ -18,16 +20,18 @@ const openStatisticsDialog = yard => {
   bookingStatisticsDialog.value.show(true)
   bookingStatisticsDialog.value.data = yard
 }
-/*const sortYards = e => {
+const sortYards = e => {
   statistics.value.sort((a, b) => {
     return e.value !== 'toLessBookings'
       ? a.entities.length - b.entities.length
       : b.entities.length - a.entities.length
   })
-}*/
-/*const onClearSearch = () => {
+}
+const onClearSearch = () => {
+  isLoading.value = true
   setTimeout(() => {
-    statistics.value = yardsData
+    statistics.value = statisticsRaw.value
+    isLoading.value = false
   }, 1000)
 }
 const debouncedSearch = useDebounceFn(searchValue => {
@@ -35,7 +39,7 @@ const debouncedSearch = useDebounceFn(searchValue => {
     onClearSearch()
   } else {
     statistics.value = useArrayFilter(
-      yardsData,
+      statisticsRaw.value,
       ({ location: { address, label } }) =>
         useArraySome(
           useArrayMap(Object.values({ address, label }), value => String(value).toLowerCase())
@@ -44,20 +48,26 @@ const debouncedSearch = useDebounceFn(searchValue => {
         ).value,
     ).value
   }
-}, 300)*/
+}, 300)
+
+const mapOptions = markRaw({
+  zoom: 1,
+  zoomControls: false,
+  suppressControls: true })
 
 onMounted(async () => {
   statistics.value = await statisticsStore.statisticsByYard()
+  statisticsRaw.value = statistics.value
 })
-/*watch(searchValue, value => {
+watch(searchValue, value => {
   debouncedSearch(value)
-})*/
+})
 </script>
 
 <template>
   <div class="flex justify-between gap-5 items-center flex-wrap md:!flex-nowrap mb-5">
     <Typography type="text-h1"> Statistic by yards</Typography>
-    <!--    <div class="w-fill sm:w-auto flex gap-5 ml-auto">
+    <div class="w-fill sm:w-auto flex gap-5 ml-auto">
       <Sort
         size="48"
         icon-size="24"
@@ -83,18 +93,17 @@ onMounted(async () => {
         class="w-[270px]"
         @click:clear="onClearSearch"
       />
-    </div>-->
+    </div>
   </div>
-  <StatisticsPlaceholder
-    v-if="!isLoading && !statistics.length"
+<!--  <StatisticsPlaceholder
+    v-if="!isLoading && !statistics.length && !searchValue"
     :data="{ img: imgPlaceholder }"
-  />
-  <template v-else>
-    <div class="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 gap-5">
-      <ProgressLinear
-        v-if="isLoading"
-        indeterminate
-      />
+  />-->
+  <ProgressLinear
+      v-if="isLoading"
+      indeterminate
+    />
+  <div class="styleYardStat grid grid-cols-1 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 gap-5">
       <template
         v-for="item in statistics"
         :key="item.id"
@@ -104,12 +113,21 @@ onMounted(async () => {
           :style="{ background: getColor('uiSecondary-01') }"
           @click="openStatisticsDialog(item)"
         >
-          <img
-            :src="storage === 'light' ? streetPlaceholder : streetPlaceholderDark"
-            alt="street map"
-            class="w-fill h-[110px] rounded mb-4"
-          />
-          <Typography type="text-h4 truncate">
+          <Map
+            :map-options="mapOptions"
+            :markers="[{
+              name: item.location.label,
+              location: { lat: item.location.lat, lng: item.location.lng },
+            }]"
+            render-marker-cluster
+            :theme="theme"
+            class="h-[138px]"
+          >
+            <template #marker>
+              <div class="w-2 h-2 rounded" :style="{ background: getColor('uiInteractive')}"></div>
+            </template>
+          </Map>
+          <Typography type="text-h4 pt-1 truncate">
             <Highlighter
               v-if="searchValue"
               :query="searchValue"
@@ -135,7 +153,6 @@ onMounted(async () => {
         </div>
       </template>
     </div>
-  </template>
   <Dialog
     ref="bookingStatisticsDialog"
     class="max-w-[720px] md:max-w-[980px]"
@@ -148,3 +165,14 @@ onMounted(async () => {
     </template>
   </Dialog>
 </template>
+
+<style lang="scss">
+.styleYardStat {
+  .styledCustomControl, .gm-style-cc, a {
+    display: none !important;
+  }
+  .gm-style {
+    pointer-events: none;
+  }
+}
+</style>
