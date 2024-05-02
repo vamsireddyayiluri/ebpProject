@@ -1,4 +1,4 @@
-import { getLocalTime } from '@qualle-admin/qutil/dist/date';
+import { getLocalTime } from '@qualle-admin/qutil/dist/date'
 import { statuses } from '~/constants/statuses'
 
 const deleteAction = {
@@ -120,22 +120,6 @@ export const commitmentsActions = (status, bstatus, fromHistory = false) => {
   const actions = []
 
   if (status === statuses.pending && bstatus !== statuses.paused) {
-    actions.push(
-      {
-        icon: 'mdi-check',
-        label: 'Approve commitment',
-        action: 'approve-commitment',
-      },
-      ...viewDetailsAction,
-      {
-        icon: 'mdi-cancel',
-        label: 'Decline commitment',
-        action: 'decline-commitment',
-        color: 'functionalError',
-      },
-    )
-  }
-  if (status === statuses.pending && bstatus === statuses.paused) {
     actions.push(
       {
         icon: 'mdi-check',
