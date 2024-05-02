@@ -1,23 +1,18 @@
-import { defineStore, storeToRefs } from 'pinia'
-import {
-  collection,
-  doc,
-  getDoc,
-  onSnapshot,
-  query,
-  setDoc,
-  updateDoc,
-  where,
-} from 'firebase/firestore'
+import { defineStore } from 'pinia'
+import { doc, getDoc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore'
 import { db } from '~/firebase'
 import { useAlertStore } from '~/stores/alert.store'
 import { useAuthStore } from '~/stores/auth.store'
 import { uid } from 'uid'
+import { useDate } from '~/composables'
+// import moment from 'moment-timezone'
 
 export const useNotificationStore = defineStore('notification', () => {
   const alertStore = useAlertStore()
   const authStore = useAuthStore()
+  const { getFormattedDateTime } = useDate()
   const notifications = ref([])
+  // const { getFormattedDateTime } = useDate()
   let initialLoad = true
   const defaultSettings = {
     newsAndUpdates: {
@@ -112,7 +107,7 @@ export const useNotificationStore = defineStore('notification', () => {
       unsubscribeNotification = await onSnapshot(doc(db, 'notifications', docId), snapshot => {
         let notificationsData = null
         notificationsData = requiredData(snapshot.data()?.notifications)
-        const list = notificationsData.at(-1)
+        const list = notificationsData[0]
         if (
           !initialLoad &&
           list?.isUnread === true &&
@@ -121,7 +116,7 @@ export const useNotificationStore = defineStore('notification', () => {
           showAlert(list)
         }
         initialLoad = false
-        notifications.value = notificationsData || []
+        notifications.value = notificationsData.reverse() || []
       })
     } catch ({ message }) {
       alertStore.warning({ content: message })
@@ -130,12 +125,19 @@ export const useNotificationStore = defineStore('notification', () => {
   const requiredData = notificationsData => {
     let notifications = notificationsData?.map(notification => {
       return {
-        content: notification.created || notification.content,
+        content: getFormattedDateTime(notification.created) || notification.content,
         isUnread: notification?.isUnread,
         title: notification.message || notification.title,
         type: 'info',
         id: uid(16),
       }
+    })
+
+    notifications.sort((a, b) => {
+      const dateA = new Date(a.content)
+      const dateB = new Date(b.content)
+
+      return dateB - dateA
     })
 
     return notifications
