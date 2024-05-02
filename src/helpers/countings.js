@@ -1,5 +1,11 @@
+import { statuses } from '~/constants/statuses'
+import moment from 'moment-timezone'
+import { useDate } from '~/composables'
+
+const { getFormattedDate } = useDate()
+
 export const getBookingLoad = (booked, amount) => {
-  if (!amount || booked>amount) return 0
+  if (!amount || booked > amount) return 0
 
   return Number(((booked * 100) / amount).toFixed(2))
 }
@@ -19,29 +25,30 @@ export const getYardBookingLoad = items => {
   }
 }
 
-export const totalFulfilledBookings = bookings => {
-  const { fulfilled, total } = bookings.reduce(
-    (acc, item) => {
-      if (item.carriers) {
-        const { fulfilled, total } = item.carriers.reduce(
-          (carrierAcc, carrier) => ({
-            fulfilled: carrierAcc.fulfilled + (carrier.fulfilled || 0),
-            total: carrierAcc.total + (carrier.total || 0),
-          }),
-          { fulfilled: 0, total: 0 },
-        )
+export const getContainers = bookings => {
+  const today = moment().startOf('day')
 
-        acc.fulfilled += fulfilled
-        acc.total += total
-      } else {
-        acc.fulfilled += item.fulfilled || 0
-        acc.total += item.total || 0
-      }
+  const { committed, containers } = bookings
+    .filter(item => moment(item.date).isSameOrAfter(today))
+    .reduce(
+      (acc, item) => {
+        acc.committed += item.committed || 0
+        acc.containers += item.containers || 0
 
-      return acc
-    },
-    { fulfilled: 0, total: 0 },
-  )
+        return acc
+      },
+      { committed: 0, containers: 0 },
+    )
 
-  return total !== 0 ? ((fulfilled / total) * 100).toFixed(2) : 0
+  return { committed, containers }
+}
+
+export const getNextLoading = bookings => {
+  const datesArray = bookings
+    .filter(b => b.status === statuses.active)
+    .sort((a, b) => moment(a.loadingDate).diff(moment(b.loadingDate)))
+
+  if (!datesArray.length) return {message: "No upcoming loading"}
+
+  return {date: getFormattedDate(datesArray[0]?.loadingDate)}
 }

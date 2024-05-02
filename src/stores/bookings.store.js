@@ -21,7 +21,6 @@ import { capitalize, pickBy } from 'lodash'
 import moment from 'moment-timezone'
 import { statuses } from '~/constants/statuses'
 import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
-import { useBookingRulesStore } from '~/stores/bookingRules.store'
 
 import { groupBookings } from '~/stores/helpers'
 
@@ -454,10 +453,13 @@ export const useBookingsStore = defineStore('bookings', () => {
         // change loadingData in commitments
         const commitments = await getCommitmentsByBookingId(id, ids)
         commitments.map(async i => {
-          await updateDoc(doc(db, 'commitments', i.id), {
-            loadingDate: details?.find(val => val.id === i.bookingId).loadingDate,
-            updatedAt: getLocalTime().format(),
-          })
+          const loadingDate = details?.find(val => val.id === i.bookingId).loadingDate
+          if (loadingDate) {
+            await updateDoc(doc(db, 'commitments', i.id), {
+              loadingDate: loadingDate,
+              updatedAt: getLocalTime().format(),
+            })
+          }
         })
       }
       await batch.commit()

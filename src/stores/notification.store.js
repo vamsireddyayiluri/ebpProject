@@ -5,12 +5,14 @@ import { useAlertStore } from '~/stores/alert.store'
 import { useAuthStore } from '~/stores/auth.store'
 import { uid } from 'uid'
 import { useDate } from '~/composables'
+// import moment from 'moment-timezone'
 
 export const useNotificationStore = defineStore('notification', () => {
   const alertStore = useAlertStore()
   const authStore = useAuthStore()
-  const notifications = ref([])
   const { getFormattedDateTime } = useDate()
+  const notifications = ref([])
+  // const { getFormattedDateTime } = useDate()
   let initialLoad = true
   const defaultSettings = {
     newsAndUpdates: {
@@ -105,7 +107,7 @@ export const useNotificationStore = defineStore('notification', () => {
       unsubscribeNotification = await onSnapshot(doc(db, 'notifications', docId), snapshot => {
         let notificationsData = null
         notificationsData = requiredData(snapshot.data()?.notifications)
-        const list = notificationsData.at(-1)
+        const list = notificationsData[0]
         if (
           !initialLoad &&
           list?.isUnread === true &&
@@ -129,6 +131,13 @@ export const useNotificationStore = defineStore('notification', () => {
         type: 'info',
         id: uid(16),
       }
+    })
+
+    notifications.sort((a, b) => {
+      const dateA = new Date(a.content)
+      const dateB = new Date(b.content)
+
+      return dateB - dateA
     })
 
     return notifications

@@ -22,9 +22,6 @@ const router = useRouter()
 const currentCommitment = ref(null)
 const orgDetails = ref(null)
 const booking = ref(null)
-const checkCommitmentStatus = () => {
-  return props.commitment?.timeLine?.some(({ status }) => status === statuses.approved)
-}
 const isPending = props.commitment?.status === statuses.pending
 const openedPanel = ref([0])
 const status = ref(null)
@@ -46,18 +43,16 @@ onMounted(async () => {
   currentCommitment.value = await getCommitment(props.commitment.id)
   orgDetails.value = await getTruckerDetails(props.commitment.truckerOrgId)
   status.value = bookingStore?.allBookings.find(i => i.id === props.commitment.bookingId).status
-  if (checkCommitmentStatus()) {
-    details.value = [
-      ...details.value,
-      ...[
-        { name: 'Email', value: props.commitment?.truckerEmail },
-        { name: 'Name', value: orgDetails.value?.vendorDetails?.primaryContactName },
-        { name: 'Contact number', value: orgDetails.value?.vendorDetails?.primaryContact },
-        { name: 'Secondary name', value: orgDetails.value?.vendorDetails?.secondaryContactName },
-        { name: 'Secondary number', value: orgDetails.value?.vendorDetails?.secondaryContact },
-      ],
-    ]
-  }
+  details.value = [
+    ...details.value,
+    ...[
+      { name: 'Email', value: props.commitment?.truckerEmail },
+      { name: 'Name', value: orgDetails.value?.vendorDetails?.primaryContactName },
+      { name: 'Contact number', value: orgDetails.value?.vendorDetails?.primaryContact },
+      { name: 'Secondary name', value: orgDetails.value?.vendorDetails?.secondaryContactName },
+      { name: 'Secondary number', value: orgDetails.value?.vendorDetails?.secondaryContact },
+    ],
+  ]
 })
 onUnmounted(() => {
   router.push({ query: null })
