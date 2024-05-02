@@ -106,7 +106,7 @@ export const useNotificationStore = defineStore('notification', () => {
       unsubscribeNotification = await onSnapshot(doc(db, 'notifications', docId), snapshot => {
         let notificationsData = null
         notificationsData = requiredData(snapshot.data()?.notifications)
-        const list = notificationsData.at(-1)
+        const list = notificationsData[0]
         if (
           !initialLoad &&
           list.isUnread === true &&
@@ -133,8 +133,8 @@ export const useNotificationStore = defineStore('notification', () => {
     })
 
     notifications.sort((a, b) => {
-      const dateA = moment(a.content)
-      const dateB = moment(b.content)
+      const dateA = new Date(a.content)
+      const dateB = new Date(b.content)
 
       return dateB - dateA
     })
