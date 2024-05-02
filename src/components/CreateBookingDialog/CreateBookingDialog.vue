@@ -197,9 +197,10 @@ const saveBooking = async () => {
   if (commitmentsList?.length) {
     bookingConfirmationDialog.value.show(true)
     bookingConfirmationDialog.value.data = commitmentsList
-  } else { 
-  createBooking(booking.value, newBookings.value)
-  emit('close')
+  } else {
+    createBooking(booking.value, newBookings.value)
+    await bookingsStore.getBookings({})
+    emit('close')
   }
 }
 const updateRef = async e => {

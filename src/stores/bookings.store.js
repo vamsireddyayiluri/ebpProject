@@ -202,19 +202,15 @@ export const useBookingsStore = defineStore('bookings', () => {
   const createBooking = async (selectedBooking, details) => {
     try {
       const batch = writeBatch(db)
-      details.forEach(b => {
+      details?.map(b => {
         b.scacList =
           authStore.orgData?.bookingRules?.preferredCarrierWindow > 0 ? b.scacList : { list: [] }
         const newBooking = createBookingObj({ ...selectedBooking, ...b })
         const docRef = doc(collection(db, 'bookings'), newBooking.id)
         batch.set(docRef, newBooking)
-        notGroupedBookings.value.unshift(newBooking)
-      })
+      }),
+        await batch.commit()
 
-      await batch.commit()
-
-      bookings.value.length = 0
-      bookings.value.push(...groupBookings(notGroupedBookings.value))
       alertStore.info({ content: `Booking Created!` })
     } catch ({ message }) {
       alertStore.warning({ content: message })

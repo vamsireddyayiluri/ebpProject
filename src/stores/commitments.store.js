@@ -244,26 +244,34 @@ export const useCommitmentsStore = defineStore('commitments', () => {
 
   const getExpiredCommitments = async geohash => {
     try {
-      const pendingBookings = bookingsStore.notGroupedBookings?.filter(
+      var pendingCommitments = []
+      const pendingBookings = bookingsStore.notGroupedBookings.filter(
         val =>
           (val.status === 'active' || val.status === 'pending') && val.location.geohash === geohash,
       )
 
       if (pendingBookings.length) {
-        const bookingIds = pendingBookings.map(obj => obj.id)
-        const today = getLocalTime().format()
-        const commitmentsQuery = query(
-          collection(db, 'commitments'),
-          where('bookingId', 'in', bookingIds),
-          where('loadingDate', '<', today),
-          where('status','==','approved')
-        )
-        const commitmentDocs = await getDocs(commitmentsQuery)
-        let commitments = commitmentDocs.docs?.map(doc => doc.data())
+        const pendingCommitmentsPromises = pendingBookings.map(async obj => {
+          const today = getLocalTime().format()
+          const query34 = query(
+            collection(db, 'commitments'),
+            where('bookingId', '==', obj.id),
+            where('status', '==', 'approved'),
+            where('loadingDate', '<', today),
+          )
+          const snapshotData = await getDocs(query34)
+          let commitments = snapshotData.docs.map(doc => doc.data())
+          if (commitments?.length) {
+            pendingCommitments.push(...commitments)
+          }
+        })
 
-        return commitments || []
+        // Wait for all promises to be resolved
+        await Promise.all(pendingCommitmentsPromises)
+
+        return pendingCommitments
       } else {
-        return []
+        return pendingCommitments
       }
     } catch ({ message }) {
       alertStore.warning({ content: message })
