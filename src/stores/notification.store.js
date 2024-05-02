@@ -116,7 +116,7 @@ export const useNotificationStore = defineStore('notification', () => {
           showAlert(list)
         }
         initialLoad = false
-        notifications.value = notificationsData.reverse() || []
+        notifications.value = notificationsData || []
       })
     } catch ({ message }) {
       alertStore.warning({ content: message })
