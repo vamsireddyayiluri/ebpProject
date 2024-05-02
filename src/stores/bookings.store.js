@@ -308,32 +308,31 @@ export const useBookingsStore = defineStore('bookings', () => {
   }
 
   // deleting multiple bookings using ids array
-  const deleteBooking = async (booking, draft = false, fromHistory = false, alert = true) => {
+  const deleteBooking = async (ids, draft = false, fromHistory = false, alert = true) => {
     try {
       const batch = writeBatch(db)
 
       if (draft) {
-        const index = drafts.value.findIndex(i => booking.includes(i.id))
+        const index = drafts.value.findIndex(i => ids.includes(i.id))
         if (index > -1) {
-          booking.forEach(id => {
+          ids.forEach(id => {
             batch.delete(doc(db, 'drafts', id))
           })
           drafts.value.splice(index, 1)
           alertStore.info({ content: 'Draft was deleted' })
         }
       } else if (fromHistory) {
-        const index = pastBookings.value.findIndex(i => booking.includes(i.id))
+        const index = pastBookings.value.findIndex(i => ids.includes(i.id))
         if (index > -1) {
           pastBookings.value.splice(index, 1)
 
-          booking.forEach(id => {
+          ids.forEach(id => {
             batch.delete(doc(db, 'bookings', id))
           })
           // await deleteDoc(doc(db, 'bookings', id))
           alert && alertStore.info({ content: 'Bookings removed!' })
         }
       } else {
-        const ids = booking.ids
 
         ids.forEach(async id => {
           batch.delete(doc(db, 'bookings', id))
@@ -407,7 +406,7 @@ export const useBookingsStore = defineStore('bookings', () => {
   }
   const removeFromNetwork = async booking => {
     try {
-      await deleteBooking(booking, false, false, false)
+      await deleteBooking(booking.ids, false, false, false)
       const batch = writeBatch(db)
       booking.ids.forEach(id => {
         const data = createEditedBookingObj(booking, id)
