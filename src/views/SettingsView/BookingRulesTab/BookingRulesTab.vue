@@ -28,6 +28,7 @@ const validateRules = computed(() => {
 })
 const turnSwitch = e => {
   if (e) {
+    rules.value.preferredCarrierWindow = orgData.value.bookingRules.preferredCarrierWindow
     form.value.validate()
   } else {
     form.value.resetValidation()
@@ -37,10 +38,15 @@ const turnSwitch = e => {
 const onSave = async () => {
   await bookingRulesStore.updateRules(rules.value, userData.orgId)
 }
-const cancelChanges = () => {
-  truckersRef.value.updateModelValue(orgData.value.bookingRules.truckers.list)
+const cancelChanges = (fromOnUnMounted = false) => {
+  if (!fromOnUnMounted) {
+    truckersRef.value.updateModelValue(orgData.value.bookingRules?.truckers?.list)
+  }
   rules.value = cloneDeep(orgData.value.bookingRules)
 }
+tryOnUnmounted(() => {
+  cancelChanges(true)
+})
 </script>
 
 <template>

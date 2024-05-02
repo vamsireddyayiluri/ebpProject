@@ -21,6 +21,7 @@ import { capitalize, cloneDeep, pickBy } from 'lodash'
 import moment from 'moment-timezone'
 import { statuses } from '~/constants/statuses'
 import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
+
 import { groupBookings } from '~/stores/helpers'
 
 export const useBookingsStore = defineStore('bookings', () => {
@@ -187,6 +188,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       updatedAt: getLocalTime().format(),
       carriers: [],
       preferredTruckers: preferredTruckers,
+      preferredDays: authStore?.orgData?.bookingRules?.preferredCarrierWindow,
       status: statuses.active,
       createdBy: {
         userId,
@@ -200,6 +202,8 @@ export const useBookingsStore = defineStore('bookings', () => {
     try {
       const batch = writeBatch(db)
       details.forEach(b => {
+        b.scacList =
+          authStore.orgData?.bookingRules?.preferredCarrierWindow > 0 ? b.scacList : { list: [] }
         const newBooking = createBookingObj({ ...selectedBooking, ...b })
         const docRef = doc(collection(db, 'bookings'), newBooking.id)
         batch.set(docRef, newBooking)
@@ -219,6 +223,8 @@ export const useBookingsStore = defineStore('bookings', () => {
     try {
       const batch = writeBatch(db)
       details.forEach(b => {
+        b.scacList =
+          authStore.orgData?.bookingRules?.preferredCarrierWindow > 0 ? b.scacList : { list: [] }
         const newDraft = createBookingObj({ ...selectedDraft, ...b })
         const docRef = doc(collection(db, 'drafts'), newDraft.id)
         batch.set(docRef, newDraft)
@@ -289,6 +295,7 @@ export const useBookingsStore = defineStore('bookings', () => {
         entities: [],
         carriers: [],
         status: '',
+        preferredDays: authStore.orgData?.bookingRules?.preferredCarrierWindow,
       })
       alertStore.info({ content: 'Duplicated booking' })
     } catch ({ message }) {
@@ -347,6 +354,8 @@ export const useBookingsStore = defineStore('bookings', () => {
       await deleteBooking(booking.ids, true)
       booking.ids.forEach(id => {
         const data = createEditedBookingObj(booking, id)
+        data.scacList =
+          authStore.orgData?.bookingRules?.preferredCarrierWindow > 0 ? data.scacList : { list: [] }
         const docRef = doc(collection(db, 'bookings'), id)
         batch.set(docRef, data)
       })
@@ -386,7 +395,7 @@ export const useBookingsStore = defineStore('bookings', () => {
   const createEditedBookingObj = (booking, id) => {
     const loadingDate = booking.details.find(val => val.id === id)
     const data = { ...booking, ...loadingDate, entities: [] }
-
+    data.preferredDays = authStore.orgData?.bookingRules?.preferredCarrierWindow
     delete data['details']
     delete data['ids']
 
@@ -433,10 +442,13 @@ export const useBookingsStore = defineStore('bookings', () => {
         // change loadingData in commitments
         const commitments = await getCommitmentsByBookingId(id, ids)
         commitments.map(async i => {
-          await updateDoc(doc(db, 'commitments', i.id), {
-            loadingDate: details?.find(val => val.id === i.bookingId).loadingDate,
-            updatedAt: getLocalTime().format(),
-          })
+          const loadingDate = details?.find(val => val.id === i.bookingId).loadingDate
+          if (loadingDate) {
+            await updateDoc(doc(db, 'commitments', i.id), {
+              loadingDate: loadingDate,
+              updatedAt: getLocalTime().format(),
+            })
+          }
         })
       }
       await batch.commit()

@@ -13,6 +13,10 @@ const props = defineProps({
     type: Boolean,
     default: () => false,
   },
+  validateScacs: {
+    type: Boolean,
+    default: () => true,
+  },
 })
 
 const emit = defineEmits(['onChange'])
@@ -53,7 +57,7 @@ onMounted(async () => {
       with-btn
       :menu-props="{ maxHeight: 300 }"
       :rules="attrs.rules"
-      :disabled="attrs.disabled"
+      :disabled="attrs.disabled || !validateScacs"
       @update:modelValue="updateModelValue"
     >
       <template
@@ -86,7 +90,7 @@ onMounted(async () => {
     >
       <Chip
         closable
-        :disabled="attrs.disabled"
+        :disabled="attrs.disabled || !validateScacs"
         @click:close="removeScac(i)"
       >
         {{ i }}

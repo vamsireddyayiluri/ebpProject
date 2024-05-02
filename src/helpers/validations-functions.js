@@ -18,7 +18,8 @@ export const checkCommittedValue = (value, booking) => {
     return checkPositiveInteger(value, booking)
   }
 }
-export const checkPositiveInteger = value => {
+export const checkPositiveInteger = cValue => {
+  let value = typeof(cValue)===String?parseInt(cValue):cValue
   if (value <= 0 || !Number.isInteger(value) || value === 0) {
     return 'Value should be positive integer'
   } else {

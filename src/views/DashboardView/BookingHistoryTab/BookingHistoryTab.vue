@@ -344,6 +344,7 @@ watch(searchValue, value => {
         <MenuActions
           v-else
           :actions="() => bookingHistoryActions(item)"
+          :disabled="bookingHistoryActions(item)?.length < 1"
           :selected="selected"
           :container="item"
           @containerActionHandler="containerActionHandler"
