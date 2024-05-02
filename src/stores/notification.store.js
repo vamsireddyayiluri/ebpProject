@@ -133,8 +133,8 @@ export const useNotificationStore = defineStore('notification', () => {
     })
 
     notifications.sort((a, b) => {
-      const dateA = moment(a.content, 'MM/DD/YYYY hh:mm:ss A')
-      const dateB = moment(b.content, 'MM/DD/YYYY hh:mm:ss A')
+      const dateA = moment(a.content)
+      const dateB = moment(b.content)
 
       return dateB - dateA
     })
@@ -172,7 +172,7 @@ export const useNotificationStore = defineStore('notification', () => {
     try {
       const docId = `@${authStore.userData.name.replace(/\s+/g, '_')}_${authStore.userData.orgId}`
       await updateDoc(doc(db, 'notifications', docId), {
-        notifications: data.reverse(),
+        notifications: data,
       })
     } catch ({ message }) {
       alertStore.warning({ content: message })
