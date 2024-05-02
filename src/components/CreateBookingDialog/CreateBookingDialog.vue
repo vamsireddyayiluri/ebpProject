@@ -199,6 +199,7 @@ const saveBooking = async () => {
     bookingConfirmationDialog.value.data = commitmentsList
   } else {
     createBooking(booking.value, newBookings.value)
+    await bookingsStore.getBookings({})
     emit('close')
   }
 }

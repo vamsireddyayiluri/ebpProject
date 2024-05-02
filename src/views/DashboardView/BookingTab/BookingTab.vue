@@ -29,17 +29,18 @@ const { mapToggled } = toRefs(props)
 const getPanes = () => {
   return mapToggled.value
     ? [
-      { name: 'content', size: 60 },
-      { name: 'map', size: 40 },
-    ]
+        { name: 'content', size: 60 },
+        { name: 'map', size: 40 },
+      ]
     : [{ name: 'content', size: 100 }]
 }
 const panes = ref(getPanes())
 const vuetifyTheme = useTheme()
 const theme = computed(() => vuetifyTheme.global.name.value)
 const panesRef = ref(null)
-const mutableSearchedEntities = ref(bookingsStore.bookings)
-const mutableFilteredEntities = ref(bookingsStore.bookings)
+const bookingsData = computed(() => bookingsStore.bookings)
+const mutableSearchedEntities = ref(bookingsData)
+const mutableFilteredEntities = ref(bookingsData)
 const searchValue = ref(null)
 const newId = ref(uid(8))
 const bookingStatisticsDialog = ref(null)
@@ -160,11 +161,10 @@ const applyFilter = () => {
     ).value
   }
   if (filters.value.loadingDate) {
-    const targetDate = moment(filters.value.loadingDate).endOf('day').format();
-    filteredData = useArrayFilter(
-      filteredData,
-      booking => booking.details.some(detail => detail.loadingDate === targetDate)
-    ).value;
+    const targetDate = moment(filters.value.loadingDate).endOf('day').format()
+    filteredData = useArrayFilter(filteredData, booking =>
+      booking.details.some(detail => detail.loadingDate === targetDate),
+    ).value
   }
   const isFiltered = some(filters.value, value => !!value)
   if (!isFiltered && !searchValue.value) {
@@ -214,9 +214,7 @@ watch(searchValue, value => {
       >
         <div class="flex flex-wrap items-center gap-4 mb-7">
           <div class="flex justify-between sm:justify-normal items-center gap-4">
-            <Typography type="text-h1 shrink-0">
-              Bookings
-            </Typography>
+            <Typography type="text-h1 shrink-0"> Bookings </Typography>
           </div>
           <Button
             class="ml-auto px-12"
