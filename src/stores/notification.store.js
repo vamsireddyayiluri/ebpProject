@@ -5,6 +5,7 @@ import { useAlertStore } from '~/stores/alert.store'
 import { useAuthStore } from '~/stores/auth.store'
 import { uid } from 'uid'
 import { useDate } from '~/composables'
+import moment from 'moment-timezone'
 
 export const useNotificationStore = defineStore('notification', () => {
   const alertStore = useAlertStore()
@@ -114,7 +115,7 @@ export const useNotificationStore = defineStore('notification', () => {
           showAlert(list)
         }
         initialLoad = false
-        notifications.value = notificationsData.reverse() || []
+        notifications.value = notificationsData || []
       })
     } catch ({ message }) {
       alertStore.warning({ content: message })
@@ -129,6 +130,13 @@ export const useNotificationStore = defineStore('notification', () => {
         type: 'info',
         id: uid(16),
       }
+    })
+
+    notifications.sort((a, b) => {
+      const dateA = moment(a.content, 'MM/DD/YYYY hh:mm:ss A')
+      const dateB = moment(b.content, 'MM/DD/YYYY hh:mm:ss A')
+
+      return dateB - dateA
     })
 
     return notifications
@@ -164,7 +172,7 @@ export const useNotificationStore = defineStore('notification', () => {
     try {
       const docId = `@${authStore.userData.name.replace(/\s+/g, '_')}_${authStore.userData.orgId}`
       await updateDoc(doc(db, 'notifications', docId), {
-        notifications: data,
+        notifications: data.reverse(),
       })
     } catch ({ message }) {
       alertStore.warning({ content: message })
