@@ -100,59 +100,62 @@ watch(searchValue, value => {
     :data="{ img: imgPlaceholder }"
   />-->
   <ProgressLinear
-      v-if="isLoading"
-      indeterminate
-    />
+    v-if="isLoading"
+    indeterminate
+  />
+  <template v-if="!statistics.length">
+    No results
+  </template>
   <div class="styleYardStat grid grid-cols-1 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 gap-5">
-      <template
-        v-for="item in statistics"
-        :key="item.id"
+    <template
+      v-for="item in statistics"
+      :key="item.id"
+    >
+      <div
+        class="p-4 rounded cursor-pointer"
+        :style="{ background: getColor('uiSecondary-01') }"
+        @click="openStatisticsDialog(item)"
       >
-        <div
-          class="p-4 rounded cursor-pointer"
-          :style="{ background: getColor('uiSecondary-01') }"
-          @click="openStatisticsDialog(item)"
+        <Map
+          :map-options="mapOptions"
+          :markers="[{
+            name: item.location.label,
+            location: { lat: item.location.lat, lng: item.location.lng },
+          }]"
+          render-marker-cluster
+          :theme="theme"
+          class="h-[138px]"
         >
-          <Map
-            :map-options="mapOptions"
-            :markers="[{
-              name: item.location.label,
-              location: { lat: item.location.lat, lng: item.location.lng },
-            }]"
-            render-marker-cluster
-            :theme="theme"
-            class="h-[138px]"
+          <template #marker>
+            <div class="w-2 h-2 rounded" :style="{ background: getColor('uiInteractive')}"></div>
+          </template>
+        </Map>
+        <Typography type="text-h4 pt-1 truncate">
+          <Highlighter
+            v-if="searchValue"
+            :query="searchValue"
           >
-            <template #marker>
-              <div class="w-2 h-2 rounded" :style="{ background: getColor('uiInteractive')}"></div>
-            </template>
-          </Map>
-          <Typography type="text-h4 pt-1 truncate">
-            <Highlighter
-              v-if="searchValue"
-              :query="searchValue"
-            >
-              {{ item.location.label || item.location.address }}
-            </Highlighter>
-            <template v-else>
-              {{ item.location.label || item.location.address }}
-            </template>
-            <Tooltip>{{ item.location.address }}</Tooltip>
-          </Typography>
-          <div class="mt-2">
-            <div class="flex justify-between mb-5">
-              <Typography :color="getColor('textSecondary')"> # of bookings</Typography>
-              <Typography type="text-body-m-semibold">
-                {{ item.entities.length }}
-              </Typography>
-            </div>
+            {{ item.location.label || item.location.address }}
+          </Highlighter>
+          <template v-else>
+            {{ item.location.label || item.location.address }}
+          </template>
+          <Tooltip>{{ item.location.address }}</Tooltip>
+        </Typography>
+        <div class="mt-2">
+          <div class="flex justify-between mb-5">
+            <Typography :color="getColor('textSecondary')"> # of bookings</Typography>
+            <Typography type="text-body-m-semibold">
+              {{ item.entities.length }}
+            </Typography>
           </div>
-          <ProgressLinear :value="getYardBookingLoad(item.entities).rate">
-            {{ getYardBookingLoad(item.entities).rate }}%
-          </ProgressLinear>
         </div>
-      </template>
-    </div>
+        <ProgressLinear :value="getYardBookingLoad(item.entities).rate">
+          {{ getYardBookingLoad(item.entities).rate }}%
+        </ProgressLinear>
+      </div>
+    </template>
+  </div>
   <Dialog
     ref="bookingStatisticsDialog"
     class="max-w-[720px] md:max-w-[980px]"
