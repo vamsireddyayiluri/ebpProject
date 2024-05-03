@@ -40,6 +40,7 @@ const { notGroupedBookings: bookings } = storeToRefs(bookingsStore)
 const form = ref(null)
 const insuranceItems = ref(insuranceTypes)
 const bookingConfirmationDialog = ref(null)
+const isLoading = ref(false)
 
 const {
   ref: bookingRef,
@@ -191,15 +192,18 @@ const saveDraft = async () => {
 }
 
 const saveBooking = async () => {
+  isLoading.value = true
   const commitmentsList = await commitmentStore.getExpiredCommitments(
     booking.value.location.geohash,
   )
   if (commitmentsList?.length) {
     bookingConfirmationDialog.value.show(true)
     bookingConfirmationDialog.value.data = commitmentsList
+    isLoading.value = false
   } else {
     createBooking(booking.value, newBookings.value)
     await bookingsStore.getBookings({})
+    isLoading.value = true
     emit('close')
   }
 }
@@ -437,6 +441,7 @@ onMounted(async () => {
         type="submit"
         class="w-fit"
         :disabled="isDisabled || isLoadingDatesFieldsEmpty"
+        :loading="isLoading"
       >
         Create
       </Button>
