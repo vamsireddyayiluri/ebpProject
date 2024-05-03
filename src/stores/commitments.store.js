@@ -126,7 +126,11 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       await updateBookingCarriers2(data, onBoardedContainers)
     } else if (onboardingCodes.onboardMovedLoad === reason) {
       // Calculating marketplace fee if trucker moved different loads
-      const { marketplaceFeePercentage, processingFee } = await getRequestLoadFee()
+
+      const { processingFee } = await getRequestLoadFee()
+      const marketplaceFeePercentage = parseFloat(
+        ((data.amountBreakup.baseFee * 100) / (data.committed * data.estimatedRate)).toFixed(2),
+      )
       const truckerRevenue = data.estimatedRate * onBoardedContainers
       const marketPlaceFee = parseFloat(
         ((truckerRevenue / 100) * marketplaceFeePercentage).toFixed(2),
