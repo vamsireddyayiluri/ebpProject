@@ -52,10 +52,10 @@ const computedEntities = computed(() =>
   filterMatchingObjects(computedSearchedEntities.value, computedFilteredEntities.value),
 )
 const bookingStatus = id => {
-  const bookings = computedSearchedEntities.value
-  const booking = bookings.find(i => i.id === id)
+  const bookings = computedEntities.value
+  const booking = bookings.find(i => i?.id === id)
 
-  return booking.status
+  return booking?.status
 }
 const onClearSearch = () => {
   loading.value = true
@@ -159,7 +159,7 @@ onMounted(() => {
     const table = document.getElementById(tableId)
     tableHeight.value = smAndDown.value
       ? 396
-      : window.innerHeight - table.getBoundingClientRect().top - 108 + 'px'
+      : window.innerHeight - table.getBoundingClientRect().top - 119 + 'px'
   })
 })
 watch(searchValue, value => {

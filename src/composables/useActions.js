@@ -98,7 +98,7 @@ export const bookingHistoryActions = item => {
   }
   return []
 }
-export const commitmentsActions = (status, bstatus,fromHistory=false) => {
+export const commitmentsActions = (status, bstatus, fromHistory= false) => {
   const viewDetailsAction = [
     {
       icon: 'mdi-information',
