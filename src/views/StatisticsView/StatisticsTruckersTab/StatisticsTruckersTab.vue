@@ -80,16 +80,18 @@ onMounted(() => {
         </Typography>
       </template>
       <template #performance="{ item }">
-        <div class="flex gap-1.5">
+        <!--
+          <div class="flex gap-1.5">
           <Icon
-            icon="mdi-timer"
-            variant="plain"
+          icon="mdi-timer"
+          variant="plain"
           />
           <Typography class="flex-shrink-0">
-            {{ item.performance.averageFulfillmentTime }}/hrs
+          {{ item.performance.averageFulfillmentTime }}/hrs
           </Typography>
           <Tooltip> Average fulfillment time</Tooltip>
-        </div>
+          </div>
+        -->
         <div class="flex gap-1.5 mx-2">
           <Icon icon="mdi-close-circle" />
           <Typography class="flex-shrink-0">
@@ -97,13 +99,15 @@ onMounted(() => {
           </Typography>
           <Tooltip> Cancellation rate</Tooltip>
         </div>
-        <div class="flex gap-1.5">
+        <!--
+          <div class="flex gap-1.5">
           <Icon icon="mdi-timeline-check" />
           <Typography class="flex-shrink-0">
-            {{ item.performance.averageAcceptanceTime }}/hrs
+          {{ item.performance.averageAcceptanceTime }}/hrs
           </Typography>
           <Tooltip> Average acceptance time</Tooltip>
-        </div>
+          </div>
+        -->
       </template>
     </VirtualTable>
   </template>

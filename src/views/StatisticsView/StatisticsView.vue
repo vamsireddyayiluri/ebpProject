@@ -9,10 +9,11 @@ const tabs = [
     label: 'Overall statistic',
     route: 'overallStatistic',
   },
-  {
+
+  /*  {
     label: 'By truckers',
     route: 'byTruckers',
-  },
+  },*/
   {
     label: 'By SSL',
     route: 'bySSL',
@@ -51,13 +52,15 @@ onMounted(async () => {
       <template v-if="!tab">
         <OverallStatisticsTab />
       </template>
-      <template v-if="tab === 1">
+      <!--
+        <template v-if="tab === 1">
         <StatisticsTruckersTab />
-      </template>
-      <template v-if="tab === 2">
+        </template>
+      -->
+      <template v-if="tab === 1">
         <StatisticsSSLTab />
       </template>
-      <template v-if="tab === 3">
+      <template v-if="tab === 2">
         <StatisticsYardsTab />
       </template>
     </div>

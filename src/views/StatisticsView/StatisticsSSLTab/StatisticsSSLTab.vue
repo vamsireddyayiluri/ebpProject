@@ -42,7 +42,7 @@ onMounted(async () => {
             :line="item.line"
             class="w-fit mx-auto mb-4"
           />
-          <div class="flex justify-between gap-8">
+          <div class="flex justify-center gap-8">
             <div class="text-center">
               <Typography type="text-h1">
                 {{ item.jointBookings }}
@@ -54,17 +54,19 @@ onMounted(async () => {
                 joint bookings
               </Typography>
             </div>
-            <div class="text-center">
+            <!--
+              <div class="text-center">
               <Typography type="text-h1">
-                {{ item.averageFulfillmentTime }} <small class="text-sm">days</small>
+              {{ item.averageFulfillmentTime }} <small class="text-sm">days</small>
               </Typography>
               <Typography
-                type="text-body-s-regular"
-                :color="getColor('textSecondary')"
+              type="text-body-s-regular"
+              :color="getColor('textSecondary')"
               >
-                average fulfillment time
+              average fulfillment time
               </Typography>
-            </div>
+              </div>
+            -->
           </div>
         </div>
       </template>
