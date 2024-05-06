@@ -445,7 +445,7 @@ watch(
         :sub-title="`Edit loading date for ${loadingDateDialog.data.truckerCompany}`"
         btn-name="Update"
         :loading="isloading"
-        :loadingDate="loadingDateDialog.data.loadingDate"
+        :loading-date="loadingDateDialog.data.loadingDate"
         @close="loadingDateDialog.show(false)"
         @onClickUpdate="loadingDate => onLoadingDateUpdated(loadingDateDialog.data, loadingDate)"
       />

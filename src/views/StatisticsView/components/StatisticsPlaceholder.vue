@@ -9,14 +9,14 @@ const router = useRouter()
 
 <template>
   <div
-    class="!h-[calc(100vh-262px)] flex flex-col justify-center border rounded "
+    class="!h-[calc(100vh-262px)] flex flex-col justify-center border rounded"
     :style="{ background: 'rgba(var(--v-theme-uiPrimary), 1)' }"
   >
     <div class="max-w-[520px] w-full mx-auto text-center py-12 px-3">
       <img
         :src="data.img"
         class="mx-auto max-h-[30vh] xl:max-h-[50vh] w-auto border rounded object-cover"
-      />
+      >
       <Typography
         type="text-h1 mt-6 mb-3"
         :color="getColor('textPrimary')"

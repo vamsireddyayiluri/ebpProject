@@ -4,12 +4,19 @@ import { useDisplay } from 'vuetify'
 import { useHeaders } from '~/composables'
 import { getColor } from '~/helpers/colors'
 import imgPlaceholder from '~/assets/images/St by trucker.png'
+import { useStatisticsStore } from '~/stores/statistics.store'
+import { storeToRefs } from 'pinia'
 
+const statisticsStore = useStatisticsStore()
+const { isLoading } = storeToRefs(statisticsStore)
 const { smAndDown } = useDisplay()
 const { statisticsTruckersHeaders } = useHeaders()
-const statistics = ref(truckersData)
+const statistics = ref([])
 const tableHeight = ref(0)
 
+onMounted(async () => {
+  statistics.value = await statisticsStore.statisticsByTrucker()
+})
 const tableId = 'statisticsBookingsTable'
 onMounted(() => {
   setTimeout(() => {
@@ -29,7 +36,7 @@ onMounted(() => {
     Statistic by truckers
   </Typography>
   <StatisticsPlaceholder
-    v-if="statistics"
+    v-if="!isLoading && !statistics.length"
     :data="{ img: imgPlaceholder }"
   />
   <template v-else>
@@ -38,12 +45,13 @@ onMounted(() => {
       :key="tableId"
       :entities="statistics"
       :headers="statisticsTruckersHeaders"
+      :loading="isLoading"
       :options="{
-      rowHeight: 64,
-      showActions: false,
-      tableHeight: tableHeight,
-      tableMinWidth: 960,
-    }"
+        rowHeight: 64,
+        showActions: false,
+        tableHeight: tableHeight,
+        tableMinWidth: 960,
+      }"
       class="mb-5"
     >
       <template #trucker="{ item }">
@@ -61,37 +69,45 @@ onMounted(() => {
           {{ item.company }}
         </Typography>
       </template>
-      <template #takenBookings>
-        <Typography> 12%</Typography>
+      <template #committed="{ item }">
+        <Typography>
+          {{ item.committedBookings }}
+        </Typography>
       </template>
-      <template #takenFulfilled>
-        <Typography> 15 / 12</Typography>
+      <template #committedFulfilled="{ item }">
+        <Typography>
+          {{ item.committedFulfilled[0] }} / {{ item.committedFulfilled[1] }}
+        </Typography>
       </template>
-      <template #ranging>
-        <div class="flex gap-1.5">
+      <template #performance="{ item }">
+        <!--
+          <div class="flex gap-1.5">
           <Icon
-            icon="mdi-timer"
-            variant="plain"
+          icon="mdi-timer"
+          variant="plain"
           />
           <Typography class="flex-shrink-0">
-            3 days
+          {{ item.performance.averageFulfillmentTime }}/hrs
           </Typography>
           <Tooltip> Average fulfillment time</Tooltip>
-        </div>
+          </div>
+        -->
         <div class="flex gap-1.5 mx-2">
-          <Icon icon="mdi-close-circle"/>
+          <Icon icon="mdi-close-circle" />
           <Typography class="flex-shrink-0">
-            25%
+            {{ item.performance.cancellationRate }}
           </Typography>
           <Tooltip> Cancellation rate</Tooltip>
         </div>
-        <div class="flex gap-1.5">
-          <Icon icon="mdi-timeline-check"/>
+        <!--
+          <div class="flex gap-1.5">
+          <Icon icon="mdi-timeline-check" />
           <Typography class="flex-shrink-0">
-            20 min
+          {{ item.performance.averageAcceptanceTime }}/hrs
           </Typography>
           <Tooltip> Average acceptance time</Tooltip>
-        </div>
+          </div>
+        -->
       </template>
     </VirtualTable>
   </template>

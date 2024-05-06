@@ -17,7 +17,7 @@ import {
 import { db } from '~/firebase'
 import { useAuthStore } from '~/stores/auth.store'
 import { getLocalServerTime, getLocalTime } from '@qualle-admin/qutil/dist/date'
-import { capitalize, cloneDeep, pickBy } from 'lodash'
+import { capitalize, pickBy } from 'lodash'
 import moment from 'moment-timezone'
 import { statuses } from '~/constants/statuses'
 import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
@@ -112,6 +112,12 @@ export const useBookingsStore = defineStore('bookings', () => {
     }
 
     return allCommitments
+  }
+  const getCommitmentsByBooking = async (id, fromHistory = false) => {
+    const q = await query(collection(db, 'commitments'), where('bookingId', '==', id))
+    const docData = await getDocs(q)
+    
+    return docData.docs.map(doc => doc.data())
   }
   const updateBookingCommitments = async (id, commitments) => {
     bookings.value.forEach(b => {
@@ -329,6 +335,7 @@ export const useBookingsStore = defineStore('bookings', () => {
           ids.forEach(id => {
             batch.delete(doc(db, 'bookings', id))
           })
+
           // await deleteDoc(doc(db, 'bookings', id))
           alert && alertStore.info({ content: 'Bookings removed!' })
         }
@@ -497,6 +504,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.warning({ content: message })
     }
   }
+
   // delete single booking based on the booking id
   const deleteBookingById = async id => {
     try {
@@ -529,6 +537,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     loading,
     getBookings,
     getCommitmentsByBookingId,
+    getCommitmentsByBooking,
     getBooking,
     getBookingsByIds,
     createBooking,

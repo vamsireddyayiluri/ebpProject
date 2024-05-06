@@ -3,7 +3,7 @@ import { getColor } from '~/helpers/colors'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { emailRegex } from '@qualle-admin/qutil/dist/patterns'
 import { defaultOverWeight, maximumOverWeight } from '~/constants/settings'
-import {cloneDeep, isEqual, isString} from 'lodash'
+import { cloneDeep, isEqual, isString } from 'lodash'
 import { useAuthStore } from '~/stores/auth.store'
 import { storeToRefs } from 'pinia'
 import moment from 'moment-timezone'
@@ -26,11 +26,11 @@ const details = ref(
     ? props.editedLocation?.details?.customizedDetails
       ? props.editedLocation?.details
       : {
-          ...vendorDetails.value,
-          averageLoadTime: null,
-          overweight: null,
-          averageWeight: null,
-        }
+        ...vendorDetails.value,
+        averageLoadTime: null,
+        overweight: null,
+        averageWeight: null,
+      }
     : vendorDetails.value,
 )
 const initDetails = cloneDeep(details.value)
@@ -121,13 +121,16 @@ const onChangeTo = (e, day) => {
 const resetTime = (e, item) => {
   if (!e) {
     const unselectedDay = checkboxes.value.find(i => i.day === item.day)
-    unselectedDay.from = "9:30 AM"
-    unselectedDay.to = "5:30 PM"
+    unselectedDay.from = '9:30 AM'
+    unselectedDay.to = '5:30 PM'
   }
 }
 const rules = {
   cell(value) {
-    return /^(\+\d{1,2}\s?)?(\(\d{3}\)|\d{3})[\s.-]?\d{3}[\s.-]?\d{4}$/.test(value) || 'Invalid phone number format'
+    return (
+      /^(\+\d{1,2}\s?)?(\(\d{3}\)|\d{3})[\s.-]?\d{3}[\s.-]?\d{4}$/.test(value) ||
+      'Invalid phone number format'
+    )
   },
   email(value) {
     return emailRegex.test(value) || 'Invalid e-mail'
@@ -148,7 +151,11 @@ const rules = {
 }
 const isDirty = computed(() => !isEqual(details.value, initDetails))
 const isDisabled = computed(
-  () => !!form.value?.errors.length || form.value?.isValidating || !isDirty.value || isString(rules.schedule()),
+  () =>
+    !!form.value?.errors.length ||
+    form.value?.isValidating ||
+    !isDirty.value ||
+    isString(rules.schedule()),
 )
 
 const setDetails = async () => {
@@ -262,7 +269,9 @@ onUnmounted(() => {
         :rules="[rules.email]"
       />
     </div>
-    <Typography type="text-body-xs-semibold mt-6 mb-2"> Operation hours</Typography>
+    <Typography type="text-body-xs-semibold mt-6 mb-2">
+      Operation hours
+    </Typography>
     <div class="flex gap-6 flex-col sm:flex-row">
       <template
         v-for="(item, n) in checkboxes"
@@ -272,7 +281,7 @@ onUnmounted(() => {
           <Checkbox
             v-model="checkboxes[n].status"
             :label="item.day.slice(0, 3)"
-            @update:modelValue="(e) => resetTime(e, item)"
+            @update:modelValue="e => resetTime(e, item)"
           />
         </div>
       </template>
@@ -329,8 +338,7 @@ onUnmounted(() => {
         cols="12"
         sm="2"
         class="mb-5 sm:!mb-0"
-      >
-      </VCol>
+      />
       <Typography
         v-if="rules.schedule() !== true"
         type="text-body-xs-regular"
@@ -339,7 +347,9 @@ onUnmounted(() => {
         {{ rules.schedule() }}
       </Typography>
     </VRow>
-    <Typography type="text-body-xs-semibold mt-6 mb-4"> Pickup instructions</Typography>
+    <Typography type="text-body-xs-semibold mt-6 mb-4">
+      Pickup instructions
+    </Typography>
     <Textarea
       v-model="details.pickupInstructions"
       label="Instructions for the pickup *"

@@ -123,8 +123,7 @@ onMounted(() => {
       >
         <Typography>
           Are you sure you want to delete draft#
-          <b>{{ deleteDraftDialog.data.ref }}</b
-          >?
+          <b>{{ deleteDraftDialog.data.ref }}</b>?
         </Typography>
       </ConfirmationDialog>
     </template>

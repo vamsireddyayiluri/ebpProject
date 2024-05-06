@@ -12,7 +12,7 @@ const props = defineProps({
         :key="i"
       >
         {{ i }}
-        <br />
+        <br>
       </template>
     </template>
     <template v-else>

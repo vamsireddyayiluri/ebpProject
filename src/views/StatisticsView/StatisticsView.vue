@@ -1,21 +1,35 @@
 <script setup>
 import { Main } from '@layouts'
+import { useStatisticsStore } from '../../stores/statistics.store'
 
-const tab = ref(0)
+const statisticsStore = useStatisticsStore()
+const router = useRouter()
 const tabs = [
   {
     label: 'Overall statistic',
+    route: 'overallStatistic',
   },
-  {
+
+  /*  {
     label: 'By truckers',
-  },
+    route: 'byTruckers',
+  },*/
   {
     label: 'By SSL',
+    route: 'bySSL',
   },
   {
     label: 'By yards',
+    route: 'byYards',
   },
 ]
+const tab = ref(tabs.findIndex(i => i.route === router.currentRoute.value.query.tab))
+const handleTabChange = async value => {
+  await router.push({ query: { tab: tabs[value].route } })
+}
+onMounted(async () => {
+  await statisticsStore.getBookingsQuery()
+})
 </script>
 
 <template>
@@ -30,6 +44,7 @@ const tabs = [
           v-model="tab"
           :items="tabs"
           v-bind="props"
+          @update:modelValue="handleTabChange"
         />
       </template>
     </SubHeader>
@@ -37,13 +52,15 @@ const tabs = [
       <template v-if="!tab">
         <OverallStatisticsTab />
       </template>
-      <template v-if="tab === 1">
+      <!--
+        <template v-if="tab === 1">
         <StatisticsTruckersTab />
-      </template>
-      <template v-if="tab === 2">
+        </template>
+      -->
+      <template v-if="tab === 1">
         <StatisticsSSLTab />
       </template>
-      <template v-if="tab === 3">
+      <template v-if="tab === 2">
         <StatisticsYardsTab />
       </template>
     </div>

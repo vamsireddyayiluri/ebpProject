@@ -67,17 +67,17 @@ export const useAuthStore = defineStore('auth', () => {
     } catch (error) {
       isLoading.value = false
       switch (error.code) {
-        case 'auth/user-not-found':
-          alertStore.warning({ content: 'User not found' })
-          break
-        case 'auth/wrong-password':
-          alertStore.warning({ content: 'Wrong password' })
-          break
-        case 'auth/invalid-login-credentials':
-          alertStore.warning({ content: 'Invalid credentials' })
-          break
-        default:
-          alertStore.warning({ content: 'Something went wrong' })
+      case 'auth/user-not-found':
+        alertStore.warning({ content: 'User not found' })
+        break
+      case 'auth/wrong-password':
+        alertStore.warning({ content: 'Wrong password' })
+        break
+      case 'auth/invalid-login-credentials':
+        alertStore.warning({ content: 'Invalid credentials' })
+        break
+      default:
+        alertStore.warning({ content: 'Something went wrong' })
       }
     }
   }
@@ -135,20 +135,20 @@ export const useAuthStore = defineStore('auth', () => {
       await sendVerificationEmail()
     } catch (error) {
       switch (error.code) {
-        case 'auth/email-already-in-use':
-          alertStore.warning({ content: 'Email already in use' })
-          break
-        case 'auth/invalid-email':
-          alertStore.warning({ content: 'Invalid email' })
-          break
-        case 'auth/operation-not-allowed':
-          alertStore.warning({ content: 'Operation not allowed' })
-          break
-        case 'auth/weak-password':
-          alertStore.warning({ content: 'Weak password' })
-          break
-        default:
-          alertStore.warning({ content: 'Something went wrong' })
+      case 'auth/email-already-in-use':
+        alertStore.warning({ content: 'Email already in use' })
+        break
+      case 'auth/invalid-email':
+        alertStore.warning({ content: 'Invalid email' })
+        break
+      case 'auth/operation-not-allowed':
+        alertStore.warning({ content: 'Operation not allowed' })
+        break
+      case 'auth/weak-password':
+        alertStore.warning({ content: 'Weak password' })
+        break
+      default:
+        alertStore.warning({ content: 'Something went wrong' })
       }
       isLoading.value = false
     }

@@ -23,7 +23,7 @@ import { auth, db, storage } from '~/firebase'
 export const useProfileStore = defineStore('profile', () => {
   const authStore = useAuthStore()
   const alertStore = useAlertStore()
-  const { currentUser, userData } = storeToRefs((authStore))
+  const { currentUser, userData } = storeToRefs(authStore)
   const { getFormattedDateTime } = useDate()
   const accountInfo = ref({
     name: null,
