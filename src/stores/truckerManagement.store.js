@@ -165,6 +165,13 @@ export const useTruckerManagementStore = defineStore('truckerManagement', () => 
           const documentsSnapshot = await getDocs(documentsQuery)
 
           const documentsData = documentsSnapshot.docs.map(document => document.data())
+          documentsData?.sort((a, b) => {
+            const order = { "pending": 1, "approved": 2 }
+            const statusA = order[a.status] || 3
+            const statusB = order[b.status] || 3
+
+            return statusA - statusB
+          })
 
           return { ...docSnapshot.data(), documents: documentsData }
         })
