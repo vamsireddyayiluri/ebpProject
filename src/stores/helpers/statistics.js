@@ -1,4 +1,4 @@
-import { countBy, filter, flatMap, get, groupBy, map, meanBy, sumBy } from 'lodash'
+import { countBy, filter, flatMap, get, groupBy, map, meanBy, sum, sumBy } from 'lodash'
 import moment from 'moment'
 
 const calculateMonthlyAverage = (bookings, filterType) => {
@@ -58,6 +58,14 @@ const getDaysInMonth = (year, month) => {
   return daysArray
 }
 
+const getFulfillmentRates = group => {
+  const fulfillmentRate = parseInt(
+    group.length / filter(group, { status: 'completed' }).length,
+  ).toFixed(0)
+
+  return isNaN(fulfillmentRate) ? 0 : fulfillmentRate
+}
+
 const groupBookingsByMonth = (bookings, year) => {
   const countsByMonth = countBy(bookings, booking => {
     const bookingDate = moment(booking.createdAt)
@@ -91,6 +99,7 @@ const groupBySSL = bookings =>
   map(groupBy(bookings, 'line.label'), (group, line) => ({
     line: group[0].line,
     jointBookings: group.length,
+    fulfillmentRates: getFulfillmentRates(group),
     averageFulfillmentTime: calculateAverageFulfillmentTimes(group),
     completed: filter(group, { status: 'completed' }).length,
   }))
@@ -123,10 +132,7 @@ const calculateTruckerStats = (bookings, commitments) => {
       id: scac,
       scac,
       committedBookings: bookingsByScac.length,
-      committedFulfilled: [
-        sumBy(bookingsByScac, 'committed'),
-        sumBy(onboardedCommitments, 'committed'),
-      ],
+      committedFulfilled: [sumBy(bookingsByScac, 'committed'), sum(onboardedCommitments.length)],
       performance: {
         averageFulfillmentTime: calculateAverageFulfillmentTimes(bookingsByScac),
         cancellationRate: `${(

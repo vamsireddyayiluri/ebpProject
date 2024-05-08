@@ -31,24 +31,33 @@ onMounted(async () => {
         message="this month"
         :loading="isLoading"
         :sum="statistics?.totalNumberOfBookings"
-        :increase="+statistics?.bookingsMonthVolatility >= 0"
-        :value="statistics?.bookingsMonthVolatility[0].change"
+        :increase="
+          +statistics?.bookingsMonthVolatility.at(1)?.average >=
+          +statistics?.bookingsMonthVolatility.at(0)?.average
+        "
+        :value="statistics?.bookingsMonthVolatility.at(-1)?.change || 'N/A'"
       />
       <AverageCard
         title="Total canceled bookings"
         message="this month"
         :loading="isLoading"
         :sum="statistics?.totalCanceled"
-        :increase="+statistics?.canceledBookingsMonthVolatility.at(-1)?.change >= 0"
-        :value="statistics?.canceledBookingsMonthVolatility.at(-1)?.change || 0"
+        :increase="
+          +statistics?.canceledBookingsMonthVolatility.at(1)?.average >=
+          +statistics?.canceledBookingsMonthVolatility.at(0)?.average
+        "
+        :value="statistics?.canceledBookingsMonthVolatility.at(-1)?.change || 'N/A'"
       />
       <AverageCard
         title="Successfully done"
         message="this month"
         :loading="isLoading"
         :sum="statistics?.successfullyBookings"
-        :increase="+statistics?.successfullyBookingsMonthVolatility.at(-1)?.change >= 0"
-        :value="statistics?.successfullyBookingsMonthVolatility.at(-1)?.change || 0"
+        :increase="
+          +statistics?.successfullyBookingsMonthVolatility.at(1)?.average >=
+          +statistics?.successfullyBookingsMonthVolatility.at(0)?.average
+        "
+        :value="statistics?.successfullyBookingsMonthVolatility.at(-1)?.change || 'N/A'"
       />
     </div>
     <ActivityStatisticsChart />

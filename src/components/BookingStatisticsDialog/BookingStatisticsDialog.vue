@@ -1,6 +1,7 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
 import { getBookingLoad } from '~/helpers/countings'
+import moment from 'moment-timezone'
 import { getTimeLine } from '~/helpers/filters'
 
 const props = defineProps({

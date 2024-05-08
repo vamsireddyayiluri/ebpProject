@@ -27,7 +27,7 @@ export const getTimeLine = timeLine => {
     return { title: val.message, date: getFormattedDateTime(val.time_stamp) }
   })
 
-  formattedTimeLine.sort((a, b) => {
+  formattedTimeLine?.sort((a, b) => {
     const dateA = moment(a.date, 'MM/DD/YYYY hh:mm:ss A')
     const dateB = moment(b.date, 'MM/DD/YYYY hh:mm:ss A')
 

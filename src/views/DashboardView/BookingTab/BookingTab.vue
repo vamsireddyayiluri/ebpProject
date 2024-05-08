@@ -39,8 +39,8 @@ const vuetifyTheme = useTheme()
 const theme = computed(() => vuetifyTheme.global.name.value)
 const panesRef = ref(null)
 const bookingsData = computed(() => bookingsStore.bookings)
-const mutableSearchedEntities = ref(bookingsData)
-const mutableFilteredEntities = ref(bookingsData)
+const mutableSearchedEntities = ref(bookingsData.value)
+const mutableFilteredEntities = ref(bookingsData.value)
 const searchValue = ref(null)
 const newId = ref(uid(8))
 const bookingStatisticsDialog = ref(null)
@@ -195,6 +195,10 @@ watch(mapToggled, () => {
 })
 watch(searchValue, value => {
   debouncedSearch(value)
+})
+watch(bookingsData, value => {
+  mutableSearchedEntities.value = value
+  mutableFilteredEntities.value = value
 })
 </script>
 
