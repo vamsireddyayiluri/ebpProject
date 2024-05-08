@@ -303,7 +303,12 @@ onMounted(async () => {
         return-object
         class="h-fit"
         @update:modelValue="
-          value => (booking.weight = parseInt(value.details?.averageWeight) || booking.weight? '': null)
+          value =>
+            (booking.weight = value.details?.averageWeight
+              ? parseInt(value.details?.averageWeight)
+              : booking.weight
+              ? ''
+              : null)
         "
       />
       <Textfield
