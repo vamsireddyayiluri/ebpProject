@@ -33,6 +33,7 @@ export const useBookingsStore = defineStore('bookings', () => {
 
   const notGroupedBookings = ref([])
   let pastBookings = ref([])
+  const calendarBooking = ref([])
   const drafts = ref([])
   const loading = ref(false)
 
@@ -50,6 +51,8 @@ export const useBookingsStore = defineStore('bookings', () => {
     bookings.value = data.sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
     allBookings.value = data.sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
     // await validateBookingsExpiry(data)
+
+    return data
   }
   const getBookings = async ({ draft = false }) => {
     loading.value = true
@@ -116,7 +119,7 @@ export const useBookingsStore = defineStore('bookings', () => {
   const getCommitmentsByBooking = async (id, fromHistory = false) => {
     const q = await query(collection(db, 'commitments'), where('bookingId', '==', id))
     const docData = await getDocs(q)
-    
+
     return docData.docs.map(doc => doc.data())
   }
   const updateBookingCommitments = async (id, commitments) => {
@@ -512,6 +515,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       if (index > -1) {
         await deleteDoc(doc(db, 'bookings', id))
         notGroupedBookings.value.splice(index, 1)
+
         alertStore.info({ content: 'Bookings removed!' })
       }
     } catch ({ message }) {
@@ -521,6 +525,34 @@ export const useBookingsStore = defineStore('bookings', () => {
   const closeBookingExpansion = async id => {
     const index = bookings.value.findIndex(val => val?.id === id)
     bookings.value[index].expand = false
+  }
+
+  const getAllCompletedBookings = async () => {
+    loading.value = true
+    const bookings = await getallBookings()
+    const completedBookings = bookings?.filter(b => b.status === statuses.completed)
+    const activeBookings = bookings?.filter(
+      b =>
+        b.status !== statuses.completed &&
+        b.status !== statuses.expired &&
+        b.status !== statuses.canceled,
+    )
+    loading.value = false
+    calendarBooking.value = [...completedBookings, ...activeBookings]
+  }
+
+  const deleteCompletedBookingById = async id => {
+    try {
+      const index = calendarBooking.value.findIndex(i => i.id === id)
+      if (index > -1) {
+        await deleteDoc(doc(db, 'bookings', id))
+        calendarBooking.value.splice(index, 1)
+
+        alertStore.info({ content: 'Bookings deleted!' })
+      }
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
   }
   const reset = () => {
     bookings.value = []
@@ -533,6 +565,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     allBookings,
     pastBookings,
     notGroupedBookings,
+    calendarBooking,
     drafts,
     loading,
     getBookings,
@@ -554,5 +587,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     duplicateBooking,
     closeBookingExpansion,
     deleteBookingById,
+    getAllCompletedBookings,
+    deleteCompletedBookingById,
   }
 })
