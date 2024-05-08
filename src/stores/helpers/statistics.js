@@ -48,22 +48,18 @@ const calculateAverageFulfillmentTimes = bookings => {
 }
 
 const getMonthsArray = () => map(Array(12), (_, i) => moment().month(i).format('MMM'))
+
 const getDaysInMonth = (year, month) => {
   const daysInMonth = moment(`${year}-${month}`, 'YYYY-MM').daysInMonth()
-  let daysArray = []
-  for (let i = 1; i <= daysInMonth; i++) {
-    daysArray.push(i)
-  }
 
-  return daysArray
+  return Array.from({ length: daysInMonth }, (_, index) => index + 1)
 }
 
 const getFulfillmentRates = group => {
-  const fulfillmentRate = parseInt(
-    group.length / filter(group, { status: 'completed' }).length,
-  ).toFixed(0)
+  const completedCount = filter(group, { status: 'completed' }).length
+  const fulfillmentRate = (completedCount / group.length) * 100
 
-  return isNaN(fulfillmentRate) ? 0 : fulfillmentRate
+  return isNaN(fulfillmentRate) || !isFinite(fulfillmentRate) ? 0 : Math.round(fulfillmentRate)
 }
 
 const groupBookingsByMonth = (bookings, year) => {
