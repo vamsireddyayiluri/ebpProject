@@ -32,7 +32,6 @@ export const useNotificationStore = defineStore('notification', () => {
     try {
       await setDoc(doc(db, 'notifications', docId), {
         settings: defaultSettings,
-        notifications: [],
         orgId,
       })
     } catch ({ message }) {
@@ -45,7 +44,7 @@ export const useNotificationStore = defineStore('notification', () => {
     try {
       const docId = `@${authStore.userData.name.replace(/\s+/g, '_')}_${authStore.userData.orgId}`
       const settingsDoc = await getDoc(doc(db, 'notifications', docId))
-      if (!settingsDoc.exists()) {
+      if (!settingsDoc.data()?.settings) {
         await createNotificationCollection(authStore.userData.orgId)
         settings.value = defaultSettings
         loading.value = false
