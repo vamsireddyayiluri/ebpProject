@@ -159,7 +159,7 @@ onMounted(() => {
     const table = document.getElementById(tableId)
     tableHeight.value = smAndDown.value
       ? 396
-      : window.innerHeight - table.getBoundingClientRect().top - 108 + 'px'
+      : window.innerHeight - table.getBoundingClientRect().top - 119 + 'px'
   })
 })
 watch(searchValue, value => {
