@@ -187,14 +187,14 @@ onMounted(async () => {
         <template #eventContent="{ event }">
           <Event
             :event="event"
+            class="styleCalendarEvent"
             @onEdit="onEdit"
           >
             <template #status v-if="event.extendedProps.metadata.status === statuses.completed">
               <Classification type="status" value="completed" class="h-min mt-3 mr-3"/>
             </template>
-            <template #actions>
+            <template #actions v-if="event.extendedProps.metadata.status !== statuses.completed">
               <Button
-                v-if="event.extendedProps.metadata.status !== statuses.completed"
                 variant="outlined"
                 density="compact"
                 @click.stop="onEdit(event)"
@@ -206,7 +206,7 @@ onMounted(async () => {
                 class="ml-auto !mr-0"
                 @click.stop="onRemove(event)"
               >
-                {{ event.extendedProps.metadata.status !== statuses.completed? 'Remove from network': 'Delete booking' }}
+                Remove from network
               </Button>
             </template>
           </Event>
@@ -228,25 +228,15 @@ onMounted(async () => {
   >
     <template #text>
       <ConfirmationDialog
-        :btn-name="removeBookingDialog.data.extendedProps.metadata.status !== statuses.completed? 'Remove': 'Delete'"
+        btn-name="Remove"
         @close="removeBookingDialog.show(false)"
-        @onClickBtn="
-          removeBookingDialog.data.extendedProps.metadata.status !== statuses.completed
-            ? removeBooking(removeBookingDialog.data.id)
-            : deleteBooking(removeBookingDialog.data.id)
-        "
+        @onClickBtn="removeBooking(removeBookingDialog.data.id)"
       >
         <Typography>
           Are you sure you want to remove booking
           <tr />
           <b>ref# {{ removeBookingDialog.data.extendedProps.metadata.ref }}</b>
-          {{
-            `${
-              removeBookingDialog.data.extendedProps.metadata.status !== statuses.completed
-                ? 'from network?'
-                : '?'
-            }`
-          }}
+          from network?
         </Typography>
       </ConfirmationDialog>
     </template>
@@ -266,3 +256,11 @@ onMounted(async () => {
     </template>
   </Dialog>
 </template>
+
+<style lang="scss">
+.styleCalendarEvent {
+  .v-card-actions {
+    min-height: auto;
+  }
+}
+</style>
