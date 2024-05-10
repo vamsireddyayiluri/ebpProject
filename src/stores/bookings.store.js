@@ -116,7 +116,7 @@ export const useBookingsStore = defineStore('bookings', () => {
   const getCommitmentsByBooking = async (id, fromHistory = false) => {
     const q = await query(collection(db, 'commitments'), where('bookingId', '==', id))
     const docData = await getDocs(q)
-    
+
     return docData.docs.map(doc => doc.data())
   }
   const updateBookingCommitments = async (id, commitments) => {
@@ -208,6 +208,14 @@ export const useBookingsStore = defineStore('bookings', () => {
     try {
       const batch = writeBatch(db)
       details?.map(b => {
+        if (b.newScacs) {
+          let totalContainers = b.newScacs.reduce((total, obj) => total + obj.containers, 0)
+          b.containers = totalContainers + b.containers
+
+          let allScacs = b.newScacs.flatMap(obj => obj.scacList.list)
+
+          b.scacList.list = b.scacList.list.concat(allScacs)
+        }
         b.scacList =
           authStore.orgData?.bookingRules?.preferredCarrierWindow > 0 ? b.scacList : { list: [] }
         const newBooking = createBookingObj({ ...selectedBooking, ...b })
@@ -340,7 +348,6 @@ export const useBookingsStore = defineStore('bookings', () => {
           alert && alertStore.info({ content: 'Bookings removed!' })
         }
       } else {
-
         ids.forEach(async id => {
           batch.delete(doc(db, 'bookings', id))
         })

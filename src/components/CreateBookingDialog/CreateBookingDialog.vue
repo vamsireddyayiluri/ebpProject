@@ -179,10 +179,32 @@ const addLoadingDate = () => {
     scacList: cloneDeep(bookingRulesStore.rules.truckers),
   })
 }
+const addScac = loadingDate => {
+  let booking = newBookings.value.find(booking => booking.loadingDate === loadingDate)
+  if (booking) {
+    booking.newScacs = booking.newScacs ? booking.newScacs : []
+    booking.newScacs.push({
+      id: uid(16),
+      preferredDays: null,
+      loadingDate: loadingDate,
+      containers: null,
+      scacList: { list: [] },
+    })
+  }
+}
 const removeLoadingDate = id => {
   const index = newBookings.value.findIndex(i => i.id === id)
   if (index > -1) {
     newBookings.value.splice(index, 1)
+  }
+}
+const removeScac = bDetails => {
+  let booking = newBookings.value.find(booking => booking.loadingDate === bDetails.loadingDate)
+  if (booking) {
+    const index = booking.newScacs.findIndex(i => i.id === bDetails.id)
+    if (index > -1) {
+      booking.newScacs.splice(index, 1)
+    }
   }
 }
 const saveDraft = async () => {
@@ -202,9 +224,9 @@ const saveBooking = async () => {
     isLoading.value = false
   } else {
     createBooking(booking.value, newBookings.value)
-    await bookingsStore.getBookings({})
-    isLoading.value = true
+    isLoading.value = false
     emit('close')
+    await bookingsStore.getBookings({})
   }
 }
 const updateRef = async e => {
@@ -372,29 +394,71 @@ onMounted(async () => {
           <Divider class="mt-3 mb-1.5" />
         </template>
       </Autocomplete>
-      <div class="grid grid-cols-subgrid gap-6 col-span-2 md:col-span-3 relative">
-        <Typography type="text-body-xs-semibold col-span-2 md:col-span-3 -mb-2">
-          Loading dates
-        </Typography>
+    </div>
+    <div class="grid grid-cols-subgrid gap-6 md:grid-cols-4 col-span-2 md:col-span-4 relative">
+      <Typography type="text-body-xs-semibold col-span-2 md:col-span-4 -mb-2">
+        Loading dates
+      </Typography>
+      <template
+        v-for="(d, index) in newBookings"
+        :key="d.id"
+      >
+        <Datepicker
+          :picked="d.loadingDate"
+          label="Loading date *"
+          typeable
+          location="top"
+          :lower-limit="currentDate"
+          :error-messages="validateExpiryDate(bookings, { ...d, ref: booking.ref })"
+          :rules="[
+            rules.required,
+            rules.validateDate({ ...d, ref: booking.ref }),
+            rules.uniqueDate,
+          ]"
+          class="mb-2"
+          @onUpdate="value => updateExpiryDate(value, index)"
+        />
+        <Textfield
+          v-model.number="d.containers"
+          label="Number of containers*"
+          :rules="[rules.containers]"
+          type="number"
+          required
+          class="h-fit"
+        />
+        <div class="relative mt-4 md:!mt-0">
+          <AutocompleteScac
+            :scac-list="d.scacList"
+            :menu-btn="false"
+            :validate-scacs="bookingRulesStore.rules?.preferredCarrierWindow > 0"
+            class="w-4/5 lg:w-10/12 xl:w-11/12"
+          />
+        </div>
+        <div class="relative mt-4 md:!mt-0">
+          <Button
+            v-if="d.loadingDate"
+            variant="plain"
+            prepend-icon="mdi-plus"
+            class="mt-2.5 mr-auto"
+            @click="addScac(d.loadingDate)"
+          >
+            add scac
+          </Button>
+          <IconButton
+            v-if="index"
+            icon="mdi-close"
+            class="absolute top-1 right-0"
+            @click="removeLoadingDate(d.id)"
+          >
+            <Tooltip> Remove loading date</Tooltip>
+          </IconButton>
+        </div>
+
         <template
-          v-for="(d, index) in newBookings"
+          v-for="d in d?.newScacs"
           :key="d.id"
         >
-          <Datepicker
-            :picked="d.loadingDate"
-            label="Loading date *"
-            typeable
-            location="top"
-            :lower-limit="currentDate"
-            :error-messages="validateExpiryDate(bookings, { ...d, ref: booking.ref })"
-            :rules="[
-              rules.required,
-              rules.validateDate({ ...d, ref: booking.ref }),
-              rules.uniqueDate,
-            ]"
-            class="mb-2"
-            @onUpdate="value => updateExpiryDate(value, index)"
-          />
+          <div class="w-1/6"></div>
           <Textfield
             v-model.number="d.containers"
             label="Number of containers*"
@@ -410,17 +474,19 @@ onMounted(async () => {
               :validate-scacs="bookingRulesStore.rules?.preferredCarrierWindow > 0"
               class="w-4/5 lg:w-10/12 xl:w-11/12"
             />
+
             <IconButton
-              v-if="index"
               icon="mdi-close"
               class="absolute top-1 right-0"
-              @click="removeLoadingDate(d.id)"
+              @click="removeScac(d)"
             >
-              <Tooltip> Remove loading date</Tooltip>
+              <Tooltip> Remove Scac</Tooltip>
             </IconButton>
           </div>
+
+          <br />
         </template>
-      </div>
+      </template>
     </div>
     <Button
       variant="plain"
