@@ -4,7 +4,7 @@ import {
   doc,
   getDoc,
   getDocs,
-  increment,
+  increment, onSnapshot,
   query,
   updateDoc,
   where,
@@ -269,7 +269,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
 
   const getExpiredCommitments = async geohash => {
     try {
-      var pendingCommitments = []
+      const pendingCommitments = []
       const pendingBookings = bookingsStore.notGroupedBookings.filter(
         val =>
           (val.status === 'active' || val.status === 'pending') && val.location.geohash === geohash,
@@ -302,8 +302,33 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       alertStore.warning({ content: message })
     }
   }
+  const liveCommitments = ref([])
+  let unsubscribeLiveCommitments
+  const getLiveCommitments = async () => {
+    if (unsubscribeLiveCommitments) {
+      unsubscribeLiveCommitments()
+    }
+    try {
+      const q = await query(
+        collection(db, 'commitments'),
+        where('orgId', '==', authStore.userData.orgId),
+        where('status', 'in', [statuses.approved, statuses.pending]),
+      )
+      await onSnapshot(q, snapshot => {
+        const list = snapshot.docs
+        const arr = []
+        list.forEach(i => {
+          arr.push(i.data())
+        })
+        liveCommitments.value = arr
+      })
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
 
   return {
+    liveCommitments,
     getCommitment,
     approveCommitment,
     completeCommitment,
@@ -311,5 +336,6 @@ export const useCommitmentsStore = defineStore('commitments', () => {
     cancelCommitment,
     edit_commitment_loadingDate,
     getExpiredCommitments,
+    getLiveCommitments,
   }
 })

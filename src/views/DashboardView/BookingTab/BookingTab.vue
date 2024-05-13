@@ -11,7 +11,9 @@ import { useAuthStore } from '~/stores/auth.store'
 import moment from 'moment-timezone'
 import { some } from 'lodash'
 import { checkVendorDetailsCompletion } from '~/helpers/validations-functions'
-import { getSmallerDate } from '~/composables/useDate'
+import { useCommitmentsStore } from '~/stores/commitments.store'
+import { declineCodes, onboardingCodes } from '~/constants/reasonCodes'
+import { handleQueryUrlForCommitments } from '~/helpers/links'
 
 const props = defineProps({
   mapToggled: Boolean,
@@ -19,7 +21,14 @@ const props = defineProps({
 const emit = defineEmits(['closeMap', 'selectRow'])
 const bookingsStore = useBookingsStore()
 const { userData } = useAuthStore()
+const commitmentStore = useCommitmentsStore()
+const {
+  approveCommitment,
+  declineCommitment,
+  completeCommitment,
+} = useCommitmentsStore()
 const { loading } = storeToRefs(bookingsStore)
+const { liveCommitments } = storeToRefs(commitmentStore)
 const { smAndDown } = useDisplay()
 const router = useRouter()
 
@@ -52,6 +61,23 @@ const selectLine = ref(getAllLines())
 const createBookingDialog = ref(null)
 const clickedOutside = ref(null)
 const bookingConfirmationDialog = ref(null)
+const commitmentDetailsDialog = ref(null)
+const approveCommitmentDialog = ref(false)
+const completeCommitmentDialog = ref(false)
+const declineCommitmentDialog = ref(false)
+const loadCompleteCommitment = ref(false)
+
+const completeReasonList = [
+  onboardingCodes.onboarded,
+  onboardingCodes.onboardMovedLoad,
+  onboardingCodes.inComplete,
+]
+const declineReasonList = [
+  declineCodes.bookingCanceled,
+  declineCodes.bookingRolled,
+  declineCodes.tenderedElsewhere,
+  declineCodes.other,
+]
 
 const computedSearchedEntities = computed({
   get() {
@@ -176,6 +202,45 @@ const clearDateFilter = () => {
   filters.value.loadingDate = null
   applyFilter()
 }
+
+const viewCommitmentDetails = data => {
+  commitmentDetailsDialog.value.show(true)
+  commitmentDetailsDialog.value.data = data
+}
+const openApproveCommitmentDialog = commitment => {
+  approveCommitmentDialog.value.show(true)
+  approveCommitmentDialog.value.data = commitment
+}
+const openCompleteCommitmentDialog = commitment => {
+  completeCommitmentDialog.value.show(true)
+  completeCommitmentDialog.value.data = commitment
+}
+const openDeclineCommitmentDialog = data => {
+  declineCommitmentDialog.value.show(true)
+  declineCommitmentDialog.value.data = data
+}
+const onApproveCommitment = async commitment => {
+  approveCommitmentDialog.value.show(false)
+  commitmentDetailsDialog.value.show(false)
+  await approveCommitment(commitment)
+}
+const onCompleteCommitment = async (data, reason, onBoardedContainers) => {
+  loadCompleteCommitment.value = true
+  await completeCommitment(data, reason, onBoardedContainers)
+  completeCommitmentDialog.value.show(false)
+  commitmentDetailsDialog.value.show(false)
+  loadCompleteCommitment.value = false
+}
+const onDeclineCommitment = async (commitment, reason) => {
+  declineCommitmentDialog.value.show(false)
+  commitmentDetailsDialog.value.show(false)
+  await declineCommitment(declineCommitmentDialog.value.data, reason)
+}
+const openCommitmentsDialogOnUrlChange = async () => {
+  const commitment = await handleQueryUrlForCommitments(router.currentRoute.value.query)
+  commitment &&
+    (commitmentDetailsDialog.value.show(true), (commitmentDetailsDialog.value.data = commitment))
+}
 const onClickOutsideDialog = () => {
   clickedOutside.value = true
   closeCreateBookingDialog()
@@ -188,6 +253,10 @@ onMounted(async () => {
   await bookingsStore.getBookings({})
   computedSearchedEntities.value = bookingsStore.bookings
   computedFilteredEntities.value = bookingsStore.bookings
+  await commitmentStore.getLiveCommitments()
+})
+onUpdated(async () => {
+  await openCommitmentsDialogOnUrlChange()
 })
 watch(mapToggled, () => {
   toggleMap()
@@ -200,6 +269,10 @@ watch(bookingsData, value => {
   mutableSearchedEntities.value = value
   mutableFilteredEntities.value = value
 })
+watch(
+  () => router.currentRoute.value.fullPath,
+  async () => openCommitmentsDialogOnUrlChange(),
+)
 </script>
 
 <template>
@@ -218,7 +291,7 @@ watch(bookingsData, value => {
       >
         <div class="flex flex-wrap items-center gap-4 mb-7">
           <div class="flex justify-between sm:justify-normal items-center gap-4">
-            <Typography type="text-h1 shrink-0"> Bookings </Typography>
+            <Typography type="text-h1 shrink-0"> Bookings</Typography>
           </div>
           <Button
             class="ml-auto px-12"
@@ -256,6 +329,11 @@ watch(bookingsData, value => {
             @update:modelValue="applyFilter"
           />
         </div>
+        <NeedsProcessingSection
+          :items="liveCommitments"
+          class="mb-5"
+          @onSelect="viewCommitmentDetails"
+        />
         <BookingTable
           :computed-entities="computedEntities"
           :search-value="searchValue"
@@ -263,6 +341,10 @@ watch(bookingsData, value => {
           @selectTableRow="selectTableRow"
           @editBooking="id => router.push({ path: `booking/${id}` })"
           @duplicateBooking="duplicateBooking"
+          @openCommitmentDetails="viewCommitmentDetails"
+          @openApproveCommitment="openApproveCommitmentDialog"
+          @openCompleteCommitment="openCompleteCommitmentDialog"
+          @openDeclineCommitment="openDeclineCommitmentDialog"
         />
       </div>
     </template>
@@ -339,6 +421,72 @@ watch(bookingsData, value => {
   >
     <template #text>
       <BookingConfirmationDialog :commitments="[]" />
+    </template>
+  </Dialog>
+  <Dialog
+    ref="commitmentDetailsDialog"
+    max-width="980"
+  >
+    <template #text>
+      <CommitmentDetailsDialog
+        :commitment="commitmentDetailsDialog.data"
+        @approveCommitment="openApproveCommitmentDialog"
+        @completeCommitment="openCompleteCommitmentDialog"
+        @declineCommitment="openDeclineCommitmentDialog"
+        @close="commitmentDetailsDialog.show(false)"
+      />
+    </template>
+  </Dialog>
+
+  <Dialog
+    ref="approveCommitmentDialog"
+    max-width="480"
+  >
+    <template #text>
+      <ConfirmationDialog
+        btn-name="Approve"
+        btn-type="primary"
+        @close="approveCommitmentDialog.show(false)"
+        @onClickBtn="onApproveCommitment(approveCommitmentDialog.data)"
+      >
+        <Typography> Are you sure you want to approve this booking commitment?</Typography>
+      </ConfirmationDialog>
+    </template>
+  </Dialog>
+  <Dialog
+    ref="completeCommitmentDialog"
+    max-width="480"
+  >
+    <template #text>
+      <ReportIssueDialog
+        title="Complete commitment"
+        :sub-title="`Confirm number of loads moved by ${completeCommitmentDialog.data.truckerCompany}`"
+        select-label="Select"
+        :reason-list="completeReasonList"
+        btn-name="confirm"
+        :committed="completeCommitmentDialog.data.committed"
+        :loading="loadCompleteCommitment"
+        @close="completeCommitmentDialog.show(false)"
+        @onClickBtn="
+          (e, containers) => onCompleteCommitment(completeCommitmentDialog.data, e, containers)
+        "
+      />
+    </template>
+  </Dialog>
+  <Dialog
+    ref="declineCommitmentDialog"
+    max-width="480"
+  >
+    <template #text>
+      <ReportIssueDialog
+        title="Decline commitment"
+        sub-title="Choose the reason why you want to decline commitment"
+        select-label="Select"
+        :reason-list="declineReasonList"
+        btn-name="decline"
+        @close="declineCommitmentDialog.show(false)"
+        @onClickBtn="e => onDeclineCommitment(declineCommitmentDialog.data, e)"
+      />
     </template>
   </Dialog>
 </template>
