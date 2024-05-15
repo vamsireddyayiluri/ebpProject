@@ -24,9 +24,11 @@ import {
   validateAverageWeight,
   checkUniqueDates,
 } from '~/helpers/validations-functions'
+import { getTruckers } from '~/stores/helpers'
 import { insuranceTypes } from '~/constants/settings'
 import { getLocalTime } from '@qualle-admin/qutil/dist/date'
 import { getTimeLine } from '~/helpers/filters'
+import { uid } from 'uid'
 
 const authStore = useAuthStore()
 const alertStore = useAlertStore()
@@ -68,6 +70,7 @@ const isSaveLoading = ref(false)
 const originalBooking = ref(null)
 const bookingConfirmationDialog = ref(null)
 const confirmClickedOutside = ref(null)
+const truckers = ref([])
 
 const rules = {
   checkcommitted: value => checkCommittedValue(value, booking.value),
@@ -274,6 +277,33 @@ const removeLoadingDate = id => {
   //   newBookings.value.splice(index, 1)
   // }
 }
+const addScac = loadingDate => {
+  let selectedBooking = booking.value.details.find(booking => booking.loadingDate === loadingDate)
+  if (selectedBooking) {
+    selectedBooking.newScacs = selectedBooking.newScacs ? selectedBooking.newScacs : []
+    selectedBooking.newScacs.push({
+      id: uid(16),
+      preferredDays: null,
+      loadingDate: loadingDate,
+      containers: null,
+      scacList: { list: [] },
+      new: true,
+    })
+  }
+}
+const removeScac = bDetails => {
+  let selectedBooking = booking.value.details.find(
+    abooking => abooking.loadingDate === bDetails.loadingDate,
+  )
+
+  if (selectedBooking) {
+    const index = selectedBooking.newScacs.findIndex(i => i.id === bDetails.id)
+
+    if (index > -1) {
+      selectedBooking.newScacs.splice(index, 1)
+    }
+  }
+}
 onMounted(async () => {
   loading.value = true
   await getBookings(fromDraft ? { draft: true } : {})
@@ -294,6 +324,7 @@ onMounted(async () => {
     animate()
   }
   await workDetailsStore.getYards()
+  truckers.value = await getTruckers()
 
   yards.value = workDetailsStore.yards
   loading.value = false
@@ -527,62 +558,81 @@ onMounted(async () => {
             </template>
           </Autocomplete>
 
-          <div class="grid grid-cols-subgrid gap-6 col-span-2 md:col-span-3 relative">
-            <Typography type="text-body-xs-semibold col-span-2 md:col-span-3 -mb-2">
+          <div
+            class="grid grid-cols-subgrid gap-6 md:grid-cols-4 col-span-2 md:col-span-4 relative"
+          >
+            <Typography type="text-body-xs-semibold col-span-2 md:col-span-4 -mb-2">
               Loading dates
             </Typography>
             <template
               v-for="(d, index) in booking.details"
               :key="d"
             >
-              <Datepicker
-                :picked="d.loadingDate"
-                label="Loading date *"
-                typeable
-                class="mb-4"
-                :lower-limit="currentDate"
-                :error-messages="validateExpiryDate(activeBookings, { ...d, ref: booking.ref })"
-                :rules="[
-                  rules.required,
-                  rules.validateDate({ ...d, ref: booking.ref }),
-                  rules.uniqueDate,
-                ]"
-                :disabled="!activated && (expired || completed)"
-                required
-                @onUpdate="value => updateExpiryDate(value, index)"
-              />
-              <Textfield
-                v-model.number="d.containers"
-                label="Number of containers*"
-                :rules="[rules.containers, rules.lessThanComitted(d)]"
-                type="number"
-                required
-                :disabled="expired || completed"
-                class="h-fit"
-              />
-              <div class="relative">
-                <AutocompleteScac
-                  :scac-list="d.scacList"
-                  :menu-btn="false"
-                  required
-                  :disabled="expired || completed"
-                  :validate-scacs="
-                    fromDraft || fromHistory
-                      ? bookingRulesStore.rules?.preferredCarrierWindow > 0
-                      : booking.preferredDays > 0
-                  "
-                  class="w-3/4"
-                />
-                <!--
-                  <IconButton
-                  v-if="index"
-                  icon="mdi-close"
-                  class="absolute top-0 right-0"
-                  @click="removeLoadingDate(d.id)"
-                  >
-                  <Tooltip> Remove loading date</Tooltip>
-                  </IconButton>
-                -->
+              <div
+                class="mt-4 md:!mt-0"
+                style="display: contents"
+              >
+                <template
+                  v-for="(dt, i) in d?.newScacs"
+                  :key="i"
+                >
+                  <Datepicker
+                    v-if="i === 0"
+                    :picked="dt.loadingDate"
+                    label="Loading date *"
+                    typeable
+                    location="top"
+                    :lower-limit="currentDate"
+                    :error-messages="validateExpiryDate(activeBookings, { ...d, ref: booking.ref })"
+                    :rules="[
+                      rules.required,
+                      rules.validateDate({ ...d, ref: booking.ref }),
+                      rules.uniqueDate,
+                    ]"
+                    class="mb-2"
+                    @onUpdate="value => updateExpiryDate(value, index, i)"
+                  />
+                  <div
+                    v-else
+                    class="w-1/6"
+                  ></div>
+                  <Textfield
+                    v-model.number="dt.containers"
+                    label="Number of containers*"
+                    :rules="[rules.containers]"
+                    type="number"
+                    required
+                    class="h-fit"
+                  />
+                  <div class="relative mt-4 md:!mt-0">
+                    <Autocomplete
+                      v-model="dt.scac"
+                      :items="truckers.map(i => i.scac)"
+                      label="Choose trucker by SCAС "
+                      :menu-props="{ maxHeight: 300 }"
+                      class="w-4/5 lg:w-10/12 xl:w-11/12"
+                    />
+                    <Button
+                      v-if="dt.loadingDate && i + 1 === d.newScacs.length"
+                      variant="plain"
+                      prepend-icon="mdi-plus"
+                      class="mt-2.5 mr-auto"
+                      @click="addScac(dt.loadingDate)"
+                    >
+                      add scac
+                    </Button>
+                  </div>
+                  <div class="relative mt-4 md:!mt-0">
+                    <IconButton
+                      icon="mdi-close"
+                      class="right-0"
+                      @click="removeScac(dt)"
+                      v-if="dt?.new"
+                    >
+                      <Tooltip> Remove Scac </Tooltip>
+                    </IconButton>
+                  </div>
+                </template>
               </div>
             </template>
           </div>
@@ -601,9 +651,7 @@ onMounted(async () => {
         :class="[flyoutBottom || smAndDown ? 'bottom' : 'right', drawer ? 'active' : '']"
       >
         <div class="flex justify-between items-center">
-          <Typography type="text-h1">
-            Statistics
-          </Typography>
+          <Typography type="text-h1"> Statistics </Typography>
           <IconButton
             v-if="!smAndDown"
             :icon="!flyoutBottom ? 'mdi-dock-bottom' : 'mdi-dock-right'"
@@ -613,9 +661,7 @@ onMounted(async () => {
         </div>
         <div class="statisticsContent">
           <div class="statisticsProgress">
-            <Typography type="text-h4">
-              Fulfillment progress
-            </Typography>
+            <Typography type="text-h4"> Fulfillment progress </Typography>
             <ProgressCircular
               :size="260"
               :value="
@@ -636,9 +682,7 @@ onMounted(async () => {
             </ProgressCircular>
           </div>
           <div class="statisticsTimeline">
-            <Typography type="text-h4">
-              Booking timeline
-            </Typography>
+            <Typography type="text-h4"> Booking timeline </Typography>
             <div class="timeline scrollbar">
               <Timeline
                 :items="getTimeLine(booking?.timeLine)"
@@ -658,7 +702,7 @@ onMounted(async () => {
         :src="container"
         class="container-img"
         alt="qualle container"
-      >
+      />
       <Typography
         type="text-h1"
         class="!text-7xl mb-4 text-center"

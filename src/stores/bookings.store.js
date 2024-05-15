@@ -209,12 +209,8 @@ export const useBookingsStore = defineStore('bookings', () => {
       const batch = writeBatch(db)
       details?.map(b => {
         if (b.newScacs) {
-          let totalContainers = b.newScacs.reduce((total, obj) => total + obj.containers, 0)
-          b.containers = totalContainers + b.containers
-
-          let allScacs = b.newScacs.flatMap(obj => obj.scacList.list)
-
-          b.scacList.list = b.scacList.list.concat(allScacs)
+          b.containers = b.newScacs.reduce((total, obj) => total + obj.containers, 0)
+          b.scacList.list = b.newScacs.map(obj => obj.scac)
         }
         b.scacList =
           authStore.orgData?.bookingRules?.preferredCarrierWindow > 0 ? b.scacList : { list: [] }
