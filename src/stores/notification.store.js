@@ -219,7 +219,7 @@ export const useNotificationStore = defineStore('notification', () => {
     clearTimeout(popupTimeoutId)
     popupTimeoutId = setTimeout(() => {
       needsActionPopup.value = true
-    }, 2000)
+    }, 60000)
   }
   const cancelAndHidePopup = () => {
     clearTimeout(popupTimeoutId)
