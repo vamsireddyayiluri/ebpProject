@@ -16,11 +16,9 @@ import { useBookingsStore } from '~/stores/bookings.store'
 import { onboardingCodes } from '~/constants/reasonCodes'
 import { getRequestLoadFee } from './helpers'
 import { getLocalTime } from '@qualle-admin/qutil/dist/date'
-import { useAuthStore } from './auth.store'
 import moment from 'moment-timezone'
 
 const { updateBookingStore } = useBookingsStore()
-const authStore = useAuthStore()
 
 export const useCommitmentsStore = defineStore('commitments', () => {
   const alertStore = useAlertStore()
@@ -302,33 +300,8 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       alertStore.warning({ content: message })
     }
   }
-  const liveCommitments = ref([])
-  let unsubscribeLiveCommitments
-  const getLiveCommitments = async () => {
-    if (unsubscribeLiveCommitments) {
-      unsubscribeLiveCommitments()
-    }
-    try {
-      const q = await query(
-        collection(db, 'commitments'),
-        where('orgId', '==', authStore.userData.orgId),
-        where('status', 'in', [statuses.approved, statuses.pending]),
-      )
-      await onSnapshot(q, snapshot => {
-        const list = snapshot.docs
-        const arr = []
-        list.forEach(i => {
-          arr.push(i.data())
-        })
-        liveCommitments.value = arr
-      })
-    } catch ({ message }) {
-      alertStore.warning({ content: message })
-    }
-  }
 
   return {
-    liveCommitments,
     getCommitment,
     approveCommitment,
     completeCommitment,
@@ -336,6 +309,5 @@ export const useCommitmentsStore = defineStore('commitments', () => {
     cancelCommitment,
     edit_commitment_loadingDate,
     getExpiredCommitments,
-    getLiveCommitments,
   }
 })

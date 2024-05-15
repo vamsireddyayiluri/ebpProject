@@ -1508,9 +1508,9 @@
   integrity sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==
 
 "@qualle-admin/qui@latest":
-  version "1.219.0"
-  resolved "https://npm.pkg.github.com/download/@qualle-admin/qui/1.219.0/1c90814d4f88a97e7a57777b0ab26ec4078d7955#1c90814d4f88a97e7a57777b0ab26ec4078d7955"
-  integrity sha512-0Mvc/rYGQ59YRmGCgDehoqOPw1MEx6AfsoqBomLDFSi/yHITDY18EOMbJ0gw7qfVL4ikFrOxdBMByqrUI58ffw==
+  version "1.220.0"
+  resolved "https://npm.pkg.github.com/download/@qualle-admin/qui/1.220.0/5513a588ee66a14d7e2627677652c27eaa6d4847#5513a588ee66a14d7e2627677652c27eaa6d4847"
+  integrity sha512-O2XEzyd2zhQkr3RBNfcYtrBIeJQBImW9R5i274Wdh3XStsEAr7gG2LFLAQyre5UZGGeX0OX01ZA11/2oGVnPQg==
   dependencies:
     uid "^2.0.1"
     "@fullcalendar/core" "^6.0.3"

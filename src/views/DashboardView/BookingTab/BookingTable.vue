@@ -9,6 +9,7 @@ import { canceledCodes, declineCodes } from '~/constants/reasonCodes'
 import { statuses } from '~/constants/statuses'
 import { getLocalTime } from '@qualle-admin/qutil/dist/date'
 import { storeToRefs } from 'pinia'
+import { useNotificationStore } from '~/stores/notification.store'
 
 const props = defineProps({
   computedEntities: Array,
@@ -39,10 +40,12 @@ const {
 } = useCommitmentsStore()
 const commitmentStore = useCommitmentsStore()
 const authStore = useAuthStore()
+const notificationStore = useNotificationStore()
+const { liveCommitments } = storeToRefs(notificationStore)
 const { smAndDown } = useDisplay()
 const router = useRouter()
 const showActions = ref(true)
-const tableHeight = ref(0)
+const tableHeight = ref('auto')
 const bookingConfirmationDialog = ref(null)
 const removeBookingDialog = ref(false)
 const cancelBookingDialog = ref(false)
@@ -191,11 +194,8 @@ const onClickOutsideDialog = () => {
 }
 onMounted(async () => {
   setTimeout(() => {
-    const table = document.getElementById(tableId)
-    tableHeight.value = smAndDown.value
-      ? 396
-      : window.innerHeight - table.getBoundingClientRect().top - 192
-  })
+    tableHeight.value = smAndDown.value ? 396 : liveCommitments.value.length ? 439 : 523
+  }, 1000)
 })
 </script>
 

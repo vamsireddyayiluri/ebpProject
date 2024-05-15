@@ -14,6 +14,7 @@ import { checkVendorDetailsCompletion } from '~/helpers/validations-functions'
 import { useCommitmentsStore } from '~/stores/commitments.store'
 import { declineCodes, onboardingCodes } from '~/constants/reasonCodes'
 import { handleQueryUrlForCommitments } from '~/helpers/links'
+import { useNotificationStore } from '~/stores/notification.store'
 
 const props = defineProps({
   mapToggled: Boolean,
@@ -21,16 +22,13 @@ const props = defineProps({
 const emit = defineEmits(['closeMap', 'selectRow'])
 const bookingsStore = useBookingsStore()
 const { userData } = useAuthStore()
-const commitmentStore = useCommitmentsStore()
-const {
-  approveCommitment,
-  declineCommitment,
-  completeCommitment,
-} = useCommitmentsStore()
+const { approveCommitment, declineCommitment, completeCommitment } = useCommitmentsStore()
+const notificationStore = useNotificationStore()
 const { loading } = storeToRefs(bookingsStore)
-const { liveCommitments } = storeToRefs(commitmentStore)
+const { liveCommitments } = storeToRefs(notificationStore)
 const { smAndDown } = useDisplay()
 const router = useRouter()
+const route = useRoute()
 
 const paneOpened = ref(false)
 const mapRef = ref(null)
@@ -253,10 +251,11 @@ onMounted(async () => {
   await bookingsStore.getBookings({})
   computedSearchedEntities.value = bookingsStore.bookings
   computedFilteredEntities.value = bookingsStore.bookings
-  await commitmentStore.getLiveCommitments()
-})
-onUpdated(async () => {
   await openCommitmentsDialogOnUrlChange()
+  await notificationStore.cancelAndHidePopup()
+})
+onUnmounted(async () => {
+  await notificationStore.schedulePopupToShow()
 })
 watch(mapToggled, () => {
   toggleMap()
@@ -269,10 +268,6 @@ watch(bookingsData, value => {
   mutableSearchedEntities.value = value
   mutableFilteredEntities.value = value
 })
-watch(
-  () => router.currentRoute.value.fullPath,
-  async () => openCommitmentsDialogOnUrlChange(),
-)
 </script>
 
 <template>
