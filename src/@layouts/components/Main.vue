@@ -6,7 +6,7 @@ import { useDisplay } from 'vuetify'
 import { useChatStore } from '~/stores/chat.store'
 import { useProfileStore } from '~/stores/profile.store'
 import { uid } from 'uid'
-import { getFormattedDateTime } from '~/composables/useDate'
+import { getFormattedDate } from '~/composables/useDate'
 import { useAlertStore } from '~/stores/alert.store'
 
 const alertStore = useAlertStore()
@@ -78,7 +78,7 @@ const onNotificationClick = async notification => {
 const transformActions = computed(() => {
   return liveCommitments.value.map(c => {
     return {
-      content: getFormattedDateTime(c.created),
+      content: `Loading date ${getFormattedDate(c.loadingDate)}`,
       title: `Containers from ${c.truckerCompany} needs action`,
       type: 'info',
       id: uid(16),

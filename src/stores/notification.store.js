@@ -207,6 +207,12 @@ export const useNotificationStore = defineStore('notification', () => {
         list.forEach(i => {
           arr.push(i.data())
         })
+        arr.sort((a, b) => {
+          const dateA = new Date(a.loadingDate)
+          const dateB = new Date(b.loadingDate)
+
+          return dateA - dateB
+        })
         liveCommitments.value = arr
       })
     } catch ({ message }) {
