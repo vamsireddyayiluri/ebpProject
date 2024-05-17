@@ -5,7 +5,7 @@ import { useStatisticsStore } from '~/stores/statistics.store'
 
 const statistics = ref([
   {
-    name: 'bookings',
+    name: 'containers',
     data: [],
   },
 ])
@@ -171,6 +171,7 @@ watch([currentYear, currentMonth, selected], async () => {
             enabled: true,
             intersect: false,
             theme: dark,
+            formatter: () => {}
           },
         })
       "

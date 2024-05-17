@@ -1,6 +1,6 @@
 <script setup>
 import { Main } from '@layouts'
-import { useStatisticsStore } from '../../stores/statistics.store'
+import { useStatisticsStore } from '~/stores/statistics.store'
 
 const statisticsStore = useStatisticsStore()
 const router = useRouter()

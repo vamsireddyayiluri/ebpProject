@@ -12,6 +12,7 @@ import {
   groupBookingsByYard,
   groupBySSL,
 } from './helpers/statistics'
+import { statuses } from '~/constants/statuses'
 
 export const useStatisticsStore = defineStore('statistics', () => {
   const authStore = useAuthStore()
@@ -68,11 +69,13 @@ export const useStatisticsStore = defineStore('statistics', () => {
   }
 
   const activityStatistic = async ({ year = null, month = null }) => {
+    const bookings = allBookings.value?.filter(booking => booking.status === statuses.completed)
+
     return {
       categories: month ? getDaysInMonth(year, month) : getMonthsArray(),
       series: month
-        ? groupBookingsByDays(allBookings.value, year, month)
-        : groupBookingsByMonth(allBookings.value, year),
+        ? groupBookingsByDays(bookings, year, month)
+        : groupBookingsByMonth(bookings, year),
     }
   }
 
