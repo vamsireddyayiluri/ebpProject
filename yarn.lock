@@ -1508,9 +1508,9 @@
   integrity sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==
 
 "@qualle-admin/qui@latest":
-  version "1.218.0"
-  resolved "https://npm.pkg.github.com/download/@qualle-admin/qui/1.218.0/2d782d86101e3c7177d46f3de91bf50560d42231#2d782d86101e3c7177d46f3de91bf50560d42231"
-  integrity sha512-yPB05L2sK9NzIx55nt5H+WPZP7fRfPRY2uvVf06TZY4MzFRQjUrIqvN8FTt/ZhoKWs8+jLhdAbL2wSnitS941g==
+  version "1.220.0"
+  resolved "https://npm.pkg.github.com/download/@qualle-admin/qui/1.220.0/5513a588ee66a14d7e2627677652c27eaa6d4847#5513a588ee66a14d7e2627677652c27eaa6d4847"
+  integrity sha512-O2XEzyd2zhQkr3RBNfcYtrBIeJQBImW9R5i274Wdh3XStsEAr7gG2LFLAQyre5UZGGeX0OX01ZA11/2oGVnPQg==
   dependencies:
     uid "^2.0.1"
     "@fullcalendar/core" "^6.0.3"
@@ -2361,9 +2361,9 @@ apexcharts-clevision@^3.28.5:
     svg.select.js "^3.0.1"
 
 apexcharts@^3.36.3:
-  version "3.49.0"
-  resolved "https://registry.yarnpkg.com/apexcharts/-/apexcharts-3.49.0.tgz#b359fc9be8ffe45de3e8b553ebdcf18ad2a67e7e"
-  integrity sha512-2T9HnbQFLCuYRPndQLmh+bEQFoz0meUbvASaGgiSKDuYhWcLBodJtIpKql2aOtMx4B/sHrWW0dm90HsW4+h2PQ==
+  version "3.49.1"
+  resolved "https://registry.yarnpkg.com/apexcharts/-/apexcharts-3.49.1.tgz#837d1d4fd80f2c092f0587e8fb6bbc31ad57a0f3"
+  integrity sha512-MqGtlq/KQuO8j0BBsUJYlRG8VBctKwYdwuBtajHgHTmSgUU3Oai+8oYN/rKCXwXzrUlYA+GiMgotAIbXY2BCGw==
   dependencies:
     "@yr/monotone-cubic-spline" "^1.0.3"
     svg.draggable.js "^2.2.2"

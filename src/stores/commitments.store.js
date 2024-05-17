@@ -4,7 +4,7 @@ import {
   doc,
   getDoc,
   getDocs,
-  increment,
+  increment, onSnapshot,
   query,
   updateDoc,
   where,
@@ -16,11 +16,9 @@ import { useBookingsStore } from '~/stores/bookings.store'
 import { onboardingCodes } from '~/constants/reasonCodes'
 import { getRequestLoadFee } from './helpers'
 import { getLocalTime } from '@qualle-admin/qutil/dist/date'
-import { useAuthStore } from './auth.store'
 import moment from 'moment-timezone'
 
 const { updateBookingStore } = useBookingsStore()
-const authStore = useAuthStore()
 
 export const useCommitmentsStore = defineStore('commitments', () => {
   const alertStore = useAlertStore()
@@ -269,7 +267,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
 
   const getExpiredCommitments = async geohash => {
     try {
-      var pendingCommitments = []
+      const pendingCommitments = []
       const pendingBookings = bookingsStore.notGroupedBookings.filter(
         val =>
           (val.status === 'active' || val.status === 'pending') && val.location.geohash === geohash,

@@ -83,19 +83,18 @@ export const useBookingsStore = defineStore('bookings', () => {
   }
   const getBookingHistory = async () => {
     loading.value = true
-    // const today = getLocalServerTime(moment(), 'America/Los_Angeles')
-    await getallBookings()
-    const filteredBookings = bookings.value.filter(
-      booking =>
-        // moment(booking.loadingDate).isBefore(moment(today)) ||
-        booking.status === statuses.completed ||
-        booking.status === statuses.expired ||
-        booking.status === statuses.canceled,
+    const { orgId } = authStore.userData
+    const bookingsQuery = query(
+      collection(db, 'bookings'),
+      where('orgId', '==', orgId),
+      where('status', 'in', [statuses.completed, statuses.expired, statuses.canceled]),
     )
 
-    // const pastbook = await validateBookingsExpiry(filteredBookings)
-    const group = groupBookings(filteredBookings)
-    pastBookings.value = group
+    const querySnapshot = await getDocs(bookingsQuery)
+    const filteredBookings = querySnapshot.docs.map(doc => {
+      return { ...doc.data(), entities: [] }
+    })
+    pastBookings.value = groupBookings(filteredBookings)
     loading.value = false
   }
   const getCommitmentsByBookingId = async (id, ids, fromHistory = false) => {
@@ -281,7 +280,7 @@ export const useBookingsStore = defineStore('bookings', () => {
 
         const commitments = await getCommitmentsByBookingId(booking.id, booking.ids)
         commitments.map(async i => {
-          if (i.status === statuses.approved) {
+          if (i.status === statuses.approved || i.status === statuses.pending) {
             await updateDoc(doc(db, 'commitments', i.id), {
               status: statuses.bookingCanceled,
               reason,
@@ -343,7 +342,6 @@ export const useBookingsStore = defineStore('bookings', () => {
           alert && alertStore.info({ content: 'Bookings removed!' })
         }
       } else {
-
         ids.forEach(async id => {
           batch.delete(doc(db, 'bookings', id))
         })
