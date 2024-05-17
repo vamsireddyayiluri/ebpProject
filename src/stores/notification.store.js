@@ -32,7 +32,6 @@ export const useNotificationStore = defineStore('notification', () => {
     try {
       await setDoc(doc(db, 'notifications', docId), {
         settings: defaultSettings,
-        notifications: [],
         orgId,
       })
     } catch ({ message }) {
@@ -45,7 +44,7 @@ export const useNotificationStore = defineStore('notification', () => {
     try {
       const docId = `@${authStore.userData.name.replace(/\s+/g, '_')}_${authStore.userData.orgId}`
       const settingsDoc = await getDoc(doc(db, 'notifications', docId))
-      if (!settingsDoc.exists()) {
+      if (!settingsDoc.data()?.settings) {
         await createNotificationCollection(authStore.userData.orgId)
         settings.value = defaultSettings
         loading.value = false
@@ -107,9 +106,9 @@ export const useNotificationStore = defineStore('notification', () => {
       unsubscribeNotification = await onSnapshot(doc(db, 'notifications', docId), snapshot => {
         let notificationsData = null
         notificationsData = requiredData(snapshot.data()?.notifications)
-        const list = notificationsData[0]
+        const list = notificationsData?.length ? notificationsData[0]: null
         if (
-          !initialLoad &&
+          list && !initialLoad &&
           list?.isUnread === true &&
           notificationsData.length !== notifications.value.length
         ) {
@@ -133,7 +132,7 @@ export const useNotificationStore = defineStore('notification', () => {
       }
     })
 
-    notifications.sort((a, b) => {
+    notifications?.sort((a, b) => {
       const dateA = new Date(a.content)
       const dateB = new Date(b.content)
 
