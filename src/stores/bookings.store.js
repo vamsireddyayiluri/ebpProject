@@ -280,7 +280,7 @@ export const useBookingsStore = defineStore('bookings', () => {
 
         const commitments = await getCommitmentsByBookingId(booking.id, booking.ids)
         commitments.map(async i => {
-          if (i.status === statuses.approved) {
+          if (i.status === statuses.approved || i.status === statuses.pending) {
             await updateDoc(doc(db, 'commitments', i.id), {
               status: statuses.bookingCanceled,
               reason,

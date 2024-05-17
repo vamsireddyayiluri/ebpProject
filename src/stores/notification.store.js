@@ -1,18 +1,28 @@
 import { defineStore } from 'pinia'
-import { doc, getDoc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore'
+import {
+  collection,
+  doc,
+  getDoc,
+  onSnapshot,
+  query,
+  setDoc,
+  updateDoc,
+  where,
+} from 'firebase/firestore'
 import { db } from '~/firebase'
 import { useAlertStore } from '~/stores/alert.store'
 import { useAuthStore } from '~/stores/auth.store'
 import { uid } from 'uid'
 import { useDate } from '~/composables'
-// import moment from 'moment-timezone'
+import { statuses } from '~/constants/statuses'
 
 export const useNotificationStore = defineStore('notification', () => {
   const alertStore = useAlertStore()
   const authStore = useAuthStore()
   const { getFormattedDateTime } = useDate()
   const notifications = ref([])
-  // const { getFormattedDateTime } = useDate()
+  const liveCommitments = ref([])
+  const needsActionPopup = ref(false)
   let initialLoad = true
   const defaultSettings = {
     newsAndUpdates: {
@@ -179,6 +189,47 @@ export const useNotificationStore = defineStore('notification', () => {
     }
   }
 
+  let unsubscribeLiveCommitments
+  const getLiveCommitments = async () => {
+    if (unsubscribeLiveCommitments) {
+      unsubscribeLiveCommitments()
+    }
+    try {
+      const q = await query(
+        collection(db, 'commitments'),
+        where('orgId', '==', authStore.userData.orgId),
+        where('status', 'in', [statuses.approved, statuses.pending]),
+      )
+      await onSnapshot(q, snapshot => {
+        const list = snapshot.docs
+        const arr = []
+        list.forEach(i => {
+          arr.push(i.data())
+        })
+        arr.sort((a, b) => {
+          const dateA = new Date(a.loadingDate)
+          const dateB = new Date(b.loadingDate)
+
+          return dateA - dateB
+        })
+        liveCommitments.value = arr
+      })
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
+
+  let popupTimeoutId = null
+  const schedulePopupToShow = () => {
+    clearTimeout(popupTimeoutId)
+    popupTimeoutId = setTimeout(() => {
+      needsActionPopup.value = true
+    }, 60000)
+  }
+  const cancelAndHidePopup = () => {
+    clearTimeout(popupTimeoutId)
+    needsActionPopup.value = false
+  }
   const reset = () => {
     notifications.value = []
   }
@@ -189,12 +240,17 @@ export const useNotificationStore = defineStore('notification', () => {
     defaultSettings,
     settings,
     loading,
+    liveCommitments,
+    needsActionPopup,
     createNotificationCollection,
     getNotificationSettings,
     updateSettings,
     getNotifications,
     readAllNotifications,
     readNotification,
+    getLiveCommitments,
+    schedulePopupToShow,
+    cancelAndHidePopup,
     reset,
   }
 })

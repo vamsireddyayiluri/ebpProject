@@ -31,6 +31,12 @@ const handleTabChange = async value => {
   await router.push({ query: { tab: tabs[value].route } })
 }
 watch(tab, () => (mapToggled.value = false))
+watch(
+  () => router.currentRoute.value.fullPath,
+  async () => {
+    if (router.currentRoute.value.query?.bid) tab.value = 0
+  },
+)
 </script>
 
 <template>

@@ -5,13 +5,18 @@ import { useNotificationStore } from '~/stores/notification.store'
 import { useDisplay } from 'vuetify'
 import { useChatStore } from '~/stores/chat.store'
 import { useProfileStore } from '~/stores/profile.store'
+import { uid } from 'uid'
+import { getFormattedDate } from '~/composables/useDate'
+import { useAlertStore } from '~/stores/alert.store'
 
+const alertStore = useAlertStore()
 const authStore = useAuthStore()
 const notificationStore = useNotificationStore()
 const chatStore = useChatStore()
 const profileStore = useProfileStore()
 const { accountInfo } = storeToRefs(profileStore)
 const { isNewMessage } = storeToRefs(chatStore)
+const { needsActionPopup, liveCommitments } = storeToRefs(notificationStore)
 const attrs = useAttrs()
 const { width } = useDisplay()
 const route = useRoute()
@@ -70,9 +75,31 @@ const onNotificationClick = async notification => {
     router.push(notification.button.route)
   }
 }
+const transformActions = computed(() => {
+  return liveCommitments.value.map(c => {
+    return {
+      content: `Loading date ${getFormattedDate(c.loadingDate)}`,
+      title: `Containers from ${c.truckerCompany} needs action`,
+      type: 'info',
+      id: uid(16),
+      button: {
+        name: 'Go to dashboard',
+        callback: async () => {
+          await alertStore.routerPush({
+            path: 'dashboard',
+            query: { bid: c.bookingId, cid: c.id },
+          })
+          needsActionPopup.value = false
+        },
+      },
+    }
+  })
+})
 onMounted(async () => {
   await notificationStore.getNotifications()
   await chatStore.getChats()
+  await notificationStore.getLiveCommitments()
+  if (route.fullPath !== '/dashboard') await notificationStore.schedulePopupToShow()
 })
 </script>
 
@@ -90,6 +117,14 @@ onMounted(async () => {
       @readNotification="readNotification"
       @logout="authStore.logout()"
       @onNotificationClick="onNotificationClick"
+    />
+    <Notifications
+      v-if="needsActionPopup && liveCommitments.length"
+      :data="transformActions"
+      label="Needs attention"
+      top="8"
+      :left="width - 540"
+      @onClose="needsActionPopup = false"
     />
     <slot />
   </div>
