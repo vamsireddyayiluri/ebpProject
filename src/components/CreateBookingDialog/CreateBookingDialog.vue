@@ -102,6 +102,30 @@ const emptyBooking = {
   size: '40 HC',
   insurance: '100,000',
 }
+const generateNewScacs = () => {
+  const hasPreferredCarrierWindow = bookingRulesStore.rules?.preferredCarrierWindow > 0
+  const truckersList = bookingRulesStore.rules?.truckers?.list
+
+  if (hasPreferredCarrierWindow && truckersList?.length) {
+    return truckersList.map(val => ({
+      scac: val,
+      id: uid(16),
+      preferredDays: null,
+      loadingDate: null,
+      containers: null,
+    }))
+  }
+
+  return [
+    {
+      id: uid(16),
+      preferredDays: null,
+      loadingDate: null,
+      containers: null,
+      scac: null,
+    },
+  ]
+}
 const booking = ref(props?.duplicate ? copyBooking : emptyBooking)
 const newBookings = ref(
   props.duplicate
@@ -113,23 +137,7 @@ const newBookings = ref(
           preferredDays: null,
           containers: null,
           scacList: bookingRulesStore.rules.truckers,
-          newScacs: bookingRulesStore.rules.truckers?.list?.length
-            ? bookingRulesStore.rules.truckers?.list?.map(val => ({
-                scac: val,
-                id: uid(16),
-                preferredDays: null,
-                loadingDate: null,
-                containers: null,
-              }))
-            : [
-                {
-                  id: uid(16),
-                  preferredDays: null,
-                  loadingDate: null,
-                  containers: null,
-                  scac: null,
-                },
-              ],
+          newScacs: generateNewScacs(),
         },
       ],
 )
@@ -179,7 +187,6 @@ const isLoadingDatesFieldsEmpty = computed(() => {
     delete object?.preferredDays
     return Object.values(object.newScacs).some(value => {
       delete value?.preferredDays
-      debugger
       const test = value === null || (Array.isArray(value) && value.some(item => item === null))
       return test
     })
@@ -279,6 +286,18 @@ const updateRef = async e => {
       await nextTick()
       form.value.validate()
     }
+  }
+}
+let selectedScacs = ref(bookingRulesStore.rules?.truckers?.list)
+const availableScacs = index => {
+  const selected = selectedScacs.value.filter((_, id) => id !== index)
+  return truckers.value.map(trucker => trucker.scac).filter(scac => !selected.includes(scac))
+}
+const handleScacChange = loadingDate => {
+  let booking = newBookings.value.find(booking => booking.loadingDate === loadingDate)
+  if (booking) {
+    booking.newScacs = booking.newScacs ? booking.newScacs : []
+    selectedScacs.value = booking.newScacs.map(dt => dt.scac).filter(scac => scac)
   }
 }
 const closeConfirmBookingDialog = (isPending = false) => {
@@ -487,10 +506,11 @@ onMounted(async () => {
             <div class="relative mt-4 md:!mt-0">
               <Autocomplete
                 v-model="dt.scac"
-                :items="truckers.map(i => i.scac)"
+                :items="availableScacs(i)"
                 label="Choose trucker by SCAС "
                 :disabled="bookingRulesStore.rules?.preferredCarrierWindow < 1"
                 :menu-props="{ maxHeight: 300 }"
+                @update:modelValue="handleScacChange(dt.loadingDate)"
                 class="w-4/5 lg:w-10/12 xl:w-11/12"
               />
               <Button

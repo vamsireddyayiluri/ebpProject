@@ -447,6 +447,11 @@ export const useBookingsStore = defineStore('bookings', () => {
           data.loadingDate = moment(loadData.loadingDate).endOf('day').format()
           data.containers = loadData.containers
           data.scacList = loadData.scacList
+          data.newScacs = loadData.newScacs
+        }
+        if (data.newScacs) {
+          data.containers = data.newScacs.reduce((total, obj) => total + obj.containers, 0)
+          data.scacList.list = data.newScacs.map(obj => obj.scac)
         }
         if (Object.keys(data).length) {
           batch.update(docRef, { ...data })
