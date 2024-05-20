@@ -187,7 +187,11 @@ const isLoadingDatesFieldsEmpty = computed(() => {
     delete object?.preferredDays
     return Object.values(object.newScacs).some(value => {
       delete value?.preferredDays
-      const test = value === null || (Array.isArray(value) && value.some(item => item === null))
+      const test =
+        value === null ||
+        Object.values(value).some(i => {
+          return isBoolean(i) ? false : !i
+        })
       return test
     })
   })
@@ -214,17 +218,7 @@ const addLoadingDate = () => {
     preferredDays: null,
     containers: null,
     scacList: truckers,
-    newScacs: truckers?.list.length
-      ? truckers?.list?.map(val => ({ scac: val }))
-      : [
-          {
-            id: uid(16),
-            preferredDays: null,
-            loadingDate: null,
-            containers: null,
-            scac: null,
-          },
-        ],
+    newScacs: generateNewScacs(),
   })
 }
 const addScac = loadingDate => {
@@ -236,7 +230,7 @@ const addScac = loadingDate => {
       preferredDays: null,
       loadingDate: loadingDate,
       containers: null,
-      scacList: { list: [] },
+      scac: null,
     })
   }
 }
@@ -255,6 +249,9 @@ const removeScac = bDetails => {
     if (index > -1) {
       booking.newScacs.splice(index, 1)
     }
+  }
+  if(selectedScacs.value.includes(bDetails.scac)){
+    selectedScacs.value=selectedScacs.value.filter(scac => scac !== bDetails.scac)
   }
 }
 const saveDraft = async () => {
@@ -506,6 +503,7 @@ onMounted(async () => {
             <div class="relative mt-4 md:!mt-0">
               <Autocomplete
                 v-model="dt.scac"
+                required
                 :items="availableScacs(i)"
                 label="Choose trucker by SCAС "
                 :disabled="bookingRulesStore.rules?.preferredCarrierWindow < 1"

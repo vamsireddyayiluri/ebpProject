@@ -186,7 +186,20 @@ const validateRequiredFields = () => {
 const isDisabledPublish = computed(() => {
   return validateRequiredFields() || form.value?.errors.length
 })
-
+const isLoadingDatesFieldsEmpty = computed(() => {
+  return cloneDeep(newBookings.value).some(object => {
+    delete object?.preferredDays
+    return Object.values(object.newScacs).some(value => {
+      delete value?.preferredDays
+      const test =
+        value === null ||
+        Object.values(value).some(i => {
+          return isBoolean(i) ? false : !i
+        })
+      return test
+    })
+  })
+})
 const validateBooking = computed(() => {
   if (fromEdit) {
     const selectedBooking = bookings.value.find(i => i.id === booking.value.id)
@@ -286,8 +299,7 @@ const addScac = loadingDate => {
       preferredDays: null,
       loadingDate: loadingDate,
       containers: null,
-      scacList: { list: [] },
-      new: true,
+      scac: null,
     })
   }
 }
@@ -302,6 +314,22 @@ const removeScac = bDetails => {
     if (index > -1) {
       selectedBooking.newScacs.splice(index, 1)
     }
+  }
+  if(selectedScacs.value.includes(bDetails.scac)){
+    selectedScacs.value=selectedScacs.value.filter(scac => scac !== bDetails.scac)
+  }
+}
+let selectedScacs = ref(bookingRulesStore.rules?.truckers?.list)
+
+const availableScacs = index => {
+  const selected = selectedScacs.value.filter((_, id) => id !== index)
+  return truckers.value.map(trucker => trucker.scac).filter(scac => !selected.includes(scac))
+}
+const handleScacChange = loadingDate => {
+  let booking = booking.value.details.find(booking => booking.loadingDate === loadingDate)
+  if (booking) {
+    booking.newScacs = booking.newScacs ? booking.newScacs : []
+    selectedScacs.value = booking.newScacs.map(dt => dt.scac).filter(scac => scac)
   }
 }
 onMounted(async () => {
@@ -607,9 +635,11 @@ onMounted(async () => {
                   <div class="relative mt-4 md:!mt-0">
                     <Autocomplete
                       v-model="dt.scac"
-                      :items="truckers.map(i => i.scac)"
+                      :items="availableScacs(i)"
                       label="Choose trucker by SCAС "
+                      required
                       :menu-props="{ maxHeight: 300 }"
+                      @update:modelValue="handleScacChange(dt.loadingDate)"
                       class="w-4/5 lg:w-10/12 xl:w-11/12"
                     />
                     <Button
@@ -627,7 +657,7 @@ onMounted(async () => {
                       icon="mdi-close"
                       class="right-0"
                       @click="removeScac(dt)"
-                      v-if="dt?.new"
+                      v-if="i!==0"
                     >
                       <Tooltip> Remove Scac </Tooltip>
                     </IconButton>
@@ -639,7 +669,7 @@ onMounted(async () => {
         </VForm>
         <SaveCancelChanges
           v-if="!(expired || completed) || activated"
-          :disabled="validateBooking"
+          :disabled="validateBooking || isLoadingDatesFieldsEmpty"
           class="mt-10"
           :loading="isSaveLoading"
           @onSave="onSave"
