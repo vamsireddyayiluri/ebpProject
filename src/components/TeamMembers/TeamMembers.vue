@@ -40,6 +40,7 @@ const addInvitation = async () => {
       type: newMember.type,
       workerId: workerId.value,
       selected: newMember.type,
+      pending: true,
     })
     newMember.email = ''
     workerId.value = ''
