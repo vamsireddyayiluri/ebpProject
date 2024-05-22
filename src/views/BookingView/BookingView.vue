@@ -69,6 +69,7 @@ const form = ref(null)
 const validExpiryDate = ref(false)
 const insuranceItems = ref(insuranceTypes)
 const isSaveLoading = ref(false)
+const isPublishLoading = ref(false)
 const originalBooking = ref(null)
 const bookingConfirmationDialog = ref(null)
 const confirmClickedOutside = ref(null)
@@ -110,6 +111,7 @@ const expired = computed(() => booking.value?.status === statuses.expired)
 const pending = computed(() => booking.value?.status === statuses.pending)
 
 const handleBookingChanges = async () => {
+  isPublishLoading.value = true
   const commitmentsList = await commitmentStore.getExpiredCommitments(
     booking.value.location.geohash,
   )
@@ -126,12 +128,14 @@ const handleBookingChanges = async () => {
       if (res === 'published') {
         router.push('/dashboard')
       }
+      isPublishLoading.value = false
     }
   } else {
     const res = await removeFromNetwork(booking.value)
     if (res === 'deleted') {
       router.push('/dashboard')
     }
+    isPublishLoading.value = false
   }
 }
 const openRemoveDialog = () => {
@@ -396,6 +400,7 @@ onMounted(async () => {
             variant="outlined"
             data="secondary1"
             class="ml-auto px-12"
+            :loading="isPublishLoading"
             :disabled="fromDraft ? isDisabledPublish : false"
             @click="handleBookingChanges"
           >
