@@ -262,7 +262,7 @@ const onSave = async () => {
   }
 
   let updatedBookingData = { ...booking.value }
-  if (bookingObj) {
+  if (bookingObj.length) {
     const bookingData = omit(booking.value, ['details', 'ids'])
     if (fromDraft) {
       await createDraft(bookingData, bookingObj, true)
