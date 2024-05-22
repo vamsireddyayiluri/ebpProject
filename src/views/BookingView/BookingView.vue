@@ -10,7 +10,7 @@ import { useBookingsStore } from '~/stores/bookings.store'
 import { useCommitmentsStore } from '~/stores/commitments.store'
 import { storeToRefs } from 'pinia'
 import { statuses } from '~/constants/statuses'
-import { cloneDeep, isEqual, pickBy, isNull, sumBy } from 'lodash'
+import { cloneDeep, isEqual, pickBy, isNull, sumBy, differenceBy, omit, isEmpty } from 'lodash'
 import container from '~/assets/images/container.png'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { useBookingRulesStore } from '~/stores/bookingRules.store'
@@ -23,10 +23,12 @@ import {
   checkCommittedValue,
   validateAverageWeight,
   checkUniqueDates,
+  checkContianersMaxLimit,
 } from '~/helpers/validations-functions'
 import { insuranceTypes } from '~/constants/settings'
 import { getLocalTime } from '@qualle-admin/qutil/dist/date'
 import { getTimeLine } from '~/helpers/filters'
+import { uid } from 'uid'
 
 const authStore = useAuthStore()
 const alertStore = useAlertStore()
@@ -39,6 +41,8 @@ const {
   removeFromNetwork,
   deleteBooking,
   updateBooking,
+  createBooking,
+  createDraft,
   reactivateBooking,
   duplicateBooking,
   getBookingHistory,
@@ -81,6 +85,7 @@ const rules = {
     checkUniqueDates(booking.value.details) || 'Loading date already exists. Select another date.',
   lessThanComitted: value =>
     value?.containers >= value?.committed || `Value should not be less than ${value.committed}`,
+  containersMaxLimit: value => checkContianersMaxLimit(value),
 }
 
 const updateExpiryDate = (value, index) => {
@@ -116,7 +121,8 @@ const handleBookingChanges = async () => {
       bookingConfirmationDialog.value.show(true)
       bookingConfirmationDialog.value.data = commitmentsList
     } else {
-      const res = await publishDraft(booking.value)
+      const newBookingObj = differenceBy(booking.value.details, originalBooking.value.details, 'id')
+      const res = await publishDraft(booking.value, newBookingObj)
       if (res === 'published') {
         router.push('/dashboard')
       }
@@ -173,6 +179,7 @@ const validateRequiredFields = () => {
     booking.value.estimatedRate &&
     rules.containers(booking.value.estimatedRate) === true &&
     booking.value.size &&
+    !booking.value.details.some(val => val?.loadingDate === null || val?.containers === null) &&
     booking.value.size
       ? booking.value.size.length > 0
       : false && booking.value.estimatedRateType) ||
@@ -220,10 +227,9 @@ const cancelChanges = async () => {
 
 const onSave = async () => {
   isSaveLoading.value = true
-  const updatedObj = pickBy(
-    booking.value,
-    (value, key) => !isEqual(value, originalBooking.value[key]),
-  )
+
+  // Getting newly added loading date object
+  const bookingObj = differenceBy(booking.value.details, originalBooking.value.details, 'id')
 
   // booking.value.loadingDate = moment(booking.value.loadingDate).endOf('day').format()
   // booking.value.preferredDate = moment(booking.value.preferredDate).endOf('day').format()
@@ -254,7 +260,27 @@ const onSave = async () => {
       return
     }
   }
-  await updateBooking(updatedObj, booking.value?.ids, fromDraft ? 'drafts' : 'bookings')
+
+  let updatedBookingData = { ...booking.value }
+  if (bookingObj) {
+    const bookingData = omit(booking.value, ['details', 'ids'])
+    if (fromDraft) {
+      await createDraft(bookingData, bookingObj, true)
+    } else {
+      await createBooking(bookingData, bookingObj, true)
+    }
+    updatedBookingData.details = booking.value.details.filter(val =>
+      bookingObj.some(obj => obj.id !== val.id),
+    )
+  }
+  const updatedObj = pickBy(
+    updatedBookingData,
+    (value, key) => !isEqual(value, originalBooking.value[key]),
+  )
+
+  if (!isEmpty(updatedObj)) {
+    await updateBooking(updatedObj, booking.value?.ids, fromDraft ? 'drafts' : 'bookings')
+  }
   await new Promise(resolve => setTimeout(resolve, 1000))
 
   await router.push({ name: 'dashboard' })
@@ -268,11 +294,19 @@ const validateExpiryDates = index => {
     ref: booking.value.ref,
   })
 }
+const addLoadingDate = () => {
+  booking.value.details.push({
+    id: uid(28),
+    loadingDate: null,
+    containers: null,
+    scacList: cloneDeep(bookingRulesStore.rules.truckers),
+  })
+}
 const removeLoadingDate = id => {
-  // const index = bookings.value.findIndex(i => i.id === id)
-  // if (index > -1) {
-  //   newBookings.value.splice(index, 1)
-  // }
+  const index = booking.value.details.findIndex(i => i.id === id)
+  if (index > -1) {
+    booking.value.details.splice(index, 1)
+  }
 }
 onMounted(async () => {
   loading.value = true
@@ -554,7 +588,11 @@ onMounted(async () => {
               <Textfield
                 v-model.number="d.containers"
                 label="Number of containers*"
-                :rules="[rules.containers, rules.lessThanComitted(d)]"
+                :rules="[
+                  rules.containers,
+                  d.committed && rules.lessThanComitted(d),
+                  rules.containersMaxLimit,
+                ]"
                 type="number"
                 required
                 :disabled="expired || completed"
@@ -573,19 +611,26 @@ onMounted(async () => {
                   "
                   class="w-3/4"
                 />
-                <!--
-                  <IconButton
-                  v-if="index"
+                <IconButton
+                  v-if="!originalBooking.details[index]"
                   icon="mdi-close"
                   class="absolute top-0 right-0"
                   @click="removeLoadingDate(d.id)"
-                  >
+                >
                   <Tooltip> Remove loading date</Tooltip>
-                  </IconButton>
-                -->
+                </IconButton>
               </div>
             </template>
           </div>
+          <Button
+            v-if="!(expired || completed)"
+            variant="plain"
+            prepend-icon="mdi-plus"
+            class="mr-auto"
+            @click="addLoadingDate"
+          >
+            add loading date
+          </Button>
         </VForm>
         <SaveCancelChanges
           v-if="!(expired || completed) || activated"
@@ -601,9 +646,7 @@ onMounted(async () => {
         :class="[flyoutBottom || smAndDown ? 'bottom' : 'right', drawer ? 'active' : '']"
       >
         <div class="flex justify-between items-center">
-          <Typography type="text-h1">
-            Statistics
-          </Typography>
+          <Typography type="text-h1"> Statistics </Typography>
           <IconButton
             v-if="!smAndDown"
             :icon="!flyoutBottom ? 'mdi-dock-bottom' : 'mdi-dock-right'"
@@ -613,9 +656,7 @@ onMounted(async () => {
         </div>
         <div class="statisticsContent">
           <div class="statisticsProgress">
-            <Typography type="text-h4">
-              Fulfillment progress
-            </Typography>
+            <Typography type="text-h4"> Fulfillment progress </Typography>
             <ProgressCircular
               :size="260"
               :value="
@@ -636,9 +677,7 @@ onMounted(async () => {
             </ProgressCircular>
           </div>
           <div class="statisticsTimeline">
-            <Typography type="text-h4">
-              Booking timeline
-            </Typography>
+            <Typography type="text-h4"> Booking timeline </Typography>
             <div class="timeline scrollbar">
               <Timeline
                 :items="getTimeLine(booking?.timeLine)"
@@ -658,7 +697,7 @@ onMounted(async () => {
         :src="container"
         class="container-img"
         alt="qualle container"
-      >
+      />
       <Typography
         type="text-h1"
         class="!text-7xl mb-4 text-center"
