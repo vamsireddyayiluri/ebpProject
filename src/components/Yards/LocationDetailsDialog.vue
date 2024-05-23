@@ -24,9 +24,10 @@ const options = { mask: cellMask }
 const details = ref(
   props.editedLocation
     ? props.editedLocation?.details?.customizedDetails
-      ? props.editedLocation?.details
+      ? {...props.editedLocation?.details, label: props.editedLocation.label}
       : {
         ...vendorDetails.value,
+        label: props.editedLocation.label,
         averageLoadTime: null,
         overweight: null,
         averageWeight: null,
@@ -164,6 +165,7 @@ const setDetails = async () => {
     if (props.editedLocation) {
       saveYardDetails({
         ...props.editedLocation,
+        label: details.value.label,
         details: { ...details.value, hoursOfOperation: checkboxes.value },
       })
     } else {
@@ -211,6 +213,13 @@ onUnmounted(() => {
     validate-on="input"
     @submit.prevent="setDetails"
   >
+    <Textfield
+      v-if="editedLocation"
+      v-model="details.label"
+      label="Location label *"
+      :rules="[rules.required]"
+      class="w-full sm:w-full md:w-[calc(50%-8px)] mb-6"
+    />
     <div
       class="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 content-start gap-4 [&>div]:h-fit"
     >
@@ -236,12 +245,12 @@ onUnmounted(() => {
         height="48"
         variant="outlined"
         :color="getColor('uiLine')"
+        @click="isSecondaryContact = !isSecondaryContact"
       >
         <Icon
           :icon="isSecondaryContact ? 'mdi-minus' : 'mdi-plus'"
           size="24"
           :color="getColor('iconButton-1')"
-          @click="isSecondaryContact = !isSecondaryContact"
         />
         <Tooltip location="top">
           {{ `${isSecondaryContact ? 'Remove' : 'Add'} secondary contact information` }}
@@ -269,9 +278,7 @@ onUnmounted(() => {
         :rules="[rules.email]"
       />
     </div>
-    <Typography type="text-body-xs-semibold mt-6 mb-2">
-      Operation hours
-    </Typography>
+    <Typography type="text-body-xs-semibold mt-6 mb-2"> Operation hours</Typography>
     <div class="flex gap-6 flex-col sm:flex-row">
       <template
         v-for="(item, n) in checkboxes"
@@ -347,9 +354,7 @@ onUnmounted(() => {
         {{ rules.schedule() }}
       </Typography>
     </VRow>
-    <Typography type="text-body-xs-semibold mt-6 mb-4">
-      Pickup instructions
-    </Typography>
+    <Typography type="text-body-xs-semibold mt-6 mb-4"> Pickup instructions</Typography>
     <Textarea
       v-model="details.pickupInstructions"
       label="Instructions for the pickup *"
@@ -359,7 +364,7 @@ onUnmounted(() => {
     />
     <div
       v-if="editedLocation"
-      class="grid grid-cols-2 md:grid-cols-3 items-center gap-6 mt-6"
+      class="grid grid-cols-2 md:grid-cols-3 gap-6 mt-6"
     >
       <Select
         v-model="details.averageLoadTime"
@@ -372,7 +377,7 @@ onUnmounted(() => {
       <Switch
         v-model="details.overweight"
         label="Overweight facility"
-        class="h-fit"
+        class="h-fit -mt-1"
         @update:modelValue="value => (details.averageWeight = value ? defaultOverWeight : null)"
       />
       <Textfield

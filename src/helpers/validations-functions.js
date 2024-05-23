@@ -7,10 +7,18 @@ import { collection, getDocs, query, where } from 'firebase/firestore'
 import { db } from '~/firebase'
 import { useBookingsStore } from '~/stores/bookings.store'
 import { defaultOverWeight, maximumOverWeight, minimumLegalWeight } from '~/constants/settings'
+import { maxContainersLimit } from '~/constants/request_loads'
 
 const alertStore = useAlertStore()
 const bookingsStore = useBookingsStore()
 
+export const checkContianersMaxLimit = value => {
+  if (value > maxContainersLimit) {
+    return `Value should not be greater than ${maxContainersLimit}`
+  } else {
+    return true
+  }
+}
 export const checkCommittedValue = (value, booking) => {
   if (value < booking?.committed) {
     return `Value should not be less than ${booking?.committed}`
@@ -55,7 +63,7 @@ export const validateExpiryDate = (entities, entity) => {
     })*/
 
     return 'Booking expiry date with booking number already exists.'
-  } else if (entity?.loadingDate < today ) {
+  } else if (entity?.loadingDate < today) {
     return 'Update Loading date.'
   } else {
     return false

@@ -206,13 +206,16 @@ export const useBookingsStore = defineStore('bookings', () => {
       },
     }
   }
-  const createBooking = async (selectedBooking, details) => {
+  const createBooking = async (selectedBooking, details, fromEdit = false) => {
     try {
       const batch = writeBatch(db)
       details?.map(b => {
         b.scacList =
           authStore.orgData?.bookingRules?.preferredCarrierWindow > 0 ? b.scacList : { list: [] }
         const newBooking = createBookingObj({ ...selectedBooking, ...b })
+        if (fromEdit) {
+          newBooking.createdAt = selectedBooking.createdAt
+        }
         const docRef = doc(collection(db, 'bookings'), newBooking.id)
         batch.set(docRef, newBooking)
       }),
@@ -223,13 +226,16 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.warning({ content: message })
     }
   }
-  const createDraft = async (selectedDraft, details) => {
+  const createDraft = async (selectedDraft, details, fromEdit = false) => {
     try {
       const batch = writeBatch(db)
       details.forEach(b => {
         b.scacList =
           authStore.orgData?.bookingRules?.preferredCarrierWindow > 0 ? b.scacList : { list: [] }
         const newDraft = createBookingObj({ ...selectedDraft, ...b })
+        if (fromEdit) {
+          newDraft.createdAt = selectedDraft.createdAt
+        }
         const docRef = doc(collection(db, 'drafts'), newDraft.id)
         batch.set(docRef, newDraft)
         drafts.value.unshift(newDraft)
@@ -359,10 +365,13 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.warning({ content: message })
     }
   }
-  const publishDraft = async booking => {
+  const publishDraft = async (booking, newBooking) => {
     try {
       const batch = writeBatch(db)
       await deleteBooking(booking.ids, true)
+      if (newBooking?.length) {
+        booking.ids.push(...newBooking?.map(val => val.id))
+      }
       booking.ids.forEach(id => {
         const data = createEditedBookingObj(booking, id)
         data.scacList =
