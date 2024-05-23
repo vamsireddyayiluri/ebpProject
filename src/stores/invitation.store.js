@@ -93,6 +93,7 @@ export const useInvitationStore = defineStore('invitation', () => {
           type: val.data().type,
           isLoggedIn: false,
           workerId: val.data().workerId,
+          pending: true,
         })
       })
       invitedUsersData.value = invitations

@@ -40,6 +40,7 @@ const addInvitation = async () => {
       type: newMember.type,
       workerId: workerId.value,
       selected: newMember.type,
+      pending: true,
     })
     newMember.email = ''
     workerId.value = ''
@@ -119,7 +120,10 @@ const removeMember = async id => {
         @close="removeMemberDialog.show(false)"
         @onClickBtn="removeMember(removeMemberDialog.data.docId || removeMemberDialog.data.id)"
       >
-        <Typography>
+        <Typography v-if="removeMemberDialog?.data.pending">
+          Are you sure you wish to delete this pending invitation for <b>{{ removeMemberDialog?.data.value }} ?</b>
+        </Typography>
+        <Typography v-else>
           Are you sure you want to remove <b>Member {{ removeMemberDialog?.data.value }}</b>
           from the team?
         </Typography>
