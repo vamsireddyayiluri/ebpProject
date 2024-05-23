@@ -109,6 +109,7 @@ const fromEdit = !fromDraft && !fromHistory
 const completed = computed(() => booking.value?.status === statuses.completed)
 const expired = computed(() => booking.value?.status === statuses.expired)
 const pending = computed(() => booking.value?.status === statuses.pending)
+const paused = computed(() => booking.value?.status === statuses.paused)
 
 const handleBookingChanges = async () => {
   isPublishLoading.value = true
@@ -628,7 +629,7 @@ onMounted(async () => {
             </template>
           </div>
           <Button
-            v-if="!(expired || completed)"
+            v-if="!(expired || completed || paused)"
             variant="plain"
             prepend-icon="mdi-plus"
             class="mr-auto"
