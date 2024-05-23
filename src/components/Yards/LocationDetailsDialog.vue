@@ -10,12 +10,14 @@ import moment from 'moment-timezone'
 import { cellMask } from '~/helpers/mask'
 import { vMaska, Mask } from 'maska'
 import { validateScheduler } from '~/helpers/validations-functions'
+import { useBookingsStore } from '~/stores/bookings.store'
 
 const props = defineProps({
   editedLocation: Object,
 })
 const emit = defineEmits(['close'])
 const authStore = useAuthStore()
+const bookingStore = useBookingsStore()
 const workDetailsStore = useWorkDetailsStore()
 const { saveVendorDetails, saveYardDetails, getVendorDetails } = workDetailsStore
 const { vendorDetails } = storeToRefs(workDetailsStore)
@@ -24,14 +26,14 @@ const options = { mask: cellMask }
 const details = ref(
   props.editedLocation
     ? props.editedLocation?.details?.customizedDetails
-      ? {...props.editedLocation?.details, label: props.editedLocation.label}
+      ? { ...props.editedLocation?.details, label: props.editedLocation.label }
       : {
-        ...vendorDetails.value,
-        label: props.editedLocation.label,
-        averageLoadTime: null,
-        overweight: null,
-        averageWeight: null,
-      }
+          ...vendorDetails.value,
+          label: props.editedLocation.label,
+          averageLoadTime: null,
+          overweight: null,
+          averageWeight: null,
+        }
     : vendorDetails.value,
 )
 const initDetails = cloneDeep(details.value)
@@ -168,6 +170,13 @@ const setDetails = async () => {
         label: details.value.label,
         details: { ...details.value, hoursOfOperation: checkboxes.value },
       })
+      if (props.editedLocation.label !== details.value.label) {
+        bookingStore.updateLocationLabelsInBookingsCommitmetns(
+          authStore.orgData.orgId,
+          props.editedLocation.geohash,
+          details.value.label,
+        )
+      }
     } else {
       details.value.hoursOfOperation = checkboxes.value
       await saveVendorDetails(details.value)
