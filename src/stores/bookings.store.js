@@ -561,6 +561,42 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.warning({ content: message })
     }
   }
+  const updateLocationLabelsInBookingsCommitmetns = async (orgId, geohash, newLabel) => {
+    try {
+      const batch = writeBatch(db)
+      const bookingsQuery = query(
+        collection(db, 'bookings'),
+        where('orgId', '==', orgId),
+        where('location.geohash', '==', geohash),
+      )
+      const bookingsSnapshot = await getDocs(bookingsQuery)
+
+      bookingsSnapshot.forEach(doc => {
+        const bookingRef = doc.ref
+        batch.update(bookingRef, {
+          'location.label': newLabel,
+        })
+      })
+
+      const commitmentsQuery = query(
+        collection(db, 'commitments'),
+        where('orgId', '==', orgId),
+        where('location.geohash', '==', geohash),
+      )
+      const commitmentsSnapshot = await getDocs(commitmentsQuery)
+
+      commitmentsSnapshot.forEach(doc => {
+        const commitmentRef = doc.ref
+        batch.update(commitmentRef, {
+          'details.exporterDetails.label': newLabel,
+          'location.label': newLabel,
+        })
+      })
+      await batch.commit()
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
   const reset = () => {
     bookings.value = []
     drafts.value = []
@@ -596,5 +632,6 @@ export const useBookingsStore = defineStore('bookings', () => {
     deleteBookingById,
     getAllCompletedBookings,
     deleteCompletedBookingById,
+    updateLocationLabelsInBookingsCommitmetns,
   }
 })

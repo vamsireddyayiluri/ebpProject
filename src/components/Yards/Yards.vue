@@ -24,7 +24,7 @@ const locationDetailsDialog = ref(null)
 const form = ref(null)
 const rules = {
   required(value) {
-    return !!value ? true : 'Required field'
+    return value?.toString().trim() ? true : 'Required field'
   },
   locationLabel: value => !isExistName(yards.value, value, 'label') || 'Label already exists',
 }

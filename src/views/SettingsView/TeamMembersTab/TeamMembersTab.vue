@@ -35,7 +35,7 @@ const cancelChanges = () => {
 const setMembers = async () => {
   await invitationStore.getInvitedUsersData(userData.value.orgId)
   teamMembers.value = invitedUsersData.value.map(i => {
-    return { ...i, isDisabled: userData.value.type === userTypes.operator, selected: i.type }
+    return { ...i, isDisabled: userData.value.type === userTypes.operator, selected: i.type, pending: i.pending }
   })
 }
 onMounted(async () => {

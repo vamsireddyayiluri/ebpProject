@@ -107,6 +107,10 @@ const openCreateBookingDialog = () => {
     createBookingDialog.value.show(true)
   }
 }
+const liveContainers = computed(() => calendarBooking.value.filter(
+  b => b.status === statuses.active || b.status === statuses.pending,
+).length)
+
 onMounted(async () => {
   await bookingsStore.getAllCompletedBookings()
   useIntervalFn(async () => {
@@ -147,11 +151,7 @@ onMounted(async () => {
             >
               Total active and pending bookings:
             </div>
-            <b>{{
-              calendarBooking.filter(
-                b => b.status === statuses.active || b.status === statuses.pending,
-              ).length
-            }}</b>
+            <b>{{ liveContainers }}</b>
           </Typography>
           <Divider
             vertical=""
