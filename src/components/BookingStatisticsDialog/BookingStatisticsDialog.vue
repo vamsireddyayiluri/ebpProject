@@ -10,11 +10,6 @@ const props = defineProps({
 const emit = defineEmits(['close', 'goToBookingPage'])
 const router = useRouter()
 const selectedBooking = ref(false)
-// const getTimeLine = timeLine => {
-//   return timeLine?.map(val => {
-//     return { title: val.message, date: moment(val.time_stamp).format('MM/DD/YYYY hh:mm:ss a') }
-//   })
-// }
 </script>
 
 <template>
