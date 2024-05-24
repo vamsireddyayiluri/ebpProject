@@ -61,7 +61,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       const draftsQuery = query(collection(db, 'drafts'), where('orgId', '==', orgId))
       const querySnapshot = await getDocs(draftsQuery)
 
-      const filteredtest = querySnapshot.docs.map(doc => doc.data())
+      const filteredtest = querySnapshot.docs.map(doc => doc.data()).sort((a, b) => moment(b.updatedAt).diff(moment(a.updatedAt)))
       const group = groupBookings(filteredtest)
 
       drafts.value = group
@@ -219,7 +219,7 @@ export const useBookingsStore = defineStore('bookings', () => {
         const docRef = doc(collection(db, 'bookings'), newBooking.id)
         batch.set(docRef, newBooking)
       }),
-        await batch.commit()
+      await batch.commit()
 
       alertStore.info({ content: `Booking Created!` })
     } catch ({ message }) {
@@ -232,7 +232,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       details.forEach(b => {
         b.scacList =
           authStore.orgData?.bookingRules?.preferredCarrierWindow > 0 ? b.scacList : { list: [] }
-        const newDraft = createBookingObj({ ...selectedDraft, ...b })
+        const newDraft = createBookingObj({ ...selectedDraft, ...b, updatedAt: getLocalTime().format() })
         if (fromEdit) {
           newDraft.createdAt = selectedDraft.createdAt
         }
@@ -456,7 +456,7 @@ export const useBookingsStore = defineStore('bookings', () => {
           data.scacList = loadData.scacList
         }
         if (Object.keys(data).length) {
-          batch.update(docRef, { ...data })
+          batch.update(docRef, { ...data, updatedAt: getLocalTime().format() })
         }
 
         // change loadingData in commitments
@@ -599,6 +599,10 @@ export const useBookingsStore = defineStore('bookings', () => {
   }
   const reset = () => {
     bookings.value = []
+    allBookings.value = []
+    pastBookings.value = []
+    notGroupedBookings.value = []
+    calendarBooking.value = []
     drafts.value = []
     loading.value = false
   }

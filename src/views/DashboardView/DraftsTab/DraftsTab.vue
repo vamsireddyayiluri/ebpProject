@@ -45,6 +45,7 @@ const filters = ref({
   loadingDate: null,
 })
 const selectLine = ref(getAllLines())
+const keyLoadingDate = ref(null)
 const createBookingDialog = ref(null)
 const clickedOutside = ref(null)
 
@@ -108,6 +109,16 @@ const handleCreateBookingDialog = () => {
   if (checkVendorDetailsCompletion()) {
     createBookingDialog.value.show(true)
   }
+}
+const bookingCreated = () => {
+  for (const key in filters.value) {
+    if (filters.value[key] !== null) {
+      filters.value[key] = null
+    }
+  }
+  searchValue.value = null
+  applyFilter()
+  keyLoadingDate.value = uid(8)
 }
 const onClearSearch = () => {
   loading.value = true
@@ -218,6 +229,7 @@ watch(searchValue, value => {
             @click:clear="onClearSearch"
           />
           <Datepicker
+            :key="keyLoadingDate"
             v-model="filters.loadingDate"
             label="Loading date"
             clearable
@@ -294,6 +306,7 @@ watch(searchValue, value => {
     <template #text>
       <CreateBookingDialog
         :clicked-outside="clickedOutside"
+        @bookingCreated="bookingCreated"
         @close="createBookingDialog.show(false)"
       />
     </template>

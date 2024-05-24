@@ -56,6 +56,7 @@ const filters = ref({
   loadingDate: null,
 })
 const selectLine = ref(getAllLines())
+const keyLoadingDate = ref(null)
 const createBookingDialog = ref(null)
 const clickedOutside = ref(null)
 const bookingConfirmationDialog = ref(null)
@@ -133,7 +134,7 @@ const selectTableRow = e => {
   mapRef.value?.setZoom(15)
   mapRef.value?.panTo({ lat: e.location.lat, lng: e.location.lng })
 }
-const handleCreateBookingDialog = () => {
+const handleCreateBookingDialog = async () => {
   if (checkVendorDetailsCompletion()) {
     createBookingDialog.value.show(true)
   }
@@ -146,6 +147,16 @@ const duplicateBooking = async ids => {
 const closeCreateBookingDialog = () => {
   createBookingDialog.value.show(false)
   createBookingDialog.value.data = null
+}
+const bookingCreated = () => {
+  for (const key in filters.value) {
+    if (filters.value[key] !== null) {
+      filters.value[key] = null
+    }
+  }
+  searchValue.value = null
+  applyFilter()
+  keyLoadingDate.value = uid(8)
 }
 const viewStatistics = e => {
   bookingStatisticsDialog.value.show(true)
@@ -306,6 +317,7 @@ watch(bookingsData, value => {
             @click:clear="onClearSearch"
           />
           <Datepicker
+            :key="keyLoadingDate"
             v-model="filters.loadingDate"
             label="Loading date"
             clearable
@@ -406,6 +418,7 @@ watch(bookingsData, value => {
       <CreateBookingDialog
         :duplicate="createBookingDialog.data"
         :clicked-outside="clickedOutside"
+        @bookingCreated="bookingCreated"
         @close="closeCreateBookingDialog"
       />
     </template>
