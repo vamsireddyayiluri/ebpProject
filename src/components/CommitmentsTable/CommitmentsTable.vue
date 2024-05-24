@@ -114,14 +114,17 @@ const onDeclineCommitment = async reason => {
   commitmentDetailsDialog.value.show(false)
   await declineCommitment(declineCommitmentDialog.value.data, reason)
 }
-const onLoadingDateUpdated = async (data, loadingDate) => {
+const onLoadingDateUpdated = async (data, loadingDate, newCommitted) => {
   isloading.value = true
-  await edit_commitment_loadingDate(data.id, loadingDate)
+  const updatedCommitment = await edit_commitment_loadingDate(data, loadingDate, newCommitted)
   const index = pendingCommitments.value.findIndex(i => {
     return data.id === i.id
   })
   pendingCommitments.value.splice(index, 1)
 
+  if (updatedCommitment) {
+    pendingCommitments.value.push(updatedCommitment)
+  }
   loadingDateDialog.value.show(false)
   emit('close', pendingCommitments.value.length > 0)
 
@@ -214,8 +217,12 @@ const onLoadingDateUpdated = async (data, loadingDate) => {
         btn-name="Update"
         :loading="isloading"
         :loadingDate="loadingDateDialog.data.loadingDate"
+        :committed="loadingDateDialog.data.committed"
         @close="loadingDateDialog.show(false)"
-        @onClickUpdate="loadingDate => onLoadingDateUpdated(loadingDateDialog.data, loadingDate)"
+        @onClickUpdate="
+          (loadingDate, newCommitted) =>
+            onLoadingDateUpdated(loadingDateDialog.data, loadingDate, newCommitted)
+        "
       />
     </template>
   </Dialog>

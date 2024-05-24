@@ -167,9 +167,9 @@ const onCancelBooking = async (booking, reason) => {
   await updateBookingStatus(booking, statuses.canceled, reason)
   cancelBookingDialog.value.show(false)
 }
-const onLoadingDateUpdated = async (data, loadingDate) => {
+const onLoadingDateUpdated = async (data, loadingDate, newCommitted) => {
   isloading.value = true
-  await edit_commitment_loadingDate(data.id, loadingDate)
+  await edit_commitment_loadingDate(data, loadingDate, newCommitted)
   loadingDateDialog.value.show(false)
   isloading.value = false
 }
@@ -364,8 +364,12 @@ onMounted(async () => {
         btn-name="Update"
         :loading="isloading"
         :loading-date="loadingDateDialog.data.loadingDate"
+        :committed="loadingDateDialog.data.committed"
         @close="loadingDateDialog.show(false)"
-        @onClickUpdate="loadingDate => onLoadingDateUpdated(loadingDateDialog.data, loadingDate)"
+        @onClickUpdate="
+          (loadingDate, newCommitted) =>
+            onLoadingDateUpdated(loadingDateDialog.data, loadingDate, newCommitted)
+        "
       />
     </template>
   </Dialog>
