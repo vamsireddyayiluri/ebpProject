@@ -301,7 +301,7 @@ export const useAuthStore = defineStore('auth', () => {
   const getUserData = async userId => {
     try {
       const userDoc = await getDoc(doc(db, 'users', userId))
-      if (userDoc.exists) {
+      if (userDoc.exists()) {
         userData.value = userDoc.data()
       }
     } catch ({ message }) {

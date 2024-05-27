@@ -9,6 +9,7 @@ import containersSizes from '~/fixtures/containersSizes.json'
 import moment from 'moment'
 import { useAlertStore } from '~/stores/alert.store'
 import {
+  checkContianersMaxLimit,
   checkPositiveInteger,
   checkUniqueDates,
   validateAverageWeight,
@@ -126,6 +127,7 @@ const rules = {
   validateDate: value => (isNull(value) ? true : validateExpiryDate(bookings?.value, value)),
   uniqueDate: () =>
     checkUniqueDates(newBookings.value) || 'Loading date already exists. Select another date.',
+  containersMaxLimit: value => checkContianersMaxLimit(value),
 }
 const updateExpiryDate = (value, index) => {
   newBookings.value[index].loadingDate = moment(value).endOf('day').format()
@@ -403,7 +405,7 @@ onMounted(async () => {
           <Textfield
             v-model.number="d.containers"
             label="Number of containers*"
-            :rules="[rules.containers]"
+            :rules="[rules.containers, rules.containersMaxLimit]"
             type="number"
             required
             class="h-fit"
@@ -439,7 +441,7 @@ onMounted(async () => {
       <Button
         variant="outlined"
         class="w-fit"
-        :disabled="isDisabled || isLoadingDatesFieldsEmpty"
+        :disabled="isDisabled || isLoadingDatesFieldsEmpty || isLoading"
         @click="saveDraft"
       >
         Save as draft
