@@ -114,10 +114,10 @@ export const useCommitmentsStore = defineStore('commitments', () => {
     const carrierIndex = booking?.carriers?.findIndex(carrier => carrier?.scac === truckerScac)
     if (carrierIndex !== -1) {
       booking.carriers[carrierIndex].onboarded =
-        booking.carriers[carrierIndex].onboarded + onBoardedContainers
+        booking?.carriers[carrierIndex].onboarded + onBoardedContainers
     }
     await updateDoc(doc(db, 'bookings', commitment.bookingId), {
-      carriers: booking.carriers,
+      carriers: booking?.carriers,
     })
   }
 
@@ -265,7 +265,9 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         })
       })
       alertStore.info({ content: 'Booking commitment updated' })
-      return updatedCommmitment
+      if (data.committed !== newCommitted) {
+        return updatedCommmitment
+      }
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
