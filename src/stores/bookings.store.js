@@ -44,13 +44,10 @@ export const useBookingsStore = defineStore('bookings', () => {
 
     const querySnapshot = await getDocs(bookingsQuery)
     const dataPromises = querySnapshot.docs.map(async doc => {
-      // const commitments = await getCommitments(doc.data().id)
       return { ...doc.data(), entities: [] }
     })
     const data = await Promise.all(dataPromises)
-    bookings.value = data.sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
     allBookings.value = data.sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
-    // await validateBookingsExpiry(data)
 
     return data
   }
@@ -67,10 +64,8 @@ export const useBookingsStore = defineStore('bookings', () => {
       drafts.value = group
     } else {
       await getallBookings()
-      // const today = getLocalServerTime(moment(), 'America/Los_Angeles')
-      const filteredBookings = bookings.value.filter(
+      const filteredBookings = allBookings.value.filter(
         booking =>
-          // !moment(booking.loadingDate).isBefore(moment(today)) &&
           booking.status !== statuses.completed &&
           booking.status !== statuses.expired &&
           booking.status !== statuses.canceled,
@@ -115,7 +110,7 @@ export const useBookingsStore = defineStore('bookings', () => {
 
     return allCommitments
   }
-  const getCommitmentsByBooking = async (id, fromHistory = false) => {
+  const getCommitmentsByBooking = async id => {
     const q = await query(collection(db, 'commitments'), where('bookingId', '==', id))
     const docData = await getDocs(q)
 
@@ -123,7 +118,7 @@ export const useBookingsStore = defineStore('bookings', () => {
   }
   const updateBookingCommitments = async (id, commitments) => {
     bookings.value.forEach(b => {
-      if (b.id == id) {
+      if (b.id === id) {
         b['entities'] = commitments
         b.expand = true
       }
@@ -263,7 +258,7 @@ export const useBookingsStore = defineStore('bookings', () => {
         })
       })
       batch.commit()
-      bookings.value.forEach(b => {
+      allBookings.value.forEach(b => {
         const ids = b.ids
         if (ids.includes(booking.id)) {
           b.status = status
@@ -275,10 +270,10 @@ export const useBookingsStore = defineStore('bookings', () => {
         }
       })
       if (status === statuses.canceled) {
-        const index = bookings.value.findIndex(i => {
+        const index = allBookings.value.findIndex(i => {
           return i.ids.includes(booking.id)
         })
-        bookings.value.splice(index, 1)
+        allBookings.value.splice(index, 1)
         ids.forEach(id => {
           const index1 = notGroupedBookings.value.findIndex(i => i.id === id)
           notGroupedBookings.value.splice(index1, 1)
@@ -351,11 +346,11 @@ export const useBookingsStore = defineStore('bookings', () => {
         ids.forEach(async id => {
           batch.delete(doc(db, 'bookings', id))
         })
-        const index = bookings.value.findIndex(i => {
+        const index = allBookings.value.findIndex(i => {
           return ids.includes(i.id)
         })
         if (index > -1) {
-          bookings.value.splice(index, 1)
+          allBookings.value.splice(index, 1)
           notGroupedBookings.value.splice(index, 1)
           alert && alertStore.info({ content: 'Bookings removed!' })
         } else alertStore.warning({ content: 'Booking not found' })
@@ -381,7 +376,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       })
 
       await batch.commit()
-      bookings.value.unshift(booking)
+      allBookings.value.unshift(booking)
       alertStore.info({ content: `Booking Ref# ${booking.ref} was published` })
 
       return 'published'
@@ -488,7 +483,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       setTimeout(async () => {
         const id = commitment?.bookingId || commitment.id
         const updatedBooking = await getBooking({ id: id, draft: false })
-        bookings.value.forEach(booking => {
+        allBookings.value.forEach(booking => {
           const ids = booking.ids
           if (ids.includes(commitment.bookingId)) {
             if (type === 'approved') {
@@ -530,8 +525,8 @@ export const useBookingsStore = defineStore('bookings', () => {
     }
   }
   const closeBookingExpansion = async id => {
-    const index = bookings.value.findIndex(val => val?.id === id)
-    bookings.value[index].expand = false
+    const index = allBookings.value.findIndex(val => val?.id === id)
+    allBookings.value[index].expand = false
   }
 
   const getAllCompletedBookings = async () => {
