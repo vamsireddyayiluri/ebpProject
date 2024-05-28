@@ -4,8 +4,10 @@ import {
   doc,
   getDoc,
   getDocs,
-  increment, onSnapshot,
+  increment,
+  onSnapshot,
   query,
+  setDoc,
   updateDoc,
   where,
 } from 'firebase/firestore'
@@ -17,6 +19,8 @@ import { onboardingCodes } from '~/constants/reasonCodes'
 import { getRequestLoadFee } from './helpers'
 import { getLocalTime } from '@qualle-admin/qutil/dist/date'
 import moment from 'moment-timezone'
+import { uid } from 'uid'
+import { calculateLoadFee } from '~/helpers/stripe'
 
 const { updateBookingStore } = useBookingsStore()
 
@@ -110,10 +114,10 @@ export const useCommitmentsStore = defineStore('commitments', () => {
     const carrierIndex = booking?.carriers?.findIndex(carrier => carrier?.scac === truckerScac)
     if (carrierIndex !== -1) {
       booking.carriers[carrierIndex].onboarded =
-        booking.carriers[carrierIndex].onboarded + onBoardedContainers
+        booking?.carriers[carrierIndex].onboarded + onBoardedContainers
     }
     await updateDoc(doc(db, 'bookings', commitment.bookingId), {
-      carriers: booking.carriers,
+      carriers: booking?.carriers,
     })
   }
 
@@ -125,30 +129,14 @@ export const useCommitmentsStore = defineStore('commitments', () => {
     } else if (onboardingCodes.onboardMovedLoad === reason) {
       // Calculating marketplace fee if trucker moved different loads
 
-      const { processingFee } = await getRequestLoadFee()
-      const marketplaceFeePercentage = parseFloat(
-        ((data.amountBreakup.baseFee * 100) / (data.committed * data.estimatedRate)).toFixed(2),
-      )
-      const truckerRevenue = data.estimatedRate * onBoardedContainers
-      const marketPlaceFee = parseFloat(
-        ((truckerRevenue / 100) * marketplaceFeePercentage).toFixed(2),
-      )
-
-      const stripeCharge = (marketPlaceFee / 100) * processingFee.percentage
-      const finalFee = stripeCharge + processingFee.cents / 100
-      const processingFeeAmount = parseFloat(finalFee.toFixed(2))
-
-      const loadFee = parseFloat(processingFeeAmount + marketPlaceFee).toFixed(2)
-      const amountBreakup = {
-        baseFee: marketPlaceFee,
-        processingFee: parseFloat(processingFeeAmount.toFixed(2)),
-      }
+      const chargesData = await calculateLoadFee(data, onBoardedContainers)
       obj = {
-        loadFee,
-        amountBreakup,
+        loadFee: chargesData.loadFee,
+        amountBreakup: chargesData.amountBreakup,
         status: statuses.onboarded,
         onBoardedContainers: onBoardedContainers,
       }
+
       await updateBookingCarriers2(data, onBoardedContainers)
     } else {
       obj.status = statuses.incomplete
@@ -237,20 +225,80 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       alertStore.warning({ content: message })
     }
   }
-  const edit_commitment_loadingDate = async (id, loadingDate) => {
+  const edit_commitment_loadingDate = async (data, loadingDate, newCommitted) => {
     try {
-      await updateDoc(doc(db, 'commitments', id), {
-        loadingDate: moment(loadingDate).endOf('day').format(),
-        updated: getLocalTime().format(),
-      })
+      let actualCommited = null
+      let updatedCommmitment = null
+      let updatedData = null
+      if (data.committed === newCommitted) {
+        actualCommited = newCommitted
+        await updateDoc(doc(db, 'commitments', data.id), {
+          loadingDate: moment(loadingDate).endOf('day').format(),
+          updated: getLocalTime().format(),
+        })
+      } else {
+        actualCommited = data.committed - newCommitted
+
+        const chargesData = await calculateLoadFee(data, actualCommited)
+        updatedData = {
+          committed: actualCommited,
+          updated: getLocalTime().format(),
+          loadFee: chargesData.loadFee,
+          amountBreakup: chargesData.amountBreakup,
+        }
+        await updateDoc(doc(db, 'commitments', data.id), updatedData)
+        await createCommitment(data, newCommitted, loadingDate)
+      }
       bookingsStore.bookings.forEach(i => {
         i.entities.forEach(j => {
-          if (j.id === id) {
-            j.loadingDate = moment(loadingDate).endOf('day').format()
+          if (j.id === data.id) {
+            if (data.committed === newCommitted) {
+              j.loadingDate = moment(loadingDate).endOf('day').format()
+            } else {
+              j.loadingDate = moment(data.loadingDate).endOf('day').format()
+              j.committed = actualCommited
+              j.loadFee = updatedData.loadFee
+              j.amountBreakup = updatedData.amountBreakup
+            }
+            updatedCommmitment = j
           }
         })
       })
       alertStore.info({ content: 'Booking commitment updated' })
+      if (data.committed !== newCommitted) {
+        return updatedCommmitment
+      }
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
+  const createCommitmentObj = async (commitment, newCommitted, loadingDate) => {
+    const allocationId = uid(28)
+    const chargesData = await calculateLoadFee(commitment, newCommitted)
+
+    return {
+      ...commitment,
+      loadingDate: loadingDate,
+      status: 'approved',
+      created: getLocalTime().format(),
+      updated: getLocalTime().format(),
+      id: allocationId,
+      committed: newCommitted,
+      loadFee: chargesData.loadFee,
+      amountBreakup: chargesData.amountBreakup,
+    }
+  }
+
+  const createCommitment = async (data, newCommitted, loadingDate) => {
+    try {
+      const newCommitment = await createCommitmentObj(data, newCommitted, loadingDate)
+      const docRef = doc(collection(db, 'commitments'), newCommitment.id)
+      await setDoc(docRef, newCommitment)
+      bookingsStore.bookings.map(i => {
+        if (i.id === newCommitment.bookingId) {
+          i.entities.push(newCommitment)
+        }
+      })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
