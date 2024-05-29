@@ -46,6 +46,7 @@ const {
   reactivateBooking,
   duplicateBooking,
   getBookingHistory,
+  removeBookingFromNetwork,
 } = useBookingsStore()
 const commitmentStore = useCommitmentsStore()
 
@@ -73,6 +74,7 @@ const isPublishLoading = ref(false)
 const originalBooking = ref(null)
 const bookingConfirmationDialog = ref(null)
 const confirmClickedOutside = ref(null)
+const fromRemoveLoadingDate = ref(false)
 
 const rules = {
   checkcommitted: value => checkCommittedValue(value, booking.value),
@@ -139,13 +141,27 @@ const handleBookingChanges = async () => {
     isPublishLoading.value = false
   }
 }
-const openRemoveDialog = () => {
+const openRemoveDialog = (index = 0, loadingDate = null) => {
   removeBookingDialog.value.show(true)
   removeBookingDialog.value.data = booking.value
+  removeBookingDialog.value.data.index = index
+  if (loadingDate) {
+    removeBookingDialog.value.data.loadingDate = moment(loadingDate).format('MM-DD-YYYY')
+  } else {
+    fromRemoveLoadingDate.value = false
+  }
 }
-const deleteFromPlatform = async () => {
-  await deleteBooking(booking.value.ids, fromDraft, fromHistory)
-  router.push('/dashboard')
+const deleteFromPlatform = async index => {
+  if (fromRemoveLoadingDate.value) {
+    const collection = fromDraft ? 'drafts' : 'bookings'
+    const res = await removeBookingFromNetwork(booking.value, index, collection)
+    if (res === 'deleted') {
+      router.push('/dashboard')
+    }
+  } else {
+    await deleteBooking(booking.value.ids, fromDraft, fromHistory)
+    router.push('/dashboard')
+  }
 }
 const handleAction = async e => {
   if (e) {
@@ -304,15 +320,22 @@ const addLoadingDate = () => {
     id: uid(28),
     loadingDate: null,
     containers: null,
-    scacList: cloneDeep(bookingRulesStore.rules.truckers),
+    scacList: cloneDeep(bookingRulesStore?.rules?.truckers),
   })
 }
-const removeLoadingDate = id => {
-  const index = booking.value.details.findIndex(i => i.id === id)
+const removeLoadingDate = async aBooking => {
+  const index = booking.value.details.findIndex(i => i.id === aBooking.id)
   if (index > -1) {
-    booking.value.details.splice(index, 1)
+    originalBooking.value.details[index]
+    if (!originalBooking.value.details[index]) {
+      booking.value.details.splice(index, 1)
+    } else {
+      fromRemoveLoadingDate.value = true
+      openRemoveDialog(index, booking.value.details[index].loadingDate)
+    }
   }
 }
+
 onMounted(async () => {
   loading.value = true
   await getBookings(fromDraft ? { draft: true } : {})
@@ -618,10 +641,10 @@ onMounted(async () => {
                   class="w-3/4"
                 />
                 <IconButton
-                  v-if="!originalBooking.details[index]"
+                  v-if="booking?.details?.length > 1 && !fromHistory"
                   icon="mdi-close"
                   class="absolute top-0 right-0"
-                  @click="removeLoadingDate(d.id)"
+                  @click="removeLoadingDate(d)"
                 >
                   <Tooltip> Remove loading date</Tooltip>
                 </IconButton>
@@ -720,12 +743,17 @@ onMounted(async () => {
       <ConfirmationDialog
         btn-name="Remove"
         @close="removeBookingDialog.show(false)"
-        @onClickBtn="deleteFromPlatform(removeBookingDialog.data.ids)"
+        @onClickBtn="deleteFromPlatform(removeBookingDialog.data.index)"
       >
-        <Typography>
+        <Typography v-if="!fromRemoveLoadingDate">
           Are you sure you want to remove ref#
           <b>{{ removeBookingDialog.data.ref }}</b>
           from your bookings?
+        </Typography>
+        <Typography v-else>
+          Are you sure you want to remove loading date#
+          <b>{{ removeBookingDialog.data.loadingDate }}</b> with ref#
+          <b>{{ removeBookingDialog.data.ref }}</b>
         </Typography>
       </ConfirmationDialog>
     </template>
