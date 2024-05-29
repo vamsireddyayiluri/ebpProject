@@ -258,7 +258,7 @@ export const useBookingsStore = defineStore('bookings', () => {
         })
       })
       batch.commit()
-      allBookings.value.forEach(b => {
+      bookings.value.forEach(b => {
         const ids = b.ids
         if (ids.includes(booking.id)) {
           b.status = status
@@ -270,10 +270,10 @@ export const useBookingsStore = defineStore('bookings', () => {
         }
       })
       if (status === statuses.canceled) {
-        const index = allBookings.value.findIndex(i => {
+        const index = bookings.value.findIndex(i => {
           return i.ids.includes(booking.id)
         })
-        allBookings.value.splice(index, 1)
+        bookings.value.splice(index, 1)
         ids.forEach(id => {
           const index1 = notGroupedBookings.value.findIndex(i => i.id === id)
           notGroupedBookings.value.splice(index1, 1)
@@ -346,11 +346,11 @@ export const useBookingsStore = defineStore('bookings', () => {
         ids.forEach(async id => {
           batch.delete(doc(db, 'bookings', id))
         })
-        const index = allBookings.value.findIndex(i => {
+        const index = bookings.value.findIndex(i => {
           return ids.includes(i.id)
         })
         if (index > -1) {
-          allBookings.value.splice(index, 1)
+          bookings.value.splice(index, 1)
           notGroupedBookings.value.splice(index, 1)
           alert && alertStore.info({ content: 'Bookings removed!' })
         } else alertStore.warning({ content: 'Booking not found' })
@@ -376,7 +376,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       })
 
       await batch.commit()
-      allBookings.value.unshift(booking)
+      bookings.value.unshift(booking)
       alertStore.info({ content: `Booking Ref# ${booking.ref} was published` })
 
       return 'published'
@@ -483,7 +483,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       setTimeout(async () => {
         const id = commitment?.bookingId || commitment.id
         const updatedBooking = await getBooking({ id: id, draft: false })
-        allBookings.value.forEach(booking => {
+        bookings.value.forEach(booking => {
           const ids = booking.ids
           if (ids.includes(commitment.bookingId)) {
             if (type === 'approved') {
@@ -525,8 +525,8 @@ export const useBookingsStore = defineStore('bookings', () => {
     }
   }
   const closeBookingExpansion = async id => {
-    const index = allBookings.value.findIndex(val => val?.id === id)
-    allBookings.value[index].expand = false
+    const index = bookings.value.findIndex(val => val?.id === id)
+    bookings.value[index].expand = false
   }
 
   const getAllCompletedBookings = async () => {
