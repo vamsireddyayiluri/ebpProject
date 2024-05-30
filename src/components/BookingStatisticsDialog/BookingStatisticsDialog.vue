@@ -1,8 +1,8 @@
 <script setup>
 import { getColor } from '~/helpers/colors'
 import { getBookingLoad } from '~/helpers/countings'
-import moment from 'moment-timezone'
 import { getTimeLine } from '~/helpers/filters'
+import { statuses } from '~/constants/statuses'
 
 const props = defineProps({
   booking: Object,
@@ -10,6 +10,12 @@ const props = defineProps({
 const emit = defineEmits(['close', 'goToBookingPage'])
 const router = useRouter()
 const selectedBooking = ref(false)
+const goToBookingPage = () => {
+  const query = [statuses.canceled, statuses.incomplete, statuses.expired, statuses.completed].includes(
+    selectedBooking.value.status,
+  )? { from: 'history' } : {}
+  router.push({ path: `booking/${selectedBooking.value.id}`, query })
+}
 </script>
 
 <template>
@@ -97,9 +103,7 @@ const selectedBooking = ref(false)
           class="mb-10"
         />
         <div class="styledDrawerActions flex gap-6 pt-8">
-          <Button @click="router.push({ path: `booking/${selectedBooking.id}` })">
-            Go to booking page
-          </Button>
+          <Button @click="goToBookingPage"> Go to booking page</Button>
           <Button
             variant="plain"
             class="p-0"
@@ -116,7 +120,8 @@ const selectedBooking = ref(false)
 <style lang="scss">
 .styledDrawerActions {
   position: fixed;
-  bottom: 30px;
+  bottom: 25px;
   z-index: 2;
+  background: linear-gradient(transparent, rgba(var(--v-theme-uiPrimary), 1));
 }
 </style>
