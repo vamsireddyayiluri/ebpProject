@@ -356,7 +356,7 @@ export const useBookingsStore = defineStore('bookings', () => {
         })
         if (index > -1) {
           bookings.value.splice(index, 1)
-          notGroupedBookings.value.splice(index, 1)
+          notGroupedBookings.value = notGroupedBookings.value.filter(obj => !ids.includes(obj.id))
           alert && alertStore.info({ content: 'Bookings removed!' })
         } else alertStore.warning({ content: 'Booking not found' })
       }
