@@ -143,8 +143,8 @@ const handleBookingChanges = async () => {
 }
 const openRemoveDialog = (index = 0, loadingDate = null) => {
   removeBookingDialog.value.show(true)
-  removeBookingDialog.value.data = booking.value
-  removeBookingDialog.value.data.index = index
+  removeBookingDialog.value.data = cloneDeep(booking.value)
+  removeBookingDialog.value.data.index = index  
   if (loadingDate) {
     removeBookingDialog.value.data.loadingDate = moment(loadingDate).format('MM-DD-YYYY')
   } else {
