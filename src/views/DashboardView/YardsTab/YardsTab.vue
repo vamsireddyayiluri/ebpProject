@@ -48,6 +48,7 @@ const filters = ref({
 const selectLine = ref(getAllLines())
 const createBookingDialog = ref(null)
 const clickedOutside = ref(null)
+const keyLoadingDate = ref(null)
 
 const computedSearchedEntities = computed({
   get() {
@@ -120,6 +121,16 @@ const duplicateBooking = async ids => {
 const closeCreateBookingDialog = () => {
   createBookingDialog.value.show(false)
   createBookingDialog.value.data = null
+}
+const bookingCreated = () => {
+  for (const key in filters.value) {
+    if (filters.value[key] !== null) {
+      filters.value[key] = null
+    }
+  }
+  searchValue.value = null
+  applyFilter()
+  keyLoadingDate.value = uid(8)
 }
 const viewStatistics = e => {
   bookingStatisticsDialog.value.show(true)
@@ -235,6 +246,7 @@ watch(searchValue, value => {
             @click:clear="onClearSearch"
           />
           <Datepicker
+            :key="keyLoadingDate"
             v-model="filters.loadingDate"
             label="Loading date"
             clearable
@@ -315,6 +327,7 @@ watch(searchValue, value => {
       <CreateBookingDialog
         :duplicate="createBookingDialog.data"
         :clicked-outside="clickedOutside"
+        @bookingCreated="bookingCreated"
         @close="createBookingDialog.show(false)"
       />
     </template>

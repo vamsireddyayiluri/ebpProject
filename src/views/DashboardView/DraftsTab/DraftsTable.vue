@@ -41,7 +41,7 @@ onMounted(() => {
     const table = document.getElementById(tableId)
     tableHeight.value = smAndDown.value
       ? 396
-      : window.innerHeight - table.getBoundingClientRect().top - 108
+      : window.innerHeight - table.getBoundingClientRect().top - 100
   })
 })
 </script>
@@ -58,7 +58,6 @@ onMounted(() => {
       showActions,
       tableMinWidth: 960,
     }"
-    class="mb-5"
     @onSelectRow="onSelectRow"
   >
     <template #ref="{ item }">

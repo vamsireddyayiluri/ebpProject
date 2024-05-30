@@ -27,7 +27,7 @@ const props = defineProps({
   duplicate: Array,
   clickedOutside: Boolean,
 })
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'bookingCreated'])
 
 const { createBooking, createDraft } = useBookingsStore()
 const workDetailsStore = useWorkDetailsStore()
@@ -188,8 +188,7 @@ const removeLoadingDate = id => {
   }
 }
 const saveDraft = async () => {
-  createDraft(booking.value, newBookings.value)
-
+  await createDraft(booking.value, newBookings.value).then(() => emit('bookingCreated'))
   emit('close')
 }
 
@@ -203,7 +202,7 @@ const saveBooking = async () => {
     bookingConfirmationDialog.value.data = commitmentsList
     isLoading.value = false
   } else {
-    createBooking(booking.value, newBookings.value)
+    await createBooking(booking.value, newBookings.value).then(() => emit('bookingCreated'))
     await bookingsStore.getBookings({})
     isLoading.value = true
     emit('close')

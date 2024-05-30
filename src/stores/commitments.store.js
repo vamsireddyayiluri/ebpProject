@@ -314,9 +314,12 @@ export const useCommitmentsStore = defineStore('commitments', () => {
   }
 
   const getExpiredCommitments = async geohash => {
+    if (!bookingsStore.allBookings.length) {
+      await bookingsStore.getBookings({})
+    }
     try {
       const pendingCommitments = []
-      const pendingBookings = bookingsStore.notGroupedBookings.filter(
+      const pendingBookings = bookingsStore.allBookings.filter(
         val =>
           (val.status === 'active' || val.status === 'pending') && val.location.geohash === geohash,
       )
