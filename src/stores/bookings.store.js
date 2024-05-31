@@ -351,7 +351,7 @@ export const useBookingsStore = defineStore('bookings', () => {
         })
         if (index > -1) {
           bookings.value.splice(index, 1)
-          notGroupedBookings.value.splice(index, 1)
+          notGroupedBookings.value = notGroupedBookings.value.filter(obj => !ids.includes(obj.id))
           alert && alertStore.info({ content: 'Bookings removed!' })
         } else alertStore.warning({ content: 'Booking not found' })
       }
@@ -428,6 +428,24 @@ export const useBookingsStore = defineStore('bookings', () => {
       await batch.commit()
       drafts.value.unshift(booking)
       alertStore.info({ content: `Booking Ref# ${booking.ref} moved to the draft` })
+
+      return 'deleted'
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
+  const removeBookingFromNetwork = async (booking, index, collectionType) => {
+    try {
+      let bookingId = booking.details[index].id
+      await deleteBookingById(bookingId, collectionType)
+
+      if (collectionType === 'bookings') {
+        await getBookings({})
+        const data = createEditedBookingObj(booking, bookingId)
+        const newDraft = createBookingObj(data)
+        await setDoc(doc(collection(db, 'drafts'), newDraft.id), newDraft)
+        alertStore.info({ content: `Draft Created!` })
+      }
 
       return 'deleted'
     } catch ({ message }) {
@@ -511,14 +529,13 @@ export const useBookingsStore = defineStore('bookings', () => {
   }
 
   // delete single booking based on the booking id
-  const deleteBookingById = async id => {
+  const deleteBookingById = async (id, collectionType) => {
     try {
-      const index = notGroupedBookings.value.findIndex(i => i.id === id)
-      if (index > -1) {
-        await deleteDoc(doc(db, 'bookings', id))
-        notGroupedBookings.value.splice(index, 1)
-
-        alertStore.info({ content: 'Bookings removed!' })
+      await deleteDoc(doc(db, collectionType, id))
+      if (collectionType === 'drafts') {
+        alertStore.info({ content: 'Draft was deleted!' })
+      } else {
+        alertStore.info({ content: 'Booking removed!' })
       }
     } catch ({ message }) {
       alertStore.warning({ content: message })
@@ -629,6 +646,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     duplicateBooking,
     closeBookingExpansion,
     deleteBookingById,
+    removeBookingFromNetwork,
     getAllCompletedBookings,
     deleteCompletedBookingById,
     updateLocationLabelsInBookingsCommitmetns,
