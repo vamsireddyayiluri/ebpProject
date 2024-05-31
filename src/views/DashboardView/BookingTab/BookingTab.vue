@@ -22,7 +22,8 @@ const props = defineProps({
 const emit = defineEmits(['closeMap', 'selectRow'])
 const bookingsStore = useBookingsStore()
 const { userData } = useAuthStore()
-const { approveCommitment, declineCommitment, completeCommitment } = useCommitmentsStore()
+const { approveCommitment, declineCommitment, completeCommitment, getExpiredCommitments } =
+  useCommitmentsStore()
 const notificationStore = useNotificationStore()
 const { loading } = storeToRefs(bookingsStore)
 const { liveCommitments } = storeToRefs(notificationStore)
@@ -56,6 +57,7 @@ const filters = ref({
   loadingDate: null,
 })
 const selectLine = ref(getAllLines())
+const keyLoadingDate = ref(null)
 const createBookingDialog = ref(null)
 const clickedOutside = ref(null)
 const bookingConfirmationDialog = ref(null)
@@ -133,7 +135,7 @@ const selectTableRow = e => {
   mapRef.value?.setZoom(15)
   mapRef.value?.panTo({ lat: e.location.lat, lng: e.location.lng })
 }
-const handleCreateBookingDialog = () => {
+const handleCreateBookingDialog = async () => {
   if (checkVendorDetailsCompletion()) {
     createBookingDialog.value.show(true)
   }
@@ -143,9 +145,26 @@ const duplicateBooking = async ids => {
   createBookingDialog.value.show(true)
   createBookingDialog.value.data = bookings
 }
+const closeConfirmBookingDialog = (isPending = false) => {
+  if (!isPending) {
+    bookingConfirmationDialog.value.show(false)
+    bookingConfirmationDialog.value.data = null
+    router.push({ query: null })
+  }
+}
 const closeCreateBookingDialog = () => {
   createBookingDialog.value.show(false)
   createBookingDialog.value.data = null
+}
+const bookingCreated = () => {
+  for (const key in filters.value) {
+    if (filters.value[key] !== null) {
+      filters.value[key] = null
+    }
+  }
+  searchValue.value = null
+  applyFilter()
+  keyLoadingDate.value = uid(8)
 }
 const viewStatistics = e => {
   bookingStatisticsDialog.value.show(true)
@@ -201,9 +220,20 @@ const clearDateFilter = () => {
   applyFilter()
 }
 
-const viewCommitmentDetails = data => {
-  commitmentDetailsDialog.value.show(true)
-  commitmentDetailsDialog.value.data = data
+const isExpiredCommitments = async data => {
+  const commitmentsList = await getExpiredCommitments(data?.location?.geohash)
+  if (commitmentsList?.length) {
+    bookingConfirmationDialog.value.show(true)
+    bookingConfirmationDialog.value.data = commitmentsList
+    return true
+  } else return false
+}
+const viewCommitmentDetails = async data => {
+  const expiredCommitments = await isExpiredCommitments(data)
+  if (!expiredCommitments) {
+    commitmentDetailsDialog.value.show(true)
+    commitmentDetailsDialog.value.data = data
+  }
 }
 const openApproveCommitmentDialog = commitment => {
   approveCommitmentDialog.value.show(true)
@@ -236,12 +266,16 @@ const onDeclineCommitment = async (commitment, reason) => {
 }
 const openCommitmentsDialogOnUrlChange = async () => {
   const commitment = await handleQueryUrlForCommitments(router.currentRoute.value.query)
-  commitment &&
-    (commitmentDetailsDialog.value.show(true), (commitmentDetailsDialog.value.data = commitment))
+  const expiredCommitments = await isExpiredCommitments(commitment)
+  if (!expiredCommitments) {
+    commitment &&
+      (commitmentDetailsDialog.value.show(true), (commitmentDetailsDialog.value.data = commitment))
+  }
 }
 const onClickOutsideDialog = () => {
   clickedOutside.value = true
   closeCreateBookingDialog()
+  closeConfirmBookingDialog()
   setInterval(() => {
     clickedOutside.value = false
   }, 1000)
@@ -306,6 +340,7 @@ watch(bookingsData, value => {
             @click:clear="onClearSearch"
           />
           <Datepicker
+            :key="keyLoadingDate"
             v-model="filters.loadingDate"
             label="Loading date"
             clearable
@@ -406,6 +441,7 @@ watch(bookingsData, value => {
       <CreateBookingDialog
         :duplicate="createBookingDialog.data"
         :clicked-outside="clickedOutside"
+        @bookingCreated="bookingCreated"
         @close="closeCreateBookingDialog"
       />
     </template>
@@ -413,9 +449,14 @@ watch(bookingsData, value => {
   <Dialog
     ref="bookingConfirmationDialog"
     class="max-w-full sm:max-w-[90vw] md:max-w-[75vw]"
+    @update:modelValue="onClickOutsideDialog"
   >
     <template #text>
-      <BookingConfirmationDialog :commitments="[]" />
+      <BookingConfirmationDialog
+        :commitments="bookingConfirmationDialog.data"
+        @close="closeConfirmBookingDialog"
+        @checkPending="e => closeConfirmBookingDialog(e)"
+      />
     </template>
   </Dialog>
   <Dialog

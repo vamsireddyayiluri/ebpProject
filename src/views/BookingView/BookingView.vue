@@ -119,12 +119,10 @@ const handleBookingChanges = async () => {
     booking.value.location.geohash,
   )
   if (fromDraft) {
-    // booking.value.loadingDate = moment(booking.value.loadingDate).endOf('day').format()
-    // booking.value.preferredDate = moment(booking.value.preferredDate).endOf('day').format()
-
     if (commitmentsList?.length) {
       bookingConfirmationDialog.value.show(true)
       bookingConfirmationDialog.value.data = commitmentsList
+      isPublishLoading.value = false
     } else {
       const newBookingObj = differenceBy(booking.value.details, originalBooking.value.details, 'id')
       const res = await publishDraft(booking.value, newBookingObj)
@@ -390,6 +388,10 @@ onMounted(async () => {
         </Button>
       </template>
     </SubHeader>
+    <ProgressLinear
+      v-if="loading"
+      indeterminate
+    />
     <div
       v-if="booking"
       class="flex"
@@ -434,7 +436,7 @@ onMounted(async () => {
         <Typography :color="getColor('textSecondary')">
           created by {{ userData.type }} {{ userData?.workerId ? '#' + userData.workerId : null }}
         </Typography>
-        <div
+<!--        <div
           v-if="expired || completed"
           class="mt-6 -mb-2"
           :class="{ hidden: hideChip }"
@@ -464,7 +466,7 @@ onMounted(async () => {
             class="h-fit"
             @update:modelValue="handleAction"
           />
-        </div>
+        </div>-->
         <VForm
           ref="form"
           class="w-full md:w-3/4 grid grid-cols-2 md:grid-cols-3 gap-6 mt-10 [&>div]:h-fit"
