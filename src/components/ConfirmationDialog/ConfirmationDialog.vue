@@ -10,9 +10,14 @@ const props = defineProps({
   },
 })
 const emit = defineEmits(['close', 'containerActionHandler', 'onClickBtn'])
+const isLoading = ref(false)
 
 const containerActionHandler = ({ action, e }) => {
   emit('containerActionHandler', { action, e })
+}
+const onClickBtn = () => {
+  isLoading.value = true
+  emit('onClickBtn')
 }
 </script>
 
@@ -29,7 +34,8 @@ const containerActionHandler = ({ action, e }) => {
     <Button
       :data="btnType"
       class="w-full mb-1"
-      @click="emit('onClickBtn')"
+      @click="onClickBtn()"
+      :loading="isLoading"
     >
       {{ btnName }}
     </Button>
