@@ -93,6 +93,7 @@ export const useInvitationStore = defineStore('invitation', () => {
           type: val.data().type,
           isLoggedIn: false,
           workerId: val.data().workerId,
+          pending: true,
         })
       })
       invitedUsersData.value = invitations
@@ -144,7 +145,7 @@ export const useInvitationStore = defineStore('invitation', () => {
       const data = await signInWithEmailLink(auth, form.email, window.location.href)
       authStore.currentUser = data.user
       const newUser = {
-        fullName: form.fullName,
+        name: form.name,
         email: form.email,
         createdAt: form.createdAt,
         updatedAt: getLocalTime().format(),

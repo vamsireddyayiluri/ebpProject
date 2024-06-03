@@ -10,7 +10,7 @@ const alertStore = useAlertStore()
 const router = useRouter()
 const form = reactive({
   id: '',
-  fullName: '',
+  name: '',
   email: null,
   password: '',
   confirmPassword: '',
@@ -25,7 +25,7 @@ const onSubmit = async () => {
     if (user) {
       await invitationStore.invitedUserRegistration({
         ...user,
-        fullName: form.fullName,
+        name: form.name,
         password: form.password,
         invitedBy: user.invitedBy,
       })
@@ -59,7 +59,7 @@ onMounted(async () => {
   >
     <div class="mt-10 grid sm:grid-cols-2 grid-cols-1 gap-4 text-left [&>div]:h-fit">
       <Textfield
-        v-model.trim="form.fullName"
+        v-model.trim="form.name"
         type="text"
         label="Full name *"
         required

@@ -82,11 +82,13 @@ export const useWorkDetailsStore = defineStore('workDetails', () => {
     }
   }
   const saveYardDetails = async location => {
+    delete location.details?.label
     const updatedDetails = yards.value.map(i => {
       if (i.id === location.id) {
         return {
           ...i,
           details: { ...i.details, ...location.details, customizedDetails: true },
+          label: location.label,
         }
       } else return i
     })

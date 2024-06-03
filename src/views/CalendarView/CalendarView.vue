@@ -15,7 +15,7 @@ const router = useRouter()
 const bookingsStore = useBookingsStore()
 const commitmentStore = useCommitmentsStore()
 
-const { loading, notGroupedBookings } = storeToRefs(bookingsStore)
+const { loading, calendarBooking } = storeToRefs(bookingsStore)
 const options = ref({
   initialEvents: [],
 })
@@ -38,11 +38,12 @@ const getEvents = bookings => {
         carriers: i?.carriers?.map(item => {
           return { scac: item.scac, fulfilled: item?.approved, total: i.containers }
         }),
+        status: i.status,
       },
     }
   })
 }
-const events = computed(() => getEvents(bookingsStore.notGroupedBookings))
+const events = computed(() => getEvents(bookingsStore.calendarBooking))
 
 const onEventClick = e => console.log(e.event)
 const onEvents = e => console.log(e)
@@ -60,7 +61,7 @@ const onEdit = async e => {
 const onEventAdd = e => console.log(e)
 const onEventChange = e => console.log('change', e)
 const onRemove = async e => {
-  const booking = bookingsStore.notGroupedBookings.find(obj => obj.id === e.id)
+  const booking = bookingsStore.calendarBooking.find(obj => obj.id === e.id)
 
   const commitmentsList = await commitmentStore.getExpiredCommitments(booking.location.geohash)
   if (commitmentsList?.length) {
@@ -74,9 +75,13 @@ const onRemove = async e => {
 
 const removeBooking = async id => {
   const booking = await bookingsStore.getBooking({ id: id, draft: false })
-  await bookingsStore.removeFromNetwork(groupBookings([booking])[0])
-  removeBookingDialog.value.show(false)
-
+  const res = await bookingsStore.removeFromNetwork(groupBookings([booking])[0])
+  if (res === 'deleted') {
+    setTimeout(async () => {
+      await bookingsStore.getAllCompletedBookings()
+    }, 200)
+    removeBookingDialog.value.show(false)
+  }
   // remove in calendar
   // removeBookingDialog.value.data.remove()
 }
@@ -94,19 +99,22 @@ const onClickOutsideDialog = () => {
     confirmClickedOutside.value = false
   }, 1000)
 }
-const today = moment()
 
-const nextLoading = computed(() => getNextLoading(notGroupedBookings.value))
-const containers = computed(() => getContainers(notGroupedBookings.value))
+const nextLoading = computed(() => getNextLoading(calendarBooking.value))
+const containers = computed(() => getContainers(calendarBooking.value))
 const openCreateBookingDialog = () => {
   if (checkVendorDetailsCompletion()) {
     createBookingDialog.value.show(true)
   }
 }
+const liveContainers = computed(() => calendarBooking.value.filter(
+  b => b.status === statuses.active || b.status === statuses.pending,
+).length)
+
 onMounted(async () => {
-  await bookingsStore.getBookings({})
+  await bookingsStore.getAllCompletedBookings()
   useIntervalFn(async () => {
-    await bookingsStore.getBookings({})
+    await bookingsStore.getAllCompletedBookings()
   }, 600000)
 })
 </script>
@@ -143,10 +151,7 @@ onMounted(async () => {
             >
               Total active and pending bookings:
             </div>
-            <b>{{
-                notGroupedBookings.filter(b => b.status === statuses.active || b.status === statuses.pending)
-                .length
-            }}</b>
+            <b>{{ liveContainers }}</b>
           </Typography>
           <Divider
             vertical=""
@@ -182,9 +187,29 @@ onMounted(async () => {
         <template #eventContent="{ event }">
           <Event
             :event="event"
+            class="styleCalendarEvent"
             @onEdit="onEdit"
-            @onRemove="onRemove"
-          />
+          >
+            <template #status v-if="event.extendedProps.metadata.status === statuses.completed">
+              <Classification type="status" value="completed" class="h-min mt-3 mr-3"/>
+            </template>
+            <template #actions v-if="event.extendedProps.metadata.status !== statuses.completed">
+              <Button
+                variant="outlined"
+                density="compact"
+                @click.stop="onEdit(event)"
+              >
+                Edit
+              </Button>
+              <Button
+                variant="plain"
+                class="ml-auto !mr-0"
+                @click.stop="onRemove(event)"
+              >
+                Remove from network
+              </Button>
+            </template>
+          </Event>
         </template>
       </Calendar>
     </div>
@@ -209,6 +234,7 @@ onMounted(async () => {
       >
         <Typography>
           Are you sure you want to remove booking
+          <tr />
           <b>ref# {{ removeBookingDialog.data.extendedProps.metadata.ref }}</b>
           from network?
         </Typography>
@@ -230,3 +256,11 @@ onMounted(async () => {
     </template>
   </Dialog>
 </template>
+
+<style lang="scss">
+.styleCalendarEvent {
+  .v-card-actions {
+    min-height: auto;
+  }
+}
+</style>

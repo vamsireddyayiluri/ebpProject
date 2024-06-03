@@ -25,7 +25,7 @@ const onReport = () => {
   emit(
     'onClickBtn',
     extended.value ? yourReason.value : reportReason.value,
-    onboardingCodes.onboarded? committed.value: onBoardedContainers.value,
+    reportReason.value === onboardingCodes.onboarded? committed.value: onBoardedContainers.value,
   )
 }
 const checkValue = value => {

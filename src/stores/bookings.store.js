@@ -33,6 +33,7 @@ export const useBookingsStore = defineStore('bookings', () => {
 
   const notGroupedBookings = ref([])
   let pastBookings = ref([])
+  const calendarBooking = ref([])
   const drafts = ref([])
   const loading = ref(false)
 
@@ -43,13 +44,12 @@ export const useBookingsStore = defineStore('bookings', () => {
 
     const querySnapshot = await getDocs(bookingsQuery)
     const dataPromises = querySnapshot.docs.map(async doc => {
-      // const commitments = await getCommitments(doc.data().id)
       return { ...doc.data(), entities: [] }
     })
     const data = await Promise.all(dataPromises)
-    bookings.value = data.sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
     allBookings.value = data.sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
-    // await validateBookingsExpiry(data)
+
+    return data
   }
   const getBookings = async ({ draft = false }) => {
     loading.value = true
@@ -58,16 +58,14 @@ export const useBookingsStore = defineStore('bookings', () => {
       const draftsQuery = query(collection(db, 'drafts'), where('orgId', '==', orgId))
       const querySnapshot = await getDocs(draftsQuery)
 
-      const filteredtest = querySnapshot.docs.map(doc => doc.data())
+      const filteredtest = querySnapshot.docs.map(doc => doc.data()).sort((a, b) => moment(b.updatedAt).diff(moment(a.updatedAt)))
       const group = groupBookings(filteredtest)
 
       drafts.value = group
     } else {
       await getallBookings()
-      // const today = getLocalServerTime(moment(), 'America/Los_Angeles')
-      const filteredBookings = bookings.value.filter(
+      const filteredBookings = allBookings.value.filter(
         booking =>
-          // !moment(booking.loadingDate).isBefore(moment(today)) &&
           booking.status !== statuses.completed &&
           booking.status !== statuses.expired &&
           booking.status !== statuses.canceled,
@@ -80,19 +78,18 @@ export const useBookingsStore = defineStore('bookings', () => {
   }
   const getBookingHistory = async () => {
     loading.value = true
-    // const today = getLocalServerTime(moment(), 'America/Los_Angeles')
-    await getallBookings()
-    const filteredBookings = bookings.value.filter(
-      booking =>
-        // moment(booking.loadingDate).isBefore(moment(today)) ||
-        booking.status === statuses.completed ||
-        booking.status === statuses.expired ||
-        booking.status === statuses.canceled,
+    const { orgId } = authStore.userData
+    const bookingsQuery = query(
+      collection(db, 'bookings'),
+      where('orgId', '==', orgId),
+      where('status', 'in', [statuses.completed, statuses.expired, statuses.canceled]),
     )
 
-    // const pastbook = await validateBookingsExpiry(filteredBookings)
-    const group = groupBookings(filteredBookings)
-    pastBookings.value = group
+    const querySnapshot = await getDocs(bookingsQuery)
+    const filteredBookings = querySnapshot.docs.map(doc => {
+      return { ...doc.data(), entities: [] }
+    })
+    pastBookings.value = groupBookings(filteredBookings)
     loading.value = false
   }
   const getCommitmentsByBookingId = async (id, ids, fromHistory = false) => {
@@ -113,7 +110,7 @@ export const useBookingsStore = defineStore('bookings', () => {
 
     return allCommitments
   }
-  const getCommitmentsByBooking = async (id, fromHistory = false) => {
+  const getCommitmentsByBooking = async id => {
     const q = await query(collection(db, 'commitments'), where('bookingId', '==', id))
     const docData = await getDocs(q)
 
@@ -121,7 +118,7 @@ export const useBookingsStore = defineStore('bookings', () => {
   }
   const updateBookingCommitments = async (id, commitments) => {
     bookings.value.forEach(b => {
-      if (b.id == id) {
+      if (b.id === id) {
         b['entities'] = commitments
         b.expand = true
       }
@@ -204,7 +201,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       },
     }
   }
-  const createBooking = async (selectedBooking, details) => {
+  const createBooking = async (selectedBooking, details, fromEdit = false) => {
     try {
       const batch = writeBatch(db)
       details?.map(b => {
@@ -215,23 +212,29 @@ export const useBookingsStore = defineStore('bookings', () => {
         b.scacList =
           authStore.orgData?.bookingRules?.preferredCarrierWindow > 0 ? b.scacList : { list: [] }
         const newBooking = createBookingObj({ ...selectedBooking, ...b })
+        if (fromEdit) {
+          newBooking.createdAt = selectedBooking.createdAt
+        }
         const docRef = doc(collection(db, 'bookings'), newBooking.id)
         batch.set(docRef, newBooking)
       }),
-        await batch.commit()
+      await batch.commit()
 
       alertStore.info({ content: `Booking Created!` })
     } catch ({ message }) {
       alertStore.warning({ content: message })
     }
   }
-  const createDraft = async (selectedDraft, details) => {
+  const createDraft = async (selectedDraft, details, fromEdit = false) => {
     try {
       const batch = writeBatch(db)
       details.forEach(b => {
         b.scacList =
           authStore.orgData?.bookingRules?.preferredCarrierWindow > 0 ? b.scacList : { list: [] }
-        const newDraft = createBookingObj({ ...selectedDraft, ...b })
+        const newDraft = createBookingObj({ ...selectedDraft, ...b, updatedAt: getLocalTime().format() })
+        if (fromEdit) {
+          newDraft.createdAt = selectedDraft.createdAt
+        }
         const docRef = doc(collection(db, 'drafts'), newDraft.id)
         batch.set(docRef, newDraft)
         drafts.value.unshift(newDraft)
@@ -282,7 +285,7 @@ export const useBookingsStore = defineStore('bookings', () => {
 
         const commitments = await getCommitmentsByBookingId(booking.id, booking.ids)
         commitments.map(async i => {
-          if (i.status === statuses.approved) {
+          if (i.status === statuses.approved || i.status === statuses.pending) {
             await updateDoc(doc(db, 'commitments', i.id), {
               status: statuses.bookingCanceled,
               reason,
@@ -352,7 +355,7 @@ export const useBookingsStore = defineStore('bookings', () => {
         })
         if (index > -1) {
           bookings.value.splice(index, 1)
-          notGroupedBookings.value.splice(index, 1)
+          notGroupedBookings.value = notGroupedBookings.value.filter(obj => !ids.includes(obj.id))
           alert && alertStore.info({ content: 'Bookings removed!' })
         } else alertStore.warning({ content: 'Booking not found' })
       }
@@ -361,10 +364,13 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.warning({ content: message })
     }
   }
-  const publishDraft = async booking => {
+  const publishDraft = async (booking, newBooking) => {
     try {
       const batch = writeBatch(db)
       await deleteBooking(booking.ids, true)
+      if (newBooking?.length) {
+        booking.ids.push(...newBooking?.map(val => val.id))
+      }
       booking.ids.forEach(id => {
         const data = createEditedBookingObj(booking, id)
         data.scacList =
@@ -432,6 +438,24 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.warning({ content: message })
     }
   }
+  const removeBookingFromNetwork = async (booking, index, collectionType) => {
+    try {
+      let bookingId = booking.details[index].id
+      await deleteBookingById(bookingId, collectionType)
+
+      if (collectionType === 'bookings') {
+        await getBookings({})
+        const data = createEditedBookingObj(booking, bookingId)
+        const newDraft = createBookingObj(data)
+        await setDoc(doc(collection(db, 'drafts'), newDraft.id), newDraft)
+        alertStore.info({ content: `Draft Created!` })
+      }
+
+      return 'deleted'
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
 
   const updateBooking = async (booking, ids, collectionName, completedStatus = false) => {
     try {
@@ -454,7 +478,7 @@ export const useBookingsStore = defineStore('bookings', () => {
           data.scacList.list = data.newScacs.map(obj => obj.scac)
         }
         if (Object.keys(data).length) {
-          batch.update(docRef, { ...data })
+          batch.update(docRef, { ...data, updatedAt: getLocalTime().format() })
         }
 
         // change loadingData in commitments
@@ -514,13 +538,13 @@ export const useBookingsStore = defineStore('bookings', () => {
   }
 
   // delete single booking based on the booking id
-  const deleteBookingById = async id => {
+  const deleteBookingById = async (id, collectionType) => {
     try {
-      const index = notGroupedBookings.value.findIndex(i => i.id === id)
-      if (index > -1) {
-        await deleteDoc(doc(db, 'bookings', id))
-        notGroupedBookings.value.splice(index, 1)
-        alertStore.info({ content: 'Bookings removed!' })
+      await deleteDoc(doc(db, collectionType, id))
+      if (collectionType === 'drafts') {
+        alertStore.info({ content: 'Draft was deleted!' })
+      } else {
+        alertStore.info({ content: 'Booking removed!' })
       }
     } catch ({ message }) {
       alertStore.warning({ content: message })
@@ -530,8 +554,76 @@ export const useBookingsStore = defineStore('bookings', () => {
     const index = bookings.value.findIndex(val => val?.id === id)
     bookings.value[index].expand = false
   }
+
+  const getAllCompletedBookings = async () => {
+    loading.value = true
+    const bookings = await getallBookings()
+    const completedBookings = bookings?.filter(b => b.status === statuses.completed)
+    const activeBookings = bookings?.filter(
+      b =>
+        b.status !== statuses.completed &&
+        b.status !== statuses.expired &&
+        b.status !== statuses.canceled,
+    )
+    loading.value = false
+    calendarBooking.value = [...completedBookings, ...activeBookings]
+  }
+
+  const deleteCompletedBookingById = async id => {
+    try {
+      const index = calendarBooking.value.findIndex(i => i.id === id)
+      if (index > -1) {
+        await deleteDoc(doc(db, 'bookings', id))
+        calendarBooking.value.splice(index, 1)
+
+        alertStore.info({ content: 'Bookings deleted!' })
+      }
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
+  const updateLocationLabelsInBookingsCommitmetns = async (orgId, geohash, newLabel) => {
+    try {
+      const batch = writeBatch(db)
+      const bookingsQuery = query(
+        collection(db, 'bookings'),
+        where('orgId', '==', orgId),
+        where('location.geohash', '==', geohash),
+      )
+      const bookingsSnapshot = await getDocs(bookingsQuery)
+
+      bookingsSnapshot.forEach(doc => {
+        const bookingRef = doc.ref
+        batch.update(bookingRef, {
+          'location.label': newLabel,
+        })
+      })
+
+      const commitmentsQuery = query(
+        collection(db, 'commitments'),
+        where('orgId', '==', orgId),
+        where('location.geohash', '==', geohash),
+      )
+      const commitmentsSnapshot = await getDocs(commitmentsQuery)
+
+      commitmentsSnapshot.forEach(doc => {
+        const commitmentRef = doc.ref
+        batch.update(commitmentRef, {
+          'details.exporterDetails.label': newLabel,
+          'location.label': newLabel,
+        })
+      })
+      await batch.commit()
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
   const reset = () => {
     bookings.value = []
+    allBookings.value = []
+    pastBookings.value = []
+    notGroupedBookings.value = []
+    calendarBooking.value = []
     drafts.value = []
     loading.value = false
   }
@@ -541,6 +633,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     allBookings,
     pastBookings,
     notGroupedBookings,
+    calendarBooking,
     drafts,
     loading,
     getBookings,
@@ -562,5 +655,9 @@ export const useBookingsStore = defineStore('bookings', () => {
     duplicateBooking,
     closeBookingExpansion,
     deleteBookingById,
+    removeBookingFromNetwork,
+    getAllCompletedBookings,
+    deleteCompletedBookingById,
+    updateLocationLabelsInBookingsCommitmetns,
   }
 })

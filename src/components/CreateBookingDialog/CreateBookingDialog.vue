@@ -9,6 +9,7 @@ import containersSizes from '~/fixtures/containersSizes.json'
 import moment from 'moment'
 import { useAlertStore } from '~/stores/alert.store'
 import {
+  checkContianersMaxLimit,
   checkPositiveInteger,
   checkUniqueDates,
   validateAverageWeight,
@@ -27,7 +28,7 @@ const props = defineProps({
   duplicate: Array,
   clickedOutside: Boolean,
 })
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'bookingCreated'])
 
 const { createBooking, createDraft } = useBookingsStore()
 const workDetailsStore = useWorkDetailsStore()
@@ -156,6 +157,7 @@ const rules = {
   validateDate: value => (isNull(value) ? true : validateExpiryDate(bookings?.value, value)),
   uniqueDate: () =>
     checkUniqueDates(newBookings.value) || 'Loading date already exists. Select another date.',
+  containersMaxLimit: value => checkContianersMaxLimit(value),
 }
 const updateExpiryDate = (value, index, i) => {
   newBookings.value[index].newScacs.map(obj => {
@@ -255,8 +257,7 @@ const removeScac = bDetails => {
   }
 }
 const saveDraft = async () => {
-  createDraft(booking.value, newBookings.value)
-
+  await createDraft(booking.value, newBookings.value).then(() => emit('bookingCreated'))
   emit('close')
 }
 
@@ -270,8 +271,9 @@ const saveBooking = async () => {
     bookingConfirmationDialog.value.data = commitmentsList
     isLoading.value = false
   } else {
-    createBooking(booking.value, newBookings.value)
-    isLoading.value = false
+    await createBooking(booking.value, newBookings.value).then(() => emit('bookingCreated'))
+    await bookingsStore.getBookings({})
+    isLoading.value = true
     emit('close')
     await bookingsStore.getBookings({})
   }
@@ -386,7 +388,11 @@ onMounted(async () => {
         class="h-fit"
         @update:modelValue="
           value =>
-            (booking.weight = parseInt(value.details?.averageWeight) || booking.weight ? '' : null)
+            (booking.weight = value.details?.averageWeight
+              ? parseInt(value.details?.averageWeight)
+              : booking.weight
+              ? ''
+              : null)
         "
       />
       <Textfield
@@ -559,7 +565,7 @@ onMounted(async () => {
       <Button
         variant="outlined"
         class="w-fit"
-        :disabled="isDisabled || isLoadingDatesFieldsEmpty"
+        :disabled="isDisabled || isLoadingDatesFieldsEmpty || isLoading"
         @click="saveDraft"
       >
         Save as draft

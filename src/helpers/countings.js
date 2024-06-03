@@ -29,7 +29,7 @@ export const getContainers = bookings => {
   const today = moment().startOf('day')
 
   const { committed, containers } = bookings
-    .filter(item => moment(item.date).isSameOrAfter(today))
+    .filter(item => moment(item.loadingDate).isSameOrAfter(today))
     .reduce(
       (acc, item) => {
         acc.committed += item.committed || 0

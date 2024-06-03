@@ -48,50 +48,54 @@ const calculateAverageFulfillmentTimes = bookings => {
 }
 
 const getMonthsArray = () => map(Array(12), (_, i) => moment().month(i).format('MMM'))
+
 const getDaysInMonth = (year, month) => {
   const daysInMonth = moment(`${year}-${month}`, 'YYYY-MM').daysInMonth()
-  let daysArray = []
-  for (let i = 1; i <= daysInMonth; i++) {
-    daysArray.push(i)
-  }
 
-  return daysArray
+  return Array.from({ length: daysInMonth }, (_, index) => index + 1)
 }
 
 const getFulfillmentRates = group => {
-  const fulfillmentRate = parseInt(
-    group.length / filter(group, { status: 'completed' }).length,
-  ).toFixed(0)
+  const completedCount = filter(group, { status: 'completed' }).length
+  const fulfillmentRate = (completedCount / group.length) * 100
 
-  return isNaN(fulfillmentRate) ? 0 : fulfillmentRate
+  return isNaN(fulfillmentRate) || !isFinite(fulfillmentRate) ? 0 : Math.round(fulfillmentRate)
 }
 
 const groupBookingsByMonth = (bookings, year) => {
-  const countsByMonth = countBy(bookings, booking => {
-    const bookingDate = moment(booking.createdAt)
+  const bookingsByMonth = map(Array(12).fill(null), (_, i) =>
+    bookings?.filter(booking => {
+      const bookingDate = moment(booking.loadingDate)
 
-    return bookingDate.year() === year ? bookingDate.month() : -1
-  })
+      return bookingDate.year() === year && bookingDate.month() === i
+    }),
+  )
 
-  return map(Array(12).fill(0), (_, i) => get(countsByMonth, i, 0))
+  return map(bookingsByMonth, monthlyBookings => sumBy(monthlyBookings, 'committed'))
 }
 
 const groupBookingsByDays = (bookings, year, month) => {
   const date = moment(`${year} ${month}`, 'YYYY MMM')
   const startOfMonth = date.clone().startOf('month')
   const endOfMonth = date.clone().endOf('month')
+
   const filteredBookings = bookings.filter(booking =>
-    moment(booking.createdAt).isBetween(startOfMonth, endOfMonth, undefined, '[]'),
+    moment(booking.loadingDate).isBetween(startOfMonth, endOfMonth, undefined, '[]'),
   )
-  const countsByDay = countBy(filteredBookings, ({ createdAt }) =>
-    moment(createdAt).format('YYYY-MM-DD'),
-  )
+
+  const committedByDay = filteredBookings.reduce((acc, booking) => {
+    const day = moment(booking.loadingDate).format('YYYY-MM-DD')
+    acc[day] = (acc[day] || 0) + booking.committed
+
+    return acc
+  }, {})
+
   const daysOfMonth = startOfMonth.daysInMonth()
 
   return map(Array.from({ length: daysOfMonth }), (item, index) => {
     const day = startOfMonth.clone().add(index, 'days').format('YYYY-MM-DD')
 
-    return get(countsByDay, day, 0)
+    return get(committedByDay, day, 0)
   })
 }
 
