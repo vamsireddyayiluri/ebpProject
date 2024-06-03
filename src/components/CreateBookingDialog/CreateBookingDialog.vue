@@ -456,7 +456,7 @@ onMounted(async () => {
         </template>
       </Autocomplete>
     </div>
-    <div class="grid grid-cols-subgrid gap-6 md:grid-cols-4 col-span-2 md:col-span-4 relative">
+    <div class="grid grid-cols-subgrid gap-6 md:grid-cols-4 col-span-2 md:col-span-4 relative mt-6">
       <Typography type="text-body-xs-semibold col-span-2 md:col-span-4 -mb-2">
         Loading dates
       </Typography>
