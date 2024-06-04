@@ -374,14 +374,15 @@ export const useBookingsStore = defineStore('bookings', () => {
     try {
       const batch = writeBatch(db)
       await deleteBooking(booking.ids, true)
-      if (newBooking?.length) {
-        booking.ids.push(...newBooking?.map(val => val.id))
-      }
-      booking.ids.forEach(id => {
-        const data = createEditedBookingObj(booking, id)
-        data.scacList =
-          authStore.orgData?.bookingRules?.preferredCarrierWindow > 0 ? data.scacList : { list: [] }
-        const docRef = doc(collection(db, 'bookings'), id)
+      booking.details?.map(b => {
+        if (b.newScacs) {
+          b.containers = b.newScacs.reduce((total, obj) => total + obj.containers, 0)
+          b.scacList.list = b.newScacs.map(obj => obj.scac)
+        }
+        b.scacList =
+          authStore.orgData?.bookingRules?.preferredCarrierWindow > 0 ? b.scacList : { list: [] }
+        const data = createEditedBookingObj(booking, b.id)
+        const docRef = doc(collection(db, 'bookings'), data.id)
         batch.set(docRef, data)
       })
 
@@ -398,9 +399,14 @@ export const useBookingsStore = defineStore('bookings', () => {
     try {
       await deleteBooking(booking.ids, false, true)
       const batch = writeBatch(db)
-      booking.ids.forEach(id => {
+      booking.details?.map(b => {
         const bookingId = uid(28)
-
+        if (b.newScacs) {
+          b.containers = b.newScacs.reduce((total, obj) => total + obj.containers, 0)
+          b.scacList.list = b.newScacs.map(obj => obj.scac)
+        }
+        b.scacList =
+          authStore.orgData?.bookingRules?.preferredCarrierWindow > 0 ? b.scacList : { list: [] }
         const newData = createEditedBookingObj(booking, id)
         batch.set(doc(collection(db, 'bookings'), bookingId), {
           ...newData,

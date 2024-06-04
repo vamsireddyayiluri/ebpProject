@@ -149,7 +149,7 @@ const handleBookingChanges = async () => {
 const openRemoveDialog = (index = 0, loadingDate = null) => {
   removeBookingDialog.value.show(true)
   removeBookingDialog.value.data = cloneDeep(booking.value)
-  removeBookingDialog.value.data.index = index  
+  removeBookingDialog.value.data.index = index
   if (loadingDate) {
     removeBookingDialog.value.data.loadingDate = moment(loadingDate).format('MM-DD-YYYY')
   } else {
@@ -205,7 +205,6 @@ const validateRequiredFields = () => {
     booking.value.estimatedRate &&
     rules.containers(booking.value.estimatedRate) === true &&
     booking.value.size &&
-    !booking.value.details.some(val => val?.loadingDate === null || val?.containers === null) &&
     booking.value.size
       ? booking.value.size.length > 0
       : false && booking.value.estimatedRateType) ||
@@ -222,6 +221,7 @@ const isLoadingDatesFieldsEmpty = computed(() => {
       delete object?.preferredDays
       return Object.values(object.newScacs).some(value => {
         delete value?.preferredDays
+        delete value?.scac
         const test =
           value === null ||
           Object.values(value).some(i => {
@@ -239,7 +239,6 @@ const validateBooking = computed(() => {
   }
 
   let condition = isEqual(booking.value, originalBooking.value)
-
   condition = condition || validateRequiredFields()
   condition = condition || form.value?.errors.length
   if (fromHistory) {
@@ -334,12 +333,37 @@ const validateExpiryDates = index => {
     ref: booking.value.ref,
   })
 }
+const generateNewScacs = () => {
+  const hasPreferredCarrierWindow = bookingRulesStore.rules?.preferredCarrierWindow > 0
+  const truckersList = bookingRulesStore.rules?.truckers?.list
+
+  if (hasPreferredCarrierWindow && truckersList?.length) {
+    return truckersList.map(val => ({
+      scac: val,
+      id: uid(16),
+      preferredDays: null,
+      loadingDate: null,
+      containers: null,
+    }))
+  }
+
+  return [
+    {
+      id: uid(16),
+      preferredDays: null,
+      loadingDate: null,
+      containers: null,
+      scac: null,
+    },
+  ]
+}
 const addLoadingDate = () => {
   booking.value.details.push({
     id: uid(28),
     loadingDate: null,
     containers: null,
     scacList: cloneDeep(bookingRulesStore?.rules?.truckers),
+    newScacs: generateNewScacs(),
   })
 }
 const addScac = loadingDate => {
@@ -371,9 +395,10 @@ const removeScac = bDetails => {
     selectedScacs.value = selectedScacs.value.filter(scac => scac !== bDetails.scac)
   }
 }
-let selectedScacs = ref(bookingRulesStore.rules?.truckers?.list)
+let selectedScacs = []
 
-const availableScacs = index => {
+const availableScacs = (index, newScacs) => {
+  selectedScacs.value = newScacs.map(obj => obj.scac)
   const selected = selectedScacs.value.filter((_, id) => id !== index)
   return truckers.value.map(trucker => trucker.scac).filter(scac => !selected.includes(scac))
 }
@@ -416,17 +441,24 @@ onMounted(async () => {
   const loadingsDateCopy = booking.value?.details.map(iBooking => {
     const i = deepCopy(iBooking)
     return {
-      id: uid(28),
+      id: i.id,
       loadingDate: i.loadingDate,
       preferredDays: i?.preferredDays || null,
       containers: i.containers,
       scacList: i?.scacList || { list: [] },
       newScacs: i?.newScacs
         ? i?.newScacs
-        : [{ loadingDate: i.loadingDate, containers: i.containers, scac: i?.scacList.list[0] }],
+        : [
+            {
+              loadingDate: i.loadingDate,
+              containers: i.containers,
+              scac: i?.scacList.list[0] || null,
+            },
+          ],
     }
   })
   booking.value.details = loadingsDateCopy
+  originalBooking.value = cloneDeep(booking.value)
   if (fromHistory && queryParams.activated) {
     animate()
   }
@@ -504,7 +536,7 @@ onMounted(async () => {
             variant="outlined"
             data="secondary1"
             class="ml-auto px-12"
-              :loading="isPublishLoading"
+            :loading="isPublishLoading"
             :disabled="fromDraft ? isDisabledPublish || isLoadingDatesFieldsEmpty : false"
             @click="handleBookingChanges"
           >
@@ -514,7 +546,7 @@ onMounted(async () => {
         <Typography :color="getColor('textSecondary')">
           created by {{ userData.type }} {{ userData?.workerId ? '#' + userData.workerId : null }}
         </Typography>
-<!--        <div
+        <!--        <div
           v-if="expired || completed"
           class="mt-6 -mb-2"
           :class="{ hidden: hideChip }"
@@ -722,7 +754,7 @@ onMounted(async () => {
                   <div class="relative mt-4 md:!mt-0">
                     <Autocomplete
                       v-model="dt.scac"
-                      :items="availableScacs(i)"
+                      :items="availableScacs(i, d.newScacs)"
                       label="Choose trucker by SCAС "
                       required
                       :menu-props="{ maxHeight: 300 }"
@@ -730,7 +762,9 @@ onMounted(async () => {
                       class="w-4/5 lg:w-10/12 xl:w-11/12"
                     />
                     <Button
-                      v-if="dt.loadingDate && i + 1 === d.newScacs.length"
+                      v-if="
+                        dt.loadingDate && i + 1 === d.newScacs.length && !(expired || completed)
+                      "
                       variant="plain"
                       prepend-icon="mdi-plus"
                       class="mt-2.5 mr-auto"
@@ -741,21 +775,21 @@ onMounted(async () => {
                   </div>
                   <div class="relative mt-4 md:!mt-0">
                     <IconButton
+                      v-if="d.newScacs?.length > 1 && !fromHistory"
                       icon="mdi-close"
                       class="right-0"
-                      @click="removeScac(dt)"
-                      v-if="i !== 0"
+                      @click="removeScac(dt, index)"
                     >
                       <Tooltip> Remove Scac </Tooltip>
                     </IconButton>
-                     <IconButton
-                  v-if="booking?.details?.length > 1 && !fromHistory"
-                  icon="mdi-close"
-                  class="absolute top-0 right-0"
-                  @click="removeLoadingDate(d)"
-                >
-                  <Tooltip> Remove loading date</Tooltip>
-                </IconButton>
+                    <IconButton
+                      v-if="booking?.details?.length > 1 && !fromHistory && !i"
+                      icon="mdi-close"
+                      class="absolute top-0 right-0"
+                      @click="removeLoadingDate(d)"
+                    >
+                      <Tooltip> Remove loading date</Tooltip>
+                    </IconButton>
                   </div>
                 </template>
               </div>

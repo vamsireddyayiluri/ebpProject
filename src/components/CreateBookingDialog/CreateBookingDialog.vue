@@ -233,6 +233,7 @@ const addScac = loadingDate => {
       preferredDays: null,
       loadingDate: loadingDate,
       containers: null,
+      scac: null,
     })
   }
 }
@@ -287,8 +288,9 @@ const updateRef = async e => {
     }
   }
 }
-let selectedScacs = ref(bookingRulesStore.rules?.truckers?.list)
-const availableScacs = index => {
+let selectedScacs = []
+const availableScacs = (index, newScacs) => {
+  selectedScacs.value = newScacs.map(obj => obj.scac)
   const selected = selectedScacs.value.filter((_, id) => id !== index)
   return truckers.value.map(trucker => trucker.scac).filter(scac => !selected.includes(scac))
 }
@@ -510,7 +512,7 @@ onMounted(async () => {
               <Autocomplete
                 v-model="dt.scac"
                 required
-                :items="availableScacs(i)"
+                :items="availableScacs(i, d.newScacs)"
                 label="Choose trucker by SCAС "
                 :disabled="bookingRulesStore.rules?.preferredCarrierWindow < 1"
                 :menu-props="{ maxHeight: 300 }"
@@ -519,7 +521,9 @@ onMounted(async () => {
               />
               <Button
                 v-if="
-                  bookingRulesStore.rules?.preferredCarrierWindow > 0 && i + 1 === d.newScacs.length
+                  dt.loadingDate &&
+                  i + 1 === d.newScacs.length &&
+                  bookingRulesStore.rules?.preferredCarrierWindow > 0
                 "
                 variant="plain"
                 prepend-icon="mdi-plus"
