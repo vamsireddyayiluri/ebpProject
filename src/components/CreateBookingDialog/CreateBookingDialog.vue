@@ -189,6 +189,7 @@ const isLoadingDatesFieldsEmpty = computed(() => {
     delete object?.preferredDays
     return Object.values(object.newScacs).some(value => {
       delete value?.preferredDays
+      delete value?.scac
       const test =
         value === null ||
         Object.values(value).some(i => {
@@ -232,7 +233,6 @@ const addScac = loadingDate => {
       preferredDays: null,
       loadingDate: loadingDate,
       containers: null,
-      scac: null,
     })
   }
 }
@@ -252,8 +252,8 @@ const removeScac = bDetails => {
       booking.newScacs.splice(index, 1)
     }
   }
-  if(selectedScacs.value.includes(bDetails.scac)){
-    selectedScacs.value=selectedScacs.value.filter(scac => scac !== bDetails.scac)
+  if (selectedScacs.value.includes(bDetails.scac)) {
+    selectedScacs.value = selectedScacs.value.filter(scac => scac !== bDetails.scac)
   }
 }
 const saveDraft = async () => {
@@ -519,13 +519,12 @@ onMounted(async () => {
               />
               <Button
                 v-if="
-                  dt.loadingDate &&
-                  i + 1 === d.newScacs.length &&
-                  bookingRulesStore.rules?.preferredCarrierWindow > 0
+                  bookingRulesStore.rules?.preferredCarrierWindow > 0 && i + 1 === d.newScacs.length
                 "
                 variant="plain"
                 prepend-icon="mdi-plus"
                 class="mt-2.5 mr-auto"
+                :disabled="!(dt.loadingDate && dt.scac)"
                 @click="addScac(dt.loadingDate)"
               >
                 add scac
@@ -541,7 +540,7 @@ onMounted(async () => {
                 <Tooltip> Remove Scac</Tooltip>
               </IconButton>
               <IconButton
-                v-if="!i"
+                v-if="index && !i"
                 icon="mdi-delete-forever-outline"
                 class="right-0"
                 @click="removeLoadingDate(d.id)"
