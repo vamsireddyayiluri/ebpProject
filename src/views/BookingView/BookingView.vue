@@ -746,7 +746,7 @@ onMounted(async () => {
                   <Textfield
                     v-model.number="dt.containers"
                     label="Number of containers*"
-                    :rules="[rules.containers]"
+                    :rules="[rules.containers, rules.containersMaxLimit]"
                     type="number"
                     required
                     class="h-fit"
@@ -760,14 +760,14 @@ onMounted(async () => {
                       :menu-props="{ maxHeight: 300 }"
                       @update:modelValue="handleScacChange(dt.loadingDate)"
                       class="w-4/5 lg:w-10/12 xl:w-11/12"
+                      :disabled="bookingRulesStore.rules?.preferredCarrierWindow < 1"
                     />
                     <Button
-                      v-if="
-                        dt.loadingDate && i + 1 === d.newScacs.length && !(expired || completed)
-                      "
+                      v-if="i + 1 === d.newScacs.length && !(expired || completed)"
                       variant="plain"
                       prepend-icon="mdi-plus"
                       class="mt-2.5 mr-auto"
+                      :disabled="!(dt.loadingDate && dt.scac)"
                       @click="addScac(dt.loadingDate)"
                     >
                       add scac
@@ -784,7 +784,7 @@ onMounted(async () => {
                     </IconButton>
                     <IconButton
                       v-if="booking?.details?.length > 1 && !fromHistory && !i"
-                      icon="mdi-close"
+                      icon="mdi-delete-forever-outline"
                       class="absolute top-0 right-0"
                       @click="removeLoadingDate(d)"
                     >

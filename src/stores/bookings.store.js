@@ -377,7 +377,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       booking.details?.map(b => {
         if (b.newScacs) {
           b.containers = b.newScacs.reduce((total, obj) => total + obj.containers, 0)
-          b.scacList.list = b.newScacs.map(obj => obj.scac)
+          b.scacList.list = b.newScacs.filter(obj => obj?.scac).map(obj => obj.scac)
         }
         b.scacList =
           authStore.orgData?.bookingRules?.preferredCarrierWindow > 0 ? b.scacList : { list: [] }
@@ -403,7 +403,7 @@ export const useBookingsStore = defineStore('bookings', () => {
         const bookingId = uid(28)
         if (b.newScacs) {
           b.containers = b.newScacs.reduce((total, obj) => total + obj.containers, 0)
-          b.scacList.list = b.newScacs.map(obj => obj.scac)
+          b.scacList.list = b.newScacs.filter(obj => obj?.scac).map(obj => obj.scac)
         }
         b.scacList =
           authStore.orgData?.bookingRules?.preferredCarrierWindow > 0 ? b.scacList : { list: [] }
@@ -487,7 +487,7 @@ export const useBookingsStore = defineStore('bookings', () => {
         }
         if (data.newScacs) {
           data.containers = data.newScacs.reduce((total, obj) => total + obj.containers, 0)
-          data.scacList.list = data.newScacs.map(obj => obj.scac)
+          data.scacList.list = data.newScacs.filter(obj => obj?.scac).map(obj => obj.scac)
         }
         if (Object.keys(data).length) {
           batch.update(docRef, { ...data, updatedAt: getLocalTime().format() })

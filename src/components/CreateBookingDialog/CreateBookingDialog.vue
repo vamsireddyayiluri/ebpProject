@@ -503,7 +503,7 @@ onMounted(async () => {
             <Textfield
               v-model.number="dt.containers"
               label="Number of containers*"
-              :rules="[rules.containers]"
+              :rules="[rules.containers, rules.containersMaxLimit]"
               type="number"
               required
               class="h-fit"
