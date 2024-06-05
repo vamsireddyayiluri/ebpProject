@@ -46,6 +46,7 @@ declare module '@vue/runtime-core' {
     NotFoundView: typeof import('./views/NotFoundView/NotFoundView.vue')['default']
     NotificationRadioButton: typeof import('./views/SettingsView/NotificationsTab/NotificationRadioButton.vue')['default']
     NotificationsTab: typeof import('./views/SettingsView/NotificationsTab/NotificationsTab.vue')['default']
+    OnboardingTour: typeof import('./components/OnboardingTour/OnboardingTour.vue')['default']
     OverallStatisticsTab: typeof import('./views/StatisticsView/OverallStatisticsTab/OverallStatisticsTab.vue')['default']
     PreferredTruckersTab: typeof import('./views/SettingsView/PreferredTruckersTab/PreferredTruckersTab.vue')['default']
     ProfileView: typeof import('./views/ProfileView.vue')['default']
