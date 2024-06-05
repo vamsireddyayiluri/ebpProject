@@ -69,7 +69,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         }
       })
 
-      await updateBookingStore(commitment, 'approved')
+      // await updateBookingStore(commitment, 'approved')
 
       alertStore.info({ content: 'Booking commitment approved' })
     } catch ({ message }) {
@@ -157,7 +157,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       })
 
       const commitment = await getCommitment(data.id)
-      await updateBookingStore(commitment)
+      // await updateBookingStore(commitment)
 
       // find booking
       const booking = bookingsStore.bookings.find(i => {
@@ -186,7 +186,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         }
       })
 
-      await updateBookingStore(commitment)
+      // await updateBookingStore(commitment)
       alertStore.info({ content: 'Booking commitment declined' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
@@ -219,7 +219,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       await updateDoc(doc(db, 'bookings', commitment.bookingId), {
         carriers: booking?.carriers,
       })*/
-      await updateBookingStore(commitment, 'canceled')
+      // await updateBookingStore(commitment, 'canceled')
       alertStore.info({ content: 'Booking commitment canceled' })
     } catch ({ message }) {
       alertStore.warning({ content: message })

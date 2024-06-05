@@ -8,6 +8,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  onSnapshot,
   query,
   setDoc,
   updateDoc,
@@ -36,8 +37,58 @@ export const useBookingsStore = defineStore('bookings', () => {
   const calendarBooking = ref([])
   const drafts = ref([])
   const loading = ref(false)
+  const unSubscribeBookings = ref(null)
 
-  const getallBookings = async () => {
+  const getAllActiveBookings = async () => {
+    try {
+      const { orgId } = authStore.userData
+
+      const bookingsQuery = query(collection(db, 'bookings'), where('orgId', '==', orgId))
+      const initialDataLoad = new Promise((resolve, reject) => {
+        unSubscribeBookings.value = onSnapshot(bookingsQuery, snapshot => {
+          const expandedBookings = bookings.value.filter(val => val.expand === true)
+          const bookingsData = snapshot.docs.map(doc => {
+            const index = expandedBookings?.findIndex(({ ids }) => ids.includes(doc.id))
+            let entities = []
+            let expand = false
+            if (index !== -1) {
+              entities = expandedBookings[index]?.entities.filter(val => val.bookingId === doc.id)
+              expand = true
+            }
+            return {
+              ...doc.data(),
+              entities: entities,
+              expand,
+            }
+          })
+
+          const sortedBookings = bookingsData.sort((a, b) =>
+            moment(b.createdAt).diff(moment(a.createdAt)),
+          )
+          allBookings.value = sortedBookings
+          resolve(sortedBookings)
+
+          const filteredBookings = allBookings.value.filter(
+            booking =>
+              booking.status !== statuses.completed &&
+              booking.status !== statuses.expired &&
+              booking.status !== statuses.canceled,
+          )
+          notGroupedBookings.value = filteredBookings
+          const group = groupBookings(filteredBookings)
+
+          bookings.value = group
+        })
+      })
+      const initialData = await initialDataLoad
+
+      return initialData
+    } catch ({ message }) {
+      alertStore.info(message)
+    }
+  }
+
+  const getAllBookings = async () => {
     const { orgId } = authStore.userData
 
     const bookingsQuery = query(collection(db, 'bookings'), where('orgId', '==', orgId))
@@ -65,16 +116,7 @@ export const useBookingsStore = defineStore('bookings', () => {
 
       drafts.value = group
     } else {
-      await getallBookings()
-      const filteredBookings = allBookings.value.filter(
-        booking =>
-          booking.status !== statuses.completed &&
-          booking.status !== statuses.expired &&
-          booking.status !== statuses.canceled,
-      )
-      notGroupedBookings.value = filteredBookings
-      const group = groupBookings(filteredBookings)
-      bookings.value = group
+      await getAllActiveBookings()
     }
     loading.value = false
   }
@@ -299,7 +341,7 @@ export const useBookingsStore = defineStore('bookings', () => {
             })
           }
         })
-        await updateBookingStore(booking)
+        // await updateBookingStore(booking)
       }
       alertStore.info({ content: `Booking ${status}!` })
     } catch ({ message }) {
@@ -407,7 +449,7 @@ export const useBookingsStore = defineStore('bookings', () => {
         }
         b.scacList =
           authStore.orgData?.bookingRules?.preferredCarrierWindow > 0 ? b.scacList : { list: [] }
-        const newData = createEditedBookingObj(booking, id)
+        const newData = createEditedBookingObj(booking, b.id)
         batch.set(doc(collection(db, 'bookings'), bookingId), {
           ...newData,
           committed: 0,
@@ -456,7 +498,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       await deleteBookingById(bookingId, collectionType)
 
       if (collectionType === 'bookings') {
-        await getBookings({})
+        // await getBookings({})
         const data = createEditedBookingObj(booking, bookingId)
         const newDraft = createBookingObj(data)
         await setDoc(doc(collection(db, 'drafts'), newDraft.id), newDraft)
@@ -562,14 +604,19 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.warning({ content: message })
     }
   }
-  const closeBookingExpansion = async id => {
-    const index = bookings.value.findIndex(val => val?.id === id)
-    bookings.value[index].expand = false
+  const closeBookingExpansion = async (id, fromHistory = false) => {
+    if (fromHistory) {
+      const index = pastBookings.value.findIndex(val => val?.id === id)
+      pastBookings.value[index].expand = false
+    } else {
+      const index = bookings.value.findIndex(val => val?.id === id)
+      bookings.value[index].expand = false
+    }
   }
 
   const getAllCompletedBookings = async () => {
     loading.value = true
-    const bookings = await getallBookings()
+    const bookings = await getAllBookings()
     const completedBookings = bookings?.filter(b => b.status === statuses.completed)
     const activeBookings = bookings?.filter(
       b =>
@@ -648,6 +695,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     calendarBooking,
     drafts,
     loading,
+    unSubscribeBookings,
     getBookings,
     getCommitmentsByBookingId,
     getCommitmentsByBooking,

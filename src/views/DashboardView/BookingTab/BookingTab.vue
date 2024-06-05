@@ -25,7 +25,7 @@ const { userData } = useAuthStore()
 const { approveCommitment, declineCommitment, completeCommitment, getExpiredCommitments } =
   useCommitmentsStore()
 const notificationStore = useNotificationStore()
-const { loading } = storeToRefs(bookingsStore)
+const { loading, unSubscribeBookings } = storeToRefs(bookingsStore)
 const { liveCommitments } = storeToRefs(notificationStore)
 const { smAndDown } = useDisplay()
 const router = useRouter()
@@ -290,6 +290,7 @@ onMounted(async () => {
 })
 onUnmounted(async () => {
   await notificationStore.schedulePopupToShow()
+  // await unSubscribeBookings.value()
 })
 watch(mapToggled, () => {
   toggleMap()

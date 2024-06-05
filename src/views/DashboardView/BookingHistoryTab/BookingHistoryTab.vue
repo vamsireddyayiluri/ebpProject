@@ -92,11 +92,10 @@ const applyFilter = () => {
     ).value
   }
   if (filters.value.loadingDate) {
-    const targetDate = moment(filters.value.loadingDate).endOf('day').format();
-    filteredData = useArrayFilter(
-      filteredData,
-      booking => booking.details.some(detail => detail.loadingDate === targetDate)
-    ).value;
+    const targetDate = moment(filters.value.loadingDate).endOf('day').format()
+    filteredData = useArrayFilter(filteredData, booking =>
+      booking.details.some(detail => detail.loadingDate === targetDate),
+    ).value
   }
   computedFilteredEntities.value = filteredData
 }
@@ -133,7 +132,7 @@ const rowExpanded = async (event, data) => {
     data.value.expand = true
     data.value.entities = commitments
   } else {
-    await closeBookingExpansion(id)
+    await closeBookingExpansion(id, true)
   }
 }
 const downloadData = async () => {

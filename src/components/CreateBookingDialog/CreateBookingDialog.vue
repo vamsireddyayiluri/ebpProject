@@ -273,10 +273,10 @@ const saveBooking = async () => {
     isLoading.value = false
   } else {
     await createBooking(booking.value, newBookings.value).then(() => emit('bookingCreated'))
-    await bookingsStore.getBookings({})
+    // await bookingsStore.getBookings({})
     isLoading.value = true
     emit('close')
-    await bookingsStore.getBookings({})
+    // await bookingsStore.getBookings({})
   }
 }
 const updateRef = async e => {

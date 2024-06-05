@@ -446,6 +446,7 @@ onMounted(async () => {
       preferredDays: i?.preferredDays || null,
       containers: i.containers,
       scacList: i?.scacList || { list: [] },
+      committed: i.committed || 0,
       newScacs: i?.newScacs
         ? i?.newScacs
         : [
@@ -750,6 +751,7 @@ onMounted(async () => {
                     type="number"
                     required
                     class="h-fit"
+                    :disabled="expired || completed || paused"
                   />
                   <div class="relative mt-4 md:!mt-0">
                     <Autocomplete
@@ -760,10 +762,16 @@ onMounted(async () => {
                       :menu-props="{ maxHeight: 300 }"
                       @update:modelValue="handleScacChange(dt.loadingDate)"
                       class="w-4/5 lg:w-10/12 xl:w-11/12"
-                      :disabled="bookingRulesStore.rules?.preferredCarrierWindow < 1"
+                      :disabled="
+                        bookingRulesStore.rules?.preferredCarrierWindow < 1 ||
+                        expired ||
+                        completed ||
+                        paused ||
+                        originalBooking.scacList.list.includes(dt.scac)
+                      "
                     />
                     <Button
-                      v-if="i + 1 === d.newScacs.length && !(expired || completed)"
+                      v-if="i + 1 === d.newScacs.length && !(expired || completed || paused)"
                       variant="plain"
                       prepend-icon="mdi-plus"
                       class="mt-2.5 mr-auto"
