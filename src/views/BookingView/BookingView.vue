@@ -50,6 +50,7 @@ const {
   duplicateBooking,
   getBookingHistory,
   removeBookingFromNetwork,
+  getCommitmentsById,
 } = useBookingsStore()
 const commitmentStore = useCommitmentsStore()
 
@@ -79,6 +80,7 @@ const bookingConfirmationDialog = ref(null)
 const confirmClickedOutside = ref(null)
 const truckers = ref([])
 const fromRemoveLoadingDate = ref(false)
+const commitmentDetails = ref(null)
 
 const rules = {
   checkcommitted: value => checkCommittedValue(value, booking.value),
@@ -90,8 +92,31 @@ const rules = {
   validateDate: value => (isNull(value) ? true : validateExpiryDate(activeBookings?.value, value)),
   uniqueDate: () =>
     checkUniqueDates(booking.value.details) || 'Loading date already exists. Select another date.',
-  lessThanComitted: value =>
-    value?.containers >= value?.committed || `Value should not be less than ${value.committed}`,
+  lessThanComitted: value => {
+    if (!fromDraft) {
+      if (value?.bScac) {
+        const commitmentObj = commitmentDetails?.value?.find(
+          obj => obj.scac === value.bScac && obj.loadingDate === value.loadingDate,
+        )
+        if (commitmentObj) {
+          return (
+            value?.scacContainers >= commitmentObj?.committed ||
+            `Value should not be less than ${commitmentObj?.committed}`
+          )
+        }
+      } else {
+        let totalCommitted = 0
+
+        if (commitmentDetails?.value?.length) {
+          totalCommitted = commitmentDetails?.value
+            .filter(obj => obj.loadingDate === value.loadingDate)
+            .reduce((total, obj) => total + obj.awaitingCommitted + obj.committed, 0)
+        }
+        const committed = value?.committed ? value?.committed - totalCommitted : 0
+        return value?.scacContainers >= committed || `Value should not be less than ${committed}`
+      }
+    }
+  },
   containersMaxLimit: value => checkContianersMaxLimit(value),
 }
 
@@ -365,14 +390,14 @@ const addLoadingDate = () => {
     newScacs: generateNewScacs(),
   })
 }
-const addScac = loadingDate => {
-  let selectedBooking = booking.value.details.find(booking => booking.loadingDate === loadingDate)
+const addScac = id => {
+  let selectedBooking = booking.value.details.find(booking => booking.id === id)
   if (selectedBooking) {
     selectedBooking.newScacs = selectedBooking.newScacs ? selectedBooking.newScacs : []
     selectedBooking.newScacs.push({
       id: uid(16),
       preferredDays: null,
-      loadingDate: loadingDate,
+      loadingDate: selectedBooking.loadingDate,
       containers: null,
       scac: null,
     })
@@ -421,6 +446,41 @@ const removeLoadingDate = async aBooking => {
   }
 }
 
+// Getting commitments to validate the contianers count
+const getCommitmentsToBooking = async () => {
+  commitmentDetails.value = (
+    await Promise.all(
+      originalBooking.value?.details.map(async iBooking => {
+        const commitments = await getCommitmentsById(iBooking.id)
+        const aggregatedCommitments = {}
+        commitments.forEach(commitment => {
+          if (commitment.preferredScac) {
+            const key = `${iBooking.loadingDate}_${commitment.scac}`
+            if (aggregatedCommitments[key]) {
+              if (commitment.status === 'approved') {
+                aggregatedCommitments[key].committed += commitment.committed
+              } else if (commitment.status === 'awaiting_confirmation') {
+                aggregatedCommitments[key].awaitingCommitted += commitment.committed
+              }
+            } else {
+              aggregatedCommitments[key] = {
+                loadingDate: iBooking.loadingDate,
+                scac: commitment.scac,
+                committed: commitment.status === 'approved' ? commitment.committed : 0,
+                awaitingCommitted:
+                  commitment.status === 'awaiting_confirmation' ? commitment.committed : 0,
+                status: commitment.status,
+              }
+            }
+          }
+        })
+
+        return Object.values(aggregatedCommitments)
+      }),
+    )
+  ).flat()
+}
+
 onMounted(async () => {
   loading.value = true
   await getBookings(fromDraft ? { draft: true } : {})
@@ -436,6 +496,7 @@ onMounted(async () => {
 
   // bookings.value = targetBookings
   originalBooking.value = cloneDeep(targetBookings.find(val => val.ids.includes(route.params.id)))
+
   booking.value = JSON?.parse(JSON?.stringify(originalBooking?.value))
   const loadingsDateCopy = booking.value?.details.map(iBooking => {
     const i = deepCopy(iBooking)
@@ -466,6 +527,8 @@ onMounted(async () => {
   truckers.value = await getTruckers()
 
   yards.value = workDetailsStore.yards
+
+  await getCommitmentsToBooking()
   loading.value = false
 })
 </script>
@@ -746,7 +809,15 @@ onMounted(async () => {
                   <Textfield
                     v-model.number="dt.containers"
                     label="Number of containers*"
-                    :rules="[rules.containers, rules.containersMaxLimit]"
+                    :rules="[
+                      rules.containers,
+                      rules.containersMaxLimit,
+                      rules.lessThanComitted({
+                        ...d,
+                        bScac: dt.scac,
+                        scacContainers: dt.containers,
+                      }),
+                    ]"
                     type="number"
                     required
                     class="h-fit"
@@ -771,11 +842,12 @@ onMounted(async () => {
                     />
                     <Button
                       v-if="i + 1 === d.newScacs.length && !(expired || completed || paused)"
-                      variant="plain"
+                      :variant="dt.loadingDate && dt.scac ? 'plain' : 'gray'"
                       prepend-icon="mdi-plus"
                       class="mt-2.5 mr-auto"
+                      color="gray"
                       :disabled="!(dt.loadingDate && dt.scac)"
-                      @click="addScac(dt.loadingDate)"
+                      @click="addScac(d.id)"
                     >
                       add scac
                     </Button>

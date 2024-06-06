@@ -681,6 +681,14 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.warning({ content: message })
     }
   }
+  const getCommitmentsById = async bookingId => {
+    const q = await query(collection(db, 'commitments'), where('bookingId', '==', bookingId))
+    const docData = await getDocs(q)
+    const commitments = docData.docs
+      .map(doc => doc.data())
+      .sort((a, b) => moment(b.commitmentDate).diff(moment(a.commitmentDate)))
+    return commitments
+  }
   const reset = () => {
     bookings.value = []
     allBookings.value = []
@@ -723,5 +731,6 @@ export const useBookingsStore = defineStore('bookings', () => {
     getAllCompletedBookings,
     deleteCompletedBookingById,
     updateLocationLabelsInBookingsCommitmetns,
+    getCommitmentsById,
   }
 })

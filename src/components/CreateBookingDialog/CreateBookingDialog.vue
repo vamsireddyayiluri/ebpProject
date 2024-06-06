@@ -224,14 +224,14 @@ const addLoadingDate = () => {
     newScacs: generateNewScacs(),
   })
 }
-const addScac = loadingDate => {
-  let booking = newBookings.value.find(booking => booking.loadingDate === loadingDate)
+const addScac = id => {
+  let booking = newBookings.value.find(booking => booking.id === id)
   if (booking) {
     booking.newScacs = booking.newScacs ? booking.newScacs : []
     booking.newScacs.push({
       id: uid(16),
       preferredDays: null,
-      loadingDate: loadingDate,
+      loadingDate: booking.loadingDate,
       containers: null,
       scac: null,
     })
@@ -525,11 +525,11 @@ onMounted(async () => {
                   i + 1 === d.newScacs.length &&
                   bookingRulesStore.rules?.preferredCarrierWindow > 0
                 "
-                variant="plain"
+                :variant="dt.loadingDate && dt.scac ? 'plain' : 'gray'"
                 prepend-icon="mdi-plus"
                 class="mt-2.5 mr-auto"
                 :disabled="!(dt.loadingDate && dt.scac)"
-                @click="addScac(dt.loadingDate)"
+                @click="addScac(d.id)"
               >
                 add scac
               </Button>
