@@ -159,16 +159,6 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         }
       })
 
-      const commitment = await getCommitment(data.id)
-      // await updateBookingStore(commitment)
-
-      // find booking
-      const booking = bookingsStore.bookings.find(i => {
-        return (
-          i.id === commitment.bookingId ||
-          (Array.isArray(i.ids) && i.ids.includes(commitment.bookingId))
-        )
-      })
       alertStore.info({ content: 'Booking commitment completed' })
     } catch ({ message }) {
       alertStore.warning({ content: message })

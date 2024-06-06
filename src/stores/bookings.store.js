@@ -55,6 +55,7 @@ export const useBookingsStore = defineStore('bookings', () => {
               entities = expandedBookings[index]?.entities.filter(val => val.bookingId === doc.id)
               expand = true
             }
+
             return {
               ...doc.data(),
               entities: entities,
@@ -88,6 +89,12 @@ export const useBookingsStore = defineStore('bookings', () => {
     }
   }
 
+  const unsubscribeBookings = () => {
+    if (unSubscribeBookings.value) {
+      unSubscribeBookings.value()
+      unSubscribeBookings.value = null
+    }
+  }
   const getAllBookings = async () => {
     const { orgId } = authStore.userData
 
@@ -551,6 +558,9 @@ export const useBookingsStore = defineStore('bookings', () => {
           }
         })
       }
+
+      // collapse booking when edited
+      bookings.value.map(b => b.expand = false)
       await batch.commit()
       if (!completedStatus) {
         alertStore.info({
@@ -707,7 +717,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     calendarBooking,
     drafts,
     loading,
-    unSubscribeBookings,
+    unsubscribeBookings,
     getBookings,
     getCommitmentsByBookingId,
     getCommitmentsByBooking,
