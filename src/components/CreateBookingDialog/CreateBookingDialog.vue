@@ -272,7 +272,7 @@ const saveBooking = async () => {
     bookingConfirmationDialog.value.data = commitmentsList
     isLoading.value = false
   } else {
-    await createBooking(booking.value, newBookings.value).then(() => emit('bookingCreated'))
+    createBooking(booking.value, newBookings.value).then(() => emit('bookingCreated'))
     // await bookingsStore.getBookings({})
     isLoading.value = true
     emit('close')

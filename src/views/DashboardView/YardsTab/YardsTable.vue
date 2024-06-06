@@ -57,8 +57,8 @@ const containerActionHandler = async ({ action, e }) => {
   if (validActions) {
     if (action === 'edit-booking') emit('editBooking', e[0].id)
     if (action === 'remove-booking') {
-      removeBookingDialog.value.show(true)
       removeBookingDialog.value.data = e[0]
+      removeBookingDialog.value.show(true)
     }
     if (action === 'pause-booking') {
       await updateBookingStatus(e[0], statuses.paused)
@@ -82,7 +82,7 @@ const openCancelBookingDialog = booking => {
   cancelBookingDialog.value.data = booking
 }
 const removeBooking = booking => {
-  deleteBooking(booking)
+  deleteBooking(booking.ids)
   removeBookingDialog.value.show(false)
 }
 const onCancelBooking = async (booking, reason) => {

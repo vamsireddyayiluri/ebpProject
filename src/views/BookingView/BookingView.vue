@@ -284,7 +284,7 @@ const onSave = async () => {
 
         return
       } else {
-        await reactivateBooking(booking.value)
+        reactivateBooking(booking.value)
         await router.push({ name: 'dashboard' })
         activated.value = false
 
@@ -320,7 +320,6 @@ const onSave = async () => {
   if (!isEmpty(updatedObj)) {
     await updateBooking(updatedObj, booking.value?.ids, fromDraft ? 'drafts' : 'bookings')
   }
-  await new Promise(resolve => setTimeout(resolve, 1000))
 
   await router.push({ name: 'dashboard' })
   isSaveLoading.value = false
@@ -403,10 +402,10 @@ const availableScacs = (index, newScacs) => {
   return truckers.value.map(trucker => trucker.scac).filter(scac => !selected.includes(scac))
 }
 const handleScacChange = loadingDate => {
-  let booking = booking.value.details.find(booking => booking.loadingDate === loadingDate)
-  if (booking) {
-    booking.newScacs = booking.newScacs ? booking.newScacs : []
-    selectedScacs.value = booking.newScacs.map(dt => dt.scac).filter(scac => scac)
+  let bookingObj = booking.value.details.find(booking => booking.loadingDate === loadingDate)
+  if (bookingObj) {
+    bookingObj.newScacs = bookingObj.newScacs ? bookingObj.newScacs : []
+    selectedScacs.value = bookingObj.newScacs.map(dt => dt.scac).filter(scac => scac)
   }
 }
 const removeLoadingDate = async aBooking => {
@@ -767,7 +766,7 @@ onMounted(async () => {
                         expired ||
                         completed ||
                         paused ||
-                        originalBooking.scacList.list.includes(dt.scac)
+                        originalBooking?.details[index]?.scacList?.list.includes(dt.scac)
                       "
                     />
                     <Button
