@@ -333,7 +333,11 @@ export const useBookingsStore = defineStore('bookings', () => {
 
         const commitments = await getCommitmentsByBookingId(booking.id, booking.ids)
         commitments.map(async i => {
-          if (i.status === statuses.approved || i.status === statuses.pending) {
+          if (
+            i.status === statuses.approved ||
+            i.status === statuses.pending ||
+            i.status === statuses.awaiting_confirmation
+          ) {
             await updateDoc(doc(db, 'commitments', i.id), {
               status: statuses.bookingCanceled,
               reason,
