@@ -364,6 +364,21 @@ export const useAuthStore = defineStore('auth', () => {
       alertStore.warning({ content: message })
     }
   }
+  const checkIfOnboarded = async () => {
+    const userDoc = await getDoc(doc(db, 'users', userData.value.user_id))
+
+    return !!userDoc.data()?.onboarded
+  }
+  const onboardedUser = async () => {
+    try {
+      await updateDoc(doc(db, 'users', userData.value.user_id), {
+        onboarded: true,
+      })
+      await getUserData(userData.value.user_id)
+    } catch ({ message }) {
+      alertStore.warning({ content: message })
+    }
+  }
 
   return {
     login,
@@ -383,5 +398,7 @@ export const useAuthStore = defineStore('auth', () => {
     getOrgData,
     workers,
     updateUserDoc,
+    checkIfOnboarded,
+    onboardedUser,
   }
 })
