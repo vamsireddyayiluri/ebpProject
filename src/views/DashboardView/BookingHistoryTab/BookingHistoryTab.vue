@@ -271,7 +271,7 @@ watch(searchValue, value => {
       <template #status="{ item }">
         <Classification
           type="status"
-          :value="item.status === statuses.expired ? 'incomplete' : item.status"
+          :value="item.status === statuses.expired ? 'incomplete' : item.status.replace('_', ' ')"
         />
       </template>
       <template #truckers="{ item }">
@@ -382,7 +382,7 @@ watch(searchValue, value => {
           <template #status="{ item }">
             <Classification
               type="status"
-              :value="item.status"
+              :value="item.status.replace('_', ' ')"
             />
           </template>
           <template #actions="{ item, selected }">

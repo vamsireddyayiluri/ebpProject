@@ -105,7 +105,7 @@ const emptyBooking = {
 }
 const generateNewScacs = () => {
   const hasPreferredCarrierWindow = bookingRulesStore.rules?.preferredCarrierWindow > 0
-  const truckersList = bookingRulesStore.rules?.truckers?.list
+  const truckersList = cloneDeep(bookingRulesStore.rules?.truckers?.list)
 
   if (hasPreferredCarrierWindow && truckersList?.length) {
     return truckersList.map(val => ({
@@ -137,7 +137,7 @@ const newBookings = ref(
           loadingDate: null,
           preferredDays: null,
           containers: null,
-          scacList: bookingRulesStore.rules.truckers,
+          scacList: cloneDeep(bookingRulesStore.rules.truckers),
           newScacs: generateNewScacs(),
         },
       ],
