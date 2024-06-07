@@ -116,10 +116,10 @@ export const useBookingsStore = defineStore('bookings', () => {
       const draftsQuery = query(collection(db, 'drafts'), where('orgId', '==', orgId))
       const querySnapshot = await getDocs(draftsQuery)
 
-      const filteredtest = querySnapshot.docs
+      const sortedBookings = querySnapshot.docs
         .map(doc => doc.data())
         .sort((a, b) => moment(b.updatedAt).diff(moment(a.updatedAt)))
-      const group = groupBookings(filteredtest)
+      const group = groupBookings(sortedBookings)
 
       drafts.value = group
     } else {
@@ -137,10 +137,10 @@ export const useBookingsStore = defineStore('bookings', () => {
     )
 
     const querySnapshot = await getDocs(bookingsQuery)
-    const filteredBookings = querySnapshot.docs.map(doc => {
-      return { ...doc.data(), entities: [] }
-    })
-    pastBookings.value = groupBookings(filteredBookings)
+    const sortedBookings = querySnapshot.docs
+      .map(doc => ({ ...doc.data(), entities: [] }))
+      .sort((a, b) => moment(b.updatedAt).diff(moment(a.updatedAt)));
+    pastBookings.value = groupBookings(sortedBookings)
     loading.value = false
   }
   const getCommitmentsByBookingId = async (id, ids, fromHistory = false) => {
