@@ -11,7 +11,7 @@ const emit = defineEmits(['close', 'goToBookingPage'])
 const router = useRouter()
 const selectedBooking = ref(false)
 const goToBookingPage = () => {
-  const query = [statuses.canceled, statuses.incomplete, statuses.expired, statuses.completed].includes(
+  const query = [statuses.canceled, statuses.expired, statuses.completed].includes(
     selectedBooking.value.status,
   )? { from: 'history' } : {}
   router.push({ path: `booking/${selectedBooking.value.id}`, query })

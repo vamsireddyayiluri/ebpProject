@@ -275,9 +275,9 @@
   integrity sha512-Zo9c7N3xdOIQrNip7Lc9wvRPzlRtovHVE4lkz8WEDr7uYh/GMQhSiIgFxGIArRHYdJE5kxtZjAf8rT0xhdLCzg==
 
 "@babel/parser@^7.24.4":
-  version "7.24.5"
-  resolved "https://registry.yarnpkg.com/@babel/parser/-/parser-7.24.5.tgz#4a4d5ab4315579e5398a82dcf636ca80c3392790"
-  integrity sha512-EOv5IK8arwh3LI47dz1b0tKUb/1uhHAnHJOrjgtQMIpu1uXd9mlFrJg9IUgGUgZ41Ch0K8REPTYpO7B76b4vJg==
+  version "7.24.6"
+  resolved "https://registry.yarnpkg.com/@babel/parser/-/parser-7.24.6.tgz#5e030f440c3c6c78d195528c3b688b101a365328"
+  integrity sha512-eNZXdfU35nJC2h24RznROuOpO94h6x8sg9ju0tT9biNtLZ2vuP8SduLqqV+/8+cebSLV9SJEAN5Z3zQbJG/M+Q==
 
 "@babel/plugin-syntax-jsx@^7.23.3":
   version "7.24.1"
@@ -304,9 +304,9 @@
     "@babel/plugin-syntax-typescript" "^7.24.1"
 
 "@babel/runtime@^7.21.0":
-  version "7.24.5"
-  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.24.5.tgz#230946857c053a36ccc66e1dd03b17dd0c4ed02c"
-  integrity sha512-Nms86NXrsaeU9vbBJKni6gXiEXZ4CVpYVzEjDH9Sb8vmZ3UljyA1GSOJl/6LGPO8EHLuSF9H+IxNXHPX8QHJ4g==
+  version "7.24.6"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.24.6.tgz#5b76eb89ad45e2e4a0a8db54c456251469a3358e"
+  integrity sha512-Ja18XcETdEl5mzzACGd+DKgaGJzPTCow7EglgwTmHdwokzDFYh/MHua6lU6DV/hjF2IaOJ4oX2nqnjG7RElKOw==
   dependencies:
     regenerator-runtime "^0.14.0"
 
@@ -896,40 +896,40 @@
   integrity sha512-Dq5rYfEpdeel0bLVN+nfD1VWmzCkK+pJbSjIawGE+RY4+NIJqhbUDDQjvV0NUK84fMfwxvtFoCtEe70HfZjFcw==
 
 "@fullcalendar/core@^6.0.3":
-  version "6.1.11"
-  resolved "https://registry.yarnpkg.com/@fullcalendar/core/-/core-6.1.11.tgz#f9630e83ae977e774992507635b1e7af4c339d37"
-  integrity sha512-TjG7c8sUz+Vkui2FyCNJ+xqyu0nq653Ibe99A66LoW95oBo6tVhhKIaG1Wh0GVKymYiqAQN/OEdYTuj4ay27kA==
+  version "6.1.13"
+  resolved "https://registry.yarnpkg.com/@fullcalendar/core/-/core-6.1.13.tgz#f1167e614ed3bdafe5281149b01d1f7f3bbbdbcf"
+  integrity sha512-Cps/hMQan4kwnsBhFf2+m2mijbGoWs6r18ZzxBnAAOkkNHtPmHU8EdR6lF+ZLsiVvb7nsC4H/ZKqnxXWwgpoPw==
   dependencies:
     preact "~10.12.1"
 
-"@fullcalendar/daygrid@^6.0.3", "@fullcalendar/daygrid@~6.1.11":
-  version "6.1.11"
-  resolved "https://registry.yarnpkg.com/@fullcalendar/daygrid/-/daygrid-6.1.11.tgz#83a5d4a94c314cf3a14b06bebba03b1b40e6d2ba"
-  integrity sha512-hF5jJB7cgUIxWD5MVjj8IU407HISyLu7BWXcEIuTytkfr8oolOXeCazqnnjmRbnFOncoJQVstTtq6SIhaT32Xg==
+"@fullcalendar/daygrid@^6.0.3", "@fullcalendar/daygrid@~6.1.13":
+  version "6.1.13"
+  resolved "https://registry.yarnpkg.com/@fullcalendar/daygrid/-/daygrid-6.1.13.tgz#bd3b1a6cc98964c658f37e917be6683de8ad4015"
+  integrity sha512-0I0hL1kgGjkZuc7Qt8mu4jjrqIL5PZzd58bEpTxoXRKI5UBZ9KbshGVMryQSXYANlrRtkPnXVt90VIDrxZbDrA==
 
 "@fullcalendar/interaction@^6.0.3":
-  version "6.1.11"
-  resolved "https://registry.yarnpkg.com/@fullcalendar/interaction/-/interaction-6.1.11.tgz#baa3beec8f5c489fb6904973b175a5f4797abdf3"
-  integrity sha512-ynOKjzuPwEAMgTQ6R/Z2zvzIIqG4p8/Qmnhi1q0vzPZZxSIYx3rlZuvpEK2WGBZZ1XEafDOP/LGfbWoNZe+qdg==
+  version "6.1.13"
+  resolved "https://registry.yarnpkg.com/@fullcalendar/interaction/-/interaction-6.1.13.tgz#7b628871b934cec27ca6fc8bd0176c376fd7d81b"
+  integrity sha512-r1w+jqCRGZZyxKFquueDSFvbsFhJLhc1BX8Nlyz684lYxS1SiToYJW9Q8X/XkySCzpjO3KOnxEp2jVOn1Usyjg==
 
 "@fullcalendar/multimonth@^6.1.1":
-  version "6.1.11"
-  resolved "https://registry.yarnpkg.com/@fullcalendar/multimonth/-/multimonth-6.1.11.tgz#8cca48378c52c1209ed7a45c5e5b37f95497f13b"
-  integrity sha512-7DbPC+AAlaKnquGVdw1Z85Q3nSZ4GZ1NcVIk4k7bLnqDlntwHPPsrDlSIzUWKcN0q5/u7jQHm4PU1m3LAl70Sg==
+  version "6.1.13"
+  resolved "https://registry.yarnpkg.com/@fullcalendar/multimonth/-/multimonth-6.1.13.tgz#3db069e15f75131d61bc8e0fbcc43b3c73d70d8d"
+  integrity sha512-fn0BaLaMNkLmFzxijGZXYcO/fHQkuCcQV1R44mnu/01V4uSnFM1KPt2+V+6SgNiW1+ZNkUBHkkSLST1XdZjodw==
   dependencies:
-    "@fullcalendar/daygrid" "~6.1.11"
+    "@fullcalendar/daygrid" "~6.1.13"
 
 "@fullcalendar/timegrid@^6.0.3":
-  version "6.1.11"
-  resolved "https://registry.yarnpkg.com/@fullcalendar/timegrid/-/timegrid-6.1.11.tgz#76b2fc4446d1e97819a4395dab4f3a7e44c7a9eb"
-  integrity sha512-0seUHK/ferH89IeuCvV4Bib0zWjgK0nsptNdmAc9wDBxD/d9hm5Mdti0URJX6bDoRtsSfRDu5XsRcrzwoc+AUQ==
+  version "6.1.13"
+  resolved "https://registry.yarnpkg.com/@fullcalendar/timegrid/-/timegrid-6.1.13.tgz#9c596409c27a8b96232bdaeb86548f0d1ac9dcbf"
+  integrity sha512-8Ub2mSV+6Mh8WWDKuyCYbj5PKYpmyjSctpJ/21fDBJduE9QFS0WfG9CZZxSJT7CT+srnyk4mX2/5gYN9gYZjUg==
   dependencies:
-    "@fullcalendar/daygrid" "~6.1.11"
+    "@fullcalendar/daygrid" "~6.1.13"
 
 "@fullcalendar/vue3@^6.0.3":
-  version "6.1.11"
-  resolved "https://registry.yarnpkg.com/@fullcalendar/vue3/-/vue3-6.1.11.tgz#a241ec6676ee312c5c656a1972abb8dc242957ff"
-  integrity sha512-jBoDS0WSpuOM9ZgjL3lNh6o385u/LthFZDaMUACjVVJZh3JuBbuA7ghdUvIelcTNXa5VRCkSZOpivTJWOnLfcg==
+  version "6.1.13"
+  resolved "https://registry.yarnpkg.com/@fullcalendar/vue3/-/vue3-6.1.13.tgz#ae546d17e5e54e1f9c1811634a5dc5a4317adc10"
+  integrity sha512-m4pEeYXKo79lnLJAGRrNPxovZWXFXSS/5F+QXLN/eXljP/F2caFG/Bj24eFTXHlj1QykgJ56iwC8ZLpShMdANg==
 
 "@gar/promisify@^1.1.3":
   version "1.1.3"
@@ -1508,9 +1508,9 @@
   integrity sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==
 
 "@qualle-admin/qui@latest":
-  version "1.222.0"
-  resolved "https://npm.pkg.github.com/download/@qualle-admin/qui/1.222.0/8cc8db84b219267304c3f489e642d4e0d58ae73c#8cc8db84b219267304c3f489e642d4e0d58ae73c"
-  integrity sha512-oLBiqESTbSs0x3emUu99D30X3UqRkK9dsYHnE/DPGpP9exTDQPJ7Brn67vTcgnmdOC3ARvsJb+eKOALe1sXsSg==
+  version "1.225.0"
+  resolved "https://npm.pkg.github.com/download/@qualle-admin/qui/1.225.0/d03beea2245a42f24a1b0a14c34cf3cbd26f41bc#d03beea2245a42f24a1b0a14c34cf3cbd26f41bc"
+  integrity sha512-ePeOW7sug/GnnlLM7YPjIYjSYD6Uyg0/VfNZn1il8as3udp2i35oTnuwUqKozKczRqlOAsfriQnGN/G15yim0g==
   dependencies:
     uid "^2.0.1"
     "@fullcalendar/core" "^6.0.3"
@@ -9201,9 +9201,9 @@ vue-word-highlighter@^1.2.3:
     vue-demi "0.14.6"
 
 vue3-apexcharts@^1.4.1:
-  version "1.5.2"
-  resolved "https://registry.yarnpkg.com/vue3-apexcharts/-/vue3-apexcharts-1.5.2.tgz#fc179d80e34e6f25982dae809c27173d7374db48"
-  integrity sha512-rGbgUJDjtsyjfRF0uzwDjzt8+M7ICSRAbm1N9KCDiczW8BSpbEZuaEsJDJYnJuLFIIVXIGilYzIcjNBf6NbeYA==
+  version "1.5.3"
+  resolved "https://registry.yarnpkg.com/vue3-apexcharts/-/vue3-apexcharts-1.5.3.tgz#45f685a2dd21058c0d76ab2145eb3ec27d8fb14c"
+  integrity sha512-yaHTPoj0iVKAtEVg8wEwIwwvf0VG+lPYNufCf3txRzYQOqdKPoZaZ9P3Dj3X+2A1XY9O1kcTk9HVqvLo+rppvQ==
 
 vue3-datepicker@^0.3.4:
   version "0.3.8"
