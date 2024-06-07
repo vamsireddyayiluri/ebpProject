@@ -350,6 +350,16 @@ const onSave = async () => {
   isSaveLoading.value = false
 }
 
+const loadingDateId = 'loadingDate'
+const updateRef = async () => {
+  await nextTick()
+  form.value.items.forEach(i => {
+    if (i.id.includes(loadingDateId)) {
+      i.isValid === false && i.validate()
+    }
+  })
+}
+
 // checking active bookings loadingDate
 const validateExpiryDates = index => {
   validExpiryDate.value = validateExpiryDate(activeBookings?.value, {
@@ -483,12 +493,13 @@ const getCommitmentsToBooking = async () => {
 
 onMounted(async () => {
   loading.value = true
-  await getBookings(fromDraft ? { draft: true } : {})
+  await getBookings({})
   let targetBookings
   if (fromHistory) {
     await getBookingHistory()
     targetBookings = useBookingsStore().pastBookings
   } else if (fromDraft) {
+    await getBookings(fromDraft ? { draft: true } : {})
     targetBookings = useBookingsStore().drafts
   } else {
     targetBookings = useBookingsStore().bookings
@@ -657,6 +668,7 @@ onMounted(async () => {
               required
               :rules="[rules.required, rules.validateDate(null)]"
               :disabled="pending || expired || (completed && !activated)"
+              @update:modelValue="updateRef"
             />
             <Autocomplete
               v-model="booking.line"
@@ -788,6 +800,7 @@ onMounted(async () => {
                 >
                   <Datepicker
                     v-if="i === 0"
+                    :id="`${loadingDateId}-${index}`"
                     :picked="dt.loadingDate"
                     label="Loading date *"
                     typeable

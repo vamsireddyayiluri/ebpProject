@@ -137,7 +137,7 @@ export const checkUniqueDates = entities => {
   const datesCount = {}
 
   for (const entity of entities) {
-    if (datesCount[entity.loadingDate]) {
+    if (datesCount[entity.loadingDate] && entity.loadingDate) {
       return false
     } else {
       datesCount[entity.loadingDate] = true
