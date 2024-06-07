@@ -16,7 +16,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['selectTableRow', 'editBooking', 'duplicateBooking'])
 const { userData } = useAuthStore()
-const { deleteBooking, updateBookingStatus } = useBookingsStore()
+const { removeFromNetwork, updateBookingStatus } = useBookingsStore()
 const commitmentStore = useCommitmentsStore()
 const { smAndDown, width } = useDisplay()
 const showActions = ref(true)
@@ -82,7 +82,7 @@ const openCancelBookingDialog = booking => {
   cancelBookingDialog.value.data = booking
 }
 const removeBooking = booking => {
-  deleteBooking(booking.ids)
+  removeFromNetwork(booking)
   removeBookingDialog.value.show(false)
 }
 const onCancelBooking = async (booking, reason) => {

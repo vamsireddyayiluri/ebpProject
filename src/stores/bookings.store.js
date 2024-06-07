@@ -52,7 +52,7 @@ export const useBookingsStore = defineStore('bookings', () => {
             let entities = []
             let expand = false
             if (index !== -1) {
-              entities = expandedBookings[index]?.entities.filter(val => val.bookingId === doc.id)
+              entities = expandedBookings[index]?.entities
               expand = true
             }
 
@@ -139,7 +139,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     const querySnapshot = await getDocs(bookingsQuery)
     const sortedBookings = querySnapshot.docs
       .map(doc => ({ ...doc.data(), entities: [] }))
-      .sort((a, b) => moment(b.updatedAt).diff(moment(a.updatedAt)));
+      .sort((a, b) => moment(b.updatedAt).diff(moment(a.updatedAt)))
     pastBookings.value = groupBookings(sortedBookings)
     loading.value = false
   }
@@ -560,7 +560,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       }
 
       // collapse booking when edited
-      bookings.value.map(b => b.expand = false)
+      bookings.value.map(b => (b.expand = false))
       await batch.commit()
       if (!completedStatus) {
         alertStore.info({
