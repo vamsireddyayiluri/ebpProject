@@ -84,6 +84,7 @@ export const groupBookings = objects => {
         committed: obj.committed || 0,
         scacList: { ...(obj?.scacList || { list: [] }) },
         id: obj.id,
+        newScacs: obj.newScacs,
       })
       groupedObject[key].ids.push(obj.id)
       groupedObject[key].scacList = { ...groupedObject[key].scacList, ...obj.scacList }
@@ -96,6 +97,7 @@ export const groupBookings = objects => {
           committed: obj.committed || 0,
           scacList: { ...(obj?.scacList || { list: [] }) },
           id: obj.id,
+          newScacs: obj.newScacs,
         },
       ]
       groupedObject[key].ids = [obj.id]

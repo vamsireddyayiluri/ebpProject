@@ -151,7 +151,7 @@ export const commitmentsActions = (status, bstatus, fromHistory = false) => {
     )
   }
   if (
-    status === statuses.approved &&
+    (status === statuses.approved || status === statuses.awaiting_confirmation)  &&
     (bstatus === statuses.active || bstatus === statuses.pending)
   ) {
     actions.push({
@@ -160,6 +160,9 @@ export const commitmentsActions = (status, bstatus, fromHistory = false) => {
       action: 'cancel-commitment',
       color: 'functionalError',
     })
+  }
+  if(status === statuses.awaiting_confirmation){
+    actions.push(...viewDetailsAction)
   }
 
   return actions.length > 0 ? actions : viewDetailsAction

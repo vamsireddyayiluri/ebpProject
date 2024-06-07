@@ -1,8 +1,10 @@
 <script setup>
 import { Main } from '@layouts'
 import { useAuthStore } from '~/stores/auth.store'
+import { useBookingsStore } from '~/stores/bookings.store'
 
 const authStore = useAuthStore()
+const bookingStore = useBookingsStore()
 const router = useRouter()
 const tabs = [
   {
@@ -37,6 +39,9 @@ watch(
     if (router.currentRoute.value.query?.bid) tab.value = 0
   },
 )
+onUnmounted(async () => {
+  await bookingStore.unsubscribeBookings()
+})
 </script>
 
 <template>

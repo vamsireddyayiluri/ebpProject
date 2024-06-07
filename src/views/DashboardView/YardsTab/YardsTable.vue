@@ -7,6 +7,7 @@ import { useAuthStore } from '~/stores/auth.store'
 import { statuses } from '~/constants/statuses'
 import { useCommitmentsStore } from '~/stores/commitments.store'
 import { getLocalTime } from '@qualle-admin/qutil/dist/date'
+import { declineCodes } from '~/constants/reasonCodes'
 
 const props = defineProps({
   computedEntities: Array,
@@ -21,12 +22,19 @@ const { smAndDown, width } = useDisplay()
 const showActions = ref(true)
 const tableHeight = ref(1)
 const removeBookingDialog = ref(false)
+const cancelBookingDialog = ref(false)
+
 const bookingConfirmationDialog = ref(null)
 
 const { yardsHeaders, bookingsHeaders } = useHeaders()
 const { bookingsActions } = useActions()
 const confirmClickedOutside = ref(null)
-
+const declineReasonList = [
+  declineCodes.bookingCanceled,
+  declineCodes.bookingRolled,
+  declineCodes.tenderedElsewhere,
+  declineCodes.other,
+]
 const containerActionHandler = async ({ action, e }) => {
   props.computedEntities.find(yard => yard.id === e[0].location.geohash).expand = true
 
@@ -49,8 +57,8 @@ const containerActionHandler = async ({ action, e }) => {
   if (validActions) {
     if (action === 'edit-booking') emit('editBooking', e[0].id)
     if (action === 'remove-booking') {
-      removeBookingDialog.value.show(true)
       removeBookingDialog.value.data = e[0]
+      removeBookingDialog.value.show(true)
     }
     if (action === 'pause-booking') {
       await updateBookingStatus(e[0], statuses.paused)
@@ -61,14 +69,25 @@ const containerActionHandler = async ({ action, e }) => {
     if (action === 'duplicate-booking') {
       emit('duplicateBooking', e[0].ids)
     }
+    if (action === 'cancel-booking') {
+      openCancelBookingDialog(e[0])
+    }
   }
 }
 const onSelectRow = e => {
   emit('selectTableRow', e)
 }
+const openCancelBookingDialog = booking => {
+  cancelBookingDialog.value.show(true)
+  cancelBookingDialog.value.data = booking
+}
 const removeBooking = booking => {
-  deleteBooking(booking)
+  deleteBooking(booking.ids)
   removeBookingDialog.value.show(false)
+}
+const onCancelBooking = async (booking, reason) => {
+  await updateBookingStatus(booking, statuses.canceled, reason)
+  cancelBookingDialog.value.show(false)
 }
 const closeConfirmBookingDialog = (isPending = false) => {
   if (!isPending) {
@@ -240,6 +259,22 @@ onMounted(() => {
         :clicked-outside="confirmClickedOutside"
         @close="closeConfirmBookingDialog"
         @checkPending="e => closeConfirmBookingDialog(e)"
+      />
+    </template>
+  </Dialog>
+  <Dialog
+    ref="cancelBookingDialog"
+    max-width="480"
+  >
+    <template #text>
+      <ReportIssueDialog
+        title="Cancel booking"
+        sub-title="Choose the reason why you want to cancel booking"
+        select-label="Select"
+        :reason-list="declineReasonList"
+        btn-name="cancel"
+        @close="cancelBookingDialog.show(false)"
+        @onClickBtn="e => onCancelBooking(cancelBookingDialog.data, e)"
       />
     </template>
   </Dialog>

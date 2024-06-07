@@ -246,7 +246,7 @@ onMounted(async () => {
     <template #status="{ item }">
       <Classification
         type="status"
-        :value="item.status"
+        :value="item.status.replace('_', ' ')"
       />
     </template>
     <template #bookingExpiry="{ item }">
@@ -305,7 +305,7 @@ onMounted(async () => {
         <template #status="{ item }">
           <Classification
             type="status"
-            :value="item.status"
+            :value="item.status.replace('_', ' ')"
           />
         </template>
         <template #actions="{ item, selected }">

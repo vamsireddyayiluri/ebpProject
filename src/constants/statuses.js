@@ -11,6 +11,7 @@ export const statuses = {
   active: 'active',
   incomplete: 'incomplete',
   bookingCanceled: 'booking_canceled',
+  awaiting_confirmation : 'awaiting_confirmation'
 }
 export default () => ({
   statuses,

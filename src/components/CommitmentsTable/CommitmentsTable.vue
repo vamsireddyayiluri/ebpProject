@@ -161,7 +161,7 @@ const onLoadingDateUpdated = async (data, loadingDate, newCommitted) => {
     <template #status="{ item }">
       <Classification
         type="status"
-        :value="item.status"
+        :value="item.status.replace('_', ' ')"
       />
     </template>
     <template #actions="{ item, selected }">

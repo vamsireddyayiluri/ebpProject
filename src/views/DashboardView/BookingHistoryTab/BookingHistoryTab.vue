@@ -17,7 +17,7 @@ const { getCommitmentsByBookingId, closeBookingExpansion } = bookingsStore
 const { smAndDown } = useDisplay()
 const { bookingsHistoryHeaders, commitmentsHeaders } = useHeaders()
 const { bookingHistoryActions, commitmentsActions } = useActions()
-const { getFormattedDate, getSmallerDate } = useDate()
+const { getFormattedDate } = useDate()
 const router = useRouter()
 const statistics = ref(truckersData)
 const tableHeight = ref(0)
@@ -92,11 +92,10 @@ const applyFilter = () => {
     ).value
   }
   if (filters.value.loadingDate) {
-    const targetDate = moment(filters.value.loadingDate).endOf('day').format();
-    filteredData = useArrayFilter(
-      filteredData,
-      booking => booking.details.some(detail => detail.loadingDate === targetDate)
-    ).value;
+    const targetDate = moment(filters.value.loadingDate).endOf('day').format()
+    filteredData = useArrayFilter(filteredData, booking =>
+      booking.details.some(detail => detail.loadingDate === targetDate),
+    ).value
   }
   computedFilteredEntities.value = filteredData
 }
@@ -133,7 +132,7 @@ const rowExpanded = async (event, data) => {
     data.value.expand = true
     data.value.entities = commitments
   } else {
-    await closeBookingExpansion(id)
+    await closeBookingExpansion(id, true)
   }
 }
 const downloadData = async () => {
@@ -272,7 +271,7 @@ watch(searchValue, value => {
       <template #status="{ item }">
         <Classification
           type="status"
-          :value="item.status === statuses.expired ? 'incomplete' : item.status"
+          :value="item.status === statuses.expired ? 'incomplete' : item.status.replace('_', ' ')"
         />
       </template>
       <template #truckers="{ item }">
@@ -383,7 +382,7 @@ watch(searchValue, value => {
           <template #status="{ item }">
             <Classification
               type="status"
-              :value="item.status"
+              :value="item.status.replace('_', ' ')"
             />
           </template>
           <template #actions="{ item, selected }">

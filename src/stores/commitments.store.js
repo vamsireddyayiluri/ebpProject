@@ -15,6 +15,8 @@ import { db } from '~/firebase'
 import { statuses } from '~/constants/statuses'
 import { useAlertStore } from '~/stores/alert.store'
 import { useBookingsStore } from '~/stores/bookings.store'
+import { useAuthStore } from '~/stores/auth.store'
+
 import { onboardingCodes } from '~/constants/reasonCodes'
 import { getRequestLoadFee } from './helpers'
 import { getLocalTime } from '@qualle-admin/qutil/dist/date'
@@ -27,6 +29,7 @@ const { updateBookingStore } = useBookingsStore()
 export const useCommitmentsStore = defineStore('commitments', () => {
   const alertStore = useAlertStore()
   const bookingsStore = useBookingsStore()
+  const authStore = useAuthStore()
 
   const approveCommitment = async commitment => {
     // find booking
@@ -69,7 +72,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         }
       })
 
-      await updateBookingStore(commitment, 'approved')
+      // await updateBookingStore(commitment, 'approved')
 
       alertStore.info({ content: 'Booking commitment approved' })
     } catch ({ message }) {
@@ -156,16 +159,6 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         }
       })
 
-      const commitment = await getCommitment(data.id)
-      await updateBookingStore(commitment)
-
-      // find booking
-      const booking = bookingsStore.bookings.find(i => {
-        return (
-          i.id === commitment.bookingId ||
-          (Array.isArray(i.ids) && i.ids.includes(commitment.bookingId))
-        )
-      })
       alertStore.info({ content: 'Booking commitment completed' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
@@ -186,7 +179,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
         }
       })
 
-      await updateBookingStore(commitment)
+      // await updateBookingStore(commitment)
       alertStore.info({ content: 'Booking commitment declined' })
     } catch ({ message }) {
       alertStore.warning({ content: message })
@@ -197,6 +190,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       await updateDoc(doc(db, 'commitments', commitment.id), {
         status: statuses.canceled,
         reason,
+        canceledBy: authStore.userData.user_id,
       })
       const index = bookingsStore.bookings.findIndex(i => i.ids.includes(commitment.bookingId))
       bookingsStore.bookings[index].entities.forEach(j => {
@@ -219,7 +213,7 @@ export const useCommitmentsStore = defineStore('commitments', () => {
       await updateDoc(doc(db, 'bookings', commitment.bookingId), {
         carriers: booking?.carriers,
       })*/
-      await updateBookingStore(commitment, 'canceled')
+      // await updateBookingStore(commitment, 'canceled')
       alertStore.info({ content: 'Booking commitment canceled' })
     } catch ({ message }) {
       alertStore.warning({ content: message })

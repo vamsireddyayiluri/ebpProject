@@ -25,10 +25,13 @@ import {
   checkUniqueDates,
   checkContianersMaxLimit,
 } from '~/helpers/validations-functions'
+import { getTruckers } from '~/stores/helpers'
 import { insuranceTypes } from '~/constants/settings'
 import { getLocalTime } from '@qualle-admin/qutil/dist/date'
 import { getTimeLine } from '~/helpers/filters'
 import { uid } from 'uid'
+import { isBoolean } from '@vueuse/core'
+import { deepCopy } from 'json-2-csv/lib/utils'
 
 const authStore = useAuthStore()
 const alertStore = useAlertStore()
@@ -47,6 +50,7 @@ const {
   duplicateBooking,
   getBookingHistory,
   removeBookingFromNetwork,
+  getCommitmentsById,
 } = useBookingsStore()
 const commitmentStore = useCommitmentsStore()
 
@@ -74,7 +78,9 @@ const isPublishLoading = ref(false)
 const originalBooking = ref(null)
 const bookingConfirmationDialog = ref(null)
 const confirmClickedOutside = ref(null)
+const truckers = ref([])
 const fromRemoveLoadingDate = ref(false)
+const commitmentDetails = ref(null)
 
 const rules = {
   checkcommitted: value => checkCommittedValue(value, booking.value),
@@ -86,12 +92,38 @@ const rules = {
   validateDate: value => (isNull(value) ? true : validateExpiryDate(activeBookings?.value, value)),
   uniqueDate: () =>
     checkUniqueDates(booking.value.details) || 'Loading date already exists. Select another date.',
-  lessThanComitted: value =>
-    value?.containers >= value?.committed || `Value should not be less than ${value.committed}`,
+  lessThanComitted: value => {
+    if (!fromDraft) {
+      if (value?.bScac) {
+        const commitmentObj = commitmentDetails?.value?.find(
+          obj => obj.scac === value.bScac && obj.loadingDate === value.loadingDate,
+        )
+        if (commitmentObj) {
+          return (
+            value?.scacContainers >= commitmentObj?.committed ||
+            `Value should not be less than ${commitmentObj?.committed}`
+          )
+        }
+      } else {
+        let totalCommitted = 0
+
+        if (commitmentDetails?.value?.length) {
+          totalCommitted = commitmentDetails?.value
+            .filter(obj => obj.loadingDate === value.loadingDate)
+            .reduce((total, obj) => total + obj.awaitingCommitted + obj.committed, 0)
+        }
+        const committed = value?.committed ? value?.committed - totalCommitted : 0
+        return value?.scacContainers >= committed || `Value should not be less than ${committed}`
+      }
+    }
+  },
   containersMaxLimit: value => checkContianersMaxLimit(value),
 }
 
 const updateExpiryDate = (value, index) => {
+  booking.value.details[index]?.newScacs?.map(obj => {
+    obj.loadingDate = moment(value).endOf('day').format()
+  })
   booking.value.details[index].loadingDate = moment(value).endOf('day').format()
 }
 const updateSize = () => {
@@ -142,7 +174,7 @@ const handleBookingChanges = async () => {
 const openRemoveDialog = (index = 0, loadingDate = null) => {
   removeBookingDialog.value.show(true)
   removeBookingDialog.value.data = cloneDeep(booking.value)
-  removeBookingDialog.value.data.index = index  
+  removeBookingDialog.value.data.index = index
   if (loadingDate) {
     removeBookingDialog.value.data.loadingDate = moment(loadingDate).format('MM-DD-YYYY')
   } else {
@@ -198,7 +230,6 @@ const validateRequiredFields = () => {
     booking.value.estimatedRate &&
     rules.containers(booking.value.estimatedRate) === true &&
     booking.value.size &&
-    !booking.value.details.some(val => val?.loadingDate === null || val?.containers === null) &&
     booking.value.size
       ? booking.value.size.length > 0
       : false && booking.value.estimatedRateType) ||
@@ -209,7 +240,23 @@ const validateRequiredFields = () => {
 const isDisabledPublish = computed(() => {
   return validateRequiredFields() || form.value?.errors.length
 })
-
+const isLoadingDatesFieldsEmpty = computed(() => {
+  return cloneDeep(booking.value.details).some(object => {
+    if (object.newScacs) {
+      delete object?.preferredDays
+      return Object.values(object.newScacs).some(value => {
+        delete value?.preferredDays
+        delete value?.scac
+        const test =
+          value === null ||
+          Object.values(value).some(i => {
+            return isBoolean(i) ? false : !i
+          })
+        return test
+      })
+    }
+  })
+})
 const validateBooking = computed(() => {
   if (fromEdit) {
     const selectedBooking = bookings.value.find(i => i.id === booking.value.id)
@@ -217,10 +264,8 @@ const validateBooking = computed(() => {
   }
 
   let condition = isEqual(booking.value, originalBooking.value)
-
   condition = condition || validateRequiredFields()
   condition = condition || form.value?.errors.length
-
   if (fromHistory) {
     condition =
       condition ||
@@ -264,7 +309,7 @@ const onSave = async () => {
 
         return
       } else {
-        await reactivateBooking(booking.value)
+        reactivateBooking(booking.value)
         await router.push({ name: 'dashboard' })
         activated.value = false
 
@@ -300,10 +345,19 @@ const onSave = async () => {
   if (!isEmpty(updatedObj)) {
     await updateBooking(updatedObj, booking.value?.ids, fromDraft ? 'drafts' : 'bookings')
   }
-  await new Promise(resolve => setTimeout(resolve, 1000))
 
   await router.push({ name: 'dashboard' })
   isSaveLoading.value = false
+}
+
+const loadingDateId = 'loadingDate'
+const updateRef = async () => {
+  await nextTick()
+  form.value.items.forEach(i => {
+    if (i.id.includes(loadingDateId)) {
+      i.isValid === false && i.validate()
+    }
+  })
 }
 
 // checking active bookings loadingDate
@@ -313,13 +367,81 @@ const validateExpiryDates = index => {
     ref: booking.value.ref,
   })
 }
+const generateNewScacs = () => {
+  const hasPreferredCarrierWindow = bookingRulesStore.rules?.preferredCarrierWindow > 0
+  const truckersList = bookingRulesStore.rules?.truckers?.list
+
+  if (hasPreferredCarrierWindow && truckersList?.length) {
+    return truckersList.map(val => ({
+      scac: val,
+      id: uid(16),
+      preferredDays: null,
+      loadingDate: null,
+      containers: null,
+    }))
+  }
+
+  return [
+    {
+      id: uid(16),
+      preferredDays: null,
+      loadingDate: null,
+      containers: null,
+      scac: null,
+    },
+  ]
+}
 const addLoadingDate = () => {
   booking.value.details.push({
     id: uid(28),
     loadingDate: null,
     containers: null,
     scacList: cloneDeep(bookingRulesStore?.rules?.truckers),
+    newScacs: generateNewScacs(),
   })
+}
+const addScac = id => {
+  let selectedBooking = booking.value.details.find(booking => booking.id === id)
+  if (selectedBooking) {
+    selectedBooking.newScacs = selectedBooking.newScacs ? selectedBooking.newScacs : []
+    selectedBooking.newScacs.push({
+      id: uid(16),
+      preferredDays: null,
+      loadingDate: selectedBooking.loadingDate,
+      containers: null,
+      scac: null,
+    })
+  }
+}
+const removeScac = bDetails => {
+  let selectedBooking = booking.value.details.find(
+    abooking => abooking.loadingDate === bDetails.loadingDate,
+  )
+
+  if (selectedBooking) {
+    const index = selectedBooking.newScacs.findIndex(i => i.id === bDetails.id)
+
+    if (index > -1) {
+      selectedBooking.newScacs.splice(index, 1)
+    }
+  }
+  if (selectedScacs.value.includes(bDetails.scac)) {
+    selectedScacs.value = selectedScacs.value.filter(scac => scac !== bDetails.scac)
+  }
+}
+let selectedScacs = []
+
+const availableScacs = (index, newScacs) => {
+  selectedScacs.value = newScacs.map(obj => obj.scac)
+  const selected = selectedScacs.value.filter((_, id) => id !== index)
+  return truckers.value.map(trucker => trucker.scac).filter(scac => !selected.includes(scac))
+}
+const handleScacChange = loadingDate => {
+  let bookingObj = booking.value.details.find(booking => booking.loadingDate === loadingDate)
+  if (bookingObj) {
+    bookingObj.newScacs = bookingObj.newScacs ? bookingObj.newScacs : []
+    selectedScacs.value = bookingObj.newScacs.map(dt => dt.scac).filter(scac => scac)
+  }
 }
 const removeLoadingDate = async aBooking => {
   const index = booking.value.details.findIndex(i => i.id === aBooking.id)
@@ -334,14 +456,50 @@ const removeLoadingDate = async aBooking => {
   }
 }
 
+// Getting commitments to validate the contianers count
+const getCommitmentsToBooking = async () => {
+  commitmentDetails.value = (
+    await Promise.all(
+      originalBooking.value?.details.map(async iBooking => {
+        const commitments = await getCommitmentsById(iBooking.id)
+        const aggregatedCommitments = {}
+        commitments.forEach(commitment => {
+          if (commitment.preferredScac) {
+            const key = `${iBooking.loadingDate}_${commitment.scac}`
+            if (aggregatedCommitments[key]) {
+              if (commitment.status === 'approved') {
+                aggregatedCommitments[key].committed += commitment.committed
+              } else if (commitment.status === 'awaiting_confirmation') {
+                aggregatedCommitments[key].awaitingCommitted += commitment.committed
+              }
+            } else {
+              aggregatedCommitments[key] = {
+                loadingDate: iBooking.loadingDate,
+                scac: commitment.scac,
+                committed: commitment.status === 'approved' ? commitment.committed : 0,
+                awaitingCommitted:
+                  commitment.status === 'awaiting_confirmation' ? commitment.committed : 0,
+                status: commitment.status,
+              }
+            }
+          }
+        })
+
+        return Object.values(aggregatedCommitments)
+      }),
+    )
+  ).flat()
+}
+
 onMounted(async () => {
   loading.value = true
-  await getBookings(fromDraft ? { draft: true } : {})
+  await getBookings({})
   let targetBookings
   if (fromHistory) {
     await getBookingHistory()
     targetBookings = useBookingsStore().pastBookings
   } else if (fromDraft) {
+    await getBookings(fromDraft ? { draft: true } : {})
     targetBookings = useBookingsStore().drafts
   } else {
     targetBookings = useBookingsStore().bookings
@@ -349,13 +507,39 @@ onMounted(async () => {
 
   // bookings.value = targetBookings
   originalBooking.value = cloneDeep(targetBookings.find(val => val.ids.includes(route.params.id)))
+
   booking.value = JSON?.parse(JSON?.stringify(originalBooking?.value))
+  const loadingsDateCopy = booking.value?.details.map(iBooking => {
+    const i = deepCopy(iBooking)
+    return {
+      id: i.id,
+      loadingDate: i.loadingDate,
+      preferredDays: i?.preferredDays || null,
+      containers: i.containers,
+      scacList: i?.scacList || { list: [] },
+      committed: i.committed || 0,
+      newScacs: i?.newScacs
+        ? i?.newScacs
+        : [
+            {
+              loadingDate: i.loadingDate,
+              containers: i.containers,
+              scac: i?.scacList.list[0] || null,
+            },
+          ],
+    }
+  })
+  booking.value.details = loadingsDateCopy
+  originalBooking.value = cloneDeep(booking.value)
   if (fromHistory && queryParams.activated) {
     animate()
   }
   await workDetailsStore.getYards()
+  truckers.value = await getTruckers()
 
   yards.value = workDetailsStore.yards
+
+  await getCommitmentsToBooking()
   loading.value = false
 })
 </script>
@@ -427,7 +611,7 @@ onMounted(async () => {
             data="secondary1"
             class="ml-auto px-12"
             :loading="isPublishLoading"
-            :disabled="fromDraft ? isDisabledPublish : false"
+            :disabled="fromDraft ? isDisabledPublish || isLoadingDatesFieldsEmpty : false"
             @click="handleBookingChanges"
           >
             {{ fromDraft ? 'publish' : 'Remove from network' }}
@@ -436,7 +620,7 @@ onMounted(async () => {
         <Typography :color="getColor('textSecondary')">
           created by {{ userData.type }} {{ userData?.workerId ? '#' + userData.workerId : null }}
         </Typography>
-<!--        <div
+        <!--        <div
           v-if="expired || completed"
           class="mt-6 -mb-2"
           :class="{ hidden: hideChip }"
@@ -475,31 +659,35 @@ onMounted(async () => {
           }"
           @submit.prevent
         >
-          <Textfield
-            v-model.trim="booking.ref"
-            label="Booking ref*"
-            required
-            :rules="[rules.required, rules.validateDate(null)]"
-            :disabled="pending || expired || (completed && !activated)"
-          />
-          <Autocomplete
-            v-model="booking.line"
-            :items="getAllLines()"
-            label="SSL *"
-            required
-            item-title="label"
-            item-value="id"
-            return-object
-            :disabled="pending || expired || completed"
-          />
-          <Textfield
-            v-model.trim="booking.commodity"
-            label="Commodity*"
-            required
-            :disabled="pending || expired || completed"
-          />
+          <div
+            class="grid grid-cols-subgrid gap-6 md:grid-cols-3 col-span-2 md:col-span-4 relative"
+          >
+            <Textfield
+              v-model.trim="booking.ref"
+              label="Booking ref*"
+              required
+              :rules="[rules.required, rules.validateDate(null)]"
+              :disabled="pending || expired || (completed && !activated)"
+              @update:modelValue="updateRef"
+            />
+            <Autocomplete
+              v-model="booking.line"
+              :items="getAllLines()"
+              label="SSL *"
+              required
+              item-title="label"
+              item-value="id"
+              return-object
+              :disabled="pending || expired || completed"
+            />
+            <Textfield
+              v-model.trim="booking.commodity"
+              label="Commodity*"
+              required
+              :disabled="pending || expired || completed"
+            />
 
-          <!--
+            <!--
             <Datepicker
             :key="booking.preferredDate"
             :picked="booking.preferredDate ? moment(booking.preferredDate).toDate() : null"
@@ -511,145 +699,191 @@ onMounted(async () => {
             @onUpdate="updatePreferredDate"
             />
           -->
-          <Autocomplete
-            v-model="booking.location"
-            :items="
-              yards.map(yard => ({
-                address: yard.value,
-                geohash: yard.geohash,
-                label: yard.label,
-                lat: yard.lat,
-                lng: yard.lng,
-                details: yard.details,
-              }))
-            "
-            label="Yard label *"
-            item-title="label"
-            item-value="address"
-            return-object
-            required
-            :disabled="pending || expired || completed"
-            @update:modelValue="value => (booking.weight = value.details?.averageWeight || null)"
-          />
-          <Textfield
-            v-model.number="booking.weight"
-            label="Average Weight*"
-            type="number"
-            :rules="[rules.containers, rules.averageWeight]"
-            required
-            :disabled="pending || expired || completed"
-          />
-          <Select
-            v-model="booking.insurance"
-            :items="insuranceItems"
-            label="Minimum Insurance*"
-            required
-            item-title="label"
-            item-value="id"
-            return-object
-            :disabled="pending || expired || completed"
-          />
-          <div class="col-span-2 sm:col-span-1 md:col-span-2 lg:col-span-1">
-            <TextFieldWithSelector
-              v-model.number="booking.estimatedRate"
-              type="number"
-              label="Target rate*"
-              :items="['All in rate', 'Linehaul + FSC Only']"
-              return-object="true"
-              :rules="[rules.containers]"
+            <Autocomplete
+              v-model="booking.location"
+              :items="
+                yards.map(yard => ({
+                  address: yard.value,
+                  geohash: yard.geohash,
+                  label: yard.label,
+                  lat: yard.lat,
+                  lng: yard.lng,
+                  details: yard.details,
+                }))
+              "
+              label="Yard label *"
+              item-title="label"
+              item-value="address"
+              return-object
+              required
               :disabled="pending || expired || completed"
-              select-width="197px"
-              @onSelect="value => (booking.estimatedRateType = value)"
+              @update:modelValue="value => (booking.weight = value.details?.averageWeight || null)"
             />
+            <Textfield
+              v-model.number="booking.weight"
+              label="Average Weight*"
+              type="number"
+              :rules="[rules.containers, rules.averageWeight]"
+              required
+              :disabled="pending || expired || completed"
+            />
+            <Select
+              v-model="booking.insurance"
+              :items="insuranceItems"
+              label="Minimum Insurance*"
+              required
+              item-title="label"
+              item-value="id"
+              return-object
+              :disabled="pending || expired || completed"
+            />
+            <div class="col-span-2 sm:col-span-1 md:col-span-2 lg:col-span-1">
+              <TextFieldWithSelector
+                v-model.number="booking.estimatedRate"
+                type="number"
+                label="Target rate*"
+                :items="['All in rate', 'Linehaul + FSC Only']"
+                return-object="true"
+                :rules="[rules.containers]"
+                :disabled="pending || expired || completed"
+                select-width="197px"
+                @onSelect="value => (booking.estimatedRateType = value)"
+              />
+            </div>
+            <Autocomplete
+              v-model="booking.size"
+              :items="containersSizes"
+              label="Equipment type*"
+              :multiple="booking.flexibleBooking"
+              item-title="label"
+              item-value="size"
+              :menu-props="{ maxHeight: 350 }"
+              class="h-fit"
+              :disabled="pending || expired || completed"
+              :error-messages="validateFlexibleSizes(booking.size, booking.flexibleBooking)"
+            >
+              <template #prepend-item>
+                <div class="mt-3 ml-5">
+                  <Checkbox
+                    v-model="booking.flexibleBooking"
+                    label="Flexible booking"
+                    @change="updateSize"
+                  />
+                  <Typography
+                    type="w-3/5 text-body-xs-regular ml-9 mt-1.5 -pr-4"
+                    :color="getColor('textSecondary')"
+                  >
+                    Allows more than 1 equipment type to be chosen (maximum of 2)
+                  </Typography>
+                </div>
+                <Divider class="w-[calc(100%+16px)] mt-3 -ml-2" />
+              </template>
+            </Autocomplete>
           </div>
-          <Autocomplete
-            v-model="booking.size"
-            :items="containersSizes"
-            label="Equipment type*"
-            :multiple="booking.flexibleBooking"
-            item-title="label"
-            item-value="size"
-            :menu-props="{ maxHeight: 350 }"
-            class="h-fit"
-            :disabled="pending || expired || completed"
-            :error-messages="validateFlexibleSizes(booking.size, booking.flexibleBooking)"
+          <div
+            class="grid grid-cols-subgrid gap-6 md:grid-cols-4 col-span-2 md:col-span-4 relative"
           >
-            <template #prepend-item>
-              <div class="mt-3 ml-5">
-                <Checkbox
-                  v-model="booking.flexibleBooking"
-                  label="Flexible booking"
-                  @change="updateSize"
-                />
-                <Typography
-                  type="w-3/5 text-body-xs-regular ml-9 mt-1.5 -pr-4"
-                  :color="getColor('textSecondary')"
-                >
-                  Allows more than 1 equipment type to be chosen (maximum of 2)
-                </Typography>
-              </div>
-              <Divider class="w-[calc(100%+16px)] mt-3 -ml-2" />
-            </template>
-          </Autocomplete>
-
-          <div class="grid grid-cols-subgrid gap-6 col-span-2 md:col-span-3 relative">
-            <Typography type="text-body-xs-semibold col-span-2 md:col-span-3 -mb-2">
+            <Typography type="text-body-xs-semibold col-span-2 md:col-span-4 -mb-2">
               Loading dates
             </Typography>
             <template
               v-for="(d, index) in booking.details"
               :key="d"
             >
-              <Datepicker
-                :picked="d.loadingDate"
-                label="Loading date *"
-                typeable
-                class="mb-4"
-                :lower-limit="currentDate"
-                :error-messages="validateExpiryDate(activeBookings, { ...d, ref: booking.ref })"
-                :rules="[
-                  rules.required,
-                  rules.validateDate({ ...d, ref: booking.ref }),
-                  rules.uniqueDate,
-                ]"
-                :disabled="!activated && (expired || completed)"
-                required
-                @onUpdate="value => updateExpiryDate(value, index)"
-              />
-              <Textfield
-                v-model.number="d.containers"
-                label="Number of containers*"
-                :rules="[
-                  rules.containers,
-                  d.committed && rules.lessThanComitted(d),
-                  rules.containersMaxLimit,
-                ]"
-                type="number"
-                required
-                :disabled="expired || completed"
-                class="h-fit"
-              />
-              <div class="relative">
-                <AutocompleteScac
-                  :scac-list="d.scacList"
-                  :menu-btn="false"
-                  required
-                  :disabled="expired || completed"
-                  :validate-scacs="
-                    fromDraft || fromHistory
-                      ? bookingRulesStore.rules?.preferredCarrierWindow > 0
-                      : booking.preferredDays > 0
-                  "
-                  class="w-3/4"
-                />
-                <IconButton
-                  v-if="booking?.details?.length > 1 && !fromHistory"
-                  icon="mdi-close"
-                  class="absolute top-0 right-0"
-                  @click="removeLoadingDate(d)"
+              <div
+                class="mt-4 md:!mt-0"
+                style="display: contents"
+              >
+                <template
+                  v-for="(dt, i) in d?.newScacs"
+                  :key="i"
                 >
-                  <Tooltip> Remove loading date</Tooltip>
-                </IconButton>
+                  <Datepicker
+                    v-if="i === 0"
+                    :id="`${loadingDateId}-${index}`"
+                    :picked="dt.loadingDate"
+                    label="Loading date *"
+                    typeable
+                    location="top"
+                    :lower-limit="currentDate"
+                    :error-messages="validateExpiryDate(activeBookings, { ...d, ref: booking.ref })"
+                    :rules="[
+                      rules.required,
+                      rules.validateDate({ ...d, ref: booking.ref }),
+                      rules.uniqueDate,
+                    ]"
+                    class="mb-2"
+                    @onUpdate="value => updateExpiryDate(value, index, i)"
+                  />
+                  <div
+                    v-else
+                    class="w-1/6"
+                  ></div>
+                  <Textfield
+                    v-model.number="dt.containers"
+                    label="Number of containers*"
+                    :rules="[
+                      rules.containers,
+                      rules.containersMaxLimit,
+                      rules.lessThanComitted({
+                        ...d,
+                        bScac: dt.scac,
+                        scacContainers: dt.containers,
+                      }),
+                    ]"
+                    type="number"
+                    required
+                    class="h-fit"
+                    :disabled="expired || completed || paused"
+                  />
+                  <div class="relative mt-4 md:!mt-0">
+                    <Autocomplete
+                      v-model="dt.scac"
+                      :items="availableScacs(i, d.newScacs)"
+                      label="Choose trucker by SCAС "
+                      required
+                      :menu-props="{ maxHeight: 300 }"
+                      @update:modelValue="handleScacChange(dt.loadingDate)"
+                      class="w-4/5 lg:w-10/12 xl:w-11/12"
+                      :disabled="
+                        bookingRulesStore.rules?.preferredCarrierWindow < 1 ||
+                        expired ||
+                        completed ||
+                        paused ||
+                        originalBooking?.details[index]?.scacList?.list.includes(dt.scac)
+                      "
+                    />
+                    <Button
+                      v-if="i + 1 === d.newScacs.length && !(expired || completed || paused)"
+                      :variant="dt.loadingDate && dt.scac ? 'plain' : 'gray'"
+                      prepend-icon="mdi-plus"
+                      class="mt-2.5 mr-auto"
+                      color="gray"
+                      :disabled="!(dt.loadingDate && dt.scac)"
+                      @click="addScac(d.id)"
+                    >
+                      add scac
+                    </Button>
+                  </div>
+                  <div class="relative mt-4 md:!mt-0">
+                    <IconButton
+                      v-if="d.newScacs?.length > 1 && !fromHistory"
+                      icon="mdi-close"
+                      class="right-0"
+                      @click="removeScac(dt, index)"
+                    >
+                      <Tooltip> Remove Scac </Tooltip>
+                    </IconButton>
+                    <IconButton
+                      v-if="booking?.details?.length > 1 && !fromHistory && !i"
+                      icon="mdi-delete-forever-outline"
+                      class="absolute top-0 right-0"
+                      @click="removeLoadingDate(d)"
+                    >
+                      <Tooltip> Remove loading date</Tooltip>
+                    </IconButton>
+                  </div>
+                </template>
               </div>
             </template>
           </div>
@@ -665,7 +899,7 @@ onMounted(async () => {
         </VForm>
         <SaveCancelChanges
           v-if="!(expired || completed) || activated"
-          :disabled="validateBooking"
+          :disabled="validateBooking || isLoadingDatesFieldsEmpty"
           class="mt-10"
           :loading="isSaveLoading"
           @onSave="onSave"
