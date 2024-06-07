@@ -214,7 +214,7 @@ onUnmounted(() => {
                 </Typography>
                 <Classification
                   type="status"
-                  :value="status"
+                  :value="status.replace('_', ' ')"
                   class="w-min h-fit ml-auto"
                 />
                 <template
