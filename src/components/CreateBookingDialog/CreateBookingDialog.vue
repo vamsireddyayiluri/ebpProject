@@ -104,10 +104,9 @@ const emptyBooking = {
   insurance: '100,000',
 }
 const generateNewScacs = () => {
-  const hasPreferredCarrierWindow = bookingRulesStore.rules?.preferredCarrierWindow > 0
   const truckersList = cloneDeep(bookingRulesStore.rules?.truckers?.list)
 
-  if (hasPreferredCarrierWindow && truckersList?.length) {
+  if (truckersList?.length) {
     return truckersList.map(val => ({
       scac: val,
       id: uid(16),
@@ -514,17 +513,12 @@ onMounted(async () => {
                 required
                 :items="availableScacs(i, d.newScacs)"
                 label="Choose trucker by SCAС "
-                :disabled="bookingRulesStore.rules?.preferredCarrierWindow < 1"
                 :menu-props="{ maxHeight: 300 }"
                 @update:modelValue="handleScacChange(dt.loadingDate)"
                 class="w-4/5 lg:w-10/12 xl:w-11/12"
               />
               <Button
-                v-if="
-                  dt.loadingDate &&
-                  i + 1 === d.newScacs.length &&
-                  bookingRulesStore.rules?.preferredCarrierWindow > 0
-                "
+                v-if="dt.loadingDate && i + 1 === d.newScacs.length"
                 :variant="dt.loadingDate && dt.scac ? 'plain' : 'gray'"
                 prepend-icon="mdi-plus"
                 class="mt-2.5 mr-auto"

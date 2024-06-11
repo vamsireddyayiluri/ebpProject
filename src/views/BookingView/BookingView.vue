@@ -368,10 +368,9 @@ const validateExpiryDates = index => {
   })
 }
 const generateNewScacs = () => {
-  const hasPreferredCarrierWindow = bookingRulesStore.rules?.preferredCarrierWindow > 0
   const truckersList = bookingRulesStore.rules?.truckers?.list
 
-  if (hasPreferredCarrierWindow && truckersList?.length) {
+  if (truckersList?.length) {
     return truckersList.map(val => ({
       scac: val,
       id: uid(16),
@@ -846,7 +845,6 @@ onMounted(async () => {
                       @update:modelValue="handleScacChange(dt.loadingDate)"
                       class="w-4/5 lg:w-10/12 xl:w-11/12"
                       :disabled="
-                        bookingRulesStore.rules?.preferredCarrierWindow < 1 ||
                         expired ||
                         completed ||
                         paused ||
