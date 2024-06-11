@@ -845,10 +845,10 @@ onMounted(async () => {
                       @update:modelValue="handleScacChange(dt.loadingDate)"
                       class="w-4/5 lg:w-10/12 xl:w-11/12"
                       :disabled="
-                        expired ||
+                        (expired ||
                         completed ||
                         paused ||
-                        originalBooking?.details[index]?.scacList?.list.includes(dt.scac)
+                        originalBooking?.details[index]?.scacList?.list.includes(dt.scac)) && !fromDraft
                       "
                     />
                     <Button
