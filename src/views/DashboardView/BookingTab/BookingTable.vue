@@ -348,7 +348,7 @@ onMounted(async () => {
         sub-title="Choose the reason why you want to cancel booking"
         select-label="Select"
         :reason-list="declineReasonList"
-        btn-name="cancel"
+        btn-name="confirm cancelation"
         @close="cancelBookingDialog.show(false)"
         @onClickBtn="e => onCancelBooking(cancelBookingDialog.data, e)"
       />

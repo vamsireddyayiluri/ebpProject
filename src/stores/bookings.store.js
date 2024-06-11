@@ -260,8 +260,7 @@ export const useBookingsStore = defineStore('bookings', () => {
           b.containers = b.newScacs.reduce((total, obj) => total + obj.containers, 0)
           b.scacList.list = b.newScacs.filter(obj => obj?.scac).map(obj => obj?.scac)
         }
-        b.scacList =
-          authStore.orgData?.bookingRules?.preferredCarrierWindow > 0 ? b.scacList : { list: [] }
+        b.scacList = b?.scacList || { list: [] }
         const newBooking = createBookingObj({ ...selectedBooking, ...b })
         if (fromEdit) {
           newBooking.createdAt = selectedBooking.createdAt
@@ -280,8 +279,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     try {
       const batch = writeBatch(db)
       details.forEach(b => {
-        b.scacList =
-          authStore.orgData?.bookingRules?.preferredCarrierWindow > 0 ? b.scacList : { list: [] }
+        b.scacList = b?.scacList || { list: [] }
         const newDraft = createBookingObj({
           ...selectedDraft,
           ...b,
@@ -432,8 +430,7 @@ export const useBookingsStore = defineStore('bookings', () => {
           b.containers = b.newScacs.reduce((total, obj) => total + obj.containers, 0)
           b.scacList.list = b.newScacs.filter(obj => obj?.scac).map(obj => obj.scac)
         }
-        b.scacList =
-          authStore.orgData?.bookingRules?.preferredCarrierWindow > 0 ? b.scacList : { list: [] }
+        b.scacList = b?.scacList || { list: [] }
         const data = createEditedBookingObj(booking, b.id)
         const docRef = doc(collection(db, 'bookings'), data.id)
         batch.set(docRef, data)
@@ -458,8 +455,7 @@ export const useBookingsStore = defineStore('bookings', () => {
           b.containers = b.newScacs.reduce((total, obj) => total + obj.containers, 0)
           b.scacList.list = b.newScacs.filter(obj => obj?.scac).map(obj => obj.scac)
         }
-        b.scacList =
-          authStore.orgData?.bookingRules?.preferredCarrierWindow > 0 ? b.scacList : { list: [] }
+        b.scacList = b?.scacList || { list: [] }
         const newData = createEditedBookingObj(booking, b.id)
         batch.set(doc(collection(db, 'bookings'), bookingId), {
           ...newData,
