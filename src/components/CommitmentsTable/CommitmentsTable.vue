@@ -236,7 +236,7 @@ const onLoadingDateUpdated = async (data, loadingDate, newCommitted) => {
         sub-title="Choose the reason why you want to cancel commitment"
         select-label="Select"
         :reason-list="cancelReasonList"
-        btn-name="cancel"
+        btn-name="confirm cancelation"
         @close="cancelCommitmentDialog.show(false)"
         @onClickBtn="e => onCancelCommitment(cancelCommitmentDialog.data, e)"
       />
