@@ -257,25 +257,45 @@ const removeScac = bDetails => {
   }
 }
 const saveDraft = async () => {
-  await createDraft(booking.value, newBookings.value).then(() => emit('bookingCreated'))
-  emit('close')
-}
+  let check = await validateScac()
 
-const saveBooking = async () => {
-  isLoading.value = true
-  const commitmentsList = await commitmentStore.getExpiredCommitments(
-    booking.value.location.geohash,
-  )
-  if (commitmentsList?.length) {
-    bookingConfirmationDialog.value.show(true)
-    bookingConfirmationDialog.value.data = commitmentsList
-    isLoading.value = false
+  if (check) {
+    alertStore.warning({ content: 'Please update preferred trucker scacs in booking rules.' })
   } else {
-    createBooking(booking.value, newBookings.value).then(() => emit('bookingCreated'))
-    // await bookingsStore.getBookings({})
-    isLoading.value = true
+    await createDraft(booking.value, newBookings.value).then(() => emit('bookingCreated'))
     emit('close')
-    // await bookingsStore.getBookings({})
+  }
+}
+//validate whether given scac is in prefererd scaclist or not
+const validateScac = () => {
+  const truckersList = bookingRulesStore.rules?.truckers?.list || []
+
+  return newBookings.value.some(iBooking => {
+    const scacList = iBooking.newScacs.map(newScac => newScac.scac)
+    return scacList.some(scac => !truckersList.includes(scac))
+  })
+}
+const saveBooking = async () => {
+  let check = await validateScac()
+
+  if (check) {
+    alertStore.warning({ content: 'Please update preferred trucker scacs in booking rules.' })
+  } else {
+    isLoading.value = true
+    const commitmentsList = await commitmentStore.getExpiredCommitments(
+      booking.value.location.geohash,
+    )
+    if (commitmentsList?.length) {
+      bookingConfirmationDialog.value.show(true)
+      bookingConfirmationDialog.value.data = commitmentsList
+      isLoading.value = false
+    } else {
+      createBooking(booking.value, newBookings.value).then(() => emit('bookingCreated'))
+      // await bookingsStore.getBookings({})
+      isLoading.value = true
+      emit('close')
+      // await bookingsStore.getBookings({})
+    }
   }
 }
 const updateRef = async e => {
