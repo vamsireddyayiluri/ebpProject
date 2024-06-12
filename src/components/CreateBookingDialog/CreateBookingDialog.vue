@@ -272,7 +272,7 @@ const validateScac = () => {
 
   return newBookings.value.some(iBooking => {
     const scacList = iBooking.newScacs.map(newScac => newScac.scac)
-    return scacList.some(scac => !truckersList.includes(scac))
+    return scacList.some(scac => scac !== null && !truckersList.includes(scac))
   })
 }
 const saveBooking = async () => {
