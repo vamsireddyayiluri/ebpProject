@@ -148,7 +148,7 @@ const paused = computed(() => booking.value?.status === statuses.paused)
 const handleBookingChanges = async () => {
   const check = await validateScac()
   if (check) {
-    alertStore.warning({ content: 'Please update preferred trucker scacs in booking rules.' })
+    alertStore.warning({ content: 'Please update preferred trucker SCACs in booking rules.' })
   } else {
     isPublishLoading.value = true
     const commitmentsList = await commitmentStore.getExpiredCommitments(
@@ -308,7 +308,7 @@ const validateScac = async () => {
 const onSave = async () => {
   const check = await validateScac()
   if (check) {
-    alertStore.warning({ content: 'Please update preferred trucker scacs in booking rules.' })
+    alertStore.warning({ content: 'Please update preferred trucker SCACs in booking rules.' })
   } else {
     isSaveLoading.value = true
 

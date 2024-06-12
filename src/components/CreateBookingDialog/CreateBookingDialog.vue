@@ -260,7 +260,7 @@ const saveDraft = async () => {
   let check = await validateScac()
 
   if (check) {
-    alertStore.warning({ content: 'Please update preferred trucker scacs in booking rules.' })
+    alertStore.warning({ content: 'Please update preferred trucker SCACs in booking rules.' })
   } else {
     await createDraft(booking.value, newBookings.value).then(() => emit('bookingCreated'))
     emit('close')
@@ -279,7 +279,7 @@ const saveBooking = async () => {
   let check = await validateScac()
 
   if (check) {
-    alertStore.warning({ content: 'Please update preferred trucker scacs in booking rules.' })
+    alertStore.warning({ content: 'Please update preferred trucker SCACs in booking rules.' })
   } else {
     isLoading.value = true
     const commitmentsList = await commitmentStore.getExpiredCommitments(
