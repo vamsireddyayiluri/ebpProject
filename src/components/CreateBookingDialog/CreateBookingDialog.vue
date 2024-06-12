@@ -291,7 +291,7 @@ let selectedScacs = []
 const availableScacs = (index, newScacs) => {
   selectedScacs.value = newScacs.map(obj => obj.scac)
   const selected = selectedScacs.value.filter((_, id) => id !== index)
-  return truckers.value.map(trucker => trucker.scac).filter(scac => !selected.includes(scac))
+  return truckers.value.filter(scac => !selected.includes(scac))
 }
 const handleScacChange = loadingDate => {
   let booking = newBookings.value.find(booking => booking.loadingDate === loadingDate)
@@ -316,7 +316,7 @@ const onClickOutsideDialog = () => {
 
 onMounted(async () => {
   await workDetailsStore.getYards()
-  truckers.value = await getTruckers()
+  truckers.value = bookingRulesStore.rules?.truckers?.list
 })
 
 /*watch(clickedOutside, () => {
