@@ -9,9 +9,14 @@ import { validateDays } from '~/helpers/validations-functions'
 const { userData } = useAuthStore()
 const workDetailsStore = useWorkDetailsStore()
 const bookingRulesStore = useBookingRulesStore()
+import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
+
 const { orgData } = storeToRefs(useAuthStore())
 const { rules } = storeToRefs(bookingRulesStore)
 const { yards } = storeToRefs(workDetailsStore)
+const preferredTruckersStore = usePreferredTruckersStore()
+
+const { preferredTruckers } = storeToRefs(preferredTruckersStore)
 const form = ref(null)
 const truckersRef = ref(null)
 const errorRules = {
@@ -90,7 +95,7 @@ tryOnUnmounted(() => {
       <div class="order-4 sm:!order-3 mb-2 flex flex-col">
         <AutocompleteScac
           ref="truckersRef"
-          :scac-list="rules.truckers"
+          :scac-list="preferredTruckers"
           @onChange="list => (rules.truckers.list = list)"
         />
       </div>
@@ -108,9 +113,7 @@ tryOnUnmounted(() => {
         class="order-5 sm:!order-6 !h-12 -mt-1"
         @update:modelValue="turnSwitch"
       >
-        <Typography class="flex items-center gap-2">
-          Preferred carrier window
-        </Typography>
+        <Typography class="flex items-center gap-2"> Preferred carrier window </Typography>
       </Switch>
       <Textfield
         v-model.number="rules.preferredCarrierWindow"
