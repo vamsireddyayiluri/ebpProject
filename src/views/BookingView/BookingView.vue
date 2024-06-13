@@ -252,18 +252,25 @@ const isDisabledPublish = computed(() => {
 const isLoadingDatesFieldsEmpty = computed(() => {
   return cloneDeep(booking.value.details).some(object => {
     if (object.newScacs) {
-      delete object?.preferredDays
-      return Object.values(object.newScacs).some(value => {
-        delete value?.preferredDays
-        delete value?.scac
-        const test =
-          value === null ||
-          Object.values(value).some(i => {
-            return isBoolean(i) ? false : !i
-          })
+      let emptyScacCount = 0
+      const hasEmptyFields = object.newScacs.some(value => {
+        if (!value.scac) {
+          emptyScacCount++
+        }
+        const valuesToCheck = { ...value }
+        delete valuesToCheck.preferredDays
+        delete valuesToCheck.scac
+        const test = Object.values(valuesToCheck).some(i => {
+          return isBoolean(i) ? false : !i
+        })
         return test
       })
+      if (emptyScacCount > 1) {
+        return true
+      }
+      return hasEmptyFields
     }
+    return false
   })
 })
 const validateBooking = computed(() => {
@@ -363,7 +370,12 @@ const onSave = async () => {
     )
 
     if (!isEmpty(updatedObj)) {
-      await updateBooking(updatedObj, booking.value?.ids, fromDraft ? 'drafts' : 'bookings')
+      await updateBooking(
+        originalBooking.value,
+        updatedObj,
+        booking.value?.ids,
+        fromDraft ? 'drafts' : 'bookings',
+      )
     }
 
     await router.push({ name: 'dashboard' })
@@ -865,17 +877,13 @@ onMounted(async () => {
                       @update:modelValue="handleScacChange(dt.loadingDate)"
                       class="w-4/5 lg:w-10/12 xl:w-11/12"
                       :disabled="
-                        (expired ||
-                          completed ||
-                          paused ||
-                          originalBooking?.details[index]?.scacList?.list.includes(dt.scac) ||
-                          originalBooking?.details[index]?.scacList?.list.includes(null)) &&
+                        originalBooking?.details[index]?.newScacs?.some(val => val.id === dt.id) &&
                         !fromDraft
                       "
                     />
                     <Button
                       v-if="i + 1 === d.newScacs.length && !(expired || completed || paused)"
-                      :variant="dt.loadingDate && dt.scac ? 'plain' : 'gray'"
+                      :variant="dt.loadingDate ? 'plain' : 'gray'"
                       prepend-icon="mdi-plus"
                       class="mt-2.5 mr-auto"
                       color="gray"

@@ -18,17 +18,20 @@ import {
 import { db } from '~/firebase'
 import { useAuthStore } from '~/stores/auth.store'
 import { getLocalServerTime, getLocalTime } from '@qualle-admin/qutil/dist/date'
-import { capitalize, pickBy } from 'lodash'
+import { capitalize, differenceBy, intersectionBy, pickBy } from 'lodash'
 import moment from 'moment-timezone'
 import { statuses } from '~/constants/statuses'
 import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
-
+import { useCommitmentsStore } from '~/stores/commitments.store'
 import { groupBookings } from '~/stores/helpers'
+import axios from 'axios'
 
 export const useBookingsStore = defineStore('bookings', () => {
   const alertStore = useAlertStore()
   const authStore = useAuthStore()
   const { preferredTruckers } = usePreferredTruckersStore()
+  const commitmentStore = useCommitmentsStore()
+
   let bookings = ref([])
   let allBookings = ref([])
 
@@ -518,7 +521,75 @@ export const useBookingsStore = defineStore('bookings', () => {
     }
   }
 
-  const updateBooking = async (booking, ids, collectionName, completedStatus = false) => {
+  const analyzeScacAndContainerChanges = (originalData, updatedObj, commitments) => {
+    const updatedData = updatedObj.newScacs
+    const oldData = originalData.newScacs
+
+    const added = differenceBy(updatedData, oldData, 'id')
+    const removed = differenceBy(oldData, updatedData, 'id')
+    const common = intersectionBy(updatedData, oldData, 'id')
+
+    if (common.length) {
+      const cancelCommit = []
+      const createCommit = []
+      common.forEach(val => {
+        const obj = oldData.find(obj => obj.id === val.id)
+        if (obj.containers !== val.containers) {
+          if (obj.containers < val.containers) {
+            createCommit.push({
+              containers: val.containers - obj.containers,
+              scac: val.scac,
+            })
+          } else {
+            if (val.scac) {
+              let containerDifference = val.containers
+              commitments.map(commitment => {
+                if (
+                  commitment.preferredScac &&
+                  commitment.scac === val.scac &&
+                  commitment.bookingId === originalData.id
+                ) {
+                  if (commitment.status === 'approved' || commitment.status === 'onboarded') {
+                    containerDifference = val.containers - commitment.committed
+                  } else {
+                    commitmentStore.cancelCommitment(commitment, null)
+                  }
+                }
+              })
+              if (containerDifference > 0) {
+                createCommit.push({
+                  containers: containerDifference,
+                  scac: val.scac,
+                })
+              }
+            }
+          }
+        }
+      })
+
+      added.forEach(val => {
+        createCommit.push({
+          containers: val.containers,
+          scac: val.scac,
+        })
+      })
+      removed.forEach(val => {
+        cancelCommit.push({
+          containers: val.containers,
+          scac: val.scac,
+        })
+      })
+      return { cancelCommit: cancelCommit, createCommit: createCommit }
+    }
+  }
+
+  const updateBooking = async (
+    originalBooking,
+    booking,
+    ids,
+    collectionName,
+    completedStatus = false,
+  ) => {
     try {
       const { details } = booking || { details: [] }
 
@@ -528,6 +599,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       for (const id of ids) {
         const docRef = doc(db, collectionName, id)
         const loadData = details?.find(val => val.id === id)
+        const originalData = originalBooking.details.find(val => val.id === id)
         if (loadData) {
           data.loadingDate = moment(loadData.loadingDate).endOf('day').format()
           data.containers = loadData.containers
@@ -541,18 +613,44 @@ export const useBookingsStore = defineStore('bookings', () => {
         if (Object.keys(data).length) {
           batch.update(docRef, { ...data, updatedAt: getLocalTime().format() })
         }
+        const commitments = await getCommitmentsByBookingId(id, ids)
+
+        const requiredData = analyzeScacAndContainerChanges(originalData, loadData, commitments)
+        if (requiredData.createCommit.length) {
+          //create commitments with awaiting confirmation status
+          await axios.post(`${import.meta.env.VITE_APP_CANONICAL_URL}/api/v1/commitments/create`, {
+            bookingId: id,
+            commitmentData: requiredData.createCommit,
+          })
+        }
+        if (requiredData.cancelCommit.length) {
+          const filteredCommitments = commitments.filter(
+            commitment => commitment.bookingId === id && commitment.status !== 'onboarded',
+          )
+          requiredData.cancelCommit.forEach(obj => {
+            filteredCommitments.forEach(commitment => {
+              if (
+                (commitment.preferredScac && commitment.scac === obj.scac) ||
+                !commitment.preferredScac
+              ) {
+                commitmentStore.cancelCommitment(commitment, null)
+              }
+            })
+          })
+        }
 
         // change loadingData in commitments
-        const commitments = await getCommitmentsByBookingId(id, ids)
-        commitments.map(async i => {
-          const loadingDate = details?.find(val => val.id === i.bookingId).loadingDate
-          if (loadingDate) {
-            await updateDoc(doc(db, 'commitments', i.id), {
-              loadingDate: loadingDate,
-              updatedAt: getLocalTime().format(),
-            })
-          }
-        })
+        Promise.all(
+          commitments.map(async i => {
+            const loadingDate = details?.find(val => val.id === i.bookingId).loadingDate
+            if (loadingDate) {
+              await updateDoc(doc(db, 'commitments', i.id), {
+                loadingDate: loadingDate,
+                updatedAt: getLocalTime().format(),
+              })
+            }
+          }),
+        )
       }
 
       // collapse booking when edited
