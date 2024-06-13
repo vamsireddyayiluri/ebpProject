@@ -32,6 +32,7 @@ import { getTimeLine } from '~/helpers/filters'
 import { uid } from 'uid'
 import { isBoolean } from '@vueuse/core'
 import { deepCopy } from 'json-2-csv/lib/utils'
+import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
 
 const authStore = useAuthStore()
 const alertStore = useAlertStore()
@@ -56,7 +57,9 @@ const commitmentStore = useCommitmentsStore()
 
 const workDetailsStore = useWorkDetailsStore()
 const bookingRulesStore = useBookingRulesStore()
+const preferredTruckersStore = usePreferredTruckersStore()
 
+const { preferredTruckers } = storeToRefs(preferredTruckersStore)
 const { yards } = storeToRefs(workDetailsStore)
 const { bookings, drafts, notGroupedBookings: activeBookings } = storeToRefs(useBookingsStore())
 const route = useRoute()
@@ -148,7 +151,7 @@ const paused = computed(() => booking.value?.status === statuses.paused)
 const handleBookingChanges = async () => {
   const check = await validateScac()
   if (check) {
-    alertStore.warning({ content: 'Please update preferred trucker scacs in booking rules.' })
+    alertStore.warning({ content: 'Please update trucker SCACs in preferred truckers list.' })
   } else {
     isPublishLoading.value = true
     const commitmentsList = await commitmentStore.getExpiredCommitments(
@@ -298,7 +301,7 @@ const cancelChanges = async () => {
   booking.value = cloneDeep(originalBooking.value)
 }
 const validateScac = async () => {
-  const truckersList = bookingRulesStore.rules?.truckers?.list || []
+  const truckersList = truckers.value || []
 
   return booking.value.details.some(iBooking => {
     const scacList = iBooking.newScacs.map(newScac => newScac.scac)
@@ -308,7 +311,7 @@ const validateScac = async () => {
 const onSave = async () => {
   const check = await validateScac()
   if (check) {
-    alertStore.warning({ content: 'Please update preferred trucker scacs in booking rules.' })
+    alertStore.warning({ content: 'Please update trucker SCACs in preferred truckers list.' })
   } else {
     isSaveLoading.value = true
 
@@ -554,7 +557,7 @@ onMounted(async () => {
     animate()
   }
   await workDetailsStore.getYards()
-  truckers.value = bookingRulesStore.rules?.truckers?.list
+  truckers.value = preferredTruckers.value.map(preferredTrucker => preferredTrucker.scac)
 
   yards.value = workDetailsStore.yards
 

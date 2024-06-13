@@ -5,6 +5,8 @@ import { useBookingsStore } from '~/stores/bookings.store'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { storeToRefs } from 'pinia'
 import { useBookingRulesStore } from '~/stores/bookingRules.store'
+import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
+
 import containersSizes from '~/fixtures/containersSizes.json'
 import moment from 'moment'
 import { useAlertStore } from '~/stores/alert.store'
@@ -36,7 +38,9 @@ const bookingRulesStore = useBookingRulesStore()
 const bookingsStore = useBookingsStore()
 const alertStore = useAlertStore()
 const commitmentStore = useCommitmentsStore()
+const preferredTruckersStore = usePreferredTruckersStore()
 
+const { preferredTruckers } = storeToRefs(preferredTruckersStore)
 const { yards } = storeToRefs(workDetailsStore)
 const { notGroupedBookings: bookings } = storeToRefs(bookingsStore)
 const form = ref(null)
@@ -260,7 +264,7 @@ const saveDraft = async () => {
   let check = await validateScac()
 
   if (check) {
-    alertStore.warning({ content: 'Please update preferred trucker scacs in booking rules.' })
+    alertStore.warning({ content: 'Please update trucker SCACs in preferred truckers list.' })
   } else {
     await createDraft(booking.value, newBookings.value).then(() => emit('bookingCreated'))
     emit('close')
@@ -268,7 +272,7 @@ const saveDraft = async () => {
 }
 //validate whether given scac is in prefererd scaclist or not
 const validateScac = () => {
-  const truckersList = bookingRulesStore.rules?.truckers?.list || []
+  const truckersList = truckers.value || []
 
   return newBookings.value.some(iBooking => {
     const scacList = iBooking.newScacs.map(newScac => newScac.scac)
@@ -279,7 +283,7 @@ const saveBooking = async () => {
   let check = await validateScac()
 
   if (check) {
-    alertStore.warning({ content: 'Please update preferred trucker scacs in booking rules.' })
+    alertStore.warning({ content: 'Please update trucker SCACs in preferred truckers list.' })
   } else {
     isLoading.value = true
     const commitmentsList = await commitmentStore.getExpiredCommitments(
@@ -336,7 +340,7 @@ const onClickOutsideDialog = () => {
 
 onMounted(async () => {
   await workDetailsStore.getYards()
-  truckers.value = bookingRulesStore.rules?.truckers?.list
+  truckers.value = preferredTruckers.value.map(preferredTrucker => preferredTrucker.scac)
 })
 
 /*watch(clickedOutside, () => {
