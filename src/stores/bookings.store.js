@@ -532,15 +532,16 @@ export const useBookingsStore = defineStore('bookings', () => {
     const cancelCommit = []
     const createCommit = []
     if (common.length) {
-     
       common.forEach(val => {
         const obj = oldData.find(obj => obj.id === val.id)
         if (obj.containers !== val.containers) {
           if (obj.containers < val.containers) {
-            createCommit.push({
-              containers: val.containers - obj.containers,
-              scac: val.scac,
-            })
+            if (val.scac) {
+              createCommit.push({
+                containers: val.containers - obj.containers,
+                scac: val.scac,
+              })
+            }
           } else {
             if (val.scac) {
               let containerDifference = val.containers
@@ -558,10 +559,12 @@ export const useBookingsStore = defineStore('bookings', () => {
                 }
               })
               if (containerDifference > 0) {
-                createCommit.push({
-                  containers: containerDifference,
-                  scac: val.scac,
-                })
+                if (val.scac) {
+                  createCommit.push({
+                    containers: containerDifference,
+                    scac: val.scac,
+                  })
+                }
               }
             }
           }
@@ -569,10 +572,12 @@ export const useBookingsStore = defineStore('bookings', () => {
       })
 
       added.forEach(val => {
-        createCommit.push({
-          containers: val.containers,
-          scac: val.scac,
-        })
+        if (val.scac) {
+          createCommit.push({
+            containers: val.containers,
+            scac: val.scac,
+          })
+        }
       })
       removed.forEach(val => {
         cancelCommit.push({
