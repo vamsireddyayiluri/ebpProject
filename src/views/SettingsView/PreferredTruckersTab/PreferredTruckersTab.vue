@@ -116,8 +116,6 @@ onMounted(async () => {
       : window.innerHeight - table.getBoundingClientRect().top - 99
   })
   truckers.value = await getTruckers()
-  debugger
-  console.log(truckers.value)
 })
 </script>
 
