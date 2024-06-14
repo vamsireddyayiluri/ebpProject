@@ -57,7 +57,7 @@ export const getTruckers = async () => {
 
   const truckers = querySnapshot.docs
     .map(doc => {
-      const { orgId, scac, email, company, accountType } = doc.data()
+      const { orgId, scac, email, company, accountType = null } = doc.data()
       if (accountType !== 'Maersk') {
         return { id: orgId, scac, email, company }
       }
