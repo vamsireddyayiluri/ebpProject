@@ -569,22 +569,21 @@ export const useBookingsStore = defineStore('bookings', () => {
           }
         }
       })
-
-      added.forEach(val => {
-        if (val.scac) {
-          createCommit.push({
-            containers: val.containers,
-            scac: val.scac,
-          })
-        }
-      })
-      removed.forEach(val => {
-        cancelCommit.push({
+    }
+    added.forEach(val => {
+      if (val.scac) {
+        createCommit.push({
           containers: val.containers,
           scac: val.scac,
         })
+      }
+    })
+    removed.forEach(val => {
+      cancelCommit.push({
+        containers: val.containers,
+        scac: val.scac,
       })
-    }
+    })
     return { cancelCommit: cancelCommit, createCommit: createCommit }
   }
 
