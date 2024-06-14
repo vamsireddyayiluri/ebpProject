@@ -522,16 +522,17 @@ export const useBookingsStore = defineStore('bookings', () => {
   }
 
   const analyzeScacAndContainerChanges = (originalData, updatedObj, commitments) => {
+    debugger
     const updatedData = updatedObj.newScacs
     const oldData = originalData.newScacs
 
     const added = differenceBy(updatedData, oldData, 'id')
     const removed = differenceBy(oldData, updatedData, 'id')
     const common = intersectionBy(updatedData, oldData, 'id')
-
+    const cancelCommit = []
+    const createCommit = []
     if (common.length) {
-      const cancelCommit = []
-      const createCommit = []
+     
       common.forEach(val => {
         const obj = oldData.find(obj => obj.id === val.id)
         if (obj.containers !== val.containers) {
@@ -579,8 +580,8 @@ export const useBookingsStore = defineStore('bookings', () => {
           scac: val.scac,
         })
       })
-      return { cancelCommit: cancelCommit, createCommit: createCommit }
     }
+    return { cancelCommit: cancelCommit, createCommit: createCommit }
   }
 
   const updateBooking = async (
@@ -614,7 +615,7 @@ export const useBookingsStore = defineStore('bookings', () => {
           batch.update(docRef, { ...data, updatedAt: getLocalTime().format() })
         }
         const commitments = await getCommitmentsByBookingId(id, ids)
-
+        debugger
         const requiredData = analyzeScacAndContainerChanges(originalData, loadData, commitments)
         if (requiredData.createCommit.length) {
           //create commitments with awaiting confirmation status
