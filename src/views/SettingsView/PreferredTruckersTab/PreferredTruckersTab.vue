@@ -63,13 +63,13 @@ const containerActionHandler = async ({ action, e }) => {
 }
 const deleteTrucker = async () => {
   await preferredTruckersStore.deleteTrucker(deleteTruckerDialog.value.data)
-  const truckers = cloneDeep(rules.value.truckers)
+  const preferredtruckers = cloneDeep(rules.value.truckers)
 
   rules.value.truckers.list = rules.value.truckers.list.filter(
     scac => scac !== deleteTruckerDialog.value.data.scac,
   )
 
-  if (!isEqual(rules.value.truckers, truckers)) {
+  if (!isEqual(rules.value.truckers, preferredtruckers)) {
     await bookingRulesStore.updateRules(rules.value, userData.orgId)
   }
   deleteTruckerDialog.value.show(false)
@@ -116,6 +116,8 @@ onMounted(async () => {
       : window.innerHeight - table.getBoundingClientRect().top - 99
   })
   truckers.value = await getTruckers()
+  debugger
+  console.log(truckers.value)
 })
 </script>
 
