@@ -95,7 +95,7 @@ tryOnUnmounted(() => {
       <div class="order-4 sm:!order-3 mb-2 flex flex-col">
         <AutocompleteScac
           ref="truckersRef"
-          :scac-list="preferredTruckers"
+          :scac-list="rules.truckers"
           @onChange="list => (rules.truckers.list = list)"
         />
       </div>
