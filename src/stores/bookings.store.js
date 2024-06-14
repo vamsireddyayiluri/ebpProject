@@ -522,7 +522,6 @@ export const useBookingsStore = defineStore('bookings', () => {
   }
 
   const analyzeScacAndContainerChanges = (originalData, updatedObj, commitments) => {
-    debugger
     const updatedData = updatedObj.newScacs
     const oldData = originalData.newScacs
 
@@ -620,7 +619,6 @@ export const useBookingsStore = defineStore('bookings', () => {
           batch.update(docRef, { ...data, updatedAt: getLocalTime().format() })
         }
         const commitments = await getCommitmentsByBookingId(id, ids)
-        debugger
         const requiredData = analyzeScacAndContainerChanges(originalData, loadData, commitments)
         if (requiredData.createCommit.length) {
           //create commitments with awaiting confirmation status
@@ -635,11 +633,14 @@ export const useBookingsStore = defineStore('bookings', () => {
           )
           requiredData.cancelCommit.forEach(obj => {
             filteredCommitments.forEach(commitment => {
-              if (
-                (commitment.preferredScac && commitment.scac === obj.scac) ||
-                !commitment.preferredScac
-              ) {
-                commitmentStore.cancelCommitment(commitment, null)
+              if (obj.scac) {
+                if (commitment.preferredScac && commitment.scac === obj.scac) {
+                  commitmentStore.cancelCommitment(commitment, null)
+                }
+              } else {
+                if (!commitment.preferredScac) {
+                  commitmentStore.cancelCommitment(commitment, null)
+                }
               }
             })
           })
