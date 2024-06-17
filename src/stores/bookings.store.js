@@ -25,6 +25,7 @@ import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
 import { useCommitmentsStore } from '~/stores/commitments.store'
 import { groupBookings } from '~/stores/helpers'
 import axios from 'axios'
+import { getNearestLocation } from '@qualle-admin/qutil/dist/region';
 
 export const useBookingsStore = defineStore('bookings', () => {
   const alertStore = useAlertStore()
@@ -246,6 +247,10 @@ export const useBookingsStore = defineStore('bookings', () => {
       carriers: [],
       preferredTruckers: preferredTruckers,
       preferredDays: authStore?.orgData?.bookingRules?.preferredCarrierWindow,
+      location: {
+        ...booking.location,
+        market: getNearestLocation(booking.location)[0].market,
+      },
       status: statuses.active,
       createdBy: {
         userId,
