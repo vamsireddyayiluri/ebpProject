@@ -429,7 +429,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.warning({ content: message })
     }
   }
-  const publishDraft = async (booking, newBooking) => {
+  const publishDraft = async (booking) => {
     try {
       const batch = writeBatch(db)
       await deleteBooking(booking.ids, true)
@@ -441,7 +441,7 @@ export const useBookingsStore = defineStore('bookings', () => {
         b.scacList = b?.scacList || { list: [] }
         const data = createEditedBookingObj(booking, b.id)
         const docRef = doc(collection(db, 'bookings'), data.id)
-        batch.set(docRef, data)
+        batch.set(docRef, {...data, createdAt: getLocalTime().format()})
       })
 
       await batch.commit()
@@ -470,6 +470,7 @@ export const useBookingsStore = defineStore('bookings', () => {
           committed: 0,
           id: bookingId,
           status: statuses.active,
+          createdAt: getLocalTime().format(),
           updatedAt: getLocalTime().format(),
           carriers: [],
         })

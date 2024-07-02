@@ -163,17 +163,26 @@ onUnmounted(async () => {
         muted
         autoplay
         :pause="videoPlaying"
-        height="308"
       >
         <source
           :src="props.src"
           type="video/mp4"
-        />
+        >
       </video>
     </template>
     <div class="flex justify-center gap-5 mt-8">
-      <Button density="compact" @click="showOnboardingLater">show later</Button>
-      <Button density="compact" @click="onboardedUser">don't show</Button>
+      <Button
+        density="compact"
+        @click="showOnboardingLater"
+      >
+        show later
+      </Button>
+      <Button
+        density="compact"
+        @click="onboardedUser"
+      >
+        don't show
+      </Button>
     </div>
   </OnboardingTour>
 </template>

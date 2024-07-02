@@ -23,7 +23,6 @@ const updateDialog = e => {
     emit('close', e)
     slider.value = 0
   }
-  console.log("-> e", e);
 }
 const previousSlide = () => {
   slider.value -= 1
@@ -63,7 +62,10 @@ watch(slider, newValue => {
           :key="i"
         >
           <div class="carouselMedia">
-            <slot name="media" :props="{...slide}"/>
+            <slot
+              name="media"
+              :props="{...slide}"
+            />
           </div>
           <div class="carouselContent">
             <div class="carouselControls">
@@ -129,7 +131,6 @@ watch(slider, newValue => {
 .styleCarousel {
   .carouselMedia {
     max-width: 576px;
-    min-height: 308px;
     width: 100%;
     border: 1px solid rgba(var(--v-theme-uiLine), 1);
     border-radius: 4px;
@@ -175,6 +176,15 @@ watch(slider, newValue => {
   .styledBtnText {
     .v-icon {
       margin-bottom: 1px;
+    }
+  }
+  video {
+    width: -webkit-fill-available;
+    height: 318px;
+  }
+  @media (max-width: 640px) {
+    video {
+      height: auto;
     }
   }
 }
