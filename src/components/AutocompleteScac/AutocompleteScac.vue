@@ -1,6 +1,12 @@
 <script setup>
+import { storeToRefs } from 'pinia'
 import { getColor } from '~/helpers/colors'
 import { getTruckers } from '~/stores/helpers'
+import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
+const preferredTruckersStore = usePreferredTruckersStore()
+
+const { preferredTruckers } = storeToRefs(preferredTruckersStore)
+const truckers = ref([])
 
 const props = defineProps({
   scacList: {
@@ -22,7 +28,6 @@ const props = defineProps({
 const emit = defineEmits(['onChange'])
 
 const attrs = useAttrs()
-const truckers = ref([])
 const scacList = toRef(props.scacList, 'list')
 const sendDialog = ref(null)
 const autocompleteValue = ref(null)
@@ -43,7 +48,7 @@ defineExpose({
   updateModelValue,
 })
 onMounted(async () => {
-  truckers.value = await getTruckers()
+  truckers.value = preferredTruckers.value.map(preferredTrucker => preferredTrucker.scac)
 })
 </script>
 
@@ -51,7 +56,7 @@ onMounted(async () => {
   <div v-bind="{ ...attrs }">
     <Autocomplete
       v-model="scacList"
-      :items="truckers.map(i => i.scac)"
+      :items="truckers"
       placeholder="Choose truckers by SCAС "
       multiple
       with-btn

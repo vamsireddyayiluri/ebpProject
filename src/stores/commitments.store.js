@@ -24,7 +24,6 @@ import moment from 'moment-timezone'
 import { uid } from 'uid'
 import { calculateLoadFee } from '~/helpers/stripe'
 
-const { updateBookingStore } = useBookingsStore()
 
 export const useCommitmentsStore = defineStore('commitments', () => {
   const alertStore = useAlertStore()

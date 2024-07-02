@@ -2,13 +2,22 @@
 import { getColor } from '~/helpers/colors'
 import { useDisplay } from 'vuetify'
 import { useActions, useDate, useHeaders } from '~/composables'
+import { cloneDeep, isEqual } from 'lodash'
+
 import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
+import { useBookingRulesStore } from '~/stores/bookingRules.store'
+
+import { useAuthStore } from '~/stores/auth.store'
 import { storeToRefs } from 'pinia'
 import { pullAllBy } from 'lodash'
 import { useAlertStore } from '~/stores/alert.store'
 import { computed } from 'vue'
 import { useChatStore } from '~/stores/chat.store'
 import { getTruckers } from '~/stores/helpers'
+
+const { userData } = useAuthStore()
+const bookingRulesStore = useBookingRulesStore()
+const { rules } = storeToRefs(bookingRulesStore)
 
 const alertStore = useAlertStore()
 const preferredTruckersStore = usePreferredTruckersStore()
@@ -54,6 +63,15 @@ const containerActionHandler = async ({ action, e }) => {
 }
 const deleteTrucker = async () => {
   await preferredTruckersStore.deleteTrucker(deleteTruckerDialog.value.data)
+  const preferredtruckers = cloneDeep(rules.value.truckers)
+
+  rules.value.truckers.list = rules.value.truckers.list.filter(
+    scac => scac !== deleteTruckerDialog.value.data.scac,
+  )
+
+  if (!isEqual(rules.value.truckers, preferredtruckers)) {
+    await bookingRulesStore.updateRules(rules.value, userData.orgId)
+  }
   deleteTruckerDialog.value.show(false)
   truckers.value = await getTruckers()
 }

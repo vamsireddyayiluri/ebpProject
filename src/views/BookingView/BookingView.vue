@@ -32,6 +32,7 @@ import { getTimeLine } from '~/helpers/filters'
 import { uid } from 'uid'
 import { isBoolean } from '@vueuse/core'
 import { deepCopy } from 'json-2-csv/lib/utils'
+import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
 
 const authStore = useAuthStore()
 const alertStore = useAlertStore()
@@ -56,7 +57,9 @@ const commitmentStore = useCommitmentsStore()
 
 const workDetailsStore = useWorkDetailsStore()
 const bookingRulesStore = useBookingRulesStore()
+const preferredTruckersStore = usePreferredTruckersStore()
 
+const { preferredTruckers } = storeToRefs(preferredTruckersStore)
 const { yards } = storeToRefs(workDetailsStore)
 const { bookings, drafts, notGroupedBookings: activeBookings } = storeToRefs(useBookingsStore())
 const route = useRoute()
@@ -146,29 +149,38 @@ const pending = computed(() => booking.value?.status === statuses.pending)
 const paused = computed(() => booking.value?.status === statuses.paused)
 
 const handleBookingChanges = async () => {
-  isPublishLoading.value = true
-  const commitmentsList = await commitmentStore.getExpiredCommitments(
-    booking.value.location.geohash,
-  )
-  if (fromDraft) {
-    if (commitmentsList?.length) {
-      bookingConfirmationDialog.value.show(true)
-      bookingConfirmationDialog.value.data = commitmentsList
-      isPublishLoading.value = false
+  const check = await validateScac()
+  if (check) {
+    alertStore.warning({ content: 'Please update trucker SCACs in preferred truckers list.' })
+  } else {
+    isPublishLoading.value = true
+    const commitmentsList = await commitmentStore.getExpiredCommitments(
+      booking.value.location.geohash,
+    )
+    if (fromDraft) {
+      if (commitmentsList?.length) {
+        bookingConfirmationDialog.value.show(true)
+        bookingConfirmationDialog.value.data = commitmentsList
+        isPublishLoading.value = false
+      } else {
+        const newBookingObj = differenceBy(
+          booking.value.details,
+          originalBooking.value.details,
+          'id',
+        )
+        const res = await publishDraft(booking.value, newBookingObj)
+        if (res === 'published') {
+          router.push('/dashboard')
+        }
+        isPublishLoading.value = false
+      }
     } else {
-      const newBookingObj = differenceBy(booking.value.details, originalBooking.value.details, 'id')
-      const res = await publishDraft(booking.value, newBookingObj)
-      if (res === 'published') {
+      const res = await removeFromNetwork(booking.value)
+      if (res === 'deleted') {
         router.push('/dashboard')
       }
       isPublishLoading.value = false
     }
-  } else {
-    const res = await removeFromNetwork(booking.value)
-    if (res === 'deleted') {
-      router.push('/dashboard')
-    }
-    isPublishLoading.value = false
   }
 }
 const openRemoveDialog = (index = 0, loadingDate = null) => {
@@ -243,18 +255,25 @@ const isDisabledPublish = computed(() => {
 const isLoadingDatesFieldsEmpty = computed(() => {
   return cloneDeep(booking.value.details).some(object => {
     if (object.newScacs) {
-      delete object?.preferredDays
-      return Object.values(object.newScacs).some(value => {
-        delete value?.preferredDays
-        delete value?.scac
-        const test =
-          value === null ||
-          Object.values(value).some(i => {
-            return isBoolean(i) ? false : !i
-          })
+      let emptyScacCount = 0
+      const hasEmptyFields = object.newScacs.some(value => {
+        if (!value.scac) {
+          emptyScacCount++
+        }
+        const valuesToCheck = { ...value }
+        delete valuesToCheck.preferredDays
+        delete valuesToCheck.scac
+        const test = Object.values(valuesToCheck).some(i => {
+          return isBoolean(i) ? false : !i
+        })
         return test
       })
+      if (emptyScacCount > 1) {
+        return true
+      }
+      return hasEmptyFields
     }
+    return false
   })
 })
 const validateBooking = computed(() => {
@@ -288,66 +307,83 @@ const cancelChanges = async () => {
 
   booking.value = cloneDeep(originalBooking.value)
 }
+const validateScac = async () => {
+  const truckersList = truckers.value || []
 
+  return booking.value.details.some(iBooking => {
+    const scacList = iBooking.newScacs.map(newScac => newScac.scac)
+    return scacList.some(scac => scac !== null && !truckersList.includes(scac))
+  })
+}
 const onSave = async () => {
-  isSaveLoading.value = true
+  const check = await validateScac()
+  if (check) {
+    alertStore.warning({ content: 'Please update trucker SCACs in preferred truckers list.' })
+  } else {
+    isSaveLoading.value = true
 
-  // Getting newly added loading date object
-  const bookingObj = differenceBy(booking.value.details, originalBooking.value.details, 'id')
+    // Getting newly added loading date object
+    const bookingObj = differenceBy(booking.value.details, originalBooking.value.details, 'id')
 
-  // booking.value.loadingDate = moment(booking.value.loadingDate).endOf('day').format()
-  // booking.value.preferredDate = moment(booking.value.preferredDate).endOf('day').format()
-  if (activated) {
-    if (expired.value) {
-      const commitmentsList = await commitmentStore.getExpiredCommitments(
-        booking.value.location.geohash,
-      )
-      if (commitmentsList?.length) {
-        bookingConfirmationDialog.value.show(true)
-        bookingConfirmationDialog.value.data = commitmentsList
-        isSaveLoading.value = false
+    // booking.value.loadingDate = moment(booking.value.loadingDate).endOf('day').format()
+    // booking.value.preferredDate = moment(booking.value.preferredDate).endOf('day').format()
+    if (activated) {
+      if (expired.value) {
+        const commitmentsList = await commitmentStore.getExpiredCommitments(
+          booking.value.location.geohash,
+        )
+        if (commitmentsList?.length) {
+          bookingConfirmationDialog.value.show(true)
+          bookingConfirmationDialog.value.data = commitmentsList
+          isSaveLoading.value = false
 
-        return
-      } else {
-        reactivateBooking(booking.value)
-        await router.push({ name: 'dashboard' })
-        activated.value = false
+          return
+        } else {
+          reactivateBooking(booking.value)
+          await router.push({ name: 'dashboard' })
+          activated.value = false
+
+          return
+        }
+      }
+      if (completed.value) {
+        // await duplicateBooking(booking.value)
+        // await router.push({ name: 'dashboard' })
+        // activated.value = false
 
         return
       }
     }
-    if (completed.value) {
-      // await duplicateBooking(booking.value)
-      // await router.push({ name: 'dashboard' })
-      // activated.value = false
 
-      return
+    let updatedBookingData = { ...booking.value }
+    if (bookingObj.length) {
+      const bookingData = omit(booking.value, ['details', 'ids'])
+      if (fromDraft) {
+        await createDraft(bookingData, bookingObj, true)
+      } else {
+        await createBooking(bookingData, bookingObj, true)
+      }
+      updatedBookingData.details = booking.value.details.filter(val =>
+        bookingObj.some(obj => obj.id !== val.id),
+      )
     }
-  }
-
-  let updatedBookingData = { ...booking.value }
-  if (bookingObj.length) {
-    const bookingData = omit(booking.value, ['details', 'ids'])
-    if (fromDraft) {
-      await createDraft(bookingData, bookingObj, true)
-    } else {
-      await createBooking(bookingData, bookingObj, true)
-    }
-    updatedBookingData.details = booking.value.details.filter(val =>
-      bookingObj.some(obj => obj.id !== val.id),
+    const updatedObj = pickBy(
+      updatedBookingData,
+      (value, key) => !isEqual(value, originalBooking.value[key]),
     )
-  }
-  const updatedObj = pickBy(
-    updatedBookingData,
-    (value, key) => !isEqual(value, originalBooking.value[key]),
-  )
 
-  if (!isEmpty(updatedObj)) {
-    await updateBooking(updatedObj, booking.value?.ids, fromDraft ? 'drafts' : 'bookings')
-  }
+    if (!isEmpty(updatedObj)) {
+      await updateBooking(
+        originalBooking.value,
+        updatedObj,
+        booking.value?.ids,
+        fromDraft ? 'drafts' : 'bookings',
+      )
+    }
 
-  await router.push({ name: 'dashboard' })
-  isSaveLoading.value = false
+    await router.push({ name: 'dashboard' })
+    isSaveLoading.value = false
+  }
 }
 
 const loadingDateId = 'loadingDate'
@@ -368,10 +404,9 @@ const validateExpiryDates = index => {
   })
 }
 const generateNewScacs = () => {
-  const hasPreferredCarrierWindow = bookingRulesStore.rules?.preferredCarrierWindow > 0
   const truckersList = bookingRulesStore.rules?.truckers?.list
 
-  if (hasPreferredCarrierWindow && truckersList?.length) {
+  if (truckersList?.length) {
     return truckersList.map(val => ({
       scac: val,
       id: uid(16),
@@ -434,7 +469,7 @@ let selectedScacs = []
 const availableScacs = (index, newScacs) => {
   selectedScacs.value = newScacs.map(obj => obj.scac)
   const selected = selectedScacs.value.filter((_, id) => id !== index)
-  return truckers.value.map(trucker => trucker.scac).filter(scac => !selected.includes(scac))
+  return truckers.value.filter(scac => !selected.includes(scac))
 }
 const handleScacChange = loadingDate => {
   let bookingObj = booking.value.details.find(booking => booking.loadingDate === loadingDate)
@@ -507,7 +542,6 @@ onMounted(async () => {
 
   // bookings.value = targetBookings
   originalBooking.value = cloneDeep(targetBookings.find(val => val.ids.includes(route.params.id)))
-
   booking.value = JSON?.parse(JSON?.stringify(originalBooking?.value))
   const loadingsDateCopy = booking.value?.details.map(iBooking => {
     const i = deepCopy(iBooking)
@@ -535,7 +569,7 @@ onMounted(async () => {
     animate()
   }
   await workDetailsStore.getYards()
-  truckers.value = await getTruckers()
+  truckers.value = preferredTruckers.value.map(preferredTrucker => preferredTrucker.scac)
 
   yards.value = workDetailsStore.yards
 
@@ -846,20 +880,17 @@ onMounted(async () => {
                       @update:modelValue="handleScacChange(dt.loadingDate)"
                       class="w-4/5 lg:w-10/12 xl:w-11/12"
                       :disabled="
-                        bookingRulesStore.rules?.preferredCarrierWindow < 1 ||
-                        expired ||
-                        completed ||
-                        paused ||
-                        originalBooking?.details[index]?.scacList?.list.includes(dt.scac)
+                        originalBooking?.details[index]?.newScacs?.some(val => val.id === dt.id) &&
+                        !fromDraft
                       "
                     />
                     <Button
                       v-if="i + 1 === d.newScacs.length && !(expired || completed || paused)"
-                      :variant="dt.loadingDate && dt.scac ? 'plain' : 'gray'"
+                      :variant="dt.loadingDate ? 'plain' : 'gray'"
                       prepend-icon="mdi-plus"
                       class="mt-2.5 mr-auto"
                       color="gray"
-                      :disabled="!(dt.loadingDate && dt.scac)"
+                      :disabled="!dt.loadingDate"
                       @click="addScac(d.id)"
                     >
                       add scac

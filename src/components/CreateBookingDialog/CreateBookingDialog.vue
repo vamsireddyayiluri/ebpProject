@@ -5,6 +5,8 @@ import { useBookingsStore } from '~/stores/bookings.store'
 import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { storeToRefs } from 'pinia'
 import { useBookingRulesStore } from '~/stores/bookingRules.store'
+import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
+
 import containersSizes from '~/fixtures/containersSizes.json'
 import moment from 'moment'
 import { useAlertStore } from '~/stores/alert.store'
@@ -36,7 +38,9 @@ const bookingRulesStore = useBookingRulesStore()
 const bookingsStore = useBookingsStore()
 const alertStore = useAlertStore()
 const commitmentStore = useCommitmentsStore()
+const preferredTruckersStore = usePreferredTruckersStore()
 
+const { preferredTruckers } = storeToRefs(preferredTruckersStore)
 const { yards } = storeToRefs(workDetailsStore)
 const { notGroupedBookings: bookings } = storeToRefs(bookingsStore)
 const form = ref(null)
@@ -104,10 +108,9 @@ const emptyBooking = {
   insurance: '100,000',
 }
 const generateNewScacs = () => {
-  const hasPreferredCarrierWindow = bookingRulesStore.rules?.preferredCarrierWindow > 0
   const truckersList = cloneDeep(bookingRulesStore.rules?.truckers?.list)
 
-  if (hasPreferredCarrierWindow && truckersList?.length) {
+  if (truckersList?.length) {
     return truckersList.map(val => ({
       scac: val,
       id: uid(16),
@@ -258,25 +261,45 @@ const removeScac = bDetails => {
   }
 }
 const saveDraft = async () => {
-  await createDraft(booking.value, newBookings.value).then(() => emit('bookingCreated'))
-  emit('close')
-}
+  let check = await validateScac()
 
-const saveBooking = async () => {
-  isLoading.value = true
-  const commitmentsList = await commitmentStore.getExpiredCommitments(
-    booking.value.location.geohash,
-  )
-  if (commitmentsList?.length) {
-    bookingConfirmationDialog.value.show(true)
-    bookingConfirmationDialog.value.data = commitmentsList
-    isLoading.value = false
+  if (check) {
+    alertStore.warning({ content: 'Please update trucker SCACs in preferred truckers list.' })
   } else {
-    createBooking(booking.value, newBookings.value).then(() => emit('bookingCreated'))
-    // await bookingsStore.getBookings({})
-    isLoading.value = true
+    await createDraft(booking.value, newBookings.value).then(() => emit('bookingCreated'))
     emit('close')
-    // await bookingsStore.getBookings({})
+  }
+}
+//validate whether given scac is in prefererd scaclist or not
+const validateScac = () => {
+  const truckersList = truckers.value || []
+
+  return newBookings.value.some(iBooking => {
+    const scacList = iBooking.newScacs.map(newScac => newScac.scac)
+    return scacList.some(scac => scac !== null && !truckersList.includes(scac))
+  })
+}
+const saveBooking = async () => {
+  let check = await validateScac()
+
+  if (check) {
+    alertStore.warning({ content: 'Please update trucker SCACs in preferred truckers list.' })
+  } else {
+    isLoading.value = true
+    const commitmentsList = await commitmentStore.getExpiredCommitments(
+      booking.value.location.geohash,
+    )
+    if (commitmentsList?.length) {
+      bookingConfirmationDialog.value.show(true)
+      bookingConfirmationDialog.value.data = commitmentsList
+      isLoading.value = false
+    } else {
+      createBooking(booking.value, newBookings.value).then(() => emit('bookingCreated'))
+      // await bookingsStore.getBookings({})
+      isLoading.value = true
+      emit('close')
+      // await bookingsStore.getBookings({})
+    }
   }
 }
 const updateRef = async e => {
@@ -292,7 +315,7 @@ let selectedScacs = []
 const availableScacs = (index, newScacs) => {
   selectedScacs.value = newScacs.map(obj => obj.scac)
   const selected = selectedScacs.value.filter((_, id) => id !== index)
-  return truckers.value.map(trucker => trucker.scac).filter(scac => !selected.includes(scac))
+  return truckers.value.filter(scac => !selected.includes(scac))
 }
 const handleScacChange = loadingDate => {
   let booking = newBookings.value.find(booking => booking.loadingDate === loadingDate)
@@ -317,7 +340,7 @@ const onClickOutsideDialog = () => {
 
 onMounted(async () => {
   await workDetailsStore.getYards()
-  truckers.value = await getTruckers()
+  truckers.value = preferredTruckers.value.map(preferredTrucker => preferredTrucker.scac)
 })
 
 /*watch(clickedOutside, () => {
@@ -514,17 +537,12 @@ onMounted(async () => {
                 required
                 :items="availableScacs(i, d.newScacs)"
                 label="Choose trucker by SCAС "
-                :disabled="bookingRulesStore.rules?.preferredCarrierWindow < 1"
                 :menu-props="{ maxHeight: 300 }"
                 @update:modelValue="handleScacChange(dt.loadingDate)"
                 class="w-4/5 lg:w-10/12 xl:w-11/12"
               />
               <Button
-                v-if="
-                  dt.loadingDate &&
-                  i + 1 === d.newScacs.length &&
-                  bookingRulesStore.rules?.preferredCarrierWindow > 0
-                "
+                v-if="dt.loadingDate && i + 1 === d.newScacs.length"
                 :variant="dt.loadingDate && dt.scac ? 'plain' : 'gray'"
                 prepend-icon="mdi-plus"
                 class="mt-2.5 mr-auto"

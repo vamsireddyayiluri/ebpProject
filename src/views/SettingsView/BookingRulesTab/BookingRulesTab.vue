@@ -9,9 +9,14 @@ import { validateDays } from '~/helpers/validations-functions'
 const { userData } = useAuthStore()
 const workDetailsStore = useWorkDetailsStore()
 const bookingRulesStore = useBookingRulesStore()
+import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
+
 const { orgData } = storeToRefs(useAuthStore())
 const { rules } = storeToRefs(bookingRulesStore)
 const { yards } = storeToRefs(workDetailsStore)
+const preferredTruckersStore = usePreferredTruckersStore()
+
+const { preferredTruckers } = storeToRefs(preferredTruckersStore)
 const form = ref(null)
 const truckersRef = ref(null)
 const errorRules = {
@@ -108,9 +113,7 @@ tryOnUnmounted(() => {
         class="order-5 sm:!order-6 !h-12 -mt-1"
         @update:modelValue="turnSwitch"
       >
-        <Typography class="flex items-center gap-2">
-          Preferred carrier window
-        </Typography>
+        <Typography class="flex items-center gap-2"> Preferred carrier window </Typography>
       </Switch>
       <Textfield
         v-model.number="rules.preferredCarrierWindow"

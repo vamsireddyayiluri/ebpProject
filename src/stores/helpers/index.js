@@ -55,16 +55,16 @@ export const getTruckers = async () => {
   const truckersQuery = query(collection(db, 'organizations'), where('org_type', '==', 'asset'))
   const querySnapshot = await getDocs(truckersQuery)
 
-  return querySnapshot.docs.map(doc => {
-    const { orgId, scac, email, company } = doc.data()
+  const truckers = querySnapshot.docs
+    .map(doc => {
+      const { orgId, scac, email, company, accountType = null } = doc.data()
+      if (accountType !== 'Maersk') {
+        return { id: orgId, scac, email, company }
+      }
+    })
+    .filter(Boolean)
 
-    return {
-      id: orgId,
-      scac,
-      email,
-      company,
-    }
-  })
+  return truckers
 }
 
 export const groupBookings = objects => {
