@@ -72,7 +72,7 @@ export const usePreferredTruckersStore = defineStore('preferredTruckers', () => 
           html:
             'Hello trucker <br>' +
             `Exporter ${authStore.orgData.company} invited you to the platform` +
-            `<br/><a href="https://qualle-stpv2.web.app/register">Street turn platform</a>`,
+            `<br/><a href=${import.meta.env.VITE_APP_DOMAIN}/register>Street turn platform</a>`,
         },
       })
     } catch ({ message }) {
