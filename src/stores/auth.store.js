@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { auth, db } from '~/firebase'
+import { auth, db, v1Auth } from '~/firebase'
 import moment from 'moment-timezone'
 import {
   addDoc,
@@ -27,6 +27,7 @@ import {
   sendEmailVerification,
   signInWithEmailAndPassword,
   signOut,
+  signInWithCustomToken,
 } from 'firebase/auth'
 import { useAlertStore } from '~/stores/alert.store'
 import { getLocalTime } from '@qualle-admin/qutil/dist/date'
@@ -41,6 +42,7 @@ import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { uid } from 'uid'
 import { useProfileStore } from '~/stores/profile.store'
 import posthog from 'posthog-js'
+import axios from 'axios'
 
 export const useAuthStore = defineStore('auth', () => {
   const router = useRouter()
@@ -62,22 +64,27 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const { user } = await signInWithEmailAndPassword(auth, email, password)
       currentUser.value = user
-      await getUser()
+      const idToken = await user.getIdToken()
+      const result = await sendTokenToBackend(idToken)
+      const customToken = result.data
+
+      await signInWithCustomToken(v1Auth, customToken)
+      // await getUser()
       router.push({ name: 'dashboard' })
     } catch (error) {
       isLoading.value = false
       switch (error.code) {
-      case 'auth/user-not-found':
-        alertStore.warning({ content: 'User not found' })
-        break
-      case 'auth/wrong-password':
-        alertStore.warning({ content: 'Wrong password' })
-        break
-      case 'auth/invalid-login-credentials':
-        alertStore.warning({ content: 'Invalid credentials' })
-        break
-      default:
-        alertStore.warning({ content: 'Something went wrong' })
+        case 'auth/user-not-found':
+          alertStore.warning({ content: 'User not found' })
+          break
+        case 'auth/wrong-password':
+          alertStore.warning({ content: 'Wrong password' })
+          break
+        case 'auth/invalid-login-credentials':
+          alertStore.warning({ content: 'Invalid credentials' })
+          break
+        default:
+          alertStore.warning({ content: 'Something went wrong' })
       }
     }
   }
@@ -135,20 +142,20 @@ export const useAuthStore = defineStore('auth', () => {
       await sendVerificationEmail()
     } catch (error) {
       switch (error.code) {
-      case 'auth/email-already-in-use':
-        alertStore.warning({ content: 'Email already in use' })
-        break
-      case 'auth/invalid-email':
-        alertStore.warning({ content: 'Invalid email' })
-        break
-      case 'auth/operation-not-allowed':
-        alertStore.warning({ content: 'Operation not allowed' })
-        break
-      case 'auth/weak-password':
-        alertStore.warning({ content: 'Weak password' })
-        break
-      default:
-        alertStore.warning({ content: 'Something went wrong' })
+        case 'auth/email-already-in-use':
+          alertStore.warning({ content: 'Email already in use' })
+          break
+        case 'auth/invalid-email':
+          alertStore.warning({ content: 'Invalid email' })
+          break
+        case 'auth/operation-not-allowed':
+          alertStore.warning({ content: 'Operation not allowed' })
+          break
+        case 'auth/weak-password':
+          alertStore.warning({ content: 'Weak password' })
+          break
+        default:
+          alertStore.warning({ content: 'Something went wrong' })
       }
       isLoading.value = false
     }
@@ -162,6 +169,11 @@ export const useAuthStore = defineStore('auth', () => {
         isLoading.value = false
       } else {
         currentUser.value = user
+        const idToken = await user.getIdToken()
+        const result = await sendTokenToBackend(idToken)
+        const customToken = result.data
+
+        await signInWithCustomToken(v1Auth, customToken)
         await getUserData(user.uid)
         if (userData.value) {
           await getOrgData(userData.value.orgId)
@@ -202,7 +214,12 @@ export const useAuthStore = defineStore('auth', () => {
         alertStore.warning({ content: error.message })
       }
     }
+    currentUser.value = user
+    const idToken = await user.getIdToken()
+    const result = await sendTokenToBackend(idToken)
+    const customToken = result.data
 
+    await signInWithCustomToken(v1Auth, customToken)
     try {
       auth.currentUser.emailVerified = true
       const { uid: userId } = user
@@ -377,6 +394,17 @@ export const useAuthStore = defineStore('auth', () => {
       await getUserData(userData.value.user_id)
     } catch ({ message }) {
       alertStore.warning({ content: message })
+    }
+  }
+  const sendTokenToBackend = async idToken => {
+    try {
+      const data = await axios.post(`${import.meta.env.VITE_APP_API_URL}/users/verify_token`, {
+        idToken,
+        fromEbp: true,
+      })
+      return data
+    } catch (error) {
+      alertStore.warning({ content: error.message })
     }
   }
 
