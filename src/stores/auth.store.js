@@ -64,12 +64,8 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const { user } = await signInWithEmailAndPassword(auth, email, password)
       currentUser.value = user
-      const idToken = await user.getIdToken()
-      const result = await sendTokenToBackend(idToken)
-      const customToken = result.data
 
-      await signInWithCustomToken(v1Auth, customToken)
-      // await getUser()
+      await getUser()
       router.push({ name: 'dashboard' })
     } catch (error) {
       isLoading.value = false
@@ -214,12 +210,6 @@ export const useAuthStore = defineStore('auth', () => {
         alertStore.warning({ content: error.message })
       }
     }
-    currentUser.value = user
-    const idToken = await user.getIdToken()
-    const result = await sendTokenToBackend(idToken)
-    const customToken = result.data
-
-    await signInWithCustomToken(v1Auth, customToken)
     try {
       auth.currentUser.emailVerified = true
       const { uid: userId } = user
