@@ -41,6 +41,7 @@ import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { uid } from 'uid'
 import { useProfileStore } from '~/stores/profile.store'
 import posthog from 'posthog-js'
+import axios from 'axios'
 
 export const useAuthStore = defineStore('auth', () => {
   const router = useRouter()
@@ -182,10 +183,15 @@ export const useAuthStore = defineStore('auth', () => {
   // Sending verification email to registered user
   const sendVerificationEmail = async () => {
     try {
-      await sendEmailVerification(auth.currentUser, {
-        url: `${import.meta.env.VITE_APP_CANONICAL_URL}/dashboard`,
-      })
-      alertStore.info({ content: 'Verification email sent!' })
+      const userEmail = auth.currentUser.email
+
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_APP_CANONICAL_URL}/api/v1/accounts/email_verification`,
+        { userEmail, fromEbp: true },
+      )
+      if (data.status === 'success') {
+        alertStore.info({ content: 'Verification email sent!' })
+      }
     } catch (error) {
       alertStore.warning({ content: error })
     }
