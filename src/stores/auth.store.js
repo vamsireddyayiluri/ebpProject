@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { auth, db } from '~/firebase'
+import { auth, db, v1Auth } from '~/firebase'
 import moment from 'moment-timezone'
 import {
   addDoc,
@@ -27,6 +27,7 @@ import {
   sendEmailVerification,
   signInWithEmailAndPassword,
   signOut,
+  signInWithCustomToken,
 } from 'firebase/auth'
 import { useAlertStore } from '~/stores/alert.store'
 import { getLocalTime } from '@qualle-admin/qutil/dist/date'
@@ -41,6 +42,7 @@ import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { uid } from 'uid'
 import { useProfileStore } from '~/stores/profile.store'
 import posthog from 'posthog-js'
+import axios from 'axios'
 
 export const useAuthStore = defineStore('auth', () => {
   const router = useRouter()
@@ -62,22 +64,23 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const { user } = await signInWithEmailAndPassword(auth, email, password)
       currentUser.value = user
+
       await getUser()
       router.push({ name: 'dashboard' })
     } catch (error) {
       isLoading.value = false
       switch (error.code) {
-      case 'auth/user-not-found':
-        alertStore.warning({ content: 'User not found' })
-        break
-      case 'auth/wrong-password':
-        alertStore.warning({ content: 'Wrong password' })
-        break
-      case 'auth/invalid-login-credentials':
-        alertStore.warning({ content: 'Invalid credentials' })
-        break
-      default:
-        alertStore.warning({ content: 'Something went wrong' })
+        case 'auth/user-not-found':
+          alertStore.warning({ content: 'User not found' })
+          break
+        case 'auth/wrong-password':
+          alertStore.warning({ content: 'Wrong password' })
+          break
+        case 'auth/invalid-login-credentials':
+          alertStore.warning({ content: 'Invalid credentials' })
+          break
+        default:
+          alertStore.warning({ content: 'Something went wrong' })
       }
     }
   }
@@ -135,20 +138,20 @@ export const useAuthStore = defineStore('auth', () => {
       await sendVerificationEmail()
     } catch (error) {
       switch (error.code) {
-      case 'auth/email-already-in-use':
-        alertStore.warning({ content: 'Email already in use' })
-        break
-      case 'auth/invalid-email':
-        alertStore.warning({ content: 'Invalid email' })
-        break
-      case 'auth/operation-not-allowed':
-        alertStore.warning({ content: 'Operation not allowed' })
-        break
-      case 'auth/weak-password':
-        alertStore.warning({ content: 'Weak password' })
-        break
-      default:
-        alertStore.warning({ content: 'Something went wrong' })
+        case 'auth/email-already-in-use':
+          alertStore.warning({ content: 'Email already in use' })
+          break
+        case 'auth/invalid-email':
+          alertStore.warning({ content: 'Invalid email' })
+          break
+        case 'auth/operation-not-allowed':
+          alertStore.warning({ content: 'Operation not allowed' })
+          break
+        case 'auth/weak-password':
+          alertStore.warning({ content: 'Weak password' })
+          break
+        default:
+          alertStore.warning({ content: 'Something went wrong' })
       }
       isLoading.value = false
     }
@@ -157,35 +160,47 @@ export const useAuthStore = defineStore('auth', () => {
   const getUser = async () => {
     isLoading.value = true
     await auth.onAuthStateChanged(async user => {
-      if (user === null) {
-        currentUser.value = null
-        isLoading.value = false
-      } else {
-        currentUser.value = user
-        await getUserData(user.uid)
-        if (userData.value) {
-          await getOrgData(userData.value.orgId)
-          posthog.init('phc_JX3Xh5Bz6xydEkqDfdgOuAQnh1s6bhQUOYe4MBDRaLp', {
-            api_host: 'https://app.posthog.com',
-            loaded: posthog => {
-              posthog.identify(user.uid, { email: user.email })
-            },
-          })
-        } else isLoading.value = false
-        if (router.currentRoute.value.name === 'login') {
-          router.push({ name: 'dashboard' })
+      setTimeout(async () => {
+        if (user === null) {
+          currentUser.value = null
+          isLoading.value = false
+        } else {
+          currentUser.value = user
+          const idToken = await user.getIdToken()
+          const result = await sendTokenToBackend(idToken)
+          const customToken = result.data
+
+          await signInWithCustomToken(v1Auth, customToken)
+          await getUserData(user.uid)
+          if (userData.value) {
+            await getOrgData(userData.value.orgId)
+            posthog.init('phc_JX3Xh5Bz6xydEkqDfdgOuAQnh1s6bhQUOYe4MBDRaLp', {
+              api_host: 'https://app.posthog.com',
+              loaded: posthog => {
+                posthog.identify(user.uid, { email: user.email })
+              },
+            })
+          } else isLoading.value = false
+          if (router.currentRoute.value.name === 'login') {
+            router.push({ name: 'dashboard' })
+          }
         }
-      }
+      }, 2000)
     })
   }
 
   // Sending verification email to registered user
   const sendVerificationEmail = async () => {
     try {
-      await sendEmailVerification(auth.currentUser, {
-        url: `${import.meta.env.VITE_APP_CANONICAL_URL}/dashboard`,
-      })
-      alertStore.info({ content: 'Verification email sent!' })
+      const userEmail = auth.currentUser.email
+
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_APP_CANONICAL_URL}/api/v1/accounts/email_verification`,
+        { userEmail, fromEbp: true },
+      )
+      if (data.status === 'success') {
+        alertStore.info({ content: 'Verification email sent!' })
+      }
     } catch (error) {
       alertStore.warning({ content: error })
     }
@@ -202,7 +217,6 @@ export const useAuthStore = defineStore('auth', () => {
         alertStore.warning({ content: error.message })
       }
     }
-
     try {
       auth.currentUser.emailVerified = true
       const { uid: userId } = user
@@ -276,14 +290,19 @@ export const useAuthStore = defineStore('auth', () => {
         questionList: data.questionList,
       })
       await notificationStore.createNotificationCollection(data.orgId)
-      await deleteDoc(doc(db, 'pending_verifications', data.id))
+      await removeUserFromPendingVerification(data.id)
       await getUser()
 
       router.push({ name: 'dashboard' })
     } catch ({ message }) {
-      await deleteDoc(doc(db, 'pending_verifications', data.id))
+      await removeUserFromPendingVerification(data.id)
       alertStore.warning({ content: message })
     }
+  }
+
+  // remove doc from pending_verification
+  const removeUserFromPendingVerification = async id => {
+    await deleteDoc(doc(db, 'pending_verifications', id))
   }
 
   // Getting pending verification data from the collection
@@ -379,6 +398,17 @@ export const useAuthStore = defineStore('auth', () => {
       alertStore.warning({ content: message })
     }
   }
+  const sendTokenToBackend = async idToken => {
+    try {
+      const data = await axios.post(`${import.meta.env.VITE_APP_API_URL}/users/verify_token`, {
+        idToken,
+        fromEbp: true,
+      })
+      return data
+    } catch (error) {
+      alertStore.warning({ content: error.message })
+    }
+  }
 
   return {
     login,
@@ -390,6 +420,7 @@ export const useAuthStore = defineStore('auth', () => {
     sendVerificationEmail,
     registerCompleteAction,
     getVerificationData,
+    removeUserFromPendingVerification,
     getUserData,
     userData,
     orgData,

@@ -16,6 +16,10 @@ const props = defineProps({
     default: () => 100,
   },
   loading: Boolean,
+  text: {
+    type: String,
+    default: () => 'Loading...',
+  }
 })
 
 const { loading } = toRefs(props)
@@ -65,7 +69,7 @@ onMounted(() => {
     <ProgressCircular
       :size="size"
       :value="count"
-      text="Loading..."
+      :text="text"
       class=""
     >
       {{ count }}%

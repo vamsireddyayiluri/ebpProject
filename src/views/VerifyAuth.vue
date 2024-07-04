@@ -7,11 +7,13 @@ const authStore = useAuthStore()
 const alertStore = useAlertStore()
 const router = useRouter()
 const createPassPage = ref(null)
+const loading = ref(true)
 
-onMounted(() => {
-  validateUserEmail()
+onMounted(async () => {
+  await validateUserEmail()
+  loading.value = false
 })
-const validateUserEmail = () => {
+const validateUserEmail = async () => {
   const queryParams = router.currentRoute.value.query
 
   // Get the action to complete.
@@ -32,15 +34,15 @@ const validateUserEmail = () => {
   switch (mode) {
   case 'resetPassword':
     // Display reset password handler and UI.
-    handleResetPassword(actionCode, continueUrl, lang)
+    await handleResetPassword(actionCode)
     break
   case 'recoverEmail':
     // Display email recovery handler and UI.
-    handleRecoverEmail(auth, actionCode, lang)
+    await handleRecoverEmail(auth, actionCode, lang)
     break
   case 'verifyEmail':
     // Display email verification handler and UI.
-    handleVerifyEmail(actionCode, continueUrl, lang, email)
+    await handleVerifyEmail(actionCode, email)
     break
   case 'signIn':
     createPassPage.value = true
@@ -50,15 +52,16 @@ const validateUserEmail = () => {
     // Error: invalid mode.
   }
 }
-const handleVerifyEmail = async (actionCode, continueUrl, lang, email) => {
+const handleVerifyEmail = async (actionCode, email) => {
   try {
     await applyActionCode(auth, actionCode)
     const verificationData = await authStore.getVerificationData(email)
-    authStore.registerCompleteAction(verificationData)
+    await authStore.registerCompleteAction(verificationData)
   } catch ({ code, message }) {
     if (code === 'auth/invalid-action-code') {
       router.push({ name: 'verify1' })
     } else {
+      await authStore.removeUserFromPendingVerification(verificationData[0].id)
       alertStore.warning({ message })
     }
   }
@@ -68,7 +71,7 @@ const handleRecoverEmail = async (auth, actionCode, lang) => {
   console.log('handle recovery email')
 }
 
-const handleResetPassword = async (actionCode, continueUrl, lang) => {
+const handleResetPassword = async actionCode => {
   try {
     const email = await verifyPasswordResetCode(auth, actionCode)
     router.push({ name: 'new-password', query: { email, actionCode } })
@@ -79,5 +82,6 @@ const handleResetPassword = async (actionCode, continueUrl, lang) => {
 </script>
 
 <template>
+  <Loader :loading="loading" :step="2" :interval="150" text="Preparing Workspace..." />
   <CreateInvitedUserView v-if="createPassPage" />
 </template>
