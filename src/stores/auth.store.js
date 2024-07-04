@@ -160,30 +160,32 @@ export const useAuthStore = defineStore('auth', () => {
   const getUser = async () => {
     isLoading.value = true
     await auth.onAuthStateChanged(async user => {
-      if (user === null) {
-        currentUser.value = null
-        isLoading.value = false
-      } else {
-        currentUser.value = user
-        const idToken = await user.getIdToken()
-        const result = await sendTokenToBackend(idToken)
-        const customToken = result.data
+      setTimeout(async () => {
+        if (user === null) {
+          currentUser.value = null
+          isLoading.value = false
+        } else {
+          currentUser.value = user
+          const idToken = await user.getIdToken()
+          const result = await sendTokenToBackend(idToken)
+          const customToken = result.data
 
-        await signInWithCustomToken(v1Auth, customToken)
-        await getUserData(user.uid)
-        if (userData.value) {
-          await getOrgData(userData.value.orgId)
-          posthog.init('phc_JX3Xh5Bz6xydEkqDfdgOuAQnh1s6bhQUOYe4MBDRaLp', {
-            api_host: 'https://app.posthog.com',
-            loaded: posthog => {
-              posthog.identify(user.uid, { email: user.email })
-            },
-          })
-        } else isLoading.value = false
-        if (router.currentRoute.value.name === 'login') {
-          router.push({ name: 'dashboard' })
+          await signInWithCustomToken(v1Auth, customToken)
+          await getUserData(user.uid)
+          if (userData.value) {
+            await getOrgData(userData.value.orgId)
+            posthog.init('phc_JX3Xh5Bz6xydEkqDfdgOuAQnh1s6bhQUOYe4MBDRaLp', {
+              api_host: 'https://app.posthog.com',
+              loaded: posthog => {
+                posthog.identify(user.uid, { email: user.email })
+              },
+            })
+          } else isLoading.value = false
+          if (router.currentRoute.value.name === 'login') {
+            router.push({ name: 'dashboard' })
+          }
         }
-      }
+      }, 2000)
     })
   }
 
