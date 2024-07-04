@@ -276,14 +276,19 @@ export const useAuthStore = defineStore('auth', () => {
         questionList: data.questionList,
       })
       await notificationStore.createNotificationCollection(data.orgId)
-      await deleteDoc(doc(db, 'pending_verifications', data.id))
+      await removeUserFromPendingVerification(data.id)
       await getUser()
 
       router.push({ name: 'dashboard' })
     } catch ({ message }) {
-      await deleteDoc(doc(db, 'pending_verifications', data.id))
+      await removeUserFromPendingVerification(data.id)
       alertStore.warning({ content: message })
     }
+  }
+
+  // remove doc from pending_verification
+  const removeUserFromPendingVerification = async id => {
+    await deleteDoc(doc(db, 'pending_verifications', id))
   }
 
   // Getting pending verification data from the collection
@@ -390,6 +395,7 @@ export const useAuthStore = defineStore('auth', () => {
     sendVerificationEmail,
     registerCompleteAction,
     getVerificationData,
+    removeUserFromPendingVerification,
     getUserData,
     userData,
     orgData,
