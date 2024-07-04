@@ -59,9 +59,9 @@ const handleVerifyEmail = async (actionCode, email) => {
     await authStore.registerCompleteAction(verificationData)
   } catch ({ code, message }) {
     if (code === 'auth/invalid-action-code') {
-      await authStore.removeUserFromPendingVerification(verificationData[0].id)
       router.push({ name: 'verify1' })
     } else {
+      await authStore.removeUserFromPendingVerification(verificationData[0].id)
       alertStore.warning({ message })
     }
   }
