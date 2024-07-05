@@ -601,14 +601,14 @@ export const useBookingsStore = defineStore('bookings', () => {
     completedStatus = false,
   ) => {
     try {
-      const { details } = booking || { details: [] }
+      const { details = [] } = booking
 
       const data = pickBy(booking, (value, key) => key !== 'details') || {}
       const batch = writeBatch(db)
 
       for (const id of ids) {
         const docRef = doc(db, collectionName, id)
-        const loadData = details?.find(val => val.id === id)
+        const loadData = details?.find(val => val.id === id) || null
         const originalData = originalBooking.details.find(val => val.id === id)
         if (loadData) {
           data.loadingDate = moment(loadData.loadingDate).endOf('day').format()
@@ -624,31 +624,36 @@ export const useBookingsStore = defineStore('bookings', () => {
           batch.update(docRef, { ...data, updatedAt: getLocalTime().format() })
         }
         const commitments = await getCommitmentsByBookingId(id, ids)
-        const requiredData = analyzeScacAndContainerChanges(originalData, loadData, commitments)
-        if (requiredData.createCommit.length) {
-          //create commitments with awaiting confirmation status
-          await axios.post(`${import.meta.env.VITE_APP_CANONICAL_URL}/api/v1/commitments/create`, {
-            bookingId: id,
-            commitmentData: requiredData.createCommit,
-          })
-        }
-        if (requiredData.cancelCommit.length) {
-          const filteredCommitments = commitments.filter(
-            commitment => commitment.bookingId === id && commitment.status !== 'onboarded',
-          )
-          requiredData.cancelCommit.forEach(obj => {
-            filteredCommitments.forEach(commitment => {
-              if (obj.scac) {
-                if (commitment.preferredScac && commitment.scac === obj.scac) {
-                  commitmentStore.cancelCommitment(commitment, null)
+        if (loadData) {
+          const requiredData = analyzeScacAndContainerChanges(originalData, loadData, commitments)
+          if (requiredData.createCommit.length) {
+            //create commitments with awaiting confirmation status
+            await axios.post(
+              `${import.meta.env.VITE_APP_CANONICAL_URL}/api/v1/commitments/create`,
+              {
+                bookingId: id,
+                commitmentData: requiredData.createCommit,
+              },
+            )
+          }
+          if (requiredData.cancelCommit.length) {
+            const filteredCommitments = commitments.filter(
+              commitment => commitment.bookingId === id && commitment.status !== 'onboarded',
+            )
+            requiredData.cancelCommit.forEach(obj => {
+              filteredCommitments.forEach(commitment => {
+                if (obj.scac) {
+                  if (commitment.preferredScac && commitment.scac === obj.scac) {
+                    commitmentStore.cancelCommitment(commitment, null)
+                  }
+                } else {
+                  if (!commitment.preferredScac) {
+                    commitmentStore.cancelCommitment(commitment, null)
+                  }
                 }
-              } else {
-                if (!commitment.preferredScac) {
-                  commitmentStore.cancelCommitment(commitment, null)
-                }
-              }
+              })
             })
-          })
+          }
         }
 
         // change loadingData in commitments

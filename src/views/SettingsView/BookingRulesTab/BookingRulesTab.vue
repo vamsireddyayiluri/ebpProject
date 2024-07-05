@@ -76,6 +76,7 @@ tryOnUnmounted(() => {
             lat: yard.lat,
             lng: yard.lng,
             details: yard.details,
+            commodity: yard.commodity
           }))
         "
         label="Set yard by default"
