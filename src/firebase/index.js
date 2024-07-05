@@ -23,8 +23,8 @@ const appAuth = initializeApp(firebaseConfigAuth, 'auth')
 const app = initializeApp(firebaseConfig)
 
 const auth = getAuth(appAuth)
-getAuth(app)
+const v1Auth = getAuth(app)
 const db = getFirestore(app)
 const storage = getStorage(app)
 
-export { auth, db, storage }
+export { auth, db, storage, v1Auth}
