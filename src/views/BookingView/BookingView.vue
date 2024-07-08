@@ -73,6 +73,7 @@ const activated = ref(null)
 const hideChip = ref(null)
 const loading = ref(null)
 const currentDate = ref(new Date())
+let createdAt = ref(null)
 const form = ref(null)
 const validExpiryDate = ref(false)
 const insuranceItems = ref(insuranceTypes)
@@ -490,6 +491,14 @@ const removeLoadingDate = async aBooking => {
     }
   }
 }
+const updateWeightAndCommodity = yard => {
+  booking.value.weight = yard.details?.averageWeight
+    ? parseInt(yard.details?.averageWeight)
+    : booking.value.weight
+    ? ''
+    : null
+  booking.value.commodity = yard.commodity
+}
 
 // Getting commitments to validate the contianers count
 const getCommitmentsToBooking = async () => {
@@ -572,7 +581,7 @@ onMounted(async () => {
   truckers.value = preferredTruckers.value.map(preferredTrucker => preferredTrucker.scac)
 
   yards.value = workDetailsStore.yards
-
+  createdAt = new Date(booking.value.createdAt)
   await getCommitmentsToBooking()
   loading.value = false
 })
@@ -743,6 +752,7 @@ onMounted(async () => {
                   lat: yard.lat,
                   lng: yard.lng,
                   details: yard.details,
+                  commodity: yard.commodity,
                 }))
               "
               label="Yard label *"
@@ -751,7 +761,7 @@ onMounted(async () => {
               return-object
               required
               :disabled="pending || expired || completed"
-              @update:modelValue="value => (booking.weight = value.details?.averageWeight || null)"
+              @update:modelValue="updateWeightAndCommodity"
             />
             <Textfield
               v-model.number="booking.weight"
@@ -839,7 +849,7 @@ onMounted(async () => {
                     label="Loading date *"
                     typeable
                     location="top"
-                    :lower-limit="currentDate"
+                    :lower-limit="dt.loadingDate ? createdAt : currentDate"
                     :error-messages="validateExpiryDate(activeBookings, { ...d, ref: booking.ref })"
                     :rules="[
                       rules.required,
