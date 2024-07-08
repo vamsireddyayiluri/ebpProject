@@ -212,7 +212,7 @@ export const useAuthStore = defineStore('auth', () => {
     const data = verification[0]
     if (!user) {
       try {
-        user = await signInWithEmailAndPassword(auth, data.email, data.password)
+        user = await (await signInWithEmailAndPassword(auth, data.email, data.password)).user
       } catch (error) {
         alertStore.warning({ content: error.message })
       }

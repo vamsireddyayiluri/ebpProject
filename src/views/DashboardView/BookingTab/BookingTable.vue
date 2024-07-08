@@ -29,8 +29,13 @@ const emit = defineEmits([
 
 const bookingsStore = useBookingsStore()
 
-const { removeFromNetwork, updateBookingStatus, getCommitmentsByBookingId, closeBookingExpansion } =
-  useBookingsStore()
+const {
+  removeFromNetwork,
+  updateBookingStatus,
+  getCommitmentsByBookingId,
+  closeBookingExpansion,
+  getBooking,
+} = useBookingsStore()
 const {
   approveCommitment,
   declineCommitment,
@@ -151,9 +156,11 @@ const openCancelBookingDialog = booking => {
   cancelBookingDialog.value.show(true)
   cancelBookingDialog.value.data = booking
 }
-const openLoadingDateDialog = commitment => {
+const openLoadingDateDialog = async commitment => {
+  const booking = await getBooking({ id: commitment.bookingId })
   loadingDateDialog.value.show(true)
   loadingDateDialog.value.data = commitment
+  loadingDateDialog.value.data.createdAt = new Date(booking.createdAt)
 }
 const openCancelCommitmentDialog = commiment => {
   cancelCommitmentDialog.value.show(true)
@@ -365,6 +372,7 @@ onMounted(async () => {
         :loading="isloading"
         :loading-date="loadingDateDialog.data.loadingDate"
         :committed="loadingDateDialog.data.committed"
+        :createdAt="loadingDateDialog.data.createdAt"
         @close="loadingDateDialog.show(false)"
         @onClickUpdate="
           (loadingDate, newCommitted) =>

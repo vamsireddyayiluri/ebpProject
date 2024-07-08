@@ -9,6 +9,7 @@ const props = defineProps({
   loading: Boolean,
   loadingDate: String,
   committed: Number,
+  createdAt: Date
 })
 const emit = defineEmits(['close', 'onClickBtn', 'onClickUpdate'])
 const initialLoadingDate = ref(new Date())
@@ -64,7 +65,7 @@ onMounted(async () => {
     class="mt-6 mb-4 updateLoadingDate"
     label="Loading date *"
     typeable
-    :lower-limit="currentDate"
+    :lower-limit="props.createdAt"
     @onUpdate="updateLoadingDate"
   />
   <Textfield

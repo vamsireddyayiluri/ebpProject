@@ -2,6 +2,7 @@
 import { useActions, useHeaders, useDate } from '~/composables'
 import { useCommitmentsStore } from '~/stores/commitments.store'
 import { canceledCodes, declineCodes, onboardingCodes } from '~/constants/reasonCodes'
+import { useBookingsStore } from '~/stores/bookings.store'
 
 const props = defineProps({
   commitments: Array,
@@ -13,6 +14,9 @@ const {
   cancelCommitment,
   edit_commitment_loadingDate,
 } = useCommitmentsStore()
+const bookingsStore = useBookingsStore()
+
+const { getBooking } = useBookingsStore()
 const { commitmentsHeaders } = useHeaders()
 const { commitmentsActions } = useActions()
 const commitmentStore = useCommitmentsStore()
@@ -95,9 +99,11 @@ const onCompleteCommitment = async (data, reason, onBoardedContainers) => {
   loadCompleteCommitment.value = false
   emit('close', pendingCommitments.value.length > 0)
 }
-const openLoadingDateDialog = commitment => {
+const openLoadingDateDialog = async commitment => {
+  const booking = await getBooking({ id: commitment.bookingId })
   loadingDateDialog.value.show(true)
   loadingDateDialog.value.data = commitment
+  loadingDateDialog.value.data.createdAt = new Date(booking.createdAt)
 }
 const onCancelCommitment = async (commiment, reason) => {
   cancelCommitmentDialog.value.show(false)
@@ -218,6 +224,7 @@ const onLoadingDateUpdated = async (data, loadingDate, newCommitted) => {
         :loading="isloading"
         :loadingDate="loadingDateDialog.data.loadingDate"
         :committed="loadingDateDialog.data.committed"
+        :createdAt="loadingDateDialog.data.createdAt"
         @close="loadingDateDialog.show(false)"
         @onClickUpdate="
           (loadingDate, newCommitted) =>

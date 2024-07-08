@@ -337,10 +337,23 @@ const onClickOutsideDialog = () => {
     confirmClickedOutside.value = false
   }, 1000)
 }
+const updateWeightAndCommodity = yard => {
+  booking.value.weight = yard.details?.averageWeight
+    ? parseInt(yard.details?.averageWeight)
+    : booking.value.weight
+    ? ''
+    : null
+  booking.value.commodity = yard.commodity
+}
 
 onMounted(async () => {
   await workDetailsStore.getYards()
   truckers.value = preferredTruckers.value.map(preferredTrucker => preferredTrucker.scac)
+  booking.value.commodity = booking.value.commodity
+    ? booking.value.commodity
+    : bookingRulesStore.rules.yard?.label
+    ? yards.value?.find(yard => yard.label === bookingRulesStore.rules.yard.label)?.commodity
+    : ''
 })
 
 /*watch(clickedOutside, () => {
@@ -403,6 +416,7 @@ onMounted(async () => {
             lat: yard.lat,
             lng: yard.lng,
             details: yard.details,
+            commodity: yard.commodity,
           }))
         "
         label="Yard label *"
@@ -411,14 +425,7 @@ onMounted(async () => {
         item-value="address"
         return-object
         class="h-fit"
-        @update:modelValue="
-          value =>
-            (booking.weight = value.details?.averageWeight
-              ? parseInt(value.details?.averageWeight)
-              : booking.weight
-              ? ''
-              : null)
-        "
+        @update:modelValue="updateWeightAndCommodity"
       />
       <Textfield
         v-model.trim="booking.commodity"
