@@ -7,7 +7,7 @@ import { useBookingsStore } from '~/stores/bookings.store'
 import { storeToRefs } from 'pinia'
 import { statuses } from '~/constants/statuses'
 import { getAllLines } from '@qualle-admin/qutil/dist/ssl'
-import { filterMatchingObjects } from '~/helpers/filters'
+import { filterMatchingObjects, sortBy } from '~/helpers/filters'
 import moment from 'moment-timezone'
 import { json2csv } from 'json-2-csv'
 
@@ -31,6 +31,7 @@ const filters = ref({
   loadingDate: null,
 })
 const selectLine = ref(getAllLines())
+const sorted = ref(null)
 
 const computedSearchedEntities = computed({
   get() {
@@ -49,7 +50,10 @@ const computedFilteredEntities = computed({
   },
 })
 const computedEntities = computed(() =>
-  filterMatchingObjects(computedSearchedEntities.value, computedFilteredEntities.value),
+  sortBy(
+    filterMatchingObjects(computedSearchedEntities.value, computedFilteredEntities.value),
+    sorted.value,
+  ),
 )
 const bookingStatus = id => {
   const bookings = computedEntities.value
@@ -102,6 +106,9 @@ const applyFilter = () => {
 const clearDateFilter = () => {
   filters.value.loadingDate = null
   applyFilter()
+}
+const onSort = item => {
+  sorted.value = item.value
 }
 const containerActionHandler = ({ action, e }) => {
   if (action === 'delete-booking') {
@@ -202,6 +209,16 @@ watch(searchValue, value => {
         class="max-w-[280px] min-w-[160px]"
         @update:modelValue="applyFilter"
       />
+      <Sort
+        size="48"
+        icon-size="24"
+        :items="[
+          { label: 'Most recent', value: 'mostRecent' },
+          { label: 'Least recent', value: 'leastRecent' },
+          { label: 'By default', value: 'default' },
+        ]"
+        @onSelect="onSort"
+      />
       <IconButton
         width="48"
         height="48"
@@ -215,7 +232,7 @@ watch(searchValue, value => {
           size="24"
           :color="getColor('iconButton-1')"
         />
-        <Tooltip> Download datatable </Tooltip>
+        <Tooltip> Download datatable</Tooltip>
       </IconButton>
     </div>
     <VirtualTable
@@ -340,7 +357,7 @@ watch(searchValue, value => {
             class="-mr-1.5"
             @click.stop="removeBookingDialog.show(true), (removeBookingDialog.data = item)"
           >
-            <Tooltip> Remove booking </Tooltip>
+            <Tooltip> Remove booking</Tooltip>
           </IconButton>
         </template>
         <MenuActions

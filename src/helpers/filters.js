@@ -36,3 +36,32 @@ export const getTimeLine = timeLine => {
 
   return formattedTimeLine
 }
+export const getExtremeDate = (details, findMostRecent) => {
+  return details.reduce((extremeDate, detail) => {
+    const currentDate = moment(detail.loadingDate)
+    if (findMostRecent) {
+      return !extremeDate || currentDate.isAfter(extremeDate) ? currentDate : extremeDate
+    } else {
+      return !extremeDate || currentDate.isBefore(extremeDate) ? currentDate : extremeDate
+    }
+  }, null)
+}
+export const sortBy = (entities, by) => {
+  const findMostRecent = by === 'mostRecent'
+  const byDefault = by === 'default' || by === null
+
+  if (byDefault) {
+    return entities.sort((a, b) => moment(b.updatedAt).diff(moment(a.updatedAt)))
+  }
+
+  return entities.sort((a, b) => {
+    const dateA = getExtremeDate(a.details, findMostRecent)
+    const dateB = getExtremeDate(b.details, findMostRecent)
+
+    if (findMostRecent) {
+      return dateB.diff(dateA)
+    } else {
+      return dateA.diff(dateB)
+    }
+  })
+}

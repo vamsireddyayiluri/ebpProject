@@ -38,7 +38,7 @@ watch(isLoading, async () => {
 <template>
   <ThemeProvider class="scrollbar">
     <AppAlert />
-    <Loader :loading="isLoading" />
+    <Loader :loading="isLoading" :interval="250"/>
     <RouterView v-if="!isLoading" />
   </ThemeProvider>
 </template>

@@ -19,7 +19,7 @@ const props = defineProps({
   text: {
     type: String,
     default: () => 'Loading...',
-  }
+  },
 })
 
 const { loading } = toRefs(props)
