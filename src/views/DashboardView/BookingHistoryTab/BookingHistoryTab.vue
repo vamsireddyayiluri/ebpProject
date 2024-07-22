@@ -31,7 +31,7 @@ const filters = ref({
   loadingDate: null,
 })
 const selectLine = ref(getAllLines())
-const sorted = ref(null)
+const sorted = ref('mostRecent')
 
 const computedSearchedEntities = computed({
   get() {
@@ -215,7 +215,6 @@ watch(searchValue, value => {
         :items="[
           { label: 'Most recent', value: 'mostRecent' },
           { label: 'Least recent', value: 'leastRecent' },
-          { label: 'By default', value: 'default' },
         ]"
         @onSelect="onSort"
       />

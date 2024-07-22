@@ -143,7 +143,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     const querySnapshot = await getDocs(bookingsQuery)
     const sortedBookings = querySnapshot.docs
       .map(doc => ({ ...doc.data(), entities: [] }))
-      .sort((a, b) => moment(b.updatedAt).diff(moment(a.updatedAt)))
+      .sort((a, b) => moment(b.loadingDate).diff(moment(a.loadingDate)))
     pastBookings.value = groupBookings(sortedBookings)
     loading.value = false
   }
