@@ -25,7 +25,7 @@ import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
 import { useCommitmentsStore } from '~/stores/commitments.store'
 import { groupBookings } from '~/stores/helpers'
 import axios from 'axios'
-import { getNearestLocation } from '@qualle-admin/qutil/dist/region';
+import { getNearestLocation } from '@qualle-admin/qutil/dist/region'
 
 export const useBookingsStore = defineStore('bookings', () => {
   const alertStore = useAlertStore()
@@ -264,16 +264,30 @@ export const useBookingsStore = defineStore('bookings', () => {
     try {
       const batch = writeBatch(db)
       details?.map(b => {
+        console.log(b)
         if (b.newScacs) {
           b.containers = b.newScacs.reduce((total, obj) => total + obj.containers, 0)
           b.scacList.list = b.newScacs.filter(obj => obj?.scac).map(obj => obj?.scac)
         }
         b.scacList = b?.scacList || { list: [] }
+        console.log(b, 'check', selectedBooking)
         const newBooking = createBookingObj({ ...selectedBooking, ...b })
         if (fromEdit) {
           newBooking.createdAt = selectedBooking.createdAt
         }
         const docRef = doc(collection(db, 'bookings'), newBooking.id)
+        console.log(newBooking, 'check')
+        if (newBooking.flexibleLoadingDate) {
+          delete newBooking?.loadingDate
+          newBooking.newScacs.map(a => {
+            delete a.loadingDate
+          })
+        } else {
+          delete newBooking.loadingDateRange
+          newBooking.newScacs.map(a => {
+            delete a.loadingDateRange
+          })
+        }
         batch.set(docRef, newBooking)
       }),
         await batch.commit()
@@ -297,7 +311,19 @@ export const useBookingsStore = defineStore('bookings', () => {
           newDraft.createdAt = selectedDraft.createdAt
         }
         const docRef = doc(collection(db, 'drafts'), newDraft.id)
+        if (newDraft.flexibleLoadingDate) {
+          delete newDraft?.loadingDate
+          newDraft.newScacs.map(a => {
+            delete a.loadingDate
+          })
+        } else {
+          delete newDraft.loadingDateRange
+          newDraft.newScacs.map(a => {
+            delete a.loadingDateRange
+          })
+        }
         batch.set(docRef, newDraft)
+
         drafts.value.unshift(newDraft)
       })
       await batch.commit()
@@ -429,7 +455,7 @@ export const useBookingsStore = defineStore('bookings', () => {
       alertStore.warning({ content: message })
     }
   }
-  const publishDraft = async (booking) => {
+  const publishDraft = async booking => {
     try {
       const batch = writeBatch(db)
       await deleteBooking(booking.ids, true)
@@ -441,7 +467,18 @@ export const useBookingsStore = defineStore('bookings', () => {
         b.scacList = b?.scacList || { list: [] }
         const data = createEditedBookingObj(booking, b.id)
         const docRef = doc(collection(db, 'bookings'), data.id)
-        batch.set(docRef, {...data, createdAt: getLocalTime().format()})
+        if (data.flexibleLoadingDate) {
+          delete data?.loadingDate
+          data.newScacs.map(a => {
+            delete a.loadingDate
+          })
+        } else {
+          delete data.loadingDateRange
+          data.newScacs.map(a => {
+            delete a.loadingDateRange
+          })
+        }
+        batch.set(docRef, { ...data, createdAt: getLocalTime().format() })
       })
 
       await batch.commit()
@@ -601,6 +638,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     completedStatus = false,
   ) => {
     try {
+      console.log(originalBooking, booking, ids, 'required data')
       const { details = [] } = booking
 
       const data = pickBy(booking, (value, key) => key !== 'details') || {}
@@ -611,7 +649,17 @@ export const useBookingsStore = defineStore('bookings', () => {
         const loadData = details?.find(val => val.id === id) || null
         const originalData = originalBooking.details.find(val => val.id === id)
         if (loadData) {
-          data.loadingDate = moment(loadData.loadingDate).endOf('day').format()
+          if (loadData.flexibleLoadingDate) {
+            loadData.loadingDateRange.startDate = moment(loadData.loadingDateRange.startDate)
+              .endOf('day')
+              .format()
+            loadData.loadingDateRange.endDate = moment(loadData.loadingDateRange.endDate)
+              .endOf('day')
+              .format()
+            data.loadingDateRange = loadData.loadingDateRange
+          } else {
+            data.loadingDate = moment(loadData.loadingDate).endOf('day').format()
+          }
           data.containers = loadData.containers
           data.scacList = loadData.scacList
           data.newScacs = loadData.newScacs

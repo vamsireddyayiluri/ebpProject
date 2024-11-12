@@ -7,6 +7,7 @@ const props = defineProps({
 })
 const { getFormattedDate, getSmallerDate } = useDate()
 const formatMinTime = dates => {
+  
   const minData = getSmallerDate(dates)
 
   return getFormattedDate(minData)

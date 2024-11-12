@@ -2,7 +2,7 @@ import { groupBy, uniqBy, values } from 'lodash'
 import { db } from '~/firebase'
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore'
 import { uid } from 'uid'
-
+import moment from 'moment'
 export const groupedBookingLocations = bookings =>
   values(groupBy(bookings, ({ location: { geohash } }) => geohash)).map(group => ({
     id: group[0].location.geohash,
@@ -77,9 +77,27 @@ export const groupBookings = objects => {
       groupedObject[key].containers += obj.containers
       groupedObject[key].committed += obj.committed
       groupedObject[key].status = obj.status === 'active' ? obj.status : groupedObject[key].status
-
+      if (obj.newScacs) {
+        obj.newScacs.map(scacObj => {
+          if (scacObj.flexibleLoadingDate) {
+            scacObj.loadingDate = null
+          } else {
+            scacObj.loadingDateRange = {
+              startDate: moment().format('YYYY-MM-DD'),
+              endDate: moment().add(3, 'days').format('YYYY-MM-DD'),
+            }
+          }
+        })
+      }
       groupedObject[key].details.push({
-        loadingDate: obj.loadingDate,
+        flexibleLoadingDate: obj.flexibleLoadingDate ? obj.flexibleLoadingDate : false,
+        loadingDate: obj.loadingDate ? obj.loadingDate : null,
+        loadingDateRange: obj.loadingDateRange
+          ? obj.loadingDateRange
+          : {
+              startDate: moment().format('YYYY-MM-DD'),
+              endDate: moment().add(3, 'days').format('YYYY-MM-DD'),
+            },
         containers: obj.containers,
         committed: obj.committed || 0,
         scacList: { ...(obj?.scacList || { list: [] }) },
@@ -90,9 +108,27 @@ export const groupBookings = objects => {
       groupedObject[key].scacList = { ...groupedObject[key].scacList, ...obj.scacList }
     } else {
       groupedObject[key] = { ...obj }
+      obj.newScacs.map(obj => {
+        if (obj.flexibleLoadingDate) {
+          obj.loadingDate = null
+        } else {
+          obj.loadingDateRange = {
+            startDate: moment().format('YYYY-MM-DD'),
+            endDate: moment().add(3, 'days').format('YYYY-MM-DD'),
+          }
+        }
+      })
+
       groupedObject[key].details = [
         {
-          loadingDate: obj.loadingDate,
+          loadingDate: obj.loadingDate ? obj.loadingDate : obj.loadingDateRange.endDate,
+          flexibleLoadingDate: obj.flexibleLoadingDate ? obj.flexibleLoadingDate : false,
+          loadingDateRange: obj.loadingDateRange
+            ? obj.loadingDateRange
+            : {
+                startDate: moment().format('YYYY-MM-DD'),
+                endDate: moment().add(3, 'days').format('YYYY-MM-DD'),
+              },
           containers: obj.containers,
           committed: obj.committed || 0,
           scacList: { ...(obj?.scacList || { list: [] }) },

@@ -6,6 +6,7 @@ import { useWorkDetailsStore } from '~/stores/workDetails.store'
 import { storeToRefs } from 'pinia'
 import { useBookingRulesStore } from '~/stores/bookingRules.store'
 import { usePreferredTruckersStore } from '~/stores/preferredTruckers.store'
+import DateRangePicker from 'vue3-daterange-picker'
 
 import containersSizes from '~/fixtures/containersSizes.json'
 import moment from 'moment'
@@ -54,7 +55,15 @@ const {
   containers,
   line,
   commodity,
-  loadingDate,
+  loadingDate = props?.duplicate?.length && props.duplicate[0]?.loadingDate
+    ? props.duplicate[0].loadingDate
+    : null,
+  loadingDateRange = props?.duplicate?.length && props.duplicate[0]?.loadingDateRange
+    ? props.duplicate[0].loadingDateRange
+    : {
+        startDate: moment().format('YYYY-MM-DD'),
+        endDate: moment().add(3, 'days').format('YYYY-MM-DD'),
+      },
   location,
   weight,
   estimatedRateType,
@@ -67,15 +76,42 @@ const {
 } = deepCopy(props?.duplicate?.length ? props.duplicate[0] : {})
 const loadingsDateCopy = props?.duplicate?.map(booking => {
   const i = deepCopy(booking)
+  if (i.newScacs) {
+    i.newScacs.map(obj => {
+      if (obj.flexibleLoadingDate) {
+        obj.loadingDate = null
+      } else {
+        obj.loadingDateRange = {
+          startDate: moment().format('YYYY-MM-DD'),
+          endDate: moment().add(3, 'days').format('YYYY-MM-DD'),
+        }
+      }
+    })
+  }
   return {
     id: uid(28),
     loadingDate: i.loadingDate,
+    loadingDateRange: i?.loadingDateRange
+      ? i.loadingDateRange
+      : {
+          startDate: moment().format('YYYY-MM-DD'),
+          endDate: moment().add(3, 'days').format('YYYY-MM-DD'),
+        },
+    flexibleLoadingDate: i.flexibleLoadingDate || false,
     preferredDays: i?.preferredDays || null,
     containers: i.containers,
     scacList: i?.scacList || { list: [] },
     newScacs: i?.newScacs
       ? i?.newScacs
-      : [{ loadingDate: i.loadingDate, containers: i.containers, scac: i?.scacList.list[0] }],
+      : [
+          {
+            loadingDate: i.loadingDate,
+            flexibleLoadingDate: i.flexibleLoadingDate || false,
+            loadingDateRange: i.loadingDateRange,
+            containers: i.containers,
+            scac: i?.scacList.list[0],
+          },
+        ],
   }
 })
 const copyBooking = {
@@ -84,6 +120,7 @@ const copyBooking = {
   line,
   commodity,
   loadingDate,
+  loadingDateRange,
   location,
   weight,
   estimatedRateType,
@@ -116,6 +153,11 @@ const generateNewScacs = () => {
       id: uid(16),
       preferredDays: null,
       loadingDate: null,
+      flexibleLoadingDate: false,
+      loadingDateRange: {
+        startDate: moment().format('YYYY-MM-DD'),
+        endDate: moment().add(3, 'days').format('YYYY-MM-DD'),
+      },
       containers: null,
     }))
   }
@@ -125,6 +167,11 @@ const generateNewScacs = () => {
       id: uid(16),
       preferredDays: null,
       loadingDate: null,
+      flexibleLoadingDate: false,
+      loadingDateRange: {
+        startDate: moment().format('YYYY-MM-DD'),
+        endDate: moment().add(3, 'days').format('YYYY-MM-DD'),
+      },
       containers: null,
       scac: null,
     },
@@ -138,6 +185,11 @@ const newBookings = ref(
         {
           id: uid(28),
           loadingDate: null,
+          loadingDateRange: {
+            startDate: moment().format('YYYY-MM-DD'),
+            endDate: moment().add(3, 'days').format('YYYY-MM-DD'),
+          },
+          flexibleLoadingDate: false,
           preferredDays: null,
           containers: null,
           scacList: cloneDeep(bookingRulesStore.rules.truckers),
@@ -145,11 +197,19 @@ const newBookings = ref(
         },
       ],
 )
+console.log(props?.duplicate, newBookings.value, 'bookings')
 const confirmDraftsDialog = ref(null)
 const { clickedOutside } = toRefs(props)
 const confirmClickedOutside = ref(null)
 
-const currentDate = ref(new Date())
+const previousDate = ref(new Date())
+previousDate.value.setDate(previousDate.value.getDate() - 1)
+let currentDate = new Date()
+
+const dateRange = {
+  startDate: moment().format('YYYY-MM-DD'),
+  endDate: moment().add(3, 'days').format('YYYY-MM-DD'),
+}
 
 const rules = {
   containers: value => checkPositiveInteger(value),
@@ -168,8 +228,32 @@ const updateExpiryDate = (value, index, i) => {
   })
   newBookings.value[index].loadingDate = moment(value).endOf('day').format()
 }
+const updateExpiryRangeDate = (value, index, i) => {
+  value.endDate = moment(value.endDate).endOf('day').format()
+  value.startDate = moment(value.startDate).startOf('day').format()
+  newBookings.value[index].newScacs.map(obj => {
+    obj.loadingDateRange = value
+  })
+  newBookings.value[index].loadingDateRange = value
+}
 const updateSize = () => {
   booking.value.size = null
+}
+const updateLoadingDate = (booking, index, i) => {
+  newBookings.value[index].flexibleLoadingDate = booking.flexibleLoadingDate || false
+  if (booking.flexibleLoadingDate) {
+    newBookings.value[index].newScacs.map(obj => {
+      obj.loadingDate = null
+    })
+    newBookings.value[index].loadingDate = null
+  } else {
+    newBookings.value[index].newScacs.map(obj => {
+      obj.loadingDateRange.startDate = moment().format('YYYY-MM-DD')
+      obj.loadingDateRange.endDate = moment().add(3, 'days').format('YYYY-MM-DD')
+    })
+    newBookings.value[index].loadingDateRange.startDate = new Date()
+    newBookings.value[index].loadingDateRange.endDate = null
+  }
 }
 const isDisabled = computed(() => {
   let condition = false
@@ -193,9 +277,22 @@ const isLoadingDatesFieldsEmpty = computed(() => {
     return Object.values(object.newScacs).some(value => {
       delete value?.preferredDays
       delete value?.scac
+
+      if (value.flexibleLoadingDate) {
+        delete value?.loadingDate
+      } else {
+        delete value.loadingDateRange
+      }
+      delete value.flexibleLoadingDate
       const test =
         value === null ||
         Object.values(value).some(i => {
+          if (typeof i === 'object' && i !== null && 'startDate' in i && 'endDate' in i) {
+            return isBoolean(i.startDate) && isBoolean(i.endDate)
+              ? false
+              : !i.startDate || !i.endDate
+          }
+
           return isBoolean(i) ? false : !i
         })
       return test
@@ -221,6 +318,8 @@ const addLoadingDate = () => {
   newBookings.value.push({
     id: uid(16),
     loadingDate: null,
+    flexibleLoadingDate: false,
+    loadingDateRange: null,
     preferredDays: null,
     containers: null,
     scacList: truckers,
@@ -234,7 +333,9 @@ const addScac = id => {
     booking.newScacs.push({
       id: uid(16),
       preferredDays: null,
+      flexibleLoadingDate: booking.flexibleLoadingDate,
       loadingDate: booking.loadingDate,
+      loadingDateRange: booking.loadingDateRange,
       containers: null,
       scac: null,
     })
@@ -247,7 +348,16 @@ const removeLoadingDate = id => {
   }
 }
 const removeScac = bDetails => {
-  let booking = newBookings.value.find(booking => booking.loadingDate === bDetails.loadingDate)
+  let booking = newBookings.value.find(booking => {
+    if (booking.flexibleLoadingDate) {
+      return (
+        booking.loadingDateRange.startDate === bDetails.loadingDateRange.startDate &&
+        booking.loadingDateRange.endDate === bDetails.loadingDateRange.endDate
+      )
+    } else {
+      return booking.loadingDate === bDetails.loadingDate
+    }
+  })
 
   if (booking) {
     const index = booking.newScacs.findIndex(i => i.id === bDetails.id)
@@ -317,8 +427,17 @@ const availableScacs = (index, newScacs) => {
   const selected = selectedScacs.value.filter((_, id) => id !== index)
   return truckers.value.filter(scac => !selected.includes(scac))
 }
-const handleScacChange = loadingDate => {
-  let booking = newBookings.value.find(booking => booking.loadingDate === loadingDate)
+const handleScacChange = selectedBooking => {
+  let booking = newBookings.value.find(booking => {
+    if (booking.flexibleLoadingDate) {
+      return (
+        booking.loadingDateRange.startDate === selectedBooking.loadingDateRange.startDate &&
+        booking.loadingDateRange.endDate === selectedBooking.loadingDateRange.endDate
+      )
+    } else {
+      return booking.loadingDate === selectedBooking.loadingDate
+    }
+  })
   if (booking) {
     booking.newScacs = booking.newScacs ? booking.newScacs : []
     selectedScacs.value = booking.newScacs.map(dt => dt.scac).filter(scac => scac)
@@ -494,8 +613,8 @@ onMounted(async () => {
         </template>
       </Autocomplete>
     </div>
-    <div class="grid grid-cols-subgrid gap-6 md:grid-cols-4 col-span-2 md:col-span-4 relative mt-6">
-      <Typography type="text-body-xs-semibold col-span-2 md:col-span-4 -mb-2">
+    <div class="grid grid-cols-subgrid gap-8 md:grid-cols-5 col-span-1 md:col-span-4 relative mt-6">
+      <Typography type="text-body-xs-semibold col-span-2 md:col-span-5 -mb-2">
         Loading dates
       </Typography>
       <template
@@ -510,13 +629,27 @@ onMounted(async () => {
             v-for="(dt, i) in d?.newScacs"
             :key="dt.id"
           >
-            <Datepicker
+            <div
               v-if="i === 0"
+              class="pt-3"
+            >
+              <Checkbox
+                v-model="dt.flexibleLoadingDate"
+                label="Flexible Loading date"
+                @change="updateLoadingDate(dt, index, i)"
+              />
+            </div>
+            <div
+              v-else
+              class="w-1/6"
+            ></div>
+            <Datepicker
+              v-if="i === 0 && !dt.flexibleLoadingDate"
               :picked="dt.loadingDate"
               label="Loading date *"
               typeable
               location="top"
-              :lower-limit="currentDate"
+              :lower-limit="previousDate"
               :error-messages="validateExpiryDate(bookings, { ...d, ref: booking.ref })"
               :rules="[
                 rules.required,
@@ -526,6 +659,21 @@ onMounted(async () => {
               class="mb-2"
               @onUpdate="value => updateExpiryDate(value, index, i)"
             />
+            <div
+              v-else-if="i === 0 && dt.flexibleLoadingDate"
+              class="pt-1"
+            >
+              <DateRangePicker
+                :opens="'right'"
+                :dateRange="dt.loadingDateRange"
+                :minDate="previousDate"
+                :autoApply="true"
+                :ranges="false"
+                @select="value => updateExpiryRangeDate(value, index, i)"
+                class="mb-2"
+              >
+              </DateRangePicker>
+            </div>
             <div
               v-else
               class="w-1/6"
@@ -545,15 +693,15 @@ onMounted(async () => {
                 :items="availableScacs(i, d.newScacs)"
                 label="Choose trucker by SCAС "
                 :menu-props="{ maxHeight: 300 }"
-                @update:modelValue="handleScacChange(dt.loadingDate)"
+                @update:modelValue="handleScacChange(dt)"
                 class="w-4/5 lg:w-10/12 xl:w-11/12"
               />
               <Button
-                v-if="dt.loadingDate && i + 1 === d.newScacs.length"
-                :variant="dt.loadingDate && dt.scac ? 'plain' : 'gray'"
+                v-if="(dt.loadingDateRange || dt.loadingDate) && i + 1 === d.newScacs.length"
+                :variant="(dt.loadingDateRange || dt.loadingDate) && dt.scac ? 'plain' : 'gray'"
                 prepend-icon="mdi-plus"
                 class="mt-2.5 mr-auto"
-                :disabled="!(dt.loadingDate && dt.scac)"
+                :disabled="!((dt.loadingDateRange || dt.loadingDate) && dt.scac)"
                 @click="addScac(d.id)"
               >
                 add scac

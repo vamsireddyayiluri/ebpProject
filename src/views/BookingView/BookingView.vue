@@ -4,6 +4,7 @@ import { useAuthStore } from '~/stores/auth.store'
 import { getColor } from '~/helpers/colors'
 import { getAllLines } from '@qualle-admin/qutil/dist/ssl'
 import moment from 'moment-timezone'
+import DateRangePicker from 'vue3-daterange-picker'
 import { useDisplay } from 'vuetify'
 import { getBookingLoad } from '~/helpers/countings'
 import { useBookingsStore } from '~/stores/bookings.store'
@@ -85,7 +86,8 @@ const confirmClickedOutside = ref(null)
 const truckers = ref([])
 const fromRemoveLoadingDate = ref(false)
 const commitmentDetails = ref(null)
-
+const previousDate = ref(new Date())
+previousDate.value.setDate(previousDate.value.getDate() - 1)
 const rules = {
   checkcommitted: value => checkCommittedValue(value, booking.value),
   averageWeight: value => validateAverageWeight(value, booking.value.location),
@@ -129,6 +131,14 @@ const updateExpiryDate = (value, index) => {
     obj.loadingDate = moment(value).endOf('day').format()
   })
   booking.value.details[index].loadingDate = moment(value).endOf('day').format()
+}
+const updateExpiryRangeDate = (value, index) => {
+  booking.value.details[index]?.newScacs?.map(obj => {
+    value.endDate = moment(value.endDate).endOf('day').format()
+    value.startDate = moment(value.startDate).startOf('day').format()
+    obj.loadingDateRange = value
+  })
+  booking.value.details[index].loadingDateRange = value
 }
 const updateSize = () => {
   booking.value.size = null
@@ -184,12 +194,19 @@ const handleBookingChanges = async () => {
     }
   }
 }
-const openRemoveDialog = (index = 0, loadingDate = null) => {
+const openRemoveDialog = (index = 0, flexibleLoadingDate, selectLoadingdate = null) => {
   removeBookingDialog.value.show(true)
   removeBookingDialog.value.data = cloneDeep(booking.value)
   removeBookingDialog.value.data.index = index
-  if (loadingDate) {
-    removeBookingDialog.value.data.loadingDate = moment(loadingDate).format('MM-DD-YYYY')
+  if (selectLoadingdate) {
+    removeBookingDialog.value.data.flexibleLoadingDate = flexibleLoadingDate
+    if (flexibleLoadingDate) {
+      selectLoadingdate.startDate = moment(selectLoadingdate.startDate).format('MM-DD-YYYY')
+      selectLoadingdate.endDate = moment(selectLoadingdate.endDate).format('MM-DD-YYYY')
+      removeBookingDialog.value.data.loadingDateRange = selectLoadingdate
+    } else {
+      removeBookingDialog.value.data.loadingDate = moment(selectLoadingdate).format('MM-DD-YYYY')
+    }
   } else {
     fromRemoveLoadingDate.value = false
   }
@@ -264,6 +281,7 @@ const isLoadingDatesFieldsEmpty = computed(() => {
         const valuesToCheck = { ...value }
         delete valuesToCheck.preferredDays
         delete valuesToCheck.scac
+        delete valuesToCheck?.loadingDate
         const test = Object.values(valuesToCheck).some(i => {
           return isBoolean(i) ? false : !i
         })
@@ -277,6 +295,7 @@ const isLoadingDatesFieldsEmpty = computed(() => {
     return false
   })
 })
+
 const validateBooking = computed(() => {
   if (fromEdit) {
     const selectedBooking = bookings.value.find(i => i.id === booking.value.id)
@@ -404,6 +423,7 @@ const validateExpiryDates = index => {
     ref: booking.value.ref,
   })
 }
+
 const generateNewScacs = () => {
   const truckersList = bookingRulesStore.rules?.truckers?.list
 
@@ -413,6 +433,11 @@ const generateNewScacs = () => {
       id: uid(16),
       preferredDays: null,
       loadingDate: null,
+      flexibleLoadingDate: false,
+      loadingDateRange: {
+        startDate: moment().format('YYYY-MM-DD'),
+        endDate: moment().add(3, 'days').format('YYYY-MM-DD'),
+      },
       containers: null,
     }))
   }
@@ -422,6 +447,10 @@ const generateNewScacs = () => {
       id: uid(16),
       preferredDays: null,
       loadingDate: null,
+      loadingDateRange: {
+        startDate: moment().format('YYYY-MM-DD'),
+        endDate: moment().add(3, 'days').format('YYYY-MM-DD'),
+      },
       containers: null,
       scac: null,
     },
@@ -431,6 +460,11 @@ const addLoadingDate = () => {
   booking.value.details.push({
     id: uid(28),
     loadingDate: null,
+    flexibleLoadingDate: false,
+    loadingDateRange: {
+      startDate: moment().format('YYYY-MM-DD'),
+      endDate: moment().add(3, 'days').format('YYYY-MM-DD'),
+    },
     containers: null,
     scacList: cloneDeep(bookingRulesStore?.rules?.truckers),
     newScacs: generateNewScacs(),
@@ -443,17 +477,30 @@ const addScac = id => {
     selectedBooking.newScacs.push({
       id: uid(16),
       preferredDays: null,
+
       loadingDate: selectedBooking.loadingDate,
+      flexibleLoadingDate: selectedBooking.flexibleLoadingDate,
+      loadingDateRange: selectedBooking.loadingDateRange,
       containers: null,
       scac: null,
     })
   }
 }
 const removeScac = bDetails => {
-  let selectedBooking = booking.value.details.find(
-    abooking => abooking.loadingDate === bDetails.loadingDate,
-  )
+  console.log(bDetails, 'data')
 
+  let selectedBooking = booking.value.details.find(abooking => {
+    console.log(abooking)
+    if (abooking.flexibleLoadingDate) {
+      return (
+        abooking.loadingDateRange.startDate === bDetails.loadingDateRange.startDate &&
+        abooking.loadingDateRange.endDate === bDetails.loadingDateRange.endDate
+      )
+    } else {
+      return abooking.loadingDate === bDetails.loadingDate
+    }
+  })
+  console.log(selectedBooking, 'booking')
   if (selectedBooking) {
     const index = selectedBooking.newScacs.findIndex(i => i.id === bDetails.id)
 
@@ -472,8 +519,18 @@ const availableScacs = (index, newScacs) => {
   const selected = selectedScacs.value.filter((_, id) => id !== index)
   return truckers.value.filter(scac => !selected.includes(scac))
 }
-const handleScacChange = loadingDate => {
-  let bookingObj = booking.value.details.find(booking => booking.loadingDate === loadingDate)
+const handleScacChange = selectedBooking => {
+  let bookingObj = booking.value.details.find(booking => {
+    if (booking.flexibleLoadingDate) {
+      return (
+        booking.loadingDateRange.startDate === selectedBooking.loadingDateRange.startDate &&
+        booking.loadingDateRange.endDate === selectedBooking.loadingDateRange.endDate
+      )
+    } else {
+      return booking.loadingDate === selectedBooking.loadingDate
+    }
+  })
+
   if (bookingObj) {
     bookingObj.newScacs = bookingObj.newScacs ? bookingObj.newScacs : []
     selectedScacs.value = bookingObj.newScacs.map(dt => dt.scac).filter(scac => scac)
@@ -487,7 +544,10 @@ const removeLoadingDate = async aBooking => {
       booking.value.details.splice(index, 1)
     } else {
       fromRemoveLoadingDate.value = true
-      openRemoveDialog(index, booking.value.details[index].loadingDate)
+      let selectLoadingdate = booking.value.details[index].flexibleLoadingDate
+        ? booking.value.details[index].loadingDateRange
+        : booking.value.details[index].loadingDate
+      openRemoveDialog(index, booking.value.details[index].flexibleLoadingDate, selectLoadingdate)
     }
   }
 }
@@ -554,9 +614,12 @@ onMounted(async () => {
   booking.value = JSON?.parse(JSON?.stringify(originalBooking?.value))
   const loadingsDateCopy = booking.value?.details.map(iBooking => {
     const i = deepCopy(iBooking)
+    console.log(i, 'check')
     return {
       id: i.id,
+      flexibleLoadingDate: i.flexibleLoadingDate || false,
       loadingDate: i.loadingDate,
+      loadingDateRange: i.loadingDateRange,
       preferredDays: i?.preferredDays || null,
       containers: i.containers,
       scacList: i?.scacList || { list: [] },
@@ -566,6 +629,7 @@ onMounted(async () => {
         : [
             {
               loadingDate: i.loadingDate,
+              loadingDateRange: i.loadingDateRange,
               containers: i.containers,
               scac: i?.scacList.list[0] || null,
             },
@@ -825,9 +889,9 @@ onMounted(async () => {
             </Autocomplete>
           </div>
           <div
-            class="grid grid-cols-subgrid gap-6 md:grid-cols-4 col-span-2 md:col-span-4 relative"
+            class="grid grid-cols-subgrid gap-6 md:grid-cols-5 col-span-2 md:col-span-5 relative"
           >
-            <Typography type="text-body-xs-semibold col-span-2 md:col-span-4 -mb-2">
+            <Typography type="text-body-xs-semibold col-span-2 md:col-span-5 -mb-2">
               Loading dates
             </Typography>
             <template
@@ -842,8 +906,21 @@ onMounted(async () => {
                   v-for="(dt, i) in d?.newScacs"
                   :key="i"
                 >
-                  <Datepicker
+                  <div
                     v-if="i === 0"
+                    class="pt-3"
+                  >
+                    <Checkbox
+                      v-model="dt.flexibleLoadingDate"
+                      label="Flexible Loading date"
+                    />
+                  </div>
+                  <div
+                    v-else
+                    class="w-1/6"
+                  ></div>
+                  <Datepicker
+                    v-if="i === 0 && !dt.flexibleLoadingDate"
                     :id="`${loadingDateId}-${index}`"
                     :picked="dt.loadingDate"
                     label="Loading date *"
@@ -859,6 +936,18 @@ onMounted(async () => {
                     class="mb-2"
                     @onUpdate="value => updateExpiryDate(value, index, i)"
                   />
+                  <DateRangePicker
+                    v-else-if="i === 0 && dt.flexibleLoadingDate"
+                    :opens="'right'"
+                    :dateRange="dt?.loadingDateRange"
+                    :minDate="previousDate"
+                    :autoApply="true"
+                    :ranges="false"
+                    @select="value => updateExpiryRangeDate(value, index, i)"
+                    class="mb-2"
+                    style="width: 300px"
+                  >
+                  </DateRangePicker>
                   <div
                     v-else
                     class="w-1/6"
@@ -887,7 +976,7 @@ onMounted(async () => {
                       label="Choose trucker by SCAС "
                       required
                       :menu-props="{ maxHeight: 300 }"
-                      @update:modelValue="handleScacChange(dt.loadingDate)"
+                      @update:modelValue="handleScacChange(dt)"
                       class="w-4/5 lg:w-10/12 xl:w-11/12"
                       :disabled="
                         originalBooking?.details[index]?.newScacs?.some(val => val.id === dt.id) &&
@@ -896,11 +985,11 @@ onMounted(async () => {
                     />
                     <Button
                       v-if="i + 1 === d.newScacs.length && !(expired || completed || paused)"
-                      :variant="dt.loadingDate ? 'plain' : 'gray'"
+                      :variant="dt.loadingDateRange || dt.loadingDate ? 'plain' : 'gray'"
                       prepend-icon="mdi-plus"
                       class="mt-2.5 mr-auto"
                       color="gray"
-                      :disabled="!dt.loadingDate"
+                      :disabled="!(dt.loadingDateRange || dt.loadingDate)"
                       @click="addScac(d.id)"
                     >
                       add scac
@@ -1026,6 +1115,12 @@ onMounted(async () => {
           Are you sure you want to remove ref#
           <b>{{ removeBookingDialog.data.ref }}</b>
           from your bookings?
+        </Typography>
+        <Typography v-else-if="removeBookingDialog.data.flexibleLoadingDate">
+          Are you sure you want to remove booking with loading date range# from
+          <b>{{ removeBookingDialog.data.loadingDateRange.startDate }}</b> to
+          <b>{{ removeBookingDialog.data.loadingDateRange.endDate }}</b> admin ref#
+          <b>{{ removeBookingDialog.data.ref }}</b>
         </Typography>
         <Typography v-else>
           Are you sure you want to remove loading date#
